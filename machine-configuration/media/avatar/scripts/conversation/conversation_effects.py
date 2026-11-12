@@ -77,11 +77,7 @@ def open_conversation(arguments, directory):
     try:
         start.bring_up(
             conversation_state.CONVERSATION_TARGET,
-            (
-                start.renderer_ready,
-                room_microphone_ready,
-                lambda: seat_microphone_ready(seat),
-            ),
+            (start.renderer_ready, lambda: seat_microphone_ready(seat)),
         )
         conversation_seat.prepare(seat)
         show_chosen_character(arguments)

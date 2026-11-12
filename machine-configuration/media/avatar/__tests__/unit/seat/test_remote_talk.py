@@ -160,6 +160,15 @@ def test_taking_the_seat_tunnels_before_the_browser_and_waits_for_it(monkeypatch
     assert order.hold.call_args.kwargs["start_new_session"] is True
 
 
+def test_leaving_ends_the_holder_before_it_can_close_a_newer_browser(monkeypatch):
+    ended = Mock()
+    monkeypatch.setattr(local_seat, "end_processes_matching", ended)
+    local_seat.leave()
+    assert ended.call_args_list[0].args == (local_seat.HOLDER_SCRIPT,)
+    assert ended.call_count == 3
+    assert local_seat.HOLDER_SCRIPT in local_seat.__file__
+
+
 def test_a_seat_that_never_attaches_is_left_again(monkeypatch):
     leave = Mock()
     monkeypatch.setattr(local_seat, "leave", leave)

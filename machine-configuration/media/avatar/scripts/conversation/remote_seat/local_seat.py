@@ -30,6 +30,7 @@ TUNNEL_COMMAND = [
 BROWSER = "Google Chrome"
 BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
+HOLDER_SCRIPT = "remote_seat/local_seat.py"
 TUNNEL_WAIT_SECONDS = 15
 ATTACH_WAIT_SECONDS = 20
 POLL_SECONDS = 0.25
@@ -50,13 +51,17 @@ def attached():
     return bool((health() or {}).get("attached"))
 
 
+def end_processes_matching(command_line):
+    subprocess.run(["/usr/bin/pkill", "-f", "--", command_line], check=False)
+
+
 def close_browser():
-    subprocess.run(["/usr/bin/pkill", "-f", "--", BROWSER_PROFILE_FLAG], check=False)
+    end_processes_matching(BROWSER_PROFILE_FLAG)
 
 
 def leave():
-    subprocess.run(["/usr/bin/pkill", "-f", "--", TUNNEL_FORWARD], check=False)
-    close_browser()
+    for command_line in (HOLDER_SCRIPT, TUNNEL_FORWARD, BROWSER_PROFILE_FLAG):
+        end_processes_matching(command_line)
 
 
 def hold_tunnel_then_close_browser():

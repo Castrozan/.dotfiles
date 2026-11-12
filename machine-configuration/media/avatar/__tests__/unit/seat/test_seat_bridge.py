@@ -1,9 +1,8 @@
 import asyncio
+import http.client
 import json
 import socket
 import stat
-import urllib.error
-import urllib.request
 
 import pytest
 import seat_bridge
@@ -73,16 +72,15 @@ async def wait_until_listening(port):
     raise TimeoutError("The bridge never listened")
 
 
-async def fetch(port, path):
+async def fetch(port, path, fetch_site="same-origin"):
     def read():
+        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
         try:
-            with urllib.request.urlopen(
-                f"http://127.0.0.1:{port}{path}", timeout=2
-            ) as reply:
-                return reply.status, reply.read()
-        except urllib.error.HTTPError as refusal:
-            with refusal:
-                return refusal.code, refusal.read()
+            connection.request("GET", path, headers={"Sec-Fetch-Site": fetch_site})
+            reply = connection.getresponse()
+            return reply.status, reply.read()
+        finally:
+            connection.close()
 
     return await asyncio.to_thread(read)
 
@@ -158,6 +156,28 @@ def test_a_page_failure_shows_in_the_health(bridge):
         return json.loads((await fetch(bridge.port, "/health"))[1])
 
     assert run_beside_bridge(bridge, scenario)["failure"] == "NotAllowedError: denied"
+
+
+def test_another_site_cannot_report_a_failure(bridge):
+    async def scenario():
+        refused = await fetch(bridge.port, "/failure?forged", fetch_site="cross-site")
+        return refused[0], json.loads((await fetch(bridge.port, "/health"))[1])
+
+    status, health = run_beside_bridge(bridge, scenario)
+    assert status == 403
+    assert health["failure"] is None
+
+
+def test_a_seat_whose_audio_tools_cannot_start_is_released(bridge, monkeypatch):
+    monkeypatch.setenv("PATH", "/nonexistent")
+
+    async def scenario():
+        async with seat_socket(bridge) as holder:
+            with pytest.raises(ConnectionClosed):
+                await asyncio.wait_for(holder.recv(), 5)
+        return json.loads((await fetch(bridge.port, "/health"))[1])
+
+    assert run_beside_bridge(bridge, scenario)["attached"] is False
 
 
 def test_the_bridge_ends_when_no_machine_takes_the_seat(bridge, monkeypatch):

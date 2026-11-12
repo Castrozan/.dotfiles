@@ -71,8 +71,8 @@ where the user is. `--seat room` forces the room. `avatar-talk status` reports t
 | ssh tunnel | Mac | Forwards local port 8769 for as long as the service runs, then closes the browser |
 | Hidden Chrome window | Mac | Captures the default microphone with echo cancellation and plays the voice |
 
-The page runs in Chrome because Chrome already holds macOS microphone permission, cancels its own playback from the
-microphone, and needs no audio tooling installed on the Mac. Only a page served from `localhost:8769` may open the audio
+The page runs in Chrome because macOS grants the microphone to Chrome itself, asking once per machine, and because
+Chrome cancels its own playback from the microphone and needs no audio tooling installed on the Mac. Only a page served from `localhost:8769` may open the audio
 socket, and one machine holds the seat at a time.
 
 The seat ends the conversation rather than leaving it deaf: the service stops when no machine attaches within 30

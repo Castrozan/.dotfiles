@@ -17,7 +17,7 @@ def seconds_since_input():
         ["/usr/sbin/ioreg", "-c", "IOHIDSystem"],
         capture_output=True,
         text=True,
-        check=True,
+        check=False,
         timeout=10,
     ).stdout
     idle = IDLE_TIME.search(report)

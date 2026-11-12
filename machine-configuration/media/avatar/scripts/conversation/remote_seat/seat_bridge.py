@@ -91,7 +91,9 @@ async def until_first_finishes(*coroutines):
     finally:
         for task in tasks:
             task.cancel()
-        await asyncio.gather(*tasks, return_exceptions=True)
+        for outcome in await asyncio.gather(*tasks, return_exceptions=True):
+            if isinstance(outcome, Exception):
+                print(f"The seat relay ended: {outcome!r}", file=sys.stderr)
 
 
 async def end_process(process):
@@ -115,6 +117,8 @@ class RemoteSeat:
             health = {"attached": self.attached.is_set(), "failure": self.failure}
             return body_response(json.dumps(health).encode(), "application/json")
         if path == FAILURE_PATH:
+            if request.headers.get("Sec-Fetch-Site") != "same-origin":
+                return connection.respond(http.HTTPStatus.FORBIDDEN, "")
             self.failure = urllib.parse.unquote(query)
             print(f"The seat page failed: {self.failure}", file=sys.stderr)
             return body_response(b"", "text/plain")
@@ -132,20 +136,23 @@ class RemoteSeat:
         self.failure = None
         self.detached.clear()
         self.attached.set()
-        microphone = await asyncio.create_subprocess_exec(
-            *microphone_playback_command(), stdin=asyncio.subprocess.PIPE
-        )
-        voice = await asyncio.create_subprocess_exec(
-            *voice_capture_command(), stdout=asyncio.subprocess.PIPE
-        )
+        processes = []
         try:
+            microphone = await asyncio.create_subprocess_exec(
+                *microphone_playback_command(), stdin=asyncio.subprocess.PIPE
+            )
+            processes.append(microphone)
+            voice = await asyncio.create_subprocess_exec(
+                *voice_capture_command(), stdout=asyncio.subprocess.PIPE
+            )
+            processes.append(voice)
             await until_first_finishes(
                 relay_microphone(websocket, microphone.stdin),
                 relay_voice(voice.stdout, websocket),
             )
         finally:
-            await end_process(microphone)
-            await end_process(voice)
+            for process in processes:
+                await end_process(process)
             self.attached.clear()
             self.detached.set()
 
