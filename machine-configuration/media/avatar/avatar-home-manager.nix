@@ -30,7 +30,10 @@ let
   };
 in
 {
-  imports = [ ./avatar-wake-home-manager.nix ];
+  imports = [
+    ./avatar-wake-home-manager.nix
+    ./avatar-remote-seat-home-manager.nix
+  ];
   config = lib.mkIf isNixOS {
     home.packages = with programs; [
       audio
@@ -173,16 +176,6 @@ in
             ExecStart = toString programs.live;
             Restart = "on-failure";
             RestartSec = 5;
-          };
-        };
-        avatar-remote-seat = {
-          Unit = {
-            Description = "Avatar microphone and voice lent by another machine";
-            PartOf = [ "avatar-conversation.target" ];
-          };
-          Service = {
-            ExecStart = toString programs.remoteSeat;
-            ExecStopPost = "${pkgs.systemd}/bin/systemctl --user --no-block stop avatar-conversation.target";
           };
         };
         avatar-renderer = {
