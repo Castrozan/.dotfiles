@@ -8,7 +8,14 @@ import time
 
 AVATAR_HOST = "chise"
 SEAT_PORT = 8769
+WINDOW_PORT = 8770
+RENDERER_PORT = 3000
+CONTROL_PORT = 8765
 TUNNEL_FORWARD = f"127.0.0.1:{SEAT_PORT}:127.0.0.1:{SEAT_PORT}"
+WINDOW_FORWARDS = [
+    f"127.0.0.1:{WINDOW_PORT}:127.0.0.1:{RENDERER_PORT}",
+    f"127.0.0.1:{CONTROL_PORT}:127.0.0.1:{CONTROL_PORT}",
+]
 WAIT_WHILE_SEAT_SERVES = (
     "systemctl --user is-active --quiet avatar-remote-seat.service"
     " && systemctl --user start --wait avatar-remote-seat.service"
@@ -23,14 +30,19 @@ TUNNEL_COMMAND = [
     "ServerAliveInterval=5",
     "-o",
     "ServerAliveCountMax=3",
-    "-L",
-    TUNNEL_FORWARD,
+    *(
+        option
+        for forward in (TUNNEL_FORWARD, *WINDOW_FORWARDS)
+        for option in ("-L", forward)
+    ),
     AVATAR_HOST,
     WAIT_WHILE_SEAT_SERVES,
 ]
 BROWSER = "Google Chrome"
 BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
+WINDOW_PROFILE = pathlib.Path.home() / ".local/share/avatar/window-browser"
+WINDOW_PROFILE_FLAG = f"--user-data-dir={WINDOW_PROFILE}"
 HOLDER_SCRIPT = "remote_seat/local_seat.py"
 TUNNEL_WAIT_SECONDS = 15
 LONGEST_SEAT_SECONDS = 12 * 60 * 60
@@ -62,21 +74,23 @@ def end_processes_matching(command_line):
     )
 
 
-def close_browser():
-    end_processes_matching(BROWSER_PROFILE_FLAG)
+def close_browsers():
+    for profile_flag in (BROWSER_PROFILE_FLAG, WINDOW_PROFILE_FLAG):
+        end_processes_matching(profile_flag)
 
 
 def leave():
-    for command_line in (HOLDER_SCRIPT, TUNNEL_FORWARD, BROWSER_PROFILE_FLAG):
+    for command_line in (HOLDER_SCRIPT, TUNNEL_FORWARD):
         end_processes_matching(command_line)
+    close_browsers()
 
 
-def hold_tunnel_then_close_browser():
+def hold_tunnel_then_close_browsers():
     try:
         with contextlib.suppress(subprocess.TimeoutExpired):
             subprocess.run(TUNNEL_COMMAND, check=False, timeout=LONGEST_SEAT_SECONDS)
     finally:
-        close_browser()
+        close_browsers()
 
 
 def wait_for_tunnel():
@@ -144,4 +158,4 @@ def take():
 
 
 if __name__ == "__main__":
-    hold_tunnel_then_close_browser()
+    hold_tunnel_then_close_browsers()

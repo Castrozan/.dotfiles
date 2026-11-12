@@ -149,7 +149,7 @@ def close_conversation(arguments, directory):
         timeout=listener_session.SYSTEMCTL_TIMEOUT_SECONDS,
     )
     if user_units.unit_active(start.MEETING_TARGET):
-        apply_presence(WindowPresence.HIDDEN)
+        hide_everywhere()
     else:
         subprocess.run(
             ["avatar-stop"],
@@ -173,18 +173,16 @@ def set_canvas_presence(presence):
     )
 
 
-def apply_presence(presence):
-    if presence is WindowPresence.SHOWN:
-        desktop_window.show()
-        set_canvas_presence(presence)
-    else:
-        set_canvas_presence(presence)
-        desktop_window.hide()
+def hide_everywhere():
+    set_canvas_presence(WindowPresence.HIDDEN)
+    desktop_window.hide()
 
 
 def show_window(arguments, directory):
-    apply_presence(WindowPresence.SHOWN)
+    if conversation_seat.current(directory) is Seat.ROOM:
+        desktop_window.show()
+    set_canvas_presence(WindowPresence.SHOWN)
 
 
 def hide_window(arguments, directory):
-    apply_presence(WindowPresence.HIDDEN)
+    hide_everywhere()

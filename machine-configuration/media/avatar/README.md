@@ -80,7 +80,10 @@ seconds or its machine stays gone for 10, and stopping it stops `avatar-conversa
 closes the Mac's microphone, because the page ends capture when its socket drops. A Mac holds the seat for at most 12
 hours.
 
-The window and the live voice stay in the room: `show` from a remote seat shows the window on chise, and `open --live`
+`show` from a Mac holding the seat opens the window on that Mac and leaves chise's desktop alone. The same tunnel
+forwards local port 8770 to the renderer page and 8765 to the control server, and the page loaded with `?viewer` joins
+as a display copy: it receives everything the renderer receives and its own events are ignored, so the page on chise
+stays the one renderer that feeds the camera and names the character. The live voice stays in the room: `open --live`
 from a Mac is forwarded unchanged. Microphone audio queued during a network stall plays out late instead of being
 dropped.
 

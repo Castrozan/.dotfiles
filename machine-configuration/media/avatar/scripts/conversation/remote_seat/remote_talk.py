@@ -5,12 +5,14 @@ import subprocess
 import sys
 
 import local_seat
+import local_window
 
 PRESENT_WITHIN_SECONDS = 300
 IDLE_TIME = re.compile(r'"HIDIdleTime" = (\d+)')
 NANOSECONDS = 1_000_000_000
 REMOTE_SEAT = "remote"
 OPEN_TIMEOUT_SECONDS = 120
+WINDOW_STEPS = {"show": local_window.show, "hide": local_window.hide}
 
 
 def seconds_since_input():
@@ -69,6 +71,19 @@ def close_everywhere(arguments):
     return returncode
 
 
+def move_window_here(arguments):
+    returncode = forward(arguments)
+    if returncode == 0:
+        WINDOW_STEPS[arguments[0]]()
+    return returncode
+
+
+def moves_the_window_of_a_seat_held_here(arguments):
+    return (
+        len(arguments) == 1 and arguments[0] in WINDOW_STEPS and local_seat.attached()
+    )
+
+
 def opens_a_seated_conversation(arguments):
     return (
         arguments[:1] == ["open"]
@@ -77,14 +92,19 @@ def opens_a_seated_conversation(arguments):
     )
 
 
+def carry_out(arguments):
+    if opens_a_seated_conversation(arguments) and user_is_here():
+        return open_here(arguments)
+    if arguments[:1] == ["close"]:
+        return close_everywhere(arguments)
+    if moves_the_window_of_a_seat_held_here(arguments):
+        return move_window_here(arguments)
+    return forward(arguments)
+
+
 def main():
-    arguments = sys.argv[1:]
     try:
-        if opens_a_seated_conversation(arguments) and user_is_here():
-            sys.exit(open_here(arguments))
-        if arguments[:1] == ["close"]:
-            sys.exit(close_everywhere(arguments))
-        sys.exit(forward(arguments))
+        sys.exit(carry_out(sys.argv[1:]))
     except (RuntimeError, TimeoutError, subprocess.SubprocessError) as error:
         print(error, file=sys.stderr)
         sys.exit(1)

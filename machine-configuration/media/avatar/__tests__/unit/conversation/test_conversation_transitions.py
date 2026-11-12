@@ -3,6 +3,7 @@ from unittest.mock import Mock
 
 import conversation_state
 import conversation_effects
+from conversation_seat import Seat
 from conversation_state import (
     ConversationAction,
     ConversationCommand,
@@ -115,7 +116,7 @@ def test_the_phase_of_every_target_and_purpose_pair_is_pinned():
 
 
 def test_the_canvas_and_the_window_follow_the_stated_order_for_every_presence(
-    monkeypatch,
+    monkeypatch, tmp_path
 ):
     steps = []
     monkeypatch.setattr(
@@ -129,10 +130,17 @@ def test_the_canvas_and_the_window_follow_the_stated_order_for_every_presence(
     monkeypatch.setattr(
         conversation_effects.desktop_window, "hide", lambda: steps.append("window")
     )
+    monkeypatch.setattr(
+        conversation_effects.conversation_seat, "current", lambda directory: Seat.ROOM
+    )
     orders = {}
+    step_by_presence = {
+        WindowPresence.HIDDEN: conversation_effects.hide_window,
+        WindowPresence.SHOWN: conversation_effects.show_window,
+    }
     for presence in WindowPresence:
         steps.clear()
-        conversation_effects.apply_presence(presence)
+        step_by_presence[presence](None, tmp_path)
         orders[presence] = list(steps)
     assert orders == {
         WindowPresence.HIDDEN: ["canvas", "window"],

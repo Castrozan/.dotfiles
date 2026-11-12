@@ -26,6 +26,13 @@ function sendInitialStateToRenderer(connection, context) {
   });
 }
 
+function showCurrentCharacterToViewer(connection, context) {
+  const name = context.avatarState.currentCharacter;
+  if (name) {
+    sendResponse(connection, { type: "setCharacter", name });
+  }
+}
+
 function handleIdentification(role, connection, context) {
   const { clientRegistry } = context;
 
@@ -39,6 +46,14 @@ function handleIdentification(role, connection, context) {
     clientRegistry.registerRenderer(connection);
     acknowledgeIdentification(connection, "renderer");
     sendInitialStateToRenderer(connection, context);
+    return;
+  }
+
+  if (role === "viewer") {
+    clientRegistry.registerViewer(connection);
+    acknowledgeIdentification(connection, "viewer");
+    sendInitialStateToRenderer(connection, context);
+    showCurrentCharacterToViewer(connection, context);
     return;
   }
 
@@ -61,6 +76,7 @@ function handleRendererEvent(event, context) {
     context.clientRegistry.sendToAgents(event);
   }
   if (event.type === "characterChanged") {
+    context.avatarState.applyCharacter(event.name);
     context.textToSpeechGenerator.selectCharacter(event.name);
   }
   if (event.type === "speechEnd") {
@@ -68,31 +84,38 @@ function handleRendererEvent(event, context) {
   }
 }
 
+async function routeIdentifiedMessage(rawMessage, connection, context) {
+  const { clientRegistry } = context;
+
+  if (clientRegistry.isAgent(connection)) {
+    await routeAgentCommand(rawMessage, connection, context);
+    return;
+  }
+
+  if (clientRegistry.isRenderer(connection)) {
+    handleRendererEvent(JSON.parse(rawMessage), context);
+    return;
+  }
+
+  if (clientRegistry.isViewer(connection)) {
+    return;
+  }
+
+  sendResponse(connection, {
+    type: "identifyRequest",
+    message:
+      'Please identify with { type: "identify", role: "agent"|"renderer" }',
+  });
+}
+
 async function routeClientMessage(rawMessage, connection, context) {
   try {
     const message = JSON.parse(rawMessage);
-    const { clientRegistry } = context;
-
     if (message.type === "identify") {
       handleIdentification(message.role, connection, context);
       return;
     }
-
-    if (clientRegistry.isAgent(connection)) {
-      await routeAgentCommand(rawMessage, connection, context);
-      return;
-    }
-
-    if (clientRegistry.isRenderer(connection)) {
-      handleRendererEvent(message, context);
-      return;
-    }
-
-    sendResponse(connection, {
-      type: "identifyRequest",
-      message:
-        'Please identify with { type: "identify", role: "agent"|"renderer" }',
-    });
+    await routeIdentifiedMessage(rawMessage, connection, context);
   } catch (error) {
     console.error("❌ Error processing message:", error.message);
     sendError(connection, `Message processing error: ${error.message}`);

@@ -2,6 +2,7 @@ class ConnectedClientRegistry {
   constructor() {
     this.agentConnections = new Set();
     this.rendererConnection = null;
+    this.viewerConnections = new Set();
   }
 
   registerAgent(connection) {
@@ -19,7 +20,16 @@ class ConnectedClientRegistry {
     console.log("✅ Renderer connected (display)");
   }
 
+  registerViewer(connection) {
+    this.viewerConnections.add(connection);
+    console.log("✅ Viewer connected (display copy)");
+  }
+
   forget(connection) {
+    if (this.viewerConnections.delete(connection)) {
+      console.log("❌ Viewer disconnected");
+      return;
+    }
     if (this.isAgent(connection)) {
       this.agentConnections.delete(connection);
       console.log("❌ Agent disconnected");
@@ -39,11 +49,18 @@ class ConnectedClientRegistry {
     return this.rendererConnection === connection;
   }
 
+  isViewer(connection) {
+    return this.viewerConnections.has(connection);
+  }
+
   hasRenderer() {
     return this.rendererConnection !== null;
   }
 
   sendToRenderer(payload) {
+    this.viewerConnections.forEach((connection) => {
+      connection.sendJson(payload);
+    });
     if (!this.rendererConnection) {
       return false;
     }
@@ -58,6 +75,9 @@ class ConnectedClientRegistry {
 
   closeAll() {
     this.agentConnections.forEach((connection) => {
+      connection.close();
+    });
+    this.viewerConnections.forEach((connection) => {
       connection.close();
     });
     this.rendererConnection?.close();

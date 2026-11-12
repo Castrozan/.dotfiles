@@ -32,7 +32,9 @@ camera.position.set(0, 1.35, 2.0);
 camera.lookAt(0, 1.35, 0);
 const stage = new CharacterStage(scene, camera);
 let lastFrameTime = 0;
-const cameraFrames = new URLSearchParams(location.search).has("output")
+const pageOptions = new URLSearchParams(location.search);
+const controlRole = pageOptions.has("viewer") ? "viewer" : "renderer";
+const cameraFrames = pageOptions.has("output")
   ? new CameraFrameStream(
       renderer.getContext(),
       1280,
@@ -139,20 +141,24 @@ window.avatar = {
 window.addEventListener("pagehide", disableCamera);
 loadAvatar()
   .then(() =>
-    new RendererControls(state, {
-      setExpression: ({ expression, intensity }) =>
-        stage.performer.setExpression(expression, intensity ?? 1),
-      beginSpeech: (message) => stage.performer.beginSpeech(message),
-      endSpeech: () => stage.performer.endSpeech(),
-      perform: (action, name) => stage.performer.perform(action, name),
-      showCharacter: (name) => stage.show(name),
-      currentCharacter: () => stage.name,
-      showMode,
-      setPresented,
-      enableCamera,
-      disableCamera,
-      cameraActive: () => cameraLayer.active,
-    }).connect(),
+    new RendererControls(
+      state,
+      {
+        setExpression: ({ expression, intensity }) =>
+          stage.performer.setExpression(expression, intensity ?? 1),
+        beginSpeech: (message) => stage.performer.beginSpeech(message),
+        endSpeech: () => stage.performer.endSpeech(),
+        perform: (action, name) => stage.performer.perform(action, name),
+        showCharacter: (name) => stage.show(name),
+        currentCharacter: () => stage.name,
+        showMode,
+        setPresented,
+        enableCamera,
+        disableCamera,
+        cameraActive: () => cameraLayer.active,
+      },
+      controlRole,
+    ).connect(),
   )
   .catch((error) => {
     status.textContent = error.message;

@@ -74,8 +74,8 @@ minutes: the Mac's default microphone and output carry both voices. Otherwise it
 conversation opened on chise; `--seat room` forces the room. The printed `seat` says which one you got: with `room` from
 a Mac, the user hears you only beside chise.
 
-The avatar window and the live voice exist only in the room: `show` from a remote seat puts the window on chise's
-screen.
+`show` and `hide` from a Mac holding the seat open and close the avatar window on that Mac. The live voice exists only
+in the room.
 
 ### Live voice
 

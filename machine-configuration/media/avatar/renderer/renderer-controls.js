@@ -28,9 +28,10 @@ export function visibleMode(mode, speaking) {
 }
 
 export class RendererControls {
-  constructor(state, actions) {
+  constructor(state, actions, role = "renderer") {
     this.state = state;
     this.actions = actions;
+    this.role = role;
     this.voicePeak = 0;
     this.channel = new BroadcastChannel("avatar-local-controls");
     this.channel.onmessage = this.handleLocal.bind(this);
@@ -65,7 +66,8 @@ export class RendererControls {
   connect() {
     this.socket = new WebSocket("ws://127.0.0.1:8765");
     this.socket.onopen = () => {
-      this.socket.send(JSON.stringify({ type: "identify", role: "renderer" }));
+      this.socket.send(JSON.stringify({ type: "identify", role: this.role }));
+      if (this.role !== "renderer") return;
       this.socket.send(
         JSON.stringify({
           type: "characterChanged",
