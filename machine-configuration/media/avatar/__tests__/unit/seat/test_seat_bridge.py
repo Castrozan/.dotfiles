@@ -1,105 +1,21 @@
 import asyncio
-import http.client
-import json
-import socket
-import stat
+import logging
 
 import pytest
 import seat_bridge
-from websockets.asyncio.client import connect
 from websockets.exceptions import ConnectionClosed, InvalidStatus
 
 VOICE = b"\x01\x02" * 480
 MICROPHONE = b"\x03\x04" * 320
 
 
-def free_port():
-    with socket.socket() as listener:
-        listener.bind(("127.0.0.1", 0))
-        return listener.getsockname()[1]
-
-
-def install_fake_audio_tools(directory, monkeypatch):
-    heard = directory / "heard.raw"
-    voice = directory / "voice.raw"
-    voice.write_bytes(VOICE)
-    tools = {
-        "pacat": f'#!/bin/sh\nexec cat > "{heard}"\n',
-        "parec": f'#!/bin/sh\ncat "{voice}"\nexec sleep 30\n',
-    }
-    for name, script in tools.items():
-        tool = directory / name
-        tool.write_text(script)
-        tool.chmod(tool.stat().st_mode | stat.S_IXUSR)
-    monkeypatch.setenv("PATH", f"{directory}:/bin:/usr/bin")
-    return heard
-
-
-@pytest.fixture
-def bridge(tmp_path, monkeypatch):
-    port = free_port()
-    monkeypatch.setattr(seat_bridge, "PORT", port)
-    monkeypatch.setattr(seat_bridge, "ALLOWED_ORIGINS", [f"http://localhost:{port}"])
-    page = tmp_path / "page"
-    page.mkdir()
-    (page / "index.html").write_text("<p>seat</p>")
-    heard = install_fake_audio_tools(tmp_path, monkeypatch)
-    return type("Bridge", (), {"port": port, "page": page, "heard": heard})
-
-
-def run_beside_bridge(bridge, scenario):
-    async def run():
-        serving = asyncio.create_task(seat_bridge.serve_remote_seat(bridge.page))
-        try:
-            await wait_until_listening(bridge.port)
-            return await scenario()
-        finally:
-            serving.cancel()
-            await asyncio.gather(serving, return_exceptions=True)
-
-    return asyncio.run(run())
-
-
-async def wait_until_listening(port):
-    for _ in range(200):
-        try:
-            _, writer = await asyncio.open_connection("127.0.0.1", port)
-            writer.close()
-            await writer.wait_closed()
-            return
-        except OSError:
-            await asyncio.sleep(0.01)
-    raise TimeoutError("The bridge never listened")
-
-
-async def fetch(port, path, fetch_site="same-origin"):
-    def read():
-        connection = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
-        try:
-            connection.request("GET", path, headers={"Sec-Fetch-Site": fetch_site})
-            reply = connection.getresponse()
-            return reply.status, reply.read()
-        finally:
-            connection.close()
-
-    return await asyncio.to_thread(read)
-
-
-def seat_socket(bridge, origin=None):
-    return connect(
-        f"ws://127.0.0.1:{bridge.port}/audio",
-        origin=origin or f"http://localhost:{bridge.port}",
-    )
-
-
 def test_the_page_and_its_health_are_served_and_nothing_else(bridge):
     async def scenario():
-        page = await fetch(bridge.port, "/")
-        health = await fetch(bridge.port, "/health")
-        missing = await fetch(bridge.port, "/listener.json")
-        return page, json.loads(health[1]), missing[0]
+        page = await bridge.fetch("/")
+        missing = await bridge.fetch("/listener.json")
+        return page, await bridge.health(), missing[0]
 
-    page, health, missing = run_beside_bridge(bridge, scenario)
+    page, health, missing = bridge.run_beside(scenario)
     assert page == (200, b"<p>seat</p>")
     assert health == {"attached": False, "failure": None}
     assert missing == 404
@@ -107,21 +23,21 @@ def test_the_page_and_its_health_are_served_and_nothing_else(bridge):
 
 def test_audio_travels_both_ways_while_a_machine_holds_the_seat(bridge):
     async def scenario():
-        async with seat_socket(bridge) as socket_to_seat:
+        async with bridge.socket() as socket_to_seat:
             await socket_to_seat.send(MICROPHONE)
             voice = b""
             while len(voice) < len(VOICE):
                 voice += await asyncio.wait_for(socket_to_seat.recv(), 5)
-            attached = json.loads((await fetch(bridge.port, "/health"))[1])
+            attached = await bridge.health()
         released = attached
         for _ in range(200):
-            released = json.loads((await fetch(bridge.port, "/health"))[1])
+            released = await bridge.health()
             if not released["attached"]:
                 break
             await asyncio.sleep(0.01)
         return voice, attached, released
 
-    voice, attached, released = run_beside_bridge(bridge, scenario)
+    voice, attached, released = bridge.run_beside(scenario)
     assert voice == VOICE
     assert bridge.heard.read_bytes() == MICROPHONE
     assert attached["attached"] is True
@@ -131,39 +47,39 @@ def test_audio_travels_both_ways_while_a_machine_holds_the_seat(bridge):
 def test_a_page_from_another_origin_cannot_reach_the_audio(bridge):
     async def scenario():
         with pytest.raises(InvalidStatus) as refused:
-            async with seat_socket(bridge, origin="https://example.com"):
+            async with bridge.socket(origin="https://example.com"):
                 pass
         return refused.value.response.status_code
 
-    assert run_beside_bridge(bridge, scenario) == 403
+    assert bridge.run_beside(scenario) == 403
 
 
 def test_a_second_machine_is_refused_while_the_seat_is_held(bridge):
     async def scenario():
-        async with seat_socket(bridge) as holder:
+        async with bridge.socket() as holder:
             await holder.send(MICROPHONE)
-            async with seat_socket(bridge) as intruder:
+            async with bridge.socket() as intruder:
                 with pytest.raises(ConnectionClosed) as refused:
                     await asyncio.wait_for(intruder.recv(), 5)
             return refused.value.rcvd.code
 
-    assert run_beside_bridge(bridge, scenario) == seat_bridge.SEAT_TAKEN_CODE
+    assert bridge.run_beside(scenario) == seat_bridge.SEAT_TAKEN_CODE
 
 
 def test_a_page_failure_shows_in_the_health(bridge):
     async def scenario():
-        await fetch(bridge.port, "/failure?NotAllowedError%3A%20denied")
-        return json.loads((await fetch(bridge.port, "/health"))[1])
+        await bridge.fetch("/failure?NotAllowedError%3A%20denied")
+        return await bridge.health()
 
-    assert run_beside_bridge(bridge, scenario)["failure"] == "NotAllowedError: denied"
+    assert bridge.run_beside(scenario)["failure"] == "NotAllowedError: denied"
 
 
 def test_another_site_cannot_report_a_failure(bridge):
     async def scenario():
-        refused = await fetch(bridge.port, "/failure?forged", fetch_site="cross-site")
-        return refused[0], json.loads((await fetch(bridge.port, "/health"))[1])
+        refused = await bridge.fetch("/failure?forged", fetch_site="cross-site")
+        return refused[0], await bridge.health()
 
-    status, health = run_beside_bridge(bridge, scenario)
+    status, health = bridge.run_beside(scenario)
     assert status == 403
     assert health["failure"] is None
 
@@ -172,26 +88,36 @@ def test_a_seat_whose_audio_tools_cannot_start_is_released(bridge, monkeypatch):
     monkeypatch.setenv("PATH", "/nonexistent")
 
     async def scenario():
-        async with seat_socket(bridge) as holder:
+        async with bridge.socket() as holder:
             with pytest.raises(ConnectionClosed):
                 await asyncio.wait_for(holder.recv(), 5)
-        return json.loads((await fetch(bridge.port, "/health"))[1])
+        return await bridge.health()
 
-    assert run_beside_bridge(bridge, scenario)["attached"] is False
+    assert bridge.run_beside(scenario)["attached"] is False
+
+
+def test_a_connection_that_sends_nothing_leaves_no_error_in_the_log(bridge, caplog):
+    async def scenario():
+        await bridge.listening()
+        return await bridge.health()
+
+    with caplog.at_level(logging.ERROR, logger="websockets.server"):
+        bridge.run_beside(scenario)
+    assert caplog.records == []
 
 
 def test_the_bridge_ends_when_no_machine_takes_the_seat(bridge, monkeypatch):
     monkeypatch.setattr(seat_bridge, "FIRST_ATTACH_SECONDS", 0.05)
-    asyncio.run(asyncio.wait_for(seat_bridge.serve_remote_seat(bridge.page), 5))
+    asyncio.run(asyncio.wait_for(bridge.serve(), 5))
 
 
 def test_the_bridge_ends_soon_after_its_machine_leaves(bridge, monkeypatch):
     monkeypatch.setattr(seat_bridge, "REATTACH_SECONDS", 0.05)
 
     async def scenario():
-        serving = asyncio.create_task(seat_bridge.serve_remote_seat(bridge.page))
-        await wait_until_listening(bridge.port)
-        async with seat_socket(bridge) as holder:
+        serving = asyncio.create_task(bridge.serve())
+        await bridge.listening()
+        async with bridge.socket() as holder:
             await holder.send(MICROPHONE)
         await asyncio.wait_for(serving, 5)
 

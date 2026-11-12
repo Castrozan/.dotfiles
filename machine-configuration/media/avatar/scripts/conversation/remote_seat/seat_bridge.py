@@ -1,6 +1,7 @@
 import asyncio
 import http
 import json
+import logging
 import os
 import pathlib
 import signal
@@ -9,6 +10,7 @@ import urllib.parse
 
 from websockets.asyncio.server import serve
 from websockets.datastructures import Headers
+from websockets.exceptions import InvalidMessage
 from websockets.http11 import Response
 
 HOST = "127.0.0.1"
@@ -168,7 +170,12 @@ class RemoteSeat:
             grace = REATTACH_SECONDS
 
 
+def sent_a_request(record):
+    return not (record.exc_info and isinstance(record.exc_info[1], InvalidMessage))
+
+
 async def serve_remote_seat(page_directory):
+    logging.getLogger("websockets.server").addFilter(sent_a_request)
     seat = RemoteSeat(page_directory)
     stopping = asyncio.Event()
     asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, stopping.set)
