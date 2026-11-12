@@ -93,7 +93,7 @@ def test_opening_chooses_the_character_without_presenting_the_window(
     runner = Mock()
     monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
     conversation_effects.open_conversation(
-        argparse.Namespace(language="pt", character="vita"), tmp_path
+        argparse.Namespace(language="pt", character="vita", seat="room"), tmp_path
     )
     commands = [call.args[0] for call in runner.call_args_list]
     assert commands[0] == ["avatar-command", "character", "vita"]
@@ -105,7 +105,7 @@ def test_opening_without_a_choice_keeps_the_current_character(tmp_path, monkeypa
     runner = Mock()
     monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
     conversation_effects.open_conversation(
-        argparse.Namespace(language="pt", character=None), tmp_path
+        argparse.Namespace(language="pt", character=None, seat="room"), tmp_path
     )
     assert "character" not in [
         word for call in runner.call_args_list for word in call.args[0]
@@ -135,6 +135,6 @@ def test_a_refused_character_closes_a_cold_open(tmp_path, monkeypatch):
     monkeypatch.setattr(conversation_effects, "close_conversation", close)
     with pytest.raises(subprocess.CalledProcessError):
         conversation_effects.open_conversation(
-            argparse.Namespace(language=None, character="nobody"), tmp_path
+            argparse.Namespace(language=None, character="nobody", seat="room"), tmp_path
         )
     close.assert_called_once()

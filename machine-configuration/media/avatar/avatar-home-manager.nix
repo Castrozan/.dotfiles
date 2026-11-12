@@ -175,6 +175,16 @@ in
             RestartSec = 5;
           };
         };
+        avatar-remote-seat = {
+          Unit = {
+            Description = "Avatar microphone and voice lent by another machine";
+            PartOf = [ "avatar-conversation.target" ];
+          };
+          Service = {
+            ExecStart = toString programs.remoteSeat;
+            ExecStopPost = "${pkgs.systemd}/bin/systemctl --user --no-block stop avatar-conversation.target";
+          };
+        };
         avatar-renderer = {
           Unit = serviceUnit // {
             Description = "Offline avatar renderer";

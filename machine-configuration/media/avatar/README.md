@@ -17,11 +17,11 @@ workspace and keeps rendering there. Only `avatar-controls` opens a visible wind
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
 device selected anywhere. It needs only a shell, so every harness reaches it the same way. On a Mac the same command
-forwards over ssh to chise, where the avatar and microphone live.
+forwards over ssh to chise, where the avatar runs, and can seat the conversation at that Mac.
 
 | Command | Result |
 | --- | --- |
-| `avatar-talk open [--language CODE] [--character NAME]` | Shows the window and opens the microphone; repeating it keeps the conversation |
+| `avatar-talk open [--language CODE] [--character NAME] [--seat room\|remote]` | Opens the microphone with the window hidden; repeating it keeps the conversation |
 | `avatar-talk open --live [--character NAME]` | Opens the conversation on the live duplex voice instead of the local listener and ElevenLabs |
 | `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
@@ -54,6 +54,34 @@ stalled the camera near one frame per second, while a hidden canvas held 60.
 The window code is the Hyprland boundary in `scripts/conversation/desktop_window.py`; the rest of the conversation
 depends only on the shared services. It addresses the first Hyprland instance by index, because a command forwarded
 over ssh carries no `HYPRLAND_INSTANCE_SIGNATURE`. This module is NixOS only because its audio graph is PipeWire.
+
+## Remote seat
+
+A conversation has a seat: the machine whose microphone and speakers it uses. The `room` seat is chise. The `remote`
+seat is a Mac, so the avatar can be talked to from any machine while it keeps running on chise, with one floor, one
+transcript and one set of voices. `avatar-talk open` on a Mac asks for the remote seat when that Mac's keyboard or mouse
+was used in the last five minutes, and for the room otherwise, so an agent working unattended on a Mac still speaks
+where the user is. `--seat room` forces the room. `avatar-talk status` reports the seat.
+
+| Piece | Runs on | Does |
+| --- | --- | --- |
+| `avatar-remote-seat.service` | chise | Serves the seat page and relays audio on `127.0.0.1:8769`; part of `avatar-conversation.target` |
+| `AvatarRemoteMicrophone` | chise | Null sink the Mac's microphone plays into; the listener hears its monitor |
+| `AvatarLipSync.monitor` | chise | The avatar's voice, which the relay sends to the Mac; speech uses the `remote` output, so chise's speakers stay silent |
+| ssh tunnel | Mac | Forwards local port 8769 for as long as the service runs, then closes the browser |
+| Hidden Chrome window | Mac | Captures the default microphone with echo cancellation and plays the voice |
+
+The page runs in Chrome because Chrome already holds macOS microphone permission, cancels its own playback from the
+microphone, and needs no audio tooling installed on the Mac. Only a page served from `localhost:8769` may open the audio
+socket, and one machine holds the seat at a time.
+
+The seat ends the conversation rather than leaving it deaf: the service stops when no machine attaches within 30
+seconds or its machine stays gone for 10, and stopping it stops `avatar-conversation.target`. Closing from either side
+closes the Mac's microphone, because the page ends capture when its socket drops.
+
+The window and the live voice stay in the room: `show` from a remote seat shows the window on chise, and `open --live`
+from a Mac is forwarded unchanged. Microphone audio queued during a network stall plays out late instead of being
+dropped.
 
 ## Live voice
 

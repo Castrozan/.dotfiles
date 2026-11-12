@@ -6,6 +6,7 @@ import audio_state
 CHANNELS = {"agent": "AvatarMic", "human": "AvatarHuman"}
 MIX_SINK = "AvatarMix"
 LIP_SYNC_SINK = "AvatarLipSync"
+REMOTE_MICROPHONE_SINK = "AvatarRemoteMicrophone"
 MEETING_SOURCE = "AvatarMicrophone"
 
 
@@ -67,7 +68,12 @@ def tear_down(path, state):
 
 
 def ensure_names_available():
-    names = set(CHANNELS.values()) | {MIX_SINK, LIP_SYNC_SINK, MEETING_SOURCE}
+    names = set(CHANNELS.values()) | {
+        MIX_SINK,
+        LIP_SYNC_SINK,
+        REMOTE_MICROPHONE_SINK,
+        MEETING_SOURCE,
+    }
     existing = {
         item["name"]
         for kind in ("sinks", "sources")
@@ -144,6 +150,7 @@ def create_mix(path, state):
         pulse_audio.run("set-sink-volume", name, "100%")
     load_sink(path, state, MIX_SINK, "Avatar_Meeting_Mix")
     load_sink(path, state, LIP_SYNC_SINK, "Avatar_Lip_Sync")
+    load_sink(path, state, REMOTE_MICROPHONE_SINK, "Avatar_Remote_Microphone")
     for name in CHANNELS.values():
         load_loopback(
             path,

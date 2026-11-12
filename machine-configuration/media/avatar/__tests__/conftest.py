@@ -6,6 +6,7 @@ sys.path.insert(0, str(scripts))
 sys.path.insert(0, str(scripts / "listening"))
 sys.path.insert(0, str(scripts / "echo"))
 sys.path.insert(0, str(scripts / "conversation"))
+sys.path.insert(0, str(scripts / "conversation" / "remote_seat"))
 sys.path.insert(0, str(scripts / "wake"))
 sys.path.insert(0, str(scripts / "live"))
 agent_harness = Path(__file__).resolve().parents[4] / "agent-harness"

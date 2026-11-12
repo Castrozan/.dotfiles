@@ -4,6 +4,7 @@ import sys
 
 import conversation_effects
 import conversation_state
+from conversation_seat import Seat
 import listener_runtime
 import utterances
 import voice_turns
@@ -19,6 +20,7 @@ def parse_arguments():
     opening.add_argument("--language")
     opening.add_argument("--character")
     opening.add_argument("--live", action="store_true")
+    opening.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
     speaking = commands.add_parser("say")
     asking = commands.add_parser("ask")
     for parser_with_speech in (speaking, asking):

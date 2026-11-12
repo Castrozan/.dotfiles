@@ -1,3 +1,4 @@
+import pytest
 from control_server_node_runner import evaluate_node_json, requires_node
 
 
@@ -34,7 +35,13 @@ def test_the_acknowledgement_names_the_voice_source_that_spoke():
 
 
 @requires_node
-def test_every_output_drives_the_lip_sync_sink_so_the_mouth_moves():
+@pytest.mark.parametrize(
+    ("output", "sinks"),
+    [("speakers", ["AvatarLipSync", "default"]), ("remote", ["AvatarLipSync"])],
+)
+def test_every_output_drives_the_lip_sync_sink_and_only_speakers_reach_the_room(
+    output, sinks
+):
     result = evaluate_node_json(
         """
         const childProcess = require("child_process");
@@ -60,10 +67,10 @@ def test_every_output_drives_the_lip_sync_sink_so_the_mouth_moves():
           },
         };
         const result = handleSpeakCommand(
-          { text: "oi", output: "speakers", id: "turn" },
+          { text: "oi", output: "OUTPUT", id: "turn" },
           { sendJson: () => {} },
           context,
         ).then(() => played);
-        """
+        """.replace("OUTPUT", output)
     )
-    assert result == ["AvatarLipSync", "default"]
+    assert result == sinks

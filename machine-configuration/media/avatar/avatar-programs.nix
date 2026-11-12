@@ -33,6 +33,7 @@ let
     url = "https://huggingface.co/pipecat-ai/smart-turn-v3/resolve/f766f81d3cfdf7737ac64aad813d91bbfd56bf93/smart-turn-v3.2-cpu.onnx";
     sha256 = "2bb026316b14a660486a75b1733cd3fbab8c2fd0314dc9af7be49f8cca967e4f";
   };
+  websocketPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
   listenerPython = pkgs.python3.withPackages (
     packages: with packages; [
       numpy
@@ -121,9 +122,12 @@ let
       ]
     }:$PATH
     export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}
-    exec ${
-      pkgs.python312.withPackages (packages: [ packages.websockets ])
-    }/bin/python3 ${./scripts/live/live_bridge.py}
+    exec ${websocketPython}/bin/python3 ${./scripts/live/live_bridge.py}
+  '';
+  remoteSeat = pkgs.writeShellScript "avatar-remote-seat" ''
+    export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
+    export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
+    exec ${websocketPython}/bin/python3 ${./scripts/conversation/remote_seat}/seat_bridge.py
   '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
     export PATH=${
@@ -156,6 +160,7 @@ in
     listen
     listener
     live
+    remoteSeat
     serve
     start
     stop

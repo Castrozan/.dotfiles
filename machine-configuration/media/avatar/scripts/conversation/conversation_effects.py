@@ -5,6 +5,7 @@ import subprocess
 import sys
 
 import conversation_addressee
+import conversation_seat
 import conversation_state
 import desktop_window
 import listen_cli
@@ -12,10 +13,11 @@ import listener_session
 import start
 import user_units
 import utterances
+from conversation_seat import Seat
 from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
 
-ROOM_MICROPHONE = "AvatarRoomMicrophone"
+ROOM_MICROPHONE = conversation_seat.MICROPHONE_BY_SEAT[Seat.ROOM]
 PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 LIVE_NEEDS_A_PANE = (
     "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
@@ -41,13 +43,19 @@ def room_microphone_ready():
     return ROOM_MICROPHONE in listen_cli.existing_sources()
 
 
+def seat_microphone_ready(seat):
+    return conversation_seat.MICROPHONE_BY_SEAT[seat] in listen_cli.existing_sources()
+
+
 def status(arguments, directory):
     phase = conversation_state.observe(directory)
+    is_open = phase in (ConversationPhase.OPEN, ConversationPhase.LIVE)
     print(
         json.dumps(
             {
-                "open": phase in (ConversationPhase.OPEN, ConversationPhase.LIVE),
+                "open": is_open,
                 "live": phase is ConversationPhase.LIVE,
+                "seat": conversation_seat.configured(directory) if is_open else None,
                 "last_heard": utterances.last_heard(directory),
             }
         )
@@ -65,18 +73,25 @@ def show_chosen_character(arguments):
 
 
 def open_conversation(arguments, directory):
+    seat = Seat(arguments.seat)
     try:
         start.bring_up(
             conversation_state.CONVERSATION_TARGET,
-            (start.renderer_ready, room_microphone_ready),
+            (
+                start.renderer_ready,
+                room_microphone_ready,
+                lambda: seat_microphone_ready(seat),
+            ),
         )
+        conversation_seat.prepare(seat)
         show_chosen_character(arguments)
         listener_session.begin_listening(
             directory,
             ListenerPurpose.CONVERSATION,
-            {"human": ROOM_MICROPHONE},
+            {"human": conversation_seat.MICROPHONE_BY_SEAT[seat]},
             language=arguments.language,
             barge_in=True,
+            seat=seat,
         )
     except BaseException:
         close_conversation(arguments, directory)

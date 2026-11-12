@@ -2,11 +2,13 @@ import argparse
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import conversation_seat
 import conversation_state
 import pytest
 import conversation_effects
 import utterances
 import voice_turns
+from conversation_seat import Seat
 from conversation_state import ConversationPhase
 from talk_runner import run_talk
 
@@ -70,14 +72,20 @@ def test_asking_after_the_user_closed_the_window_never_reopens_it(
     runner.assert_not_called()
 
 
-def test_saying_plays_aloud_and_reports_the_speech_result(tmp_path, monkeypatch):
+@pytest.mark.parametrize(
+    ("seat", "output"), [(Seat.ROOM, "speakers"), (Seat.REMOTE, "remote")]
+)
+def test_saying_plays_where_the_conversation_is_seated(
+    tmp_path, monkeypatch, seat, output
+):
     runner = Mock(return_value=SimpleNamespace(returncode=0))
     monkeypatch.setattr(voice_turns.subprocess, "run", runner)
+    monkeypatch.setattr(conversation_seat, "current", lambda directory: seat)
     with pytest.raises(SystemExit):
         voice_turns.say(
             argparse.Namespace(text="oi", emotion="happy", voice=None), tmp_path
         )
     runner.assert_called_once_with(
-        ["avatar-command", "speak", "oi", "happy", "speakers"],
+        ["avatar-command", "speak", "oi", "happy", output],
         timeout=voice_turns.SPEECH_TIMEOUT_SECONDS,
     )

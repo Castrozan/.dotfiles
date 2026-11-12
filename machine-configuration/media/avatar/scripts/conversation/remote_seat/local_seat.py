@@ -1,0 +1,131 @@
+import http.client
+import json
+import pathlib
+import subprocess
+import sys
+import time
+
+AVATAR_HOST = "chise"
+SEAT_PORT = 8769
+TUNNEL_FORWARD = f"127.0.0.1:{SEAT_PORT}:127.0.0.1:{SEAT_PORT}"
+WAIT_WHILE_SEAT_SERVES = (
+    "systemctl --user is-active --quiet avatar-remote-seat.service"
+    " && systemctl --user start --wait avatar-remote-seat.service"
+)
+TUNNEL_COMMAND = [
+    "ssh",
+    "-o",
+    "BatchMode=yes",
+    "-o",
+    "ExitOnForwardFailure=yes",
+    "-o",
+    "ServerAliveInterval=5",
+    "-o",
+    "ServerAliveCountMax=3",
+    "-L",
+    TUNNEL_FORWARD,
+    AVATAR_HOST,
+    WAIT_WHILE_SEAT_SERVES,
+]
+BROWSER = "Google Chrome"
+BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
+BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
+TUNNEL_WAIT_SECONDS = 15
+ATTACH_WAIT_SECONDS = 20
+POLL_SECONDS = 0.25
+
+
+def health():
+    connection = http.client.HTTPConnection("127.0.0.1", SEAT_PORT, timeout=1)
+    try:
+        connection.request("GET", "/health")
+        return json.loads(connection.getresponse().read())
+    except (OSError, http.client.HTTPException, ValueError):
+        return None
+    finally:
+        connection.close()
+
+
+def attached():
+    return bool((health() or {}).get("attached"))
+
+
+def close_browser():
+    subprocess.run(["/usr/bin/pkill", "-f", "--", BROWSER_PROFILE_FLAG], check=False)
+
+
+def leave():
+    subprocess.run(["/usr/bin/pkill", "-f", "--", TUNNEL_FORWARD], check=False)
+    close_browser()
+
+
+def hold_tunnel_then_close_browser():
+    subprocess.run(TUNNEL_COMMAND, check=False)
+    close_browser()
+
+
+def wait_for_tunnel():
+    deadline = time.monotonic() + TUNNEL_WAIT_SECONDS
+    while health() is None:
+        if time.monotonic() > deadline:
+            raise TimeoutError("The tunnel to the avatar did not open")
+        time.sleep(POLL_SECONDS)
+
+
+def wait_until_attached():
+    deadline = time.monotonic() + ATTACH_WAIT_SECONDS
+    while time.monotonic() < deadline:
+        seat = health() or {}
+        if seat.get("attached"):
+            return
+        if seat.get("failure"):
+            raise RuntimeError(
+                f"This machine could not take the seat: {seat['failure']}"
+            )
+        time.sleep(POLL_SECONDS)
+    raise TimeoutError(
+        f"The seat page did not attach; check that {BROWSER} may use the microphone"
+    )
+
+
+def open_browser():
+    subprocess.run(
+        [
+            "/usr/bin/open",
+            "-g",
+            "-j",
+            "-n",
+            "-a",
+            BROWSER,
+            "--args",
+            BROWSER_PROFILE_FLAG,
+            f"--app=http://localhost:{SEAT_PORT}/",
+            "--use-fake-ui-for-media-stream",
+            "--autoplay-policy=no-user-gesture-required",
+            "--no-first-run",
+            "--no-default-browser-check",
+        ],
+        check=True,
+    )
+
+
+def take():
+    leave()
+    try:
+        subprocess.Popen(
+            [sys.executable, __file__],
+            start_new_session=True,
+            stdin=subprocess.DEVNULL,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+        wait_for_tunnel()
+        open_browser()
+        wait_until_attached()
+    except BaseException:
+        leave()
+        raise
+
+
+if __name__ == "__main__":
+    hold_tunnel_then_close_browser()

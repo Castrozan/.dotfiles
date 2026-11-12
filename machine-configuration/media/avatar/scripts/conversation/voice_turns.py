@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 import conversation_addressee
+import conversation_seat
 import conversation_state
 import utterances
 from conversation_state import ConversationPhase
@@ -13,14 +14,14 @@ VOICE_TAG = "[voice]"
 PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 
 
-def speech_command(arguments):
+def speech_command(arguments, directory):
     voice = [arguments.voice] if arguments.voice else []
     return [
         "avatar-command",
         "speak",
         arguments.text,
         arguments.emotion,
-        "speakers",
+        conversation_seat.SPEECH_OUTPUT_BY_SEAT[conversation_seat.current(directory)],
         *voice,
     ]
 
@@ -28,7 +29,7 @@ def speech_command(arguments):
 def say(arguments, directory):
     sys.exit(
         subprocess.run(
-            speech_command(arguments), timeout=SPEECH_TIMEOUT_SECONDS
+            speech_command(arguments, directory), timeout=SPEECH_TIMEOUT_SECONDS
         ).returncode
     )
 
@@ -54,7 +55,7 @@ def hear(arguments, directory):
 def ask(arguments, directory):
     with utterances.exclusive_consumer(directory):
         subprocess.run(
-            speech_command(arguments),
+            speech_command(arguments, directory),
             check=True,
             stdout=subprocess.DEVNULL,
             timeout=SPEECH_TIMEOUT_SECONDS,

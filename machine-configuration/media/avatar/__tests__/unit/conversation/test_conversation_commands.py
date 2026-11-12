@@ -75,6 +75,7 @@ def test_opening_again_keeps_the_conversation_and_what_was_not_heard(
     assert json.loads(capsys.readouterr().out) == {
         "open": True,
         "live": False,
+        "seat": "room",
         "last_heard": 7,
     }
 
@@ -122,7 +123,7 @@ def test_opening_replaces_a_conversation_listener_left_running(tmp_path, monkeyp
     monkeypatch.setattr(listener_session, "begin_listening", begin)
     monkeypatch.setattr(conversation_effects.subprocess, "run", Mock())
     conversation_effects.open_conversation(
-        argparse.Namespace(language="pt", character=None), tmp_path
+        argparse.Namespace(language="pt", character=None, seat="room"), tmp_path
     )
     begin.assert_called_once()
 
@@ -138,7 +139,7 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
     runner = Mock()
     monkeypatch.setattr(conversation_effects.subprocess, "run", runner)
     conversation_effects.open_conversation(
-        argparse.Namespace(language="pt", character=None), tmp_path
+        argparse.Namespace(language="pt", character=None, seat="room"), tmp_path
     )
     commands = [call.args[0] for call in runner.call_args_list]
     assert ["avatar-command", "presence", "shown"] not in commands
@@ -148,6 +149,7 @@ def test_opening_listens_only_to_the_cancelled_microphone(tmp_path, monkeypatch)
         {"human": "AvatarRoomMicrophone"},
         language="pt",
         barge_in=True,
+        seat="room",
     )
 
 
@@ -161,7 +163,7 @@ def test_a_failed_open_closes_what_it_started(tmp_path, monkeypatch):
     monkeypatch.setattr(conversation_effects, "close_conversation", close)
     with pytest.raises(TimeoutError):
         conversation_effects.open_conversation(
-            argparse.Namespace(language=None, character=None), tmp_path
+            argparse.Namespace(language=None, character=None, seat="room"), tmp_path
         )
     close.assert_called_once()
 

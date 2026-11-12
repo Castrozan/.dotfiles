@@ -55,6 +55,7 @@ def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
     assert json.loads(capsys.readouterr().out) == {
         "open": True,
         "live": True,
+        "seat": "room",
         "last_heard": 0,
     }
 

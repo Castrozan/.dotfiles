@@ -15,7 +15,7 @@ def test_start_is_muted_isolated_and_repeatable(tmp_path, pulse):
     path = tmp_path / "state.json"
     state = {"modules": []}
     audio.start(path, state)
-    assert len(state["modules"]) == 7
+    assert len(state["modules"]) == 8
     assert not state.get("microphone")
     for name in audio.CHANNELS.values():
         assert ("set-sink-mute", name, "1") in pulse.calls

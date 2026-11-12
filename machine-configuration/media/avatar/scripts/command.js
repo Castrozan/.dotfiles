@@ -44,7 +44,7 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | character NAME | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both] [VOICE]",
+      "Usage: avatar-command status | mode avatar|camera|composite | character NAME | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both|remote] [VOICE]",
     );
   return build(...arguments_.slice(1));
 }
