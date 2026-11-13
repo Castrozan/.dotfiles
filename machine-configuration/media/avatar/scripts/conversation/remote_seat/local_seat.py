@@ -66,9 +66,9 @@ def attached():
     return bool((health() or {}).get("attached"))
 
 
-def end_processes_matching(command_line):
+def end_processes_matching(command_line, signal_name="TERM"):
     subprocess.run(
-        ["/usr/bin/pkill", "-f", "--", command_line],
+        ["/usr/bin/pkill", f"-{signal_name}", "-f", "--", command_line],
         check=False,
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
