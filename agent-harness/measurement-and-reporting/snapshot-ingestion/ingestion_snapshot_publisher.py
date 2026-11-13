@@ -3,10 +3,13 @@ import os
 import sys
 import urllib.error
 import urllib.request
-from datetime import datetime, timezone
+
 from pathlib import Path
 
-PRODUCER_SECRET_HEADER_NAME = "x-ingest-producer-secret"
+from ingestion_endpoint_policy import is_permitted_ingestion_endpoint
+from ingestion_event_metadata import read_current_produced_at, resolve_event_source
+
+PRODUCER_AUTHENTICATION_HEADER_NAME = "x-ingest-producer-secret"
 PUBLISHER_USER_AGENT = "dotfiles-ingestion-publisher/1"
 ACCEPTED_INGEST_STATUS_CODE = 202
 INGEST_REQUEST_TIMEOUT_SECONDS = 30
@@ -14,27 +17,6 @@ INGEST_REQUEST_TIMEOUT_SECONDS = 30
 
 class IngestionRefusedError(RuntimeError):
     pass
-
-
-def read_current_produced_at():
-    stamped_at = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
-    return stamped_at.replace("+00:00", "Z")
-
-
-def resolve_event_source(environment):
-    repository = environment.get("GITHUB_REPOSITORY")
-    commit = environment.get("GITHUB_SHA")
-    if not repository or not commit:
-        return None
-
-    event_source = {"repository": repository, "commit": commit}
-    server_url = environment.get("GITHUB_SERVER_URL")
-    run_identifier = environment.get("GITHUB_RUN_ID")
-    if server_url and run_identifier:
-        event_source["runUrl"] = (
-            f"{server_url}/{repository}/actions/runs/{run_identifier}"
-        )
-    return event_source
 
 
 def build_ingestion_event(topic, schema_version, payload, producer_label, event_source):
@@ -54,50 +36,91 @@ def build_topic_endpoint_url(ingest_base_url, topic):
     return f"{ingest_base_url.rstrip('/')}/{topic}"
 
 
-def describe_ingest_refusal(topic, status_code, response_body):
+def describe_ingest_refusal(subject, status_code, response_body):
     try:
         reported_error = json.loads(response_body).get("error", response_body)
     except json.JSONDecodeError:
         reported_error = response_body
     return (
-        f"the ingest api refused the {topic} event "
+        f"the ingest api refused the {subject} "
         f"with status {status_code}: {reported_error}"
     )
 
 
-def build_ingest_request_headers(producer_secret):
+def build_ingest_request_headers(producer_secret, content_type="application/json"):
     return {
-        "content-type": "application/json",
+        "content-type": content_type,
         "user-agent": PUBLISHER_USER_AGENT,
-        PRODUCER_SECRET_HEADER_NAME: producer_secret,
+        PRODUCER_AUTHENTICATION_HEADER_NAME: producer_secret,
     }
 
 
-def post_ingestion_event(ingest_base_url, producer_secret, ingestion_event):
-    topic = ingestion_event["topic"]
-    request = urllib.request.Request(
-        url=build_topic_endpoint_url(ingest_base_url, topic),
-        data=json.dumps(ingestion_event).encode("utf-8"),
-        headers=build_ingest_request_headers(producer_secret),
-        method="POST",
-    )
+def assert_ingestion_endpoint_is_permitted(endpoint_url):
+    if not is_permitted_ingestion_endpoint(endpoint_url):
+        raise IngestionRefusedError(
+            "Ingestion requires credential-free HTTPS or explicit loopback HTTP without query or fragment"
+        )
 
+
+def create_authenticated_ingestion_request(
+    endpoint_url, producer_secret, content_type, body_bytes, method
+):
+    assert_ingestion_endpoint_is_permitted(endpoint_url)
+    headers = build_ingest_request_headers(producer_secret, content_type)
+    del headers[PRODUCER_AUTHENTICATION_HEADER_NAME]
+    request = urllib.request.Request(
+        endpoint_url, data=body_bytes, headers=headers, method=method
+    )
+    request.add_unredirected_header(
+        PRODUCER_AUTHENTICATION_HEADER_NAME, producer_secret
+    )
+    return request
+
+
+def read_ingest_response(request):
+    assert_ingestion_endpoint_is_permitted(request.full_url)
     try:
         with urllib.request.urlopen(
             request, timeout=INGEST_REQUEST_TIMEOUT_SECONDS
         ) as response:
-            status_code = response.status
-            response_body = response.read().decode("utf-8")
+            return response.status, response.read().decode("utf-8")
     except urllib.error.HTTPError as refusal:
+        return refusal.code, refusal.read().decode("utf-8")
+
+
+def send_ingest_request(request, subject):
+    try:
+        status_code, response_body = read_ingest_response(request)
+    except (OSError, UnicodeError) as transport_failure:
         raise IngestionRefusedError(
-            describe_ingest_refusal(topic, refusal.code, refusal.read().decode("utf-8"))
-        ) from refusal
+            f"the ingest request could not finish for the {subject}"
+        ) from transport_failure
 
     if status_code != ACCEPTED_INGEST_STATUS_CODE:
         raise IngestionRefusedError(
-            describe_ingest_refusal(topic, status_code, response_body)
+            describe_ingest_refusal(subject, status_code, response_body)
         )
-    return json.loads(response_body)
+    try:
+        acknowledgement = json.loads(response_body)
+    except json.JSONDecodeError:
+        acknowledgement = None
+    if not isinstance(acknowledgement, dict):
+        raise IngestionRefusedError(
+            f"the ingest api acknowledged the {subject} with no JSON object"
+        )
+    return acknowledgement
+
+
+def post_ingestion_event(ingest_base_url, producer_secret, ingestion_event):
+    topic = ingestion_event["topic"]
+    request = create_authenticated_ingestion_request(
+        build_topic_endpoint_url(ingest_base_url, topic),
+        producer_secret,
+        "application/json",
+        json.dumps(ingestion_event).encode("utf-8"),
+        "POST",
+    )
+    return send_ingest_request(request, f"{topic} event")
 
 
 def read_required_environment_value(environment, variable_name, purpose):
@@ -107,9 +130,7 @@ def read_required_environment_value(environment, variable_name, purpose):
     return value
 
 
-def publish_snapshot(
-    topic, schema_version, payload, default_producer_label, environment
-):
+def read_ingest_connection(environment):
     ingest_base_url = read_required_environment_value(
         environment, "INGEST_BASE_URL", "name the ingest api mount the event is sent to"
     )
@@ -118,6 +139,13 @@ def publish_snapshot(
         "INGEST_PRODUCER_SECRET",
         "carry the secret the ingest api accepts producers by",
     )
+    return ingest_base_url, producer_secret
+
+
+def publish_snapshot(
+    topic, schema_version, payload, default_producer_label, environment
+):
+    ingest_base_url, producer_secret = read_ingest_connection(environment)
     ingestion_event = build_ingestion_event(
         topic,
         schema_version,

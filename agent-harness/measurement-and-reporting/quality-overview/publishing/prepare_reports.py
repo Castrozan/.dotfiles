@@ -19,9 +19,11 @@ def validate_coverage_selection(selection):
 
 def verified_coverage(context, downloads):
     validate_coverage_selection(context["artifacts"]["coverage-report"])
-    coverage = downloads / "coverage-report"
-    if not (coverage / "bats/coverage.json").is_file():
+    coverage = downloads / "coverage-report" / "bats"
+    if not (coverage / "coverage.json").is_file():
         raise ValueError("Verified coverage artifact has no coverage document")
+    if not (coverage / "index.html").is_file():
+        raise ValueError("Verified coverage artifact has no coverage HTML document")
     return coverage
 
 

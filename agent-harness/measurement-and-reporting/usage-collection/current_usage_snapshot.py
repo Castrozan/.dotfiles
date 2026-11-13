@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import os
 import socket
 import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -17,6 +17,7 @@ from claude_otel_metrics_reader import (  # noqa: E402
     default_otel_metrics_file_path,
     summarize_otel_metrics_file,
 )
+from ccusage_daily_reader import read_ccusage_daily_summary  # noqa: E402
 from claude_usage_stats_reader import (  # noqa: E402
     default_stats_cache_path,
     read_stats_cache,
@@ -29,6 +30,9 @@ def build_current_usage_snapshot() -> dict | None:
     account_uuid = read_current_account_uuid(default_claude_account_config_path())
     if account_uuid is None:
         return None
+    ccusage_daily_summary = read_ccusage_daily_summary()
+    if ccusage_daily_summary is None:
+        return None
     account_label = derive_account_label(account_uuid)
     machine_label = derive_machine_label(socket.gethostname())
     stats_cache_summary = summarize_stats_cache(
@@ -38,6 +42,12 @@ def build_current_usage_snapshot() -> dict | None:
     return build_usage_snapshot(
         account_label,
         machine_label,
-        stats_cache_summary,
+        {
+            **stats_cache_summary,
+            **ccusage_daily_summary,
+            "captured_at_utc": datetime.now(UTC)
+            .isoformat(timespec="milliseconds")
+            .replace("+00:00", "Z"),
+        },
         otel_metrics,
     )

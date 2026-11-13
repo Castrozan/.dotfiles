@@ -49,12 +49,24 @@ class TestTheCurrentSnapshotIsPublishedUnderTheClaudeUsageContract:
         monkeypatch.setattr(
             publisher_entrypoint, "publish_snapshot", record_published_snapshot
         )
+        monkeypatch.setattr(
+            publisher_entrypoint,
+            "publish_artifact",
+            lambda object_key, content_type, body_bytes, environment: {
+                "objectKey": object_key,
+                "byteLength": len(body_bytes),
+            },
+        )
 
         acknowledgement = publisher_entrypoint.publish_current_usage_snapshot(
             PUBLISH_ENVIRONMENT
         )
 
-        assert acknowledgement == {"accepted": True}
+        assert acknowledgement["snapshot"] == {"accepted": True}
+        assert acknowledgement["artifact"]["objectKey"] == (
+            "snapshots/account-a1b2c3-kira.json"
+        )
+        assert acknowledgement["artifact"]["byteLength"] > 0
         assert published["topic"] == "claude-usage"
         assert published["schemaVersion"] == 1
         assert published["payload"]["accountLabel"] == "account-a1b2c3"

@@ -53,9 +53,7 @@ def test_report_reuses_the_exact_verified_coverage_artifact(
     selection = context["artifacts"]["coverage-report"]
     assert selection["id"] == 456
     assert selection["producer"]["runAttempt"] == 2
-    assert (
-        tmp_path / "site/coverage/bats/index.html"
-    ).read_text() == "measured coverage"
+    assert (tmp_path / "site/coverage/index.html").read_text() == "measured coverage"
     assert coverage_producer[1][0][-1].endswith("/actions/artifacts/456/zip")
     assert len(coverage_producer[1]) == 1
 
@@ -113,6 +111,16 @@ def test_successful_upload_from_another_job_cannot_publish(
     with pytest.raises(ValueError, match="verified coverage artifact"):
         prepare_from_event(run, tmp_path)
     assert not coverage_producer[1]
+    assert not (tmp_path / "site").exists()
+
+
+def test_missing_coverage_html_cannot_publish(run, coverage_producer, tmp_path):
+    context = CONTEXT.collect_context({"workflow_run": run})
+    downloads = tmp_path / "downloads"
+    DOWNLOAD.download_selected(context, downloads)
+    (downloads / "coverage-report/bats/index.html").unlink()
+    with pytest.raises(ValueError, match="coverage HTML"):
+        REPORTS.prepare_reports(context, downloads, tmp_path / "site")
     assert not (tmp_path / "site").exists()
 
 

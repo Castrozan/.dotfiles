@@ -12,17 +12,24 @@ jobs:
     permissions:
       contents: read
       actions: read
-      id-token: write
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       GH_TOKEN: ${{ github.token }}
       SOURCE_RUN_ID: ${{ github.event.workflow_run.id }}
       SOURCE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
-      REPORT_BUCKET: gs://zg-url-shortener-2026-dotfiles-usage-snapshots
+      REPORT_ARTIFACT_BASE_URL: https://lucaszanoni.com/engineering/dotfiles/reports/data/reports/
       PUBLISHING_SCRIPTS: agent-harness/measurement-and-reporting/quality-overview/publishing
     steps:
       - uses: actions/checkout@v4
+      - name: Require the private publishing configuration
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+        run: |
+          test -n "$INGEST_BASE_URL"
+          test -n "$INGEST_PRODUCER_SECRET"
+          test -n "$REPORT_ARTIFACT_BASE_URL"
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
@@ -62,21 +69,17 @@ jobs:
             .quality-results/workflow-context.json
           include-hidden-files: true
           if-no-files-found: error
-      - uses: google-github-actions/auth@c200f3691d83b41bf9bbd8638997a462592937ed
-        with:
-          workload_identity_provider: projects/933601426694/locations/global/workloadIdentityPools/github-actions/providers/github
-          service_account: dotfiles-github-deployer@zg-url-shortener-2026.iam.gserviceaccount.com
-      - uses: google-github-actions/setup-gcloud@e427ad8a34f8676edf47cf7d7925499adf3eb74f
-      - name: Publish the completed immutable report or reuse its stored receipt
-        if: ${{ vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
+      - name: Publish versioned overview artifacts
+        id: overview_artifacts
+        if: ${{ !cancelled() && steps.overview.outcome == 'success' }}
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
         run: |
-          destination="$REPORT_BUCKET/reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT"
-          if gcloud storage ls "$destination/snapshot.json" > /dev/null 2>&1; then
-            gcloud storage cp "$destination/snapshot.json" .quality-results/overview/payload.json
-          else
-            gcloud storage rsync .quality-results/overview/site "$destination" --recursive
-            gcloud storage cp .quality-results/overview/payload.json "$destination/snapshot.json" --if-generation-match=0
-          fi
+          mkdir -p .quality-results/publications
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
+            .quality-results/overview/payload.json .quality-results/overview/site \
+            "reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT/" > .quality-results/publications/overview.json
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -112,21 +115,31 @@ jobs:
             echo "evaluation_report=present" >> "$GITHUB_OUTPUT"
           fi
       - name: Check this snapshot still represents the current main run
-        if: ${{ !cancelled() && steps.overview.outcome == 'success' && (vars.REPORTS_STATIC_GCS_PUBLISH == 'true' || vars.INGEST_BASE_URL != '') }}
+        if: ${{ !cancelled() && steps.overview.outcome == 'success' && steps.overview_artifacts.outcome == 'success' }}
         id: promotion
         run: |
           promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
           echo "current=$promote" >> "$GITHUB_OUTPUT"
+      - name: Publish current report artifacts
+        id: current_artifacts
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+        run: |
+          mkdir -p .quality-results/publications
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
+            .quality-results/overview/payload.json agent-harness/measurement-and-reporting/reports/site \
+            reports/ > .quality-results/publications/current.json
       - name: Publish the current overview to the existing ingestion API
-        if: ${{ !cancelled() && steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
+        if: ${{ !cancelled() && steps.promotion.outputs.current == 'true' }}
         env:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
-        run: |
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
+        run: python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
       - name: Publish the current coverage snapshot to the ingestion API
-        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' && vars.INGEST_BASE_URL != '' }}
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.current_artifacts.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
         env:
           SOURCE_REVISION: ${{ github.event.workflow_run.head_sha }}
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
@@ -136,12 +149,14 @@ jobs:
           export GITHUB_SHA="$SOURCE_REVISION"
           export GITHUB_RUN_ID="$SOURCE_RUN_ID"
           python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_test_coverage_snapshot.py .quality-results/downloads/coverage-report/bats/coverage.json
-      - name: Publish the committed agent-evals report to the usage snapshots bucket
-        if: ${{ !cancelled() && steps.reports.outputs.evaluation_report == 'present' && steps.promotion.outputs.current == 'true' && vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
-        run: gcloud storage rsync agent-harness/measurement-and-reporting/reports/site/baseline "$REPORT_BUCKET/reports/baseline" --recursive --delete-unmatched-destination-objects
-      - name: Publish the current coverage to the usage snapshots bucket
-        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' && vars.REPORTS_STATIC_GCS_PUBLISH == 'true' }}
-        run: gcloud storage rsync agent-harness/measurement-and-reporting/reports/site/coverage "$REPORT_BUCKET/reports/coverage" --recursive --delete-unmatched-destination-objects
+      - name: Retain private artifact publication manifests
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotfiles-private-artifact-publication
+          path: .quality-results/publications/*.json
+          include-hidden-files: true
+          if-no-files-found: ignore
       - name: Require complete evidence after retaining the diagnostic report
         if: ${{ !cancelled() && steps.overview.outcome == 'success' }}
         run: node "$PUBLISHING_SCRIPTS/check_completeness.mjs" < .quality-results/overview/payload.json
