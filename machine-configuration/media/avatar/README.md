@@ -61,7 +61,8 @@ A conversation has a seat: the machine whose microphone and speakers it uses. Th
 seat is a Mac, so the avatar can be talked to from any machine while it keeps running on chise, with one floor, one
 transcript and one set of voices. `avatar-talk open` on a Mac asks for the remote seat when that Mac's keyboard or mouse
 was used in the last five minutes, and for the room otherwise, so an agent working unattended on a Mac still speaks
-where the user is. `--seat room` forces the room. `avatar-talk status` reports the seat.
+where the user is. `--seat room` forces the room and `--seat remote` seats it at the Mac whatever its idle time.
+`avatar-talk status` reports the seat.
 
 | Piece | Runs on | Does |
 | --- | --- | --- |
@@ -114,6 +115,15 @@ name, such as "hey Voyager, check the build", is delivered to that session's pan
 even mid-turn, and the avatar conversation then opens, so the reply continues on ElevenLabs. Anyone in the room can say
 a name, so the prompt marks the speaker as not verified. `systemctl --user stop avatar-wake` turns it off;
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
+
+On a Mac the same listener runs as the `avatar-wake` launchd agent, logging to `~/Library/Logs/avatar-wake.log`, with its
+machine effects swapped in `mac_wake_boundaries.py`. `mac_microphone.py` serves a capture page on `127.0.0.1:8771`,
+opens it in headless Chrome on the profile `~/.local/share/avatar/wake-browser` and writes the page's frames to stdout in
+place of `parec`. The page opens the default input, or the built-in microphone when the default is Bluetooth, which
+would otherwise force call-quality sound on everything the Mac plays. Each utterance goes to `avatar-transcribe` on
+chise over ssh. A wake opens the conversation with `avatar-talk open --seat remote`, then `ssh chise avatar-claim-floor
+--agent HOST:PANE` gives the woken session the floor. A seat held on the Mac pauses the wake, as an open conversation
+does on chise; naming another Servant mid-conversation hands the room over only when it sits on chise.
 
 During a conversation the wake reads that conversation's transcript instead of the microphone. Naming another live
 Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the

@@ -17,11 +17,16 @@ let
     export PATH=${
       lib.makeBinPath [
         herdr
+        pkgs.openssh
         pkgs.systemd
       ]
     }:$PATH
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/wake}:${a2aLibrary}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py
+    exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py "$@"
+  '';
+  transcribe = pkgs.writeShellScriptBin "avatar-transcribe" ''
+    export PYTHONPATH=${./scripts/listening}
+    exec ${pkgs.python312}/bin/python3 -m transcription.transcriber
   '';
   control = import ./control-package.nix { inherit pkgs; };
   renderer = import ./renderer-package.nix { inherit pkgs; };
@@ -143,7 +148,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
+    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
 in
@@ -167,5 +172,6 @@ in
     start
     stop
     talk
+    transcribe
     ;
 }

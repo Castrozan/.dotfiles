@@ -5,7 +5,7 @@ import pathlib
 import signal
 import sys
 
-from seat_page import SeatPage
+from seat_page import SeatPage, seat_page_files
 from websockets.asyncio.server import serve
 from websockets.exceptions import InvalidMessage
 
@@ -85,7 +85,7 @@ class RemoteSeat:
     def __init__(self, page_directory):
         self.attached = asyncio.Event()
         self.detached = asyncio.Event()
-        self.page = SeatPage(page_directory, self.attached.is_set)
+        self.page = SeatPage(seat_page_files(page_directory), self.attached.is_set)
 
     def answer_request(self, connection, request):
         if request.path == AUDIO_PATH:

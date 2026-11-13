@@ -74,6 +74,9 @@ minutes: the Mac's default microphone and output carry both voices. Otherwise it
 conversation opened on chise; `--seat room` forces the room. The printed `seat` says which one you got: with `room` from
 a Mac, the user hears you only beside chise.
 
+Saying a greeting and your Servant name near a Mac wakes your session there too and seats the conversation at that
+Mac; naming another Servant mid-conversation does not move the room while it sits on a Mac.
+
 `show` and `hide` from a Mac holding the seat open and close the avatar window on that Mac. `open --live` works from a
 Mac too: its tasks reach your session there, and the seat rule above decides where the voice is heard.
 

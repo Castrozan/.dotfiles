@@ -4,7 +4,7 @@ import time
 
 import speech_segmenter
 from conversation_addressee import Addressee
-from wake_boundaries import Boundaries, capture_command
+from wake_boundaries import for_this_machine
 from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
 from wake_prompts import SETTINGS, spoken_prompt
 
@@ -156,7 +156,9 @@ def run(wake):
         if not wake.armed():
             time.sleep(ARM_CHECK_SECONDS)
             continue
-        capture = subprocess.Popen(capture_command(), stdout=subprocess.PIPE)
+        capture = subprocess.Popen(
+            wake.boundaries.capture_command(), stdout=subprocess.PIPE
+        )
         try:
             while wake.listen_while_armed(microphone_frames(capture)):
                 pass
@@ -169,7 +171,7 @@ def main():
     parser = argparse.ArgumentParser(prog="avatar-wake")
     parser.add_argument("--dry-run", action="store_true")
     arguments = parser.parse_args()
-    run(WakeListener(Boundaries(), arguments.dry_run))
+    run(WakeListener(for_this_machine(), arguments.dry_run))
 
 
 if __name__ == "__main__":

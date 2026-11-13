@@ -67,6 +67,7 @@ def notify_at_idle(pane, text):
 
 @dataclasses.dataclass
 class Boundaries:
+    capture_command: object = capture_command
     sessions: object = live_sessions
     conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
@@ -85,3 +86,11 @@ class Boundaries:
     )
     report: object = lambda line: print(line, file=sys.stderr, flush=True)
     now: object = time.monotonic
+
+
+def for_this_machine():
+    if sys.platform == "darwin":
+        import mac_wake_boundaries
+
+        return Boundaries(**mac_wake_boundaries.mac_boundaries())
+    return Boundaries()

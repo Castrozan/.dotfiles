@@ -39,10 +39,12 @@ in
       audio
       command
       controls
+      floor
       listen
       start
       stop
       talk
+      transcribe
     ];
     systemd.user = {
       targets.avatar.Unit = {

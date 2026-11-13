@@ -2,6 +2,7 @@ import http.client
 import io
 import json
 import re
+import sys
 import urllib.parse
 import wave
 from pathlib import Path
@@ -56,3 +57,11 @@ def transcribe(pcm, language=None):
         return clean_transcript(answer["transcript"])
     finally:
         connection.close()
+
+
+def main():
+    print(transcribe(sys.stdin.buffer.read()))
+
+
+if __name__ == "__main__":
+    main()

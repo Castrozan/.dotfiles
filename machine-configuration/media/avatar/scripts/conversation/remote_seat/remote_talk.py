@@ -1,3 +1,4 @@
+import itertools
 import json
 import os
 import re
@@ -56,9 +57,15 @@ def reported_seat(status_output):
         return None
 
 
+def with_the_remote_seat(arguments):
+    if asks_for_the_remote_seat(arguments):
+        return arguments
+    return [*arguments, "--seat", REMOTE_SEAT]
+
+
 def open_here(arguments):
     opened = subprocess.run(
-        forward_command([*arguments, "--seat", REMOTE_SEAT]),
+        forward_command(with_the_remote_seat(arguments)),
         stdout=subprocess.PIPE,
         text=True,
         timeout=OPEN_TIMEOUT_SECONDS,
@@ -95,6 +102,18 @@ def opens_a_seated_conversation(arguments):
     return arguments[:1] == ["open"] and "--seat" not in arguments
 
 
+def asks_for_the_remote_seat(arguments):
+    return ("--seat", REMOTE_SEAT) in itertools.pairwise(arguments)
+
+
+def opens_here(arguments):
+    if arguments[:1] != ["open"]:
+        return False
+    if asks_for_the_remote_seat(arguments):
+        return True
+    return opens_a_seated_conversation(arguments) and user_is_here()
+
+
 def with_the_agent_that_receives_live_tasks(arguments):
     if arguments[:1] != ["open"] or "--live" not in arguments:
         return arguments
@@ -106,7 +125,7 @@ def with_the_agent_that_receives_live_tasks(arguments):
 
 
 def carry_out(arguments):
-    if opens_a_seated_conversation(arguments) and user_is_here():
+    if opens_here(arguments):
         return open_here(arguments)
     if arguments[:1] == ["close"]:
         return close_everywhere(arguments)

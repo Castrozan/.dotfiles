@@ -6,9 +6,8 @@ import conversation_effects
 import conversation_seat
 import conversation_state
 import listener_session
-import remote_agent
+import speaking_floor
 import start
-from conversation_addressee import Addressee
 from conversation_seat import Seat
 from listener_session import ListenerPurpose
 from remote_agent import AgentPane
@@ -36,11 +35,7 @@ def give_the_floor(directory, agent):
             timeout=conversation_effects.COMMAND_TIMEOUT_SECONDS,
         )
         return
-    servant = remote_agent.servant_at(agent)
-    if servant:
-        conversation_addressee.hand_to(
-            directory, Addressee(agent.pane, servant, 0, agent.host)
-        )
+    speaking_floor.hand_to_remote_agent(directory, agent)
 
 
 def holds_the_floor(directory, agent):

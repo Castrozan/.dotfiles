@@ -117,7 +117,7 @@ def wait_until_attached():
     )
 
 
-def open_browser():
+def open_headless_browser(profile_flag, port, *extra_flags):
     subprocess.run(
         [
             "/usr/bin/open",
@@ -127,15 +127,21 @@ def open_browser():
             BROWSER,
             "--args",
             "--headless=new",
-            BROWSER_PROFILE_FLAG,
-            f"--app=http://localhost:{SEAT_PORT}/",
+            profile_flag,
+            f"--app=http://localhost:{port}/",
             "--use-fake-ui-for-media-stream",
-            "--autoplay-policy=no-user-gesture-required",
+            *extra_flags,
             "--no-first-run",
             "--no-default-browser-check",
         ],
         check=True,
         timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+
+
+def open_browser():
+    open_headless_browser(
+        BROWSER_PROFILE_FLAG, SEAT_PORT, "--autoplay-policy=no-user-gesture-required"
     )
 
 

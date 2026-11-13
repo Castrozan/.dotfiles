@@ -1,6 +1,7 @@
 import dataclasses
 
 import conversation_addressee
+import remote_agent
 from conversation_addressee import Addressee
 
 
@@ -42,3 +43,12 @@ def claim(directory, pane, boundaries):
 
 def may_speak(holder, pane):
     return holder is None or holder.pane == pane
+
+
+def hand_to_remote_agent(directory, agent):
+    servant = remote_agent.servant_at(agent)
+    if servant:
+        conversation_addressee.hand_to(
+            directory, Addressee(agent.pane, servant, 0, agent.host)
+        )
+    return bool(servant)
