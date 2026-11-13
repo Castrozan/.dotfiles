@@ -9,6 +9,7 @@
     ../terminal/shell/bash/bash-nix-darwin.nix
     ../desktop/applications/chatgpt/chatgpt-nix-darwin.nix
     ../voice/hex-nix-darwin.nix
+    ../media/avatar/avatar-call-devices-nix-darwin.nix
     ../operating-system/package-management/homebrew-undeclared-package-cleanup-nix-darwin.nix
     ../security/certificate-trust/apple-certificate-bundle-distrust-nix-darwin.nix
     ../browsers/brave/brave-update-policy-nix-darwin.nix
@@ -37,9 +38,7 @@
   system = {
     primaryUser = username;
     stateVersion = 6;
-    keyboard = {
-      enableKeyMapping = true;
-    };
+    keyboard.enableKeyMapping = true;
     defaults = {
       ".GlobalPreferences"."com.apple.mouse.scaling" = 5.0;
       CustomUserPreferences = {
