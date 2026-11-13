@@ -39,10 +39,43 @@ def test_attention_probe_prints_nothing_without_a_failure(tmp_path, capsys):
     assert capsys.readouterr().out == ""
 
     configuration.attention_file.write_text(
-        json.dumps({"kind": "ci-failing", "revision": "r"})
+        json.dumps({"kind": "build-red", "revision": "r"})
     )
     steward_cycle.print_attention(configuration)
-    assert capsys.readouterr().out == '{"kind": "ci-failing", "revision": "r"}\n'
+    assert capsys.readouterr().out == '{"kind": "build-red", "revision": "r"}\n'
+
+
+def ci_failing_probe_output(configuration, capsys, revision, workflows):
+    configuration.attention_file.write_text(
+        json.dumps(
+            {
+                "kind": "ci-failing",
+                "revision": revision,
+                "workflows": [
+                    {"url": f"https://ci.example/runs/{revision}", "workflow": name}
+                    for name in workflows
+                ],
+            }
+        )
+    )
+    steward_cycle.print_attention(configuration)
+    return capsys.readouterr().out
+
+
+def test_ci_failing_probe_ignores_new_revisions_of_the_same_failing_workflows(
+    tmp_path, capsys
+):
+    configuration = configuration_in(tmp_path)
+    first = ci_failing_probe_output(configuration, capsys, "a1", ["deploy", "lint"])
+    later = ci_failing_probe_output(configuration, capsys, "b2", ["lint", "deploy"])
+    assert first == later == '{"kind": "ci-failing", "workflows": ["deploy", "lint"]}\n'
+
+
+def test_ci_failing_probe_changes_when_the_failing_workflows_change(tmp_path, capsys):
+    configuration = configuration_in(tmp_path)
+    first = ci_failing_probe_output(configuration, capsys, "a1", ["deploy"])
+    later = ci_failing_probe_output(configuration, capsys, "a1", ["deploy", "lint"])
+    assert first != later
 
 
 def test_a_repeated_cycle_error_wakes_the_agent_only_on_the_third_cycle(tmp_path):

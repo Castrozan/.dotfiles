@@ -91,10 +91,21 @@ def run_guarded(configuration: CycleConfiguration, runner: CommandRunner) -> dic
         return report
 
 
+def attention_fingerprint(record: dict) -> dict:
+    if record.get("kind") != "ci-failing":
+        return record
+    return {
+        "kind": "ci-failing",
+        "workflows": sorted(
+            workflow.get("workflow", "") for workflow in record.get("workflows", [])
+        ),
+    }
+
+
 def print_attention(configuration: CycleConfiguration) -> None:
     record = read_record(configuration.attention_file)
     if record:
-        print(json.dumps(record, sort_keys=True))
+        print(json.dumps(attention_fingerprint(record), sort_keys=True))
 
 
 def parse_arguments(argv: list[str] | None) -> argparse.Namespace:
