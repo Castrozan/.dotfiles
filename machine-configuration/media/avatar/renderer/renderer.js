@@ -34,7 +34,8 @@ camera.lookAt(0, 1.35, 0);
 const stage = new CharacterStage(scene, camera);
 let lastFrameTime = 0;
 const pageOptions = new URLSearchParams(location.search);
-const controlRole = pageOptions.has("viewer") ? "viewer" : "renderer";
+const controlRole =
+  ["viewer", "stage"].find((role) => pageOptions.has(role)) ?? "renderer";
 const cameraFrames = pageOptions.has("output")
   ? new CameraFrameStream(
       renderer.getContext(),

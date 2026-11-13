@@ -5,6 +5,11 @@ const {
 } = require("../messaging/client-response-sender");
 
 const SERVER_VERSION = "1.0.0";
+const DISPLAY_COPY_REGISTRATIONS = {
+  viewer: "registerViewer",
+  stage: "registerStage",
+};
+const CAMERA_OWNER_EVENTS = ["videoModeChanged", "videoModeError"];
 
 function acknowledgeIdentification(connection, role) {
   sendResponse(connection, {
@@ -49,9 +54,9 @@ function handleIdentification(role, connection, context) {
     return;
   }
 
-  if (role === "viewer") {
-    clientRegistry.registerViewer(connection);
-    acknowledgeIdentification(connection, "viewer");
+  if (Object.hasOwn(DISPLAY_COPY_REGISTRATIONS, role)) {
+    clientRegistry[DISPLAY_COPY_REGISTRATIONS[role]](connection);
+    acknowledgeIdentification(connection, role);
     sendInitialStateToRenderer(connection, context);
     showCurrentCharacterToViewer(connection, context);
     return;
@@ -84,6 +89,12 @@ function handleRendererEvent(event, context) {
   }
 }
 
+function handleStageEvent(event, context) {
+  if (CAMERA_OWNER_EVENTS.includes(event.type)) {
+    context.clientRegistry.sendToAgents(event);
+  }
+}
+
 async function routeIdentifiedMessage(rawMessage, connection, context) {
   const { clientRegistry } = context;
 
@@ -94,6 +105,11 @@ async function routeIdentifiedMessage(rawMessage, connection, context) {
 
   if (clientRegistry.isRenderer(connection)) {
     handleRendererEvent(JSON.parse(rawMessage), context);
+    return;
+  }
+
+  if (clientRegistry.isStage(connection)) {
+    handleStageEvent(JSON.parse(rawMessage), context);
     return;
   }
 

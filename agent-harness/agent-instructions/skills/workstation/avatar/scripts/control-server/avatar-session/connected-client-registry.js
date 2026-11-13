@@ -3,6 +3,7 @@ class ConnectedClientRegistry {
     this.agentConnections = new Set();
     this.rendererConnection = null;
     this.viewerConnections = new Set();
+    this.stageConnection = null;
   }
 
   registerAgent(connection) {
@@ -25,7 +26,17 @@ class ConnectedClientRegistry {
     console.log("✅ Viewer connected (display copy)");
   }
 
+  registerStage(connection) {
+    this.stageConnection = connection;
+    console.log("✅ Stage connected (call picture)");
+  }
+
   forget(connection) {
+    if (this.isStage(connection)) {
+      this.stageConnection = null;
+      console.log("❌ Stage disconnected");
+      return;
+    }
     if (this.viewerConnections.delete(connection)) {
       console.log("❌ Viewer disconnected");
       return;
@@ -53,18 +64,34 @@ class ConnectedClientRegistry {
     return this.viewerConnections.has(connection);
   }
 
+  isStage(connection) {
+    return this.stageConnection === connection;
+  }
+
+  displayCopies() {
+    return [...this.viewerConnections, this.stageConnection].filter(Boolean);
+  }
+
   hasRenderer() {
     return this.rendererConnection !== null;
   }
 
   sendToRenderer(payload) {
-    this.viewerConnections.forEach((connection) => {
+    this.displayCopies().forEach((connection) => {
       connection.sendJson(payload);
     });
     if (!this.rendererConnection) {
       return false;
     }
     return this.rendererConnection.sendJson(payload);
+  }
+
+  sendToCameraOwner(payload) {
+    const owner = this.stageConnection ?? this.rendererConnection;
+    if (!owner) {
+      return false;
+    }
+    return owner.sendJson(payload);
   }
 
   sendToAgents(payload) {
@@ -77,7 +104,7 @@ class ConnectedClientRegistry {
     this.agentConnections.forEach((connection) => {
       connection.close();
     });
-    this.viewerConnections.forEach((connection) => {
+    this.displayCopies().forEach((connection) => {
       connection.close();
     });
     this.rendererConnection?.close();

@@ -6,14 +6,17 @@ import {
 } from "./camera-phase.js";
 
 const SUPERSEDED_REQUEST_MESSAGE = "A newer camera request replaced this one";
+const VIRTUAL_CAMERA = /Avatar Cam|OBS Virtual Camera/i;
+const BUILT_IN_CAMERA = /integrated|built-in|FaceTime|MacBook/i;
 
 export function preferredCamera(devices) {
   const physical = devices.filter(
     (device) =>
-      device.kind === "videoinput" && !/Avatar Cam/i.test(device.label),
+      device.kind === "videoinput" && !VIRTUAL_CAMERA.test(device.label),
   );
   return (
-    physical.find((device) => !/integrated/i.test(device.label)) ?? physical[0]
+    physical.find((device) => !BUILT_IN_CAMERA.test(device.label)) ??
+    physical[0]
   );
 }
 
@@ -101,11 +104,11 @@ export class CameraLayer {
 
   requireExternalCamera(stream) {
     if (
-      stream.getVideoTracks().some((track) => /Avatar Cam/i.test(track.label))
+      stream.getVideoTracks().some((track) => VIRTUAL_CAMERA.test(track.label))
     ) {
       for (const track of stream.getTracks()) track.stop();
       this.moveTo({ type: "release" });
-      throw new Error("Choose a physical camera rather than Avatar Cam");
+      throw new Error("Choose a physical camera rather than a virtual one");
     }
   }
 

@@ -11,7 +11,7 @@ PROFILE_NAME = "Avatar"
 COLLECTION_NAME = "Avatar"
 SCENE_NAME = "Avatar"
 SOURCE_NAME = "Avatar View"
-AVATAR_VIEW_URL = f"http://localhost:{local_seat.WINDOW_PORT}/?viewer&bare"
+AVATAR_VIEW_URL = f"http://localhost:{local_seat.WINDOW_PORT}/?stage&bare"
 FRAME_WIDTH = 1280
 FRAME_HEIGHT = 720
 FRAMES_PER_SECOND = 30
@@ -41,6 +41,7 @@ LAUNCH_COMMAND = [
     "--disable-updater",
     "--disable-missing-files-check",
     "--disable-shutdown-check",
+    "--use-fake-ui-for-media-stream",
     "--multi",
 ]
 

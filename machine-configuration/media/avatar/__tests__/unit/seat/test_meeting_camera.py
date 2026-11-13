@@ -17,6 +17,7 @@ OBS_ARGUMENTS = [
     "--disable-updater",
     "--disable-missing-files-check",
     "--disable-shutdown-check",
+    "--use-fake-ui-for-media-stream",
     "--multi",
 ]
 
@@ -63,7 +64,7 @@ def test_the_scene_collection_holds_one_browser_source_inside_one_scene():
     assert collection["scene_order"] == [{"name": "Avatar"}]
     assert list(sources) == ["browser_source", "scene"]
     assert sources["browser_source"]["settings"] == {
-        "url": "http://localhost:8770/?viewer&bare",
+        "url": "http://localhost:8770/?stage&bare",
         "width": 1280,
         "height": 720,
         "fps": 30,

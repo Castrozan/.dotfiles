@@ -9,7 +9,7 @@ function handleSetVideoModeCommand(command, connection, context) {
     return;
   }
   if (
-    !context.clientRegistry.sendToRenderer({
+    !context.clientRegistry.sendToCameraOwner({
       type: "setVideoMode",
       mode: command.mode,
       id: command.id,
