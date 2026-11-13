@@ -29,7 +29,6 @@ LAUNCH_COMMAND = [
     "--scene",
     SCENE_NAME,
     "--startvirtualcam",
-    "--minimize-to-tray",
     "--disable-updater",
     "--disable-missing-files-check",
     "--multi",

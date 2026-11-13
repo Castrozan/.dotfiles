@@ -14,7 +14,6 @@ OBS_ARGUMENTS = [
     "--scene",
     "Avatar",
     "--startvirtualcam",
-    "--minimize-to-tray",
     "--disable-updater",
     "--disable-missing-files-check",
     "--multi",
