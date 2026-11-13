@@ -7,6 +7,7 @@ let
   callSpeaker = (pkgs.blackhole.override { channel = "16ch"; }).overrideAttrs (previous: {
     postPatch = (previous.postPatch or "") + ''
       substituteInPlace BlackHole/BlackHole.plist --replace-fail ${sharedPlugInFactory} ${callSpeakerPlugInFactory}
+      sed -i '1i #define kNumber_Of_Channels 16\n#define kPlugIn_BundleID "audio.existential.BlackHole16ch"' BlackHole/BlackHole.c
     '';
   });
 in
