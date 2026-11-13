@@ -15,7 +15,7 @@ def test_start_is_muted_isolated_and_repeatable(tmp_path, pulse):
     path = tmp_path / "state.json"
     state = {"modules": []}
     audio.start(path, state)
-    assert len(state["modules"]) == 8
+    assert len(state["modules"]) == 9
     assert not state.get("microphone")
     for name in audio.CHANNELS.values():
         assert ("set-sink-mute", name, "1") in pulse.calls
@@ -36,6 +36,32 @@ def test_start_is_muted_isolated_and_repeatable(tmp_path, pulse):
     audio.stop(path, state)
     assert pulse.modules == [{"index": 1, "name": "unrelated", "argument": "keep"}]
     assert not path.exists()
+
+
+def test_start_loads_the_remote_meeting_sink_beside_the_remote_microphone(
+    tmp_path, pulse
+):
+    audio.start(tmp_path / "state.json", {"modules": []})
+    sink_arguments = {
+        module["argument"]
+        for module in pulse.modules
+        if module["name"] == "module-null-sink"
+    }
+    assert (
+        "sink_name=AvatarRemoteMeeting "
+        "sink_properties=device.description=Avatar_Remote_Meeting "
+        "rate=48000 channels=2"
+    ) in sink_arguments
+    assert {"AvatarRemoteMicrophone", "AvatarRemoteMeeting"} <= {
+        sink["name"] for sink in pulse.sinks
+    }
+
+
+def test_start_refuses_an_existing_remote_meeting_sink(tmp_path, pulse):
+    pulse.sinks.append({"name": "AvatarRemoteMeeting"})
+    with pytest.raises(ValueError, match="AvatarRemoteMeeting"):
+        audio.start(tmp_path / "state.json", {"modules": []})
+    assert not pulse.calls
 
 
 def test_partial_start_rolls_back_owned_modules(tmp_path, pulse):

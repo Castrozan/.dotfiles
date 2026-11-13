@@ -27,6 +27,10 @@ export function visibleMode(mode, speaking) {
   return mode === "camera" && speaking ? "avatar" : mode;
 }
 
+export function statusIsHidden(pageOptions) {
+  return pageOptions.has("output") || pageOptions.has("bare");
+}
+
 export class RendererControls {
   constructor(state, actions, role = "renderer") {
     this.state = state;

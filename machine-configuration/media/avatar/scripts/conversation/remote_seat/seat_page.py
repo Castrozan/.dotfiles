@@ -41,6 +41,7 @@ def seat_page_files(page_directory):
     return {
         "/": (page_directory / "index.html", HTML),
         "/seat.js": (page_directory / "seat.js", JAVASCRIPT),
+        "/meeting-seat.js": (page_directory / "meeting-seat.js", JAVASCRIPT),
         "/seat-audio-worklets.js": (
             page_directory / "seat-audio-worklets.js",
             JAVASCRIPT,

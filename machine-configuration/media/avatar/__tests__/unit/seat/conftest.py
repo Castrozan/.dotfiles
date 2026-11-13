@@ -25,8 +25,13 @@ def install_fake_audio_tools(directory, monkeypatch):
     heard = directory / "heard.raw"
     voice = directory / "voice.raw"
     voice.write_bytes(VOICE)
+    meeting = directory / "meeting.raw"
     tools = {
-        "pacat": f'#!/bin/sh\nexec cat > "{heard}"\n',
+        "pacat": (
+            "#!/bin/sh\n"
+            f'case "$*" in *--device=AvatarRemoteMeeting*) exec cat > "{meeting}";; esac\n'
+            f'exec cat > "{heard}"\n'
+        ),
         "parec": f'#!/bin/sh\ncat "{voice}"\nexec sleep 30\n',
     }
     for name, script in tools.items():
@@ -42,6 +47,7 @@ class BridgeUnderTest:
         self.port = port
         self.page = page
         self.heard = heard
+        self.meeting_heard = heard.with_name("meeting.raw")
 
     def serve(self):
         return seat_bridge.serve_remote_seat(self.page)
@@ -87,6 +93,12 @@ class BridgeUnderTest:
     def socket(self, origin=None):
         return connect(
             f"ws://127.0.0.1:{self.port}/audio",
+            origin=origin or f"http://localhost:{self.port}",
+        )
+
+    def meeting_socket(self, origin=None):
+        return connect(
+            f"ws://127.0.0.1:{self.port}/meeting",
             origin=origin or f"http://localhost:{self.port}",
         )
 

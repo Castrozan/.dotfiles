@@ -2,6 +2,7 @@ import * as THREE from "three";
 import {
   followLevel,
   RendererControls,
+  statusIsHidden,
   visibleMode,
 } from "./renderer-controls.js";
 import { CameraFrameStream } from "./camera-frame-stream.js";
@@ -45,8 +46,8 @@ const cameraFrames = pageOptions.has("output")
 const setPresented = (presented) => {
   output.style.display = presented ? "" : "none";
 };
+status.hidden = statusIsHidden(pageOptions);
 if (cameraFrames) {
-  status.hidden = true;
   setPresented(false);
   cameraFrames.connect();
 }

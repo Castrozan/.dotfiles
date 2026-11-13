@@ -68,6 +68,7 @@ where the user is. `--seat room` forces the room and `--seat remote` seats it at
 | --- | --- | --- |
 | `avatar-remote-seat.service` | chise | Serves the seat page and relays audio on `127.0.0.1:8769`; part of `avatar-conversation.target` |
 | `AvatarRemoteMicrophone` | chise | Null sink the Mac's microphone plays into; the listener hears its monitor |
+| `AvatarRemoteMeeting` | chise | Null sink the call's audio plays into over the `/meeting` socket; the listener hears its monitor as `meeting` |
 | `AvatarLipSync.monitor` | chise | The avatar's voice, which the relay sends to the Mac; speech uses the `remote` output, so chise's speakers stay silent |
 | ssh tunnel | Mac | Forwards local port 8769 for as long as the service runs, then closes the browser |
 | Headless Chrome | Mac | Captures the default microphone with echo cancellation and plays the voice; headless because a window manager shows a merely hidden window |
@@ -91,6 +92,26 @@ plays out late instead of being dropped.
 hostname and the caller's herdr pane. Chise reads that pane's Servant from `a2a list` on the Mac, gives it the floor,
 and sends each task there with `a2a ask` over ssh. With a remote seat the live voice hears `AvatarRemoteMicrophone`
 and plays only into `AvatarLipSync`.
+
+### Meetings from a Mac
+
+A video call that runs on a Mac is accompanied with the commands used on chise. In the call app the user selects once
+the camera `OBS Virtual Camera`, the microphone `BlackHole 2ch` and the speaker `BlackHole 16ch`, and the seat page opened
+as `/?meeting` does all the routing. It sends the call audio from `BlackHole 16ch` to chise and plays it to the user, and
+it feeds the user's microphone and the avatar's voice into `BlackHole 2ch`. The camera is a Mac OBS instance named `Avatar`
+whose browser source shows `?viewer&bare` through the tunnel.
+
+| Command on a Mac | Does |
+| --- | --- |
+| `avatar-start` | Runs `avatar-start --seat remote` on chise, which leaves chise's microphone closed, takes the seat with the meeting page and starts OBS with its virtual camera; any failure undoes the steps already taken |
+| `avatar-listen start\|read\|follow\|stop` | Forwards to chise; `start` adds `--seat remote` while this Mac holds the seat, so the call is `meeting` and the Mac's microphone is `human` |
+| `avatar-command speak TEXT [EMOTION]` | Plays into the call and to the user's ears: with no output given, the output is `remote` while a Mac holds the seat and `both` otherwise |
+| `avatar-audio`, `avatar-stop` | `avatar-audio` forwards to chise; `avatar-stop` closes OBS and the seat, then stops the avatar |
+
+The seat page fails with the name of the missing device when `BlackHole 2ch` or `BlackHole 16ch` is not installed, and a
+seat that ends stops the transcription. Not yet available on a Mac: the camera and composite video modes with the user's
+webcam, `avatar-controls`, per-channel mute and volume through `avatar-audio`, and speaker enrolment from the Mac's
+microphone.
 
 ## Live voice
 

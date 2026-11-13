@@ -5,6 +5,7 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
+from conversation_seat import Seat
 
 
 spec = importlib.util.spec_from_file_location(
@@ -121,3 +122,62 @@ def test_audio_readiness_requires_a_running_owned_graph(monkeypatch):
         returncode=0, stdout=json.dumps({"running": True})
     )
     assert start.audio_ready() is True
+
+
+def test_the_seat_defaults_to_the_room():
+    assert start.parse_seat([]) is Seat.ROOM
+    assert start.parse_seat(["--seat", "room"]) is Seat.ROOM
+    assert start.parse_seat(["--seat", "remote"]) is Seat.REMOTE
+
+
+def test_an_unknown_seat_is_refused():
+    with pytest.raises(SystemExit):
+        start.parse_seat(["--seat", "lounge"])
+
+
+def test_the_room_start_prepares_no_seat_and_keeps_its_ready_line(monkeypatch, capsys):
+    monkeypatch.setattr(start.subprocess, "run", Mock())
+    monkeypatch.setattr(start, "audio_ready", Mock(return_value=True))
+    monkeypatch.setattr(start, "wait_until_ready", Mock())
+    prepare = Mock()
+    monkeypatch.setattr(start.conversation_seat, "prepare", prepare)
+    start.main()
+    prepare.assert_not_called()
+    assert capsys.readouterr().out == (
+        "Avatar ready with her voice and the default microphone open. Check levels "
+        "with avatar-audio status. Switch video with avatar-command mode\n"
+    )
+
+
+def test_the_remote_start_prepares_the_seat_and_never_opens_the_room_microphone(
+    monkeypatch, capsys
+):
+    order = []
+    monkeypatch.setattr(
+        start.subprocess, "run", lambda command, **_: order.append(command)
+    )
+    monkeypatch.setattr(start, "audio_ready", Mock(return_value=True))
+    monkeypatch.setattr(start, "wait_until_ready", Mock())
+    monkeypatch.setattr(
+        start.conversation_seat, "prepare", lambda seat: order.append(("prepare", seat))
+    )
+    start.main(Seat.REMOTE)
+    assert order == [
+        ["systemctl", "--user", "start", "avatar.target"],
+        ("prepare", Seat.REMOTE),
+    ]
+    assert "voice and the microphone at the remote seat" in capsys.readouterr().out
+
+
+def test_a_remote_start_whose_seat_never_listens_fails_without_claiming_ready(
+    monkeypatch, capsys
+):
+    monkeypatch.setattr(start.subprocess, "run", Mock())
+    monkeypatch.setattr(start, "audio_ready", Mock(return_value=True))
+    monkeypatch.setattr(start, "wait_until_ready", Mock())
+    monkeypatch.setattr(
+        start.conversation_seat, "prepare", Mock(side_effect=TimeoutError("no seat"))
+    )
+    with pytest.raises(TimeoutError):
+        start.main(Seat.REMOTE)
+    assert capsys.readouterr().out == ""

@@ -1,9 +1,12 @@
+import argparse
 import json
 import subprocess
 import time
 import urllib.error
 import urllib.request
 
+import conversation_seat
+from conversation_seat import Seat
 
 MEETING_TARGET = "avatar.target"
 SYSTEMCTL_QUERY_TIMEOUT_SECONDS = 10
@@ -92,8 +95,18 @@ def bring_up(target, readiness_checks):
         raise
 
 
-def main():
+def parse_seat(arguments=None):
+    parser = argparse.ArgumentParser(prog="avatar-start")
+    parser.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
+    return parser.parse_args(arguments).seat
+
+
+def main(seat=Seat.ROOM):
     bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
+    if seat is Seat.REMOTE:
+        conversation_seat.prepare(seat)
+        print("Avatar ready with her voice and the microphone at the remote seat")
+        return
     subprocess.run(["avatar-audio", "open"], check=True, stdout=subprocess.DEVNULL)
     print(
         "Avatar ready with her voice and the default microphone open. Check levels with avatar-audio status. Switch video with avatar-command mode"
@@ -101,4 +114,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(parse_seat())

@@ -14,6 +14,7 @@ import pytest
 import conversation_effects
 import user_units
 import utterances
+from conversation_seat import Seat
 from conversation_state import ConversationPhase
 
 
@@ -30,7 +31,9 @@ def test_listening_refuses_while_the_conversation_listener_runs(tmp_path, monkey
     begin = Mock()
     monkeypatch.setattr(listener_session, "begin_listening", begin)
     with pytest.raises(ValueError, match="avatar-talk close"):
-        listen_cli.start(SimpleNamespace(microphone=None, language=None), tmp_path)
+        listen_cli.start(
+            SimpleNamespace(microphone=None, language=None, seat=Seat.ROOM), tmp_path
+        )
     begin.assert_not_called()
 
 

@@ -7,6 +7,7 @@ CHANNELS = {"agent": "AvatarMic", "human": "AvatarHuman"}
 MIX_SINK = "AvatarMix"
 LIP_SYNC_SINK = "AvatarLipSync"
 REMOTE_MICROPHONE_SINK = "AvatarRemoteMicrophone"
+REMOTE_MEETING_SINK = "AvatarRemoteMeeting"
 MEETING_SOURCE = "AvatarMicrophone"
 
 
@@ -72,6 +73,7 @@ def ensure_names_available():
         MIX_SINK,
         LIP_SYNC_SINK,
         REMOTE_MICROPHONE_SINK,
+        REMOTE_MEETING_SINK,
         MEETING_SOURCE,
     }
     existing = {
@@ -151,6 +153,7 @@ def create_mix(path, state):
     load_sink(path, state, MIX_SINK, "Avatar_Meeting_Mix")
     load_sink(path, state, LIP_SYNC_SINK, "Avatar_Lip_Sync")
     load_sink(path, state, REMOTE_MICROPHONE_SINK, "Avatar_Remote_Microphone")
+    load_sink(path, state, REMOTE_MEETING_SINK, "Avatar_Remote_Meeting")
     for name in CHANNELS.values():
         load_loopback(
             path,

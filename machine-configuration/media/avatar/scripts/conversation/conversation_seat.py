@@ -19,6 +19,7 @@ MICROPHONE_BY_SEAT = {
     Seat.ROOM: "AvatarRoomMicrophone",
     Seat.REMOTE: "AvatarRemoteMicrophone.monitor",
 }
+REMOTE_MEETING_SOURCE = "AvatarRemoteMeeting.monitor"
 SPEECH_OUTPUT_BY_SEAT = {Seat.ROOM: "speakers", Seat.REMOTE: "remote"}
 
 

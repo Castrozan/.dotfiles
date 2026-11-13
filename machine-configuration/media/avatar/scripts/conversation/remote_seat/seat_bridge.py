@@ -5,6 +5,7 @@ import pathlib
 import signal
 import sys
 
+from meeting_relay import MEETING_PATH, MeetingRelay
 from seat_page import SeatPage, seat_page_files
 from websockets.asyncio.server import serve
 from websockets.exceptions import InvalidMessage
@@ -85,12 +86,19 @@ class RemoteSeat:
     def __init__(self, page_directory):
         self.attached = asyncio.Event()
         self.detached = asyncio.Event()
+        self.meeting = MeetingRelay(end_process)
         self.page = SeatPage(seat_page_files(page_directory), self.attached.is_set)
 
     def answer_request(self, connection, request):
-        if request.path == AUDIO_PATH:
+        if request.path in (AUDIO_PATH, MEETING_PATH):
             return None
         return self.page.answer(connection, request)
+
+    async def carry(self, websocket):
+        if websocket.request.path == MEETING_PATH:
+            await self.meeting.carry(websocket)
+            return
+        await self.carry_audio(websocket)
 
     async def carry_audio(self, websocket):
         if self.attached.is_set():
@@ -141,7 +149,7 @@ async def serve_remote_seat(page_directory):
     stopping = asyncio.Event()
     asyncio.get_running_loop().add_signal_handler(signal.SIGTERM, stopping.set)
     async with serve(
-        seat.carry_audio,
+        seat.carry,
         HOST,
         PORT,
         origins=ALLOWED_ORIGINS,

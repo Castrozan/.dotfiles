@@ -17,7 +17,7 @@ in
       };
       Service = {
         ExecStart = toString programs.remoteSeat;
-        ExecStopPost = "${pkgs.systemd}/bin/systemctl --user --no-block stop avatar-conversation.target";
+        ExecStopPost = "${pkgs.systemd}/bin/systemctl --user --no-block stop avatar-conversation.target avatar-listener.service";
       };
     };
   };

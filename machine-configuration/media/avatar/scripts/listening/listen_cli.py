@@ -4,12 +4,14 @@ import re
 import subprocess
 import sys
 
+import conversation_seat
 import conversation_state
 import listener
 import listener_runtime
 import listener_session
 import speaker_identity
 import transcript_log
+from conversation_seat import Seat
 from conversation_state import ConversationAction, ConversationCommand
 from listener_session import ListenerPurpose
 
@@ -36,6 +38,21 @@ def selected_sources(microphone):
     return {"meeting": MEETING_AUDIO, "human": microphone}
 
 
+def remote_seat_sources(microphone):
+    if microphone:
+        raise ValueError("A remote seat's microphone is the Mac's; drop --microphone")
+    return {
+        "meeting": conversation_seat.REMOTE_MEETING_SOURCE,
+        "human": conversation_seat.MICROPHONE_BY_SEAT[Seat.REMOTE],
+    }
+
+
+def listening_for(seat, microphone):
+    if seat is Seat.REMOTE:
+        return remote_seat_sources(microphone), {"seat": seat}
+    return selected_sources(microphone), {}
+
+
 def start(arguments, directory):
     decision = conversation_state.decide(
         conversation_state.observe(directory), ConversationCommand.TRANSCRIBE_MEETING
@@ -44,13 +61,14 @@ def start(arguments, directory):
         raise ValueError(
             "A conversation is open; run avatar-talk close before transcribing a meeting"
         )
-    sources = selected_sources(arguments.microphone)
+    sources, seat_settings = listening_for(arguments.seat, arguments.microphone)
     listener_session.begin_listening(
         directory,
         ListenerPurpose.MEETING,
         sources,
         language=arguments.language,
         identify_speakers=True,
+        **seat_settings,
     )
     print(json.dumps({"listening": True, "sources": sources}))
 
@@ -130,6 +148,7 @@ def parse_arguments():
     begin = commands.add_parser("start")
     begin.add_argument("--microphone")
     begin.add_argument("--language")
+    begin.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
     commands.add_parser("stop")
     commands.add_parser("status")
     reading = commands.add_parser("read")

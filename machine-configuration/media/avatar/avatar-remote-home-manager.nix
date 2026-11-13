@@ -13,6 +13,11 @@ let
     pkgs.writeShellScriptBin command ''
       exec ssh chise ${command} "$(printf '%q ' "$@")"
     '';
+  remoteMeeting =
+    verb: command:
+    pkgs.writeShellScriptBin command ''
+      exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_meeting.py ${verb} "$@"
+    '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
     export AVATAR_AGENT_HOST=${hostname}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_talk.py "$@"
@@ -39,6 +44,10 @@ in
     talk
     wake
     (forwardToChise "avatar-command")
+    (forwardToChise "avatar-audio")
+    (remoteMeeting "start" "avatar-start")
+    (remoteMeeting "stop" "avatar-stop")
+    (remoteMeeting "listen" "avatar-listen")
   ];
 
   launchd.agents.avatar-wake = {

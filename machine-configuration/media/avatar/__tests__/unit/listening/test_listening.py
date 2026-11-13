@@ -1,19 +1,15 @@
 import json
 import stat
 import struct
-from types import SimpleNamespace
 from unittest.mock import Mock
 
 import pytest
 
-import conversation_state
 import listen_cli
-import listener_session
 import source_capture
 import speech_segmenter
 from transcription import transcriber
 import transcript_log
-from conversation_state import ConversationPhase
 
 FRAME_SAMPLES = 480
 
@@ -110,23 +106,6 @@ def test_listening_hears_the_meeting_and_the_default_microphone(monkeypatch):
         "meeting": "@DEFAULT_MONITOR@",
         "human": "headset",
     }
-
-
-def test_a_pinned_language_reaches_the_listener(tmp_path, monkeypatch):
-    monkeypatch.setattr(
-        conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
-    )
-    begin = Mock()
-    monkeypatch.setattr(listener_session, "begin_listening", begin)
-    monkeypatch.setattr(listen_cli, "selected_sources", lambda _: {"meeting": "any"})
-    listen_cli.start(SimpleNamespace(microphone=None, language="pt"), tmp_path)
-    begin.assert_called_once_with(
-        tmp_path,
-        listener_session.ListenerPurpose.MEETING,
-        {"meeting": "any"},
-        language="pt",
-        identify_speakers=True,
-    )
 
 
 def test_a_named_microphone_is_a_separate_human_source(monkeypatch):

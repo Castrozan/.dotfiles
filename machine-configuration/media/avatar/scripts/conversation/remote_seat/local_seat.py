@@ -117,7 +117,7 @@ def wait_until_attached():
     )
 
 
-def open_headless_browser(profile_flag, port, *extra_flags):
+def open_headless_browser(profile_flag, port, *extra_flags, query=""):
     subprocess.run(
         [
             "/usr/bin/open",
@@ -128,7 +128,7 @@ def open_headless_browser(profile_flag, port, *extra_flags):
             "--args",
             "--headless=new",
             profile_flag,
-            f"--app=http://localhost:{port}/",
+            f"--app=http://localhost:{port}/{query}",
             "--use-fake-ui-for-media-stream",
             *extra_flags,
             "--no-first-run",
@@ -139,13 +139,16 @@ def open_headless_browser(profile_flag, port, *extra_flags):
     )
 
 
-def open_browser():
+def open_browser(query=""):
     open_headless_browser(
-        BROWSER_PROFILE_FLAG, SEAT_PORT, "--autoplay-policy=no-user-gesture-required"
+        BROWSER_PROFILE_FLAG,
+        SEAT_PORT,
+        "--autoplay-policy=no-user-gesture-required",
+        query=query,
     )
 
 
-def take():
+def take(query=""):
     leave()
     try:
         subprocess.Popen(
@@ -156,7 +159,7 @@ def take():
             stderr=subprocess.DEVNULL,
         )
         wait_for_tunnel()
-        open_browser()
+        open_browser(query)
         wait_until_attached()
     except BaseException:
         leave()
