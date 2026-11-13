@@ -5,7 +5,7 @@ import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { test } from "node:test";
 import { fileURLToPath } from "node:url";
-import { fixture, build, junit } from "./fixture.mjs";
+import { fixture, build, junit, privateBaseUrl } from "./fixture.mjs";
 
 test("missing producer outputs retain all declared capabilities without a digest or pass", async (context) => {
   const input = await fixture(context, false);
@@ -109,6 +109,7 @@ test("a partial retry retains original evidence times and attempt identity", asy
     input.context.jobs[1].steps[0].started_at,
   );
   assert.equal(payload.workflow.runAttempt, 2);
+  assert.equal(payload.detailsBaseUrl, `${privateBaseUrl}overview/1/2/`);
 });
 
 test("required evidence completeness accepts failed tests but rejects missing measurements", async () => {

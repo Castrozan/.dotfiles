@@ -3,16 +3,13 @@ import os
 from pathlib import Path
 import re
 import sys
+from urllib.parse import urlsplit
 
 from ingestion_snapshot_publisher import IngestionRefusedError, publish_snapshot
 
 
 TOPIC = "dotfiles-quality-overview"
 REPOSITORY = "Castrozan/.dotfiles"
-REPORT_BASE_URL = (
-    "https://storage.googleapis.com/"
-    "zg-url-shortener-2026-dotfiles-usage-snapshots/reports/overview"
-)
 
 
 def _validate_producing_repository(workflow, subject):
@@ -28,12 +25,47 @@ def _validate_producing_revision(subject, revision):
 def _validate_producing_attempt(identifier, attempt):
     if (
         not re.fullmatch(r"[1-9]\d*", identifier, flags=re.ASCII)
-        or not isinstance(attempt, int)
+        or type(attempt) is not int
         or attempt < 1
     ):
         raise IngestionRefusedError(
             "Overview run and attempt must identify GitHub execution"
         )
+
+
+def _has_report_base_url_shape(value):
+    return (
+        isinstance(value, str) and value.startswith("https://") and value.endswith("/")
+    )
+
+
+def _is_forbidden_base_url_character(character):
+    return ord(character) <= 32 or ord(character) == 127 or character in "\\?#"
+
+
+def _has_usable_report_authority(base_url):
+    try:
+        authority = urlsplit(base_url)
+        return (
+            bool(authority.hostname)
+            and "@" not in authority.netloc
+            and authority.port != 0
+        )
+    except ValueError:
+        return False
+
+
+def _configured_report_artifact_base_url(environment):
+    base_url = environment.get("REPORT_ARTIFACT_BASE_URL")
+    if (
+        not _has_report_base_url_shape(base_url)
+        or any(_is_forbidden_base_url_character(character) for character in base_url)
+        or not _has_usable_report_authority(base_url)
+    ):
+        raise IngestionRefusedError(
+            "REPORT_ARTIFACT_BASE_URL must be credential-free HTTPS ending in a slash"
+        )
+    return base_url
 
 
 def producing_environment(payload, environment):
@@ -45,7 +77,8 @@ def producing_environment(payload, environment):
     _validate_producing_repository(workflow, subject)
     _validate_producing_revision(subject, revision)
     _validate_producing_attempt(identifier, attempt)
-    if payload["detailsBaseUrl"] != f"{REPORT_BASE_URL}/{identifier}/{attempt}/":
+    base_url = _configured_report_artifact_base_url(environment)
+    if payload["detailsBaseUrl"] != f"{base_url}overview/{identifier}/{attempt}/":
         raise IngestionRefusedError(
             "Overview details do not identify the producing attempt"
         )

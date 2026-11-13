@@ -7,6 +7,59 @@ import { remainingGaps } from "./remaining_gaps.mjs";
 
 const [verdrLocation, contextLocation, downloadsLocation, outputLocation] =
   process.argv.slice(2);
+const reportArtifactBaseUrlError =
+  "REPORT_ARTIFACT_BASE_URL must be credential-free HTTPS ending in a slash";
+
+function hasReportBaseUrlShape(value) {
+  return (
+    typeof value === "string" &&
+    value.startsWith("https://") &&
+    value.endsWith("/")
+  );
+}
+
+function isForbiddenBaseUrlCharacter(character) {
+  const characterCode = character.codePointAt(0);
+  return (
+    characterCode <= 32 || characterCode === 127 || "\\?#".includes(character)
+  );
+}
+
+function hasUsableReportAuthority(address, value) {
+  const authority = value.slice("https://".length).split("/", 1)[0];
+  return (
+    Boolean(address.hostname) &&
+    authority !== "" &&
+    !authority.includes("@") &&
+    address.port !== "0"
+  );
+}
+
+function parseReportBaseUrl(value) {
+  try {
+    return new URL(value);
+  } catch {
+    throw new Error(reportArtifactBaseUrlError);
+  }
+}
+
+function configuredReportArtifactBaseUrl(value) {
+  if (
+    !hasReportBaseUrlShape(value) ||
+    Array.from(value).some(isForbiddenBaseUrlCharacter)
+  ) {
+    throw new Error(reportArtifactBaseUrlError);
+  }
+  const address = parseReportBaseUrl(value);
+  if (!hasUsableReportAuthority(address, value)) {
+    throw new Error(reportArtifactBaseUrlError);
+  }
+  return value;
+}
+
+const reportArtifactBaseUrl = configuredReportArtifactBaseUrl(
+  process.env.REPORT_ARTIFACT_BASE_URL,
+);
 const context = JSON.parse(await readFile(contextLocation, "utf8"));
 const downloads = resolve(downloadsLocation);
 const output = resolve(outputLocation);
@@ -15,7 +68,7 @@ const load = (path) =>
 const { overviewManifestSchema } = await load("overview/manifest.js");
 const { buildOverview } = await load("overview/build.js");
 const { workflow } = context;
-const detailsBaseUrl = `https://storage.googleapis.com/zg-url-shortener-2026-dotfiles-usage-snapshots/reports/overview/${workflow.runId}/${workflow.runAttempt}/`;
+const detailsBaseUrl = `${reportArtifactBaseUrl}overview/${workflow.runId}/${workflow.runAttempt}/`;
 const artifact = await artifactInputs(
   context,
   downloads,

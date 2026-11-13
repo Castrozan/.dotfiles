@@ -11,6 +11,7 @@ assert.ok(
   evaluator,
   "VERDR_EVALUATOR_ROOT must name the pinned built evaluator",
 );
+export const privateBaseUrl = "https://reports.example.test/private/reports/";
 export const junit =
   '<testsuite name="owned" tests="3" failures="1" errors="0" skipped="1"><testcase name="pass"/><testcase name="fail"><failure message="owned negative control"/></testcase><testcase name="skip"><skipped/></testcase></testsuite>';
 const cobertura =
@@ -102,7 +103,7 @@ export async function fixture(testContext, includeReports) {
   return { root, downloads, context };
 }
 
-export async function build(input) {
+export async function runBuild(input, environment) {
   const contextPath = join(input.root, "context.json");
   const output = join(input.root, "output");
   await writeFile(contextPath, JSON.stringify(input.context));
@@ -115,8 +116,16 @@ export async function build(input) {
       input.downloads,
       output,
     ],
-    { encoding: "utf8", timeout: 20000 },
+    { encoding: "utf8", timeout: 20000, env: environment },
   );
+  return { execution, output };
+}
+
+export async function build(
+  input,
+  environment = { REPORT_ARTIFACT_BASE_URL: privateBaseUrl },
+) {
+  const { execution, output } = await runBuild(input, environment);
   assert.equal(execution.status, 0, execution.stderr);
   return {
     output,
