@@ -1,10 +1,17 @@
 import argparse
+from dataclasses import dataclass
 import json
 from pathlib import Path
 import re
 import shutil
 
 from artifact_selection import ARTIFACT_PRODUCERS
+
+
+@dataclass(frozen=True)
+class VerifiedCoverageSources:
+    coverage_directory: Path
+    shared_assets_directory: Path
 
 
 def validate_coverage_selection(selection):
@@ -17,20 +24,32 @@ def validate_coverage_selection(selection):
         raise ValueError("Coverage artifact has no verified producing job")
 
 
+def verified_shared_assets(artifact_directory):
+    shared = artifact_directory / "data"
+    if shared.is_symlink() or not shared.is_dir():
+        raise ValueError("Verified coverage artifact has no shared assets directory")
+    stylesheet = shared / "bcov.css"
+    if stylesheet.is_symlink() or not stylesheet.is_file():
+        raise ValueError("Verified coverage artifact has no shared stylesheet")
+    return shared
+
+
 def verified_coverage(context, downloads):
     validate_coverage_selection(context["artifacts"]["coverage-report"])
-    coverage = downloads / "coverage-report" / "bats"
+    artifact_directory = downloads / "coverage-report"
+    coverage = artifact_directory / "bats"
     if not (coverage / "coverage.json").is_file():
         raise ValueError("Verified coverage artifact has no coverage document")
     if not (coverage / "index.html").is_file():
         raise ValueError("Verified coverage artifact has no coverage HTML document")
-    return coverage
+    return VerifiedCoverageSources(coverage, verified_shared_assets(artifact_directory))
 
 
 def prepare_reports(context, downloads, site):
-    coverage = verified_coverage(context, downloads)
+    sources = verified_coverage(context, downloads)
     site.mkdir(parents=True, exist_ok=True)
-    shutil.copytree(coverage, site / "coverage")
+    shutil.copytree(sources.coverage_directory, site / "coverage")
+    shutil.copytree(sources.shared_assets_directory, site / "data")
 
 
 def main():

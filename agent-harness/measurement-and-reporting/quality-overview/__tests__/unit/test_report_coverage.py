@@ -15,6 +15,8 @@ def coverage_producer(run, artifact, jobs, monkeypatch):
     with ZipFile(archive, "w") as bundle:
         bundle.writestr("bats/coverage.json", '{"covered_lines": "1"}')
         bundle.writestr("bats/index.html", "measured coverage")
+        bundle.writestr("bats/detail.html", '<link href="../data/bcov.css">source')
+        bundle.writestr("data/bcov.css", "body { color: green; }")
     content = archive.getvalue()
     artifact.update(
         name="coverage-report", digest="sha256:" + sha256(content).hexdigest()
@@ -54,6 +56,11 @@ def test_report_reuses_the_exact_verified_coverage_artifact(
     assert selection["id"] == 456
     assert selection["producer"]["runAttempt"] == 2
     assert (tmp_path / "site/coverage/index.html").read_text() == "measured coverage"
+    detail = tmp_path / "site/coverage/detail.html"
+    assert detail.read_text() == '<link href="../data/bcov.css">source'
+    assert (
+        detail.parent / "../data/bcov.css"
+    ).read_bytes() == b"body { color: green; }"
     assert coverage_producer[1][0][-1].endswith("/actions/artifacts/456/zip")
     assert len(coverage_producer[1]) == 1
 
@@ -130,5 +137,37 @@ def test_missing_coverage_document_cannot_publish(run, coverage_producer, tmp_pa
     DOWNLOAD.download_selected(context, downloads)
     (downloads / "coverage-report/bats/coverage.json").unlink()
     with pytest.raises(ValueError, match="coverage document"):
+        REPORTS.prepare_reports(context, downloads, tmp_path / "site")
+    assert not (tmp_path / "site").exists()
+
+
+@pytest.mark.parametrize("remove_directory", [False, True])
+def test_missing_shared_stylesheet_or_directory_cannot_publish(
+    run, coverage_producer, tmp_path, remove_directory
+):
+    context = CONTEXT.collect_context({"workflow_run": run})
+    downloads = tmp_path / "downloads"
+    DOWNLOAD.download_selected(context, downloads)
+    shared = downloads / "coverage-report/data"
+    (shared / "bcov.css").unlink()
+    if remove_directory:
+        shared.rmdir()
+    with pytest.raises(ValueError, match="shared"):
+        REPORTS.prepare_reports(context, downloads, tmp_path / "site")
+    assert not (tmp_path / "site").exists()
+
+
+@pytest.mark.parametrize("shared_entry", ["data", "data/bcov.css"])
+def test_symlinked_shared_assets_cannot_publish(
+    run, coverage_producer, tmp_path, shared_entry
+):
+    context = CONTEXT.collect_context({"workflow_run": run})
+    downloads = tmp_path / "downloads"
+    DOWNLOAD.download_selected(context, downloads)
+    shared = downloads / "coverage-report" / shared_entry
+    external = tmp_path / "external-shared"
+    shared.rename(external)
+    shared.symlink_to(external, target_is_directory=external.is_dir())
+    with pytest.raises(ValueError, match="shared"):
         REPORTS.prepare_reports(context, downloads, tmp_path / "site")
     assert not (tmp_path / "site").exists()
