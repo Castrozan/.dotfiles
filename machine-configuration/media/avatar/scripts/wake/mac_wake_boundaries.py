@@ -61,7 +61,7 @@ def floor_handed_to(addressee):
 def mac_boundaries():
     return {
         "capture_command": capture_command,
-        "conversation_listening": local_seat.attached,
+        "conversation_listening": local_seat.conversation_listening,
         "transcribe": transcribed_at_the_avatar_host,
         "open_conversation": conversation_opened_here,
         "transcript_entries": lambda: [],

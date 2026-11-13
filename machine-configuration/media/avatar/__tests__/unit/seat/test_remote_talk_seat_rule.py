@@ -88,3 +88,23 @@ def test_opening_here_does_not_repeat_a_remote_seat_already_named(monkeypatch):
     assert runner.call_args.args[0][-1] == "open --seat remote"
     remote_talk.open_here(["open"])
     assert runner.call_args.args[0][-1] == "open --seat remote"
+
+
+def closing(monkeypatch, health):
+    order = Mock()
+    order.run.return_value = SimpleNamespace(returncode=0)
+    monkeypatch.setattr(remote_talk.subprocess, "run", order.run)
+    monkeypatch.setattr(local_seat, "leave", order.leave)
+    monkeypatch.setattr(local_seat, "health", lambda: health)
+    assert run_main(monkeypatch, "close") == 0
+    return [call[0] for call in order.mock_calls]
+
+
+def test_closing_a_conversation_keeps_the_seat_a_meeting_still_holds(monkeypatch):
+    held = {"attached": True, "listening": False, "meeting": True}
+    assert closing(monkeypatch, held) == ["run"]
+
+
+def test_closing_a_conversation_with_no_meeting_leaves_the_seat(monkeypatch):
+    free = {"attached": True, "listening": False, "meeting": False}
+    assert closing(monkeypatch, free) == ["run", "leave"]

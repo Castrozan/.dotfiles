@@ -1,4 +1,6 @@
 import argparse
+import contextlib
+import http.client
 import json
 
 import audio
@@ -10,6 +12,13 @@ import pulse_audio
 RUNNING_PHASES = (
     audio_ownership.AudioPhase.RUNNING_DETACHED,
     audio_ownership.AudioPhase.RUNNING_ATTACHED,
+)
+SEAT_HOST = "127.0.0.1"
+SEAT_PORT = 8769
+SEAT_TIMEOUT_SECONDS = 1
+LEVEL_COMMANDS = (
+    audio_ownership.AudioCommand.MUTE,
+    audio_ownership.AudioCommand.VOLUME,
 )
 
 
@@ -67,13 +76,23 @@ def command_arguments(arguments):
     return {}
 
 
+def tell_seat_levels_changed():
+    with contextlib.suppress(OSError, http.client.HTTPException):
+        connection = http.client.HTTPConnection(
+            SEAT_HOST, SEAT_PORT, timeout=SEAT_TIMEOUT_SECONDS
+        )
+        try:
+            connection.request("GET", "/levels")
+            connection.getresponse()
+        finally:
+            connection.close()
+
+
 def run(arguments, path, state):
-    audio.perform(
-        path,
-        state,
-        audio_ownership.AudioCommand(arguments.action),
-        **command_arguments(arguments),
-    )
+    command = audio_ownership.AudioCommand(arguments.action)
+    audio.perform(path, state, command, **command_arguments(arguments))
+    if command in LEVEL_COMMANDS:
+        tell_seat_levels_changed()
     print(json.dumps(describe(state)))
 
 

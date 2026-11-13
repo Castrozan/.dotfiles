@@ -49,3 +49,12 @@ def test_the_start_command_reaches_the_seat_modules_and_passes_its_arguments():
 def test_the_listen_command_reaches_the_seat_module():
     listen = wrapper(PROGRAMS, "listen")
     assert "./scripts/conversation}" in listen
+
+
+def test_the_seat_outlives_a_conversation_so_a_meeting_keeps_it():
+    assert "PartOf" not in REMOTE_SEAT_UNIT
+
+
+def test_stopping_the_avatar_releases_the_seat():
+    stop = (AVATAR / "scripts/avatar-stop").read_text()
+    assert "avatar-remote-seat.service" in stop

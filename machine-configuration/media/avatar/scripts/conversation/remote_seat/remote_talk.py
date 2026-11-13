@@ -81,7 +81,8 @@ def open_here(arguments):
 
 def close_everywhere(arguments):
     returncode = forward(arguments)
-    local_seat.leave()
+    if not local_seat.meeting_held():
+        local_seat.leave()
     return returncode
 
 

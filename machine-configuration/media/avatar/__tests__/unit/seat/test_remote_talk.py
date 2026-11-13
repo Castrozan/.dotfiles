@@ -113,6 +113,7 @@ def test_closing_closes_the_conversation_then_leaves_the_seat(monkeypatch):
     order.run.return_value = SimpleNamespace(returncode=0)
     monkeypatch.setattr(remote_talk.subprocess, "run", order.run)
     monkeypatch.setattr(local_seat, "leave", order.leave)
+    monkeypatch.setattr(local_seat, "health", lambda: None)
     assert run_main(monkeypatch, "close") == 0
     assert [call[0] for call in order.mock_calls] == ["run", "leave"]
 

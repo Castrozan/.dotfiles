@@ -132,8 +132,14 @@ let
     exec ${websocketPython}/bin/python3 ${./scripts/live/live_bridge.py}
   '';
   remoteSeat = pkgs.writeShellScript "avatar-remote-seat" ''
-    export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
+    export PATH=${
+      lib.makeBinPath [
+        pkgs.pulseaudio
+        pkgs.systemd
+      ]
+    }:$PATH
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
+    export PYTHONPATH=${./scripts}:${./scripts/listening}
     exec ${websocketPython}/bin/python3 ${./scripts/conversation/remote_seat}/seat_bridge.py
   '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''

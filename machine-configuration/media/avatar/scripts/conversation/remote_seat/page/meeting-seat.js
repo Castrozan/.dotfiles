@@ -74,10 +74,20 @@ function sendCallFrames(capture, callAudio, socket) {
 async function openCallMicrophone(output, microphone, voiceForCall) {
   const context = new AudioContext();
   await context.setSinkId(output.deviceId);
-  for (const stream of [microphone, voiceForCall.stream])
-    context.createMediaStreamSource(stream).connect(context.destination);
+  const gains = {};
+  const streams = { human: microphone, agent: voiceForCall.stream };
+  for (const [channel, stream] of Object.entries(streams)) {
+    gains[channel] = context.createGain();
+    context.createMediaStreamSource(stream).connect(gains[channel]);
+    gains[channel].connect(context.destination);
+  }
   await context.resume();
-  return context;
+  return { context, gains };
+}
+
+function applyLevels(gains, levels) {
+  for (const [channel, level] of Object.entries(levels))
+    if (Object.hasOwn(gains, channel)) gains[channel].gain.value = level;
 }
 
 export async function joinMeeting({
@@ -96,7 +106,7 @@ export async function joinMeeting({
   sendCallFrames(capture, callAudio, socket);
   const voiceForCall = playback.createMediaStreamDestination();
   voice.connect(voiceForCall);
-  const toCall = await openCallMicrophone(
+  const { context: toCall, gains } = await openCallMicrophone(
     callMicrophone,
     microphone,
     voiceForCall,
@@ -105,6 +115,7 @@ export async function joinMeeting({
     closed: new Promise((resolve) => {
       socket.onclose = resolve;
     }),
+    setLevels: (levels) => applyLevels(gains, levels),
     leave() {
       for (const track of callAudio.getTracks()) track.stop();
       earpiece.srcObject = null;

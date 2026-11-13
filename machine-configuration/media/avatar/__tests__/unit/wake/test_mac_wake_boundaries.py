@@ -101,10 +101,20 @@ def test_a_conversation_has_no_transcript_purpose_or_addressee_on_a_mac(on_a_mac
     assert on_a_mac.addressee() is None
 
 
-@pytest.mark.parametrize("seat_held", [True, False])
-def test_a_seat_held_here_means_the_wake_is_not_armed(monkeypatch, seat_held):
+@pytest.mark.parametrize(
+    ("seat", "armed"),
+    [
+        (None, True),
+        ({"attached": True, "listening": False, "meeting": True}, True),
+        ({"attached": True, "listening": True, "meeting": True}, False),
+        ({"attached": True, "listening": True}, False),
+    ],
+)
+def test_only_a_conversation_listening_at_this_seat_pauses_the_wake(
+    monkeypatch, seat, armed
+):
     monkeypatch.setattr(wake_boundaries.sys, "platform", "darwin")
-    monkeypatch.setattr(local_seat, "attached", lambda: seat_held)
+    monkeypatch.setattr(local_seat, "health", lambda: seat)
     boundaries = wake_boundaries.for_this_machine()
     boundaries.sessions = Mock(return_value=[VOYAGER])
-    assert wake_listener.WakeListener(boundaries, False).armed() is not seat_held
+    assert wake_listener.WakeListener(boundaries, False).armed() is armed

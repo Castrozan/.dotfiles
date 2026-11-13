@@ -1,14 +1,18 @@
 import asyncio
+import contextlib
+import json
 import logging
 import os
 import pathlib
 import signal
 import sys
 
+import channel_levels
+from host_state import HostState
 from meeting_relay import MEETING_PATH, MeetingRelay
 from seat_page import SeatPage, seat_page_files
 from websockets.asyncio.server import serve
-from websockets.exceptions import InvalidMessage
+from websockets.exceptions import ConnectionClosed, InvalidMessage
 
 HOST = "127.0.0.1"
 PORT = 8769
@@ -87,7 +91,28 @@ class RemoteSeat:
         self.attached = asyncio.Event()
         self.detached = asyncio.Event()
         self.meeting = MeetingRelay(end_process)
-        self.page = SeatPage(seat_page_files(page_directory), self.attached.is_set)
+        self.audio_socket = None
+        self.level_tasks = set()
+        self.host_state = HostState()
+        self.page = SeatPage(
+            seat_page_files(page_directory),
+            self.attached.is_set,
+            self.schedule_levels,
+            self.host_state.snapshot,
+        )
+
+    def schedule_levels(self):
+        task = asyncio.create_task(self.send_levels())
+        self.level_tasks.add(task)
+        task.add_done_callback(self.level_tasks.discard)
+
+    async def send_levels(self):
+        websocket = self.audio_socket
+        if websocket is None:
+            return
+        levels = await channel_levels.current()
+        with contextlib.suppress(ConnectionClosed):
+            await websocket.send(json.dumps(levels))
 
     def answer_request(self, connection, request):
         if request.path in (AUDIO_PATH, MEETING_PATH):
@@ -107,6 +132,7 @@ class RemoteSeat:
         self.page.failure = None
         self.detached.clear()
         self.attached.set()
+        self.audio_socket = websocket
         processes = []
         try:
             microphone = await asyncio.create_subprocess_exec(
@@ -117,6 +143,7 @@ class RemoteSeat:
                 *voice_capture_command(), stdout=asyncio.subprocess.PIPE
             )
             processes.append(voice)
+            await self.send_levels()
             await until_first_finishes(
                 relay_microphone(websocket, microphone.stdin),
                 relay_voice(voice.stdout, websocket),
@@ -124,6 +151,7 @@ class RemoteSeat:
         finally:
             for process in processes:
                 await end_process(process)
+            self.audio_socket = None
             self.attached.clear()
             self.detached.set()
 
@@ -155,7 +183,9 @@ async def serve_remote_seat(page_directory):
         origins=ALLOWED_ORIGINS,
         process_request=seat.answer_request,
     ):
-        await until_first_finishes(seat.stay_while_taken(), stopping.wait())
+        await until_first_finishes(
+            seat.stay_while_taken(), stopping.wait(), seat.host_state.follow()
+        )
 
 
 if __name__ == "__main__":

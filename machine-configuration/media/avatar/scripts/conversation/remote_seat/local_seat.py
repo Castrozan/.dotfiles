@@ -66,6 +66,14 @@ def attached():
     return bool((health() or {}).get("attached"))
 
 
+def conversation_listening():
+    return bool((health() or {}).get("listening"))
+
+
+def meeting_held():
+    return bool((health() or {}).get("meeting"))
+
+
 def end_processes_matching(command_line, signal_name="TERM"):
     subprocess.run(
         ["/usr/bin/pkill", f"-{signal_name}", "-f", "--", command_line],

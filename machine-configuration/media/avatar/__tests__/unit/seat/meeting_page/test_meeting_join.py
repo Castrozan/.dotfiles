@@ -11,17 +11,35 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def join_meeting(devices):
+def join_meeting(devices, levels=None):
     source = base64.b64encode(MEETING_SEAT.read_bytes()).decode()
     program = f"""
     const log = [];
+    const gains = [];
     const track = {{ stop: () => log.push("track stopped") }};
     const stream = (name) => ({{ name, getTracks: () => [track] }});
     class Context {{
-      constructor(name) {{ this.name = name; this.state = "running"; }}
+      constructor(name) {{
+        this.name = name;
+        this.state = "running";
+        this.destination = {{ name: "destination" }};
+      }}
       setSinkId(id) {{ log.push(["sink", id]); }}
       createMediaStreamSource(source) {{
-        return {{ connect: () => log.push(["source", this.name, source.name]) }};
+        return {{
+          connect: (node) => {{
+            log.push(["source", this.name, source.name]);
+            node.fedBy = source.name;
+          }},
+        }};
+      }}
+      createGain() {{
+        const node = {{
+          gain: {{ value: 1 }},
+          connect: (target) => {{ node.reaches = target.name; }},
+        }};
+        gains.push(node);
+        return node;
       }}
       createMediaStreamDestination() {{ return {{ stream: stream("voice for the call") }}; }}
       resume() {{}}
@@ -61,11 +79,15 @@ def join_meeting(devices):
           openAudioGraph: async (rate) => new Context(`capture ${{rate}}`),
         }});
         log.push("joined");
+        const levels = {json.dumps(levels)};
+        if (levels) joined.setLevels(levels);
         joined.leave();
       }} catch (error) {{
         log.push(["failed", error.message]);
       }}
-      console.log(JSON.stringify({{ log, voiceConnections }}));
+      const routes = Object.fromEntries(gains.map((node) => [node.fedBy, node.reaches]));
+      const gainValues = Object.fromEntries(gains.map((node) => [node.fedBy, node.gain.value]));
+      console.log(JSON.stringify({{ log, voiceConnections, routes, gainValues }}));
     }});
     """
     completed = subprocess.run(
@@ -98,6 +120,25 @@ def test_joining_routes_the_call_and_the_voice_through_the_virtual_devices():
     assert log.index("joined") < log.index("socket closed")
     assert ["closed", "capture 16000"] in log
     assert ["closed", "call microphone"] in log
+
+
+def test_both_streams_reach_the_call_through_their_own_gain():
+    result = join_meeting([BUILT_IN_OUTPUT, CALL_MICROPHONE, CALL_SPEAKER])
+    assert result["routes"] == {
+        "microphone": "destination",
+        "voice for the call": "destination",
+    }
+    assert result["gainValues"] == {"microphone": 1, "voice for the call": 1}
+
+
+def test_levels_set_the_named_channels_and_ignore_unknown_names():
+    result = join_meeting(
+        [BUILT_IN_OUTPUT, CALL_MICROPHONE, CALL_SPEAKER],
+        levels={"human": 0, "agent": 0.5, "constructor": 1, "ghost": 0.1},
+    )
+    assert result["gainValues"] == {"microphone": 0, "voice for the call": 0.5}
+    assert "joined" in result["log"]
+    assert all(entry[0] != "failed" for entry in result["log"])
 
 
 def test_a_missing_device_fails_before_any_capture_or_socket_opens():

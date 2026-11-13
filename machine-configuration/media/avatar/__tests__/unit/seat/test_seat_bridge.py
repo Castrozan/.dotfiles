@@ -1,12 +1,46 @@
 import asyncio
+import json
 import logging
+from types import SimpleNamespace
 
+import channel_levels
+import host_state
 import pytest
 import seat_bridge
 from websockets.exceptions import ConnectionClosed, InvalidStatus
 
 VOICE = b"\x01\x02" * 480
 MICROPHONE = b"\x03\x04" * 320
+
+
+def sink(name, volume_percent, mute=False):
+    return {
+        "name": name,
+        "mute": mute,
+        "volume": {"mono": {"value_percent": f"{volume_percent}%"}},
+    }
+
+
+@pytest.fixture(autouse=True)
+def pulse_sinks(monkeypatch):
+    sinks = [sink("AvatarMic", 50), sink("AvatarHuman", 100, mute=True)]
+    reads = []
+
+    def items(kind):
+        reads.append(kind)
+        return list(sinks)
+
+    monkeypatch.setattr(channel_levels.pulse_audio, "items", items)
+    monkeypatch.setattr(host_state.listener_runtime, "listening", lambda: False)
+    monkeypatch.setattr(host_state.user_units, "unit_active", lambda unit: True)
+    return SimpleNamespace(sinks=sinks, reads=reads)
+
+
+async def next_levels(socket_to_seat):
+    while True:
+        frame = await asyncio.wait_for(socket_to_seat.recv(), 5)
+        if isinstance(frame, str):
+            return json.loads(frame)
 
 
 def test_the_page_and_its_health_are_served_and_nothing_else(bridge):
@@ -17,7 +51,7 @@ def test_the_page_and_its_health_are_served_and_nothing_else(bridge):
 
     page, health, missing = bridge.run_beside(scenario)
     assert page == (200, b"<p>seat</p>")
-    assert health == {"attached": False, "failure": None}
+    assert (health["attached"], health["meeting"]) == (False, True)
     assert missing == 404
 
 
@@ -27,7 +61,8 @@ def test_audio_travels_both_ways_while_a_machine_holds_the_seat(bridge):
             await socket_to_seat.send(MICROPHONE)
             voice = b""
             while len(voice) < len(VOICE):
-                voice += await asyncio.wait_for(socket_to_seat.recv(), 5)
+                frame = await asyncio.wait_for(socket_to_seat.recv(), 5)
+                voice += frame if isinstance(frame, bytes) else b""
             attached = await bridge.health()
         released = attached
         for _ in range(200):
@@ -122,3 +157,43 @@ def test_the_bridge_ends_soon_after_its_machine_leaves(bridge, monkeypatch):
         await asyncio.wait_for(serving, 5)
 
     asyncio.run(scenario())
+
+
+def test_the_levels_arrive_on_attach_and_again_each_time_the_endpoint_is_asked(
+    bridge, pulse_sinks
+):
+    async def scenario():
+        async with bridge.socket() as socket_to_seat:
+            first = await next_levels(socket_to_seat)
+            pulse_sinks.sinks[:] = [sink("AvatarMic", 20), sink("AvatarHuman", 80)]
+            answered = await bridge.fetch("/levels")
+            return first, answered, await next_levels(socket_to_seat)
+
+    first, answered, second = bridge.run_beside(scenario)
+    assert first == {"agent": 0.5, "human": 0.0}
+    assert answered == (200, b"")
+    assert second == {"agent": 0.2, "human": 0.8}
+
+
+def test_asking_for_the_levels_with_no_machine_attached_sends_nothing(
+    bridge, pulse_sinks
+):
+    async def scenario():
+        answered = await bridge.fetch("/levels")
+        await asyncio.sleep(0.05)
+        return answered
+
+    assert bridge.run_beside(scenario) == (200, b"")
+    assert pulse_sinks.reads == []
+
+
+def test_another_site_cannot_drive_the_levels(bridge, pulse_sinks):
+    async def scenario():
+        async with bridge.socket() as socket_to_seat:
+            await next_levels(socket_to_seat)
+            refused = await bridge.fetch("/levels", fetch_site="cross-site")
+            await asyncio.sleep(0.05)
+            return refused[0]
+
+    assert bridge.run_beside(scenario) == 403
+    assert pulse_sinks.reads == ["sinks"]
