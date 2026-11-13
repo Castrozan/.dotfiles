@@ -74,11 +74,15 @@ def build_activity_summary(daily_activity):
     }
 
 
+def is_measured_activity_counter(value):
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
 def require_measured_activity_day(daily_entry):
     if not isinstance(daily_entry, dict):
         raise IngestionRefusedError("daily_activity entries must measure every counter")
     for counter_name in MEASURED_ACTIVITY_COUNTER_NAMES:
-        if daily_entry.get(counter_name) is None:
+        if not is_measured_activity_counter(daily_entry.get(counter_name)):
             raise IngestionRefusedError(
                 f"daily_activity must measure {counter_name} on every day"
             )

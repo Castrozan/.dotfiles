@@ -1,6 +1,7 @@
 import itertools
 
 import pytest
+from hypothesis import given, strategies as st
 
 from ingestion_snapshot_publisher import IngestionRefusedError
 from publish_claude_usage_snapshot import build_claude_usage_payload
@@ -29,6 +30,24 @@ def build_usage_document(**overrides):
     }
     usage_document.update(overrides)
     return usage_document
+
+
+@given(
+    counter_name=st.sampled_from(("message_count", "session_count", "tool_call_count")),
+    invalid_count=st.one_of(
+        st.none(),
+        st.booleans(),
+        st.text(max_size=8),
+        st.floats(),
+        st.integers(max_value=-1),
+    ),
+)
+def test_invalid_activity_counters_are_never_coerced_into_measured_counts(
+    counter_name, invalid_count
+):
+    day = {**MEASURED_DAY, counter_name: invalid_count}
+    with pytest.raises(IngestionRefusedError):
+        build_claude_usage_payload(build_usage_document(daily_activity=[day]))
 
 
 class TestActivityIsRefusedWhenItWasNotMeasured:
