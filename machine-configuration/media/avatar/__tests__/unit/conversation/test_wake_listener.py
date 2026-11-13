@@ -1,4 +1,5 @@
 import struct
+import subprocess
 from unittest.mock import Mock
 
 import speech_segmenter
@@ -120,3 +121,28 @@ def test_the_prompt_tells_the_agent_to_close_when_dismissed():
     armed_listener(fakes).hear(b"segment")
     text = fakes.prompt_now.call_args.args[1]
     assert "avatar-talk close" in text, "closing hands the room back to the wake"
+
+
+def test_a_busy_transcriber_is_asked_again_until_it_answers():
+    busy = [
+        ConnectionError("Hex refused the segment: queue-full"),
+        subprocess.CalledProcessError(1, ["ssh", "chise", "avatar-transcribe"]),
+        "hey Voyager, check the build",
+    ]
+    fakes = boundaries(transcribe=Mock(side_effect=busy))
+    armed_listener(fakes).hear(b"segment")
+    assert fakes.transcribe.call_count == 3
+    assert [call.args for call in fakes.pause.call_args_list] == [
+        (wake_listener.TRANSCRIBER_RETRY_SECONDS,)
+    ] * 2
+    assert fakes.prompt_now.call_args.args[0] == VOYAGER.pane
+    fakes.report.assert_called_once_with(f"wake Voyager at {VOYAGER.pane}")
+
+
+def test_a_transcriber_that_never_answers_drops_the_utterance_after_a_bounded_wait():
+    fakes = boundaries(transcribe=Mock(side_effect=ConnectionError("queue-full")))
+    armed_listener(fakes).hear(b"segment")
+    assert fakes.transcribe.call_count == wake_listener.TRANSCRIBER_ATTEMPTS
+    assert fakes.pause.call_count == wake_listener.TRANSCRIBER_ATTEMPTS - 1
+    fakes.report.assert_called_once_with("Dropped an utterance: queue-full")
+    fakes.prompt_now.assert_not_called()

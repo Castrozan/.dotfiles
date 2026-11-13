@@ -86,6 +86,7 @@ class Boundaries:
     )
     report: object = lambda line: print(line, file=sys.stderr, flush=True)
     now: object = time.monotonic
+    pause: object = time.sleep
 
 
 def for_this_machine():

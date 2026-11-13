@@ -11,6 +11,9 @@ from wake_prompts import SETTINGS, spoken_prompt
 ARM_CHECK_SECONDS = 5
 FLEET_REFRESH_SECONDS = 60
 TRANSCRIPT_POLL_SECONDS = 0.2
+TRANSCRIBER_ATTEMPTS = 5
+TRANSCRIBER_RETRY_SECONDS = 0.4
+TRANSCRIBER_UNAVAILABLE = (OSError, subprocess.SubprocessError)
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
 MEETING_SOURCE = "meeting"
@@ -40,6 +43,14 @@ class WakeListener:
             self.refresh_sessions()
         return bool(self.sessions) and not self.boundaries.conversation_listening()
 
+    def transcribed(self, segment):
+        for _ in range(TRANSCRIBER_ATTEMPTS - 1):
+            try:
+                return self.boundaries.transcribe(segment)
+            except TRANSCRIBER_UNAVAILABLE:
+                self.boundaries.pause(TRANSCRIBER_RETRY_SECONDS)
+        return self.boundaries.transcribe(segment)
+
     def hear(self, segment):
         try:
             self.answer(segment)
@@ -64,7 +75,7 @@ class WakeListener:
         return True
 
     def answer(self, segment):
-        heard = self.boundaries.transcribe(segment)
+        heard = self.transcribed(segment)
         if not heard:
             return
         match = self.addressed(heard)
