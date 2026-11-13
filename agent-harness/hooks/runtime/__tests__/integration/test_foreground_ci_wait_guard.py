@@ -49,11 +49,11 @@ COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
 ]
 
 
-def run_pre_tool_use(command_string, run_in_background):
+def run_pre_tool_use(command_string, run_in_background, workspace):
     payload = {
         "session_id": "foreground-ci-wait",
         "transcript_path": "/dev/null",
-        "cwd": "/Users/lucas.zanoni/.dotfiles",
+        "cwd": str(workspace),
         "hook_event_name": "PreToolUse",
         "tool_name": "Bash",
         "tool_input": {
@@ -73,16 +73,31 @@ def run_pre_tool_use(command_string, run_in_background):
 @pytest.mark.parametrize(
     "command_string", COMMANDS_THAT_MUST_STAY_ALLOWED_IN_THE_FOREGROUND
 )
-def test_reading_about_a_run_is_not_waiting_on_one(command_string):
-    assert run_pre_tool_use(command_string, run_in_background=False) != "deny"
+def test_reading_about_a_run_is_not_waiting_on_one(
+    command_string, tmp_path, monkeypatch
+):
+    monkeypatch.delenv("AGENT_EVALS_SOURCE_ROOT", raising=False)
+    assert (
+        run_pre_tool_use(command_string, run_in_background=False, workspace=tmp_path)
+        != "deny"
+    )
 
 
 @pytest.mark.parametrize(
     "command_string", COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND
 )
-def test_waiting_on_ci_in_the_foreground_is_denied(command_string):
-    assert run_pre_tool_use(command_string, run_in_background=True) != "deny"
-    assert run_pre_tool_use(command_string, run_in_background=False) == "deny"
+def test_waiting_on_ci_in_the_foreground_is_denied(
+    command_string, tmp_path, monkeypatch
+):
+    monkeypatch.delenv("AGENT_EVALS_SOURCE_ROOT", raising=False)
+    assert (
+        run_pre_tool_use(command_string, run_in_background=True, workspace=tmp_path)
+        != "deny"
+    )
+    assert (
+        run_pre_tool_use(command_string, run_in_background=False, workspace=tmp_path)
+        == "deny"
+    )
 
 
 @pytest.mark.parametrize(
@@ -93,12 +108,13 @@ def test_waiting_on_ci_in_the_foreground_is_denied(command_string):
     ],
 )
 def test_the_denial_points_at_the_reference_file_rather_than_inlining_it(
-    command_string,
+    command_string, tmp_path, monkeypatch
 ):
+    monkeypatch.delenv("AGENT_EVALS_SOURCE_ROOT", raising=False)
     payload = {
         "session_id": "foreground-ci-wait",
         "transcript_path": "/dev/null",
-        "cwd": "/Users/lucas.zanoni/.dotfiles",
+        "cwd": str(tmp_path),
         "hook_event_name": "PreToolUse",
         "tool_name": "Bash",
         "tool_input": {"command": command_string, "run_in_background": False},

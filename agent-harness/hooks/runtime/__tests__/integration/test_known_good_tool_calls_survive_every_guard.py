@@ -17,11 +17,11 @@ PRE_TOOL_USE_DISPATCHER = find_hook_module_path("pre-tool-use-dispatcher")
 KNOWN_GOOD_TOOL_CALLS = list(known_good_tool_calls())
 
 
-def denial_reason_for(tool_call):
+def denial_reason_for(tool_call, workspace):
     payload = {
         "session_id": "known-good-corpus",
         "transcript_path": "/dev/null",
-        "cwd": "/Users/lucas.zanoni/.dotfiles",
+        "cwd": str(workspace),
         "hook_event_name": "PreToolUse",
         **tool_call,
     }
@@ -41,8 +41,9 @@ def denial_reason_for(tool_call):
     [tool_call for _label, tool_call in KNOWN_GOOD_TOOL_CALLS],
     ids=[label for label, _tool_call in KNOWN_GOOD_TOOL_CALLS],
 )
-def test_a_known_good_tool_call_is_never_denied(tool_call):
-    reason = denial_reason_for(tool_call)
+def test_a_known_good_tool_call_is_never_denied(tool_call, tmp_path, monkeypatch):
+    monkeypatch.delenv("AGENT_EVALS_SOURCE_ROOT", raising=False)
+    reason = denial_reason_for(tool_call, tmp_path)
     assert reason == "", (
         "a guard denied ordinary work; either the rule is too wide or this call "
         f"does not belong in the corpus: {reason}"
