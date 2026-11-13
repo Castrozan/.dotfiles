@@ -8,6 +8,9 @@ from ingestion_snapshot_publisher import IngestionRefusedError
 MAXIMUM_ARTIFACT_BYTE_LENGTH = 4_000_000
 MAXIMUM_ARTIFACT_KEY_CODE_UNITS = 512
 PREFLIGHT_READ_BYTE_LENGTH = 65536
+MAXIMUM_REPORT_TREE_FILE_COUNT = 1024
+MAXIMUM_REPORT_TREE_BYTE_LENGTH = 32_000_000
+MAXIMUM_REPORT_TREE_ENTRY_COUNT = 4096
 
 
 @dataclass(frozen=True)
@@ -16,6 +19,28 @@ class ArtifactSource:
     file_path: Path
     byte_length: int
     sha256: str
+
+
+@dataclass
+class ArtifactTreeBudget:
+    entry_count: int = 0
+    file_count: int = 0
+    byte_length: int = 0
+
+    def record_entry(self):
+        self.entry_count += 1
+        if self.entry_count > MAXIMUM_REPORT_TREE_ENTRY_COUNT:
+            raise IngestionRefusedError("Report artifact tree exceeds the entry limit")
+
+    def record_file(self):
+        self.file_count += 1
+        if self.file_count > MAXIMUM_REPORT_TREE_FILE_COUNT:
+            raise IngestionRefusedError("Report artifact tree exceeds the file limit")
+
+    def record_bytes(self, chunk_byte_length):
+        self.byte_length += chunk_byte_length
+        if self.byte_length > MAXIMUM_REPORT_TREE_BYTE_LENGTH:
+            raise IngestionRefusedError("Report artifact tree exceeds the byte limit")
 
 
 def is_forbidden_key_character(character):
@@ -47,19 +72,21 @@ def require_within_request_limit(relative_path, byte_length):
         )
 
 
-def capture_artifact_source(file_path, relative_path):
+def capture_artifact_source(file_path, relative_path, budget):
     require_within_request_limit(relative_path, file_path.stat().st_size)
+    budget.record_file()
     digest = hashlib.sha256()
     byte_length = 0
     with file_path.open("rb") as body_stream:
         for chunk in iter(lambda: body_stream.read(PREFLIGHT_READ_BYTE_LENGTH), b""):
             byte_length += len(chunk)
             require_within_request_limit(relative_path, byte_length)
+            budget.record_bytes(len(chunk))
             digest.update(chunk)
     return ArtifactSource(relative_path, file_path, byte_length, digest.hexdigest())
 
 
-def inspect_artifact_entry(entry, relative_path, object_key_prefix):
+def inspect_artifact_entry(entry, relative_path, object_key_prefix, budget):
     require_publishable_name(relative_path, object_key_prefix)
     if entry.is_symlink():
         raise IngestionRefusedError(
@@ -71,7 +98,7 @@ def inspect_artifact_entry(entry, relative_path, object_key_prefix):
         raise IngestionRefusedError(
             f"Report artifact special entry refused: {relative_path!r}"
         )
-    return capture_artifact_source(Path(entry.path), relative_path)
+    return capture_artifact_source(Path(entry.path), relative_path, budget)
 
 
 @dataclass(frozen=True)
@@ -80,13 +107,16 @@ class ArtifactDirectoryContents:
     directories: list[tuple[Path, str]]
 
 
-def scan_artifact_directory(directory, relative_directory, object_key_prefix):
+def scan_artifact_directory(directory, relative_directory, object_key_prefix, budget):
     sources = []
     directories = []
     with os.scandir(directory) as entries:
         for entry in entries:
+            budget.record_entry()
             relative_path = f"{relative_directory}{entry.name}"
-            source = inspect_artifact_entry(entry, relative_path, object_key_prefix)
+            source = inspect_artifact_entry(
+                entry, relative_path, object_key_prefix, budget
+            )
             if source is None:
                 directories.append((Path(entry.path), f"{relative_path}/"))
             else:
@@ -98,11 +128,12 @@ def collect_artifact_sources(directory, object_key_prefix):
     if directory.is_symlink() or not directory.is_dir():
         raise IngestionRefusedError("Report artifact source must be a real directory")
     sources = []
+    budget = ArtifactTreeBudget()
     pending_directories = [(directory, "")]
     while pending_directories:
         current_directory, relative_directory = pending_directories.pop()
         contents = scan_artifact_directory(
-            current_directory, relative_directory, object_key_prefix
+            current_directory, relative_directory, object_key_prefix, budget
         )
         sources.extend(contents.sources)
         pending_directories.extend(contents.directories)
