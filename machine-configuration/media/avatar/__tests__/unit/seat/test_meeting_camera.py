@@ -18,6 +18,7 @@ OBS_ARGUMENTS = [
     "--disable-missing-files-check",
     "--disable-shutdown-check",
     "--use-fake-ui-for-media-stream",
+    "--minimize-to-tray",
     "--multi",
 ]
 
@@ -111,7 +112,7 @@ def test_starting_writes_the_collection_and_the_profile_under_the_home(obs):
     assert profile == meeting_camera.profile_settings()
 
 
-def test_starting_launches_a_separate_background_obs_that_survives_an_unclean_end(obs):
+def test_starting_launches_a_separate_windowless_obs_that_survives_an_unclean_end(obs):
     meeting_camera.start()
     launch = obs.calls.run.call_args
     assert launch.args[0] == [

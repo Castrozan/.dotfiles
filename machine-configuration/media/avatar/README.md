@@ -98,7 +98,7 @@ and plays only into `AvatarLipSync`.
 A video call that runs on a Mac is accompanied with the commands used on chise. In the call app the user selects once
 the camera `OBS Virtual Camera`, the microphone `BlackHole 2ch` and the speaker `BlackHole 16ch`, and the seat page opened
 as `/?meeting` does all the routing. It sends the call audio from `BlackHole 16ch` to chise and plays it to the user, and
-it feeds the user's microphone and the avatar's voice into `BlackHole 2ch`. The camera is a Mac OBS instance named `Avatar`
+it feeds the user's microphone and the avatar's voice into `BlackHole 2ch`. The camera is a windowless Mac OBS instance named `Avatar`
 whose browser source shows `?stage&bare` through the tunnel. That page joins the control server as the stage, the one
 page that owns the camera, so the camera and composite modes open the Mac's webcam and chise's stays closed.
 

@@ -42,6 +42,7 @@ LAUNCH_COMMAND = [
     "--disable-missing-files-check",
     "--disable-shutdown-check",
     "--use-fake-ui-for-media-stream",
+    "--minimize-to-tray",
     "--multi",
 ]
 
