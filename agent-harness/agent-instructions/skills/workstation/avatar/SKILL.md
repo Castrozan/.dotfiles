@@ -124,5 +124,6 @@ The call must already have the camera `OBS Virtual Camera`, the microphone `Blac
 adds `--seat remote` while the Mac holds the seat, and `avatar-command speak TEXT EMOTION` then plays into the call and
 to the user's ears without an output argument.
 
-Not yet available on a Mac: the camera and composite video modes with the user's webcam, `avatar-controls`, per-channel
-mute and volume through `avatar-audio`, and speaker enrolment from the Mac's microphone.
+There the camera and composite modes open that Mac's webcam, never chise's, and `avatar-audio mute` and `volume` act on
+what the call hears. A wake by name still opens a conversation during the meeting, and closing it leaves the meeting
+running. Not yet available on a Mac: `avatar-controls` and speaker enrolment from the Mac's microphone.

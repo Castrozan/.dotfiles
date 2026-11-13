@@ -149,7 +149,7 @@ def test_the_room_start_prepares_no_seat_and_keeps_its_ready_line(monkeypatch, c
     )
 
 
-def test_the_remote_start_prepares_the_seat_and_never_opens_the_room_microphone(
+def test_the_remote_start_opens_both_call_channels_but_never_the_room_microphone(
     monkeypatch, capsys
 ):
     order = []
@@ -165,6 +165,8 @@ def test_the_remote_start_prepares_the_seat_and_never_opens_the_room_microphone(
     assert order == [
         ["systemctl", "--user", "start", "avatar.target"],
         ("prepare", Seat.REMOTE),
+        ["avatar-audio", "mute", "agent", "0"],
+        ["avatar-audio", "mute", "human", "0"],
     ]
     assert "voice and the microphone at the remote seat" in capsys.readouterr().out
 

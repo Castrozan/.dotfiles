@@ -9,6 +9,8 @@ import conversation_seat
 from conversation_seat import Seat
 
 MEETING_TARGET = "avatar.target"
+CALL_CHANNELS = ("agent", "human")
+AUDIO_COMMAND_TIMEOUT_SECONDS = 30
 SYSTEMCTL_QUERY_TIMEOUT_SECONDS = 10
 AUDIO_REPAIR_TIMEOUT_SECONDS = 60
 CONVERSATION_TARGET = "avatar-conversation.target"
@@ -101,10 +103,21 @@ def parse_seat(arguments=None):
     return parser.parse_args(arguments).seat
 
 
+def open_call_channels():
+    for channel in CALL_CHANNELS:
+        subprocess.run(
+            ["avatar-audio", "mute", channel, "0"],
+            check=True,
+            stdout=subprocess.DEVNULL,
+            timeout=AUDIO_COMMAND_TIMEOUT_SECONDS,
+        )
+
+
 def main(seat=Seat.ROOM):
     bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
     if seat is Seat.REMOTE:
         conversation_seat.prepare(seat)
+        open_call_channels()
         print("Avatar ready with her voice and the microphone at the remote seat")
         return
     subprocess.run(["avatar-audio", "open"], check=True, stdout=subprocess.DEVNULL)
