@@ -44,7 +44,7 @@ def test_video_mode_rejects_invalid_request_and_absent_renderer():
         const { handleSetVideoModeCommand } = require("./agent-commands/set-video-mode-command-handler");
         const sent = [];
         const connection = { isOpen: () => true, sendJson: (value) => sent.push(value) };
-        const context = { clientRegistry: { sendToRenderer: () => false } };
+        const context = { clientRegistry: { sendToCameraOwner: () => false } };
         handleSetVideoModeCommand({ mode: "unknown" }, connection, context);
         handleSetVideoModeCommand({ mode: "avatar" }, connection, context);
         const result = sent;
@@ -62,7 +62,7 @@ def test_video_mode_preserves_request_identity():
         const { handleSetVideoModeCommand } = require("./agent-commands/set-video-mode-command-handler");
         const sent = [];
         const forwarded = [];
-        handleSetVideoModeCommand({ mode: "avatar", id: "request-1" }, { sendJson: value => sent.push(value) }, { clientRegistry: { sendToRenderer: value => { forwarded.push(value); return true; } } });
+        handleSetVideoModeCommand({ mode: "avatar", id: "request-1" }, { sendJson: value => sent.push(value) }, { clientRegistry: { sendToCameraOwner: value => { forwarded.push(value); return true; } } });
         const result = { forwarded, sent };
         """
     )
