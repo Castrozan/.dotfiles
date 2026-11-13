@@ -15,7 +15,7 @@ _build_model_segment_from_json_input() {
 
 _resolve_auto_compact_trigger_tokens() {
 	local auto_compact_window="${CLAUDE_CODE_AUTO_COMPACT_WINDOW:-}"
-	local auto_compact_percentage="${CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:-}"
+	local auto_compact_percentage="${CLAUDE_AUTOCOMPACT_PCT_OVERRIDE:-100}"
 	[[ "$auto_compact_window" =~ ^[0-9]+$ ]] || return 0
 	[[ "$auto_compact_percentage" =~ ^[0-9]+$ ]] || return 0
 	[ "$auto_compact_window" -gt 0 ] || return 0
