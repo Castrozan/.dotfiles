@@ -12,6 +12,7 @@ DEFAULT_PRODUCER_LABEL = "dotfiles-usage-exporter"
 MISSING_DOCUMENT_ARGUMENT_EXIT_CODE = 2
 BARE_CALENDAR_DATE_FORMAT = "%Y-%m-%d"
 COST_DECIMAL_PLACES = 6
+MEASURED_ACTIVITY_COUNTER_NAMES = ("message_count", "session_count", "tool_call_count")
 
 
 def read_required_snapshot_field(usage_document, field_name, purpose):
@@ -73,6 +74,27 @@ def build_activity_summary(daily_activity):
     }
 
 
+def require_measured_activity_day(daily_entry):
+    if not isinstance(daily_entry, dict):
+        raise IngestionRefusedError("daily_activity entries must measure every counter")
+    for counter_name in MEASURED_ACTIVITY_COUNTER_NAMES:
+        if daily_entry.get(counter_name) is None:
+            raise IngestionRefusedError(
+                f"daily_activity must measure {counter_name} on every day"
+            )
+
+
+def read_measured_daily_activity(usage_document):
+    daily_activity = usage_document.get("daily_activity")
+    if not isinstance(daily_activity, list):
+        raise IngestionRefusedError(
+            "daily_activity must list the activity measured on the machine"
+        )
+    for daily_entry in daily_activity:
+        require_measured_activity_day(daily_entry)
+    return daily_activity
+
+
 def build_claude_usage_payload(usage_document, environment=None):
     models = build_model_totals_ordered_by_model_name(
         usage_document.get("model_usage_totals", {})
@@ -100,7 +122,9 @@ def build_claude_usage_payload(usage_document, environment=None):
             sum(model_totals["costUsd"] for model_totals in models),
             COST_DECIMAL_PLACES,
         ),
-        "activity": build_activity_summary(usage_document.get("daily_activity", [])),
+        "activity": build_activity_summary(
+            read_measured_daily_activity(usage_document)
+        ),
     }
 
 

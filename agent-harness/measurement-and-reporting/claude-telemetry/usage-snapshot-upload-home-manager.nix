@@ -5,16 +5,14 @@
   ...
 }:
 let
-  usageSnapshotBucket = "zg-url-shortener-2026-dotfiles-usage-snapshots";
-  usageSnapshotObjectPrefix = "snapshots/";
-  uploaderCredentialsPath = "${config.home.homeDirectory}/.secrets/gcp-usage-uploader-key";
+  ccusage = import ../../../machine-configuration/development/cost-monitoring/ccusage-package.nix {
+    inherit pkgs;
+  };
+
   ingestApiBaseUrl = "https://lucaszanoni.com/ingest";
   ingestProducerSecretPath = "${config.home.homeDirectory}/.secrets/ingest-producer-secret";
-  uploadIntervalSeconds = 300;
-
-  uploaderPythonEnvironment = pkgs.python312.withPackages (pythonPackages: [
-    pythonPackages.google-cloud-storage
-  ]);
+  ingestPublishIntervalSeconds = 300;
+  ingestPublishTimeoutSeconds = 150;
 
   usageSnapshotSource = lib.fileset.toSource {
     root = ../usage-collection;
@@ -32,16 +30,12 @@ let
     cp ${ingestionPublisherSource}/*.py "$out"/
   '';
 
-  uploadProgramArguments = [
-    "${uploaderPythonEnvironment}/bin/python"
-    "${usageSnapshotScripts}/upload_usage_snapshot_to_gcs.py"
-  ];
-
   ingestPublishLauncher = pkgs.writeShellScript "claude-usage-ingest-publish" ''
     set -euo pipefail
     INGEST_PRODUCER_SECRET="$(cat "${ingestProducerSecretPath}")"
     export INGEST_PRODUCER_SECRET
-    exec "${uploaderPythonEnvironment}/bin/python" \
+    export PATH="${lib.makeBinPath [ ccusage ]}"
+    exec "${pkgs.python312}/bin/python" \
       "${usageSnapshotScripts}/publish_current_usage_snapshot_to_ingest.py"
   '';
 
@@ -52,30 +46,10 @@ let
   ingestPublishEnvironmentList = lib.mapAttrsToList (
     name: value: "${name}=${value}"
   ) ingestPublishEnvironment;
-
-  uploadEnvironment = {
-    USAGE_SNAPSHOT_BUCKET = usageSnapshotBucket;
-    USAGE_SNAPSHOT_OBJECT_PREFIX = usageSnapshotObjectPrefix;
-    GOOGLE_APPLICATION_CREDENTIALS = uploaderCredentialsPath;
-  };
-
-  uploadEnvironmentList = lib.mapAttrsToList (name: value: "${name}=${value}") uploadEnvironment;
 in
 {
   config = lib.mkMerge [
     (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
-      launchd.agents.claude-usage-snapshot-upload = {
-        enable = true;
-        config = {
-          Label = "com.dotfiles.claude-usage-snapshot-upload";
-          ProgramArguments = uploadProgramArguments;
-          EnvironmentVariables = uploadEnvironment;
-          RunAtLoad = true;
-          StartInterval = uploadIntervalSeconds;
-          StandardOutPath = "/tmp/claude-usage-snapshot-upload.log";
-          StandardErrorPath = "/tmp/claude-usage-snapshot-upload.log";
-        };
-      };
       launchd.agents.claude-usage-ingest-publish = {
         enable = true;
         config = {
@@ -83,7 +57,7 @@ in
           ProgramArguments = [ "${ingestPublishLauncher}" ];
           EnvironmentVariables = ingestPublishEnvironment;
           RunAtLoad = true;
-          StartInterval = uploadIntervalSeconds;
+          StartInterval = ingestPublishIntervalSeconds;
           StandardOutPath = "/tmp/claude-usage-ingest-publish.log";
           StandardErrorPath = "/tmp/claude-usage-ingest-publish.log";
         };
@@ -92,38 +66,22 @@ in
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
       systemd.user = {
         services = {
-          claude-usage-snapshot-upload = {
-            Unit.Description = "Upload anonymized Claude usage snapshot to GCS";
-            Service = {
-              Type = "oneshot";
-              ExecStart = lib.concatStringsSep " " uploadProgramArguments;
-              Environment = uploadEnvironmentList;
-            };
-          };
           claude-usage-ingest-publish = {
             Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
             Service = {
               Type = "oneshot";
               ExecStart = "${ingestPublishLauncher}";
               Environment = ingestPublishEnvironmentList;
+              TimeoutStartSec = "${toString ingestPublishTimeoutSeconds}s";
             };
           };
         };
         timers = {
-          claude-usage-snapshot-upload = {
-            Unit.Description = "Periodic anonymized Claude usage snapshot upload to GCS";
-            Timer = {
-              OnBootSec = "2min";
-              OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
-              Persistent = true;
-            };
-            Install.WantedBy = [ "timers.target" ];
-          };
           claude-usage-ingest-publish = {
             Unit.Description = "Periodic contracted Claude usage publish to the ingestion api";
             Timer = {
               OnBootSec = "3min";
-              OnUnitActiveSec = "${toString uploadIntervalSeconds}s";
+              OnUnitActiveSec = "${toString ingestPublishIntervalSeconds}s";
               Persistent = true;
             };
             Install.WantedBy = [ "timers.target" ];

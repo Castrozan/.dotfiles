@@ -4,7 +4,7 @@ import urllib.request
 import pytest
 
 from ingestion_snapshot_publisher import (
-    PRODUCER_SECRET_HEADER_NAME,
+    PRODUCER_AUTHENTICATION_HEADER_NAME,
     PUBLISHER_USER_AGENT,
     IngestionRefusedError,
     build_ingest_request_headers,
@@ -114,7 +114,7 @@ class TestRequestHeadersSurviveTheEdge:
         headers = build_ingest_request_headers("a-producer-secret")
 
         assert headers["content-type"] == "application/json"
-        assert headers[PRODUCER_SECRET_HEADER_NAME] == "a-producer-secret"
+        assert headers[PRODUCER_AUTHENTICATION_HEADER_NAME] == "a-producer-secret"
 
 
 class AcceptedIngestResponse:
