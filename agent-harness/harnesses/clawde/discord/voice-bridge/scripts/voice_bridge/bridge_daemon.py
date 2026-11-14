@@ -4,6 +4,8 @@ import json
 import logging
 import os
 import signal
+from collections.abc import Callable
+from dataclasses import dataclass
 from pathlib import Path
 
 import discord
@@ -12,7 +14,14 @@ from voice_bridge.control_server import ControlServer
 from voice_bridge.speech_synthesis import SpeechSelection
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
-from voice_bridge.voice_call import CallAudioServices, VoiceCall
+from voice_bridge.voice_call import VoiceCall
+
+
+@dataclass(frozen=True)
+class CallAudioServices:
+    ffmpeg: str
+    synthesizer: SpeechSelection
+    transcribe_audio: Callable[[bytes], str]
 
 
 def discord_client():

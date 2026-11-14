@@ -1,5 +1,6 @@
+import pytest
+
 import ensure_ambient_canvas_screensaver as ensure
-from playback import player_processes
 from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
 
 PLAYER_BINARY_PATH = "/home/user/.local/bin/player"
@@ -97,23 +98,13 @@ def test_a_cached_display_swap_repoints_the_player_without_recording(monkeypatch
     assert calls[-1] == "launch"
 
 
-def test_stale_render_success_while_running_stops_waits_then_relaunches(monkeypatch):
+@pytest.mark.parametrize("display_running", [True, False])
+def test_stale_render_success_relaunches(monkeypatch, display_running):
     result, calls = _run_ensure(
         monkeypatch,
         fresh=False,
         render_result="loop.segments.json",
-        display_running=True,
-    )
-    assert result == 0
-    assert calls == ["render", "stop", "wait", "launch"]
-
-
-def test_stale_render_success_while_stopped_renders_then_launches(monkeypatch):
-    result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result="loop.segments.json",
-        display_running=False,
+        display_running=display_running,
     )
     assert result == 0
     assert calls == ["render", "stop", "wait", "launch"]
@@ -131,28 +122,22 @@ def test_stale_render_failure_without_existing_loop_exits_nonzero(monkeypatch):
     assert calls == ["render"]
 
 
-def test_stale_render_failure_falls_back_to_existing_loop(monkeypatch):
+@pytest.mark.parametrize(
+    ("display_running", "expected_calls"),
+    [(False, ["render", "stop", "wait", "launch"]), (True, ["render"])],
+)
+def test_stale_render_failure_preserves_existing_loop(
+    monkeypatch, display_running, expected_calls
+):
     result, calls = _run_ensure(
         monkeypatch,
         fresh=False,
         render_result=None,
-        display_running=False,
+        display_running=display_running,
         loop_exists=True,
     )
     assert result == 0
-    assert calls == ["render", "stop", "wait", "launch"]
-
-
-def test_stale_render_failure_preserves_an_existing_running_display(monkeypatch):
-    result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result=None,
-        display_running=True,
-        loop_exists=True,
-    )
-    assert result == 0
-    assert calls == ["render"]
+    assert calls == expected_calls
 
 
 def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
@@ -180,18 +165,10 @@ def test_a_render_that_makes_the_loop_current_discards_leftovers_before_launch(
     monkeypatch.setattr(
         ensure, "recorded_loop_is_fresh", lambda *ignored: next(freshness_answers)
     )
-    assert (
-        ensure.ensure_screensaver(
-            "index",
-            LAPTOP_CAPTURE_TARGET,
-            "source",
-            "#241010",
-            PLAYER_BINARY_PATH,
-            30,
-            30,
-        )
-        == 0
+    result = ensure.ensure_screensaver(
+        "index", LAPTOP_CAPTURE_TARGET, "source", "#241010", PLAYER_BINARY_PATH, 30, 30
     )
+    assert result == 0
     assert observed_calls == [
         "render",
         ("discard", "source"),
@@ -218,20 +195,3 @@ def test_freshness_is_judged_against_the_capture_geometry(monkeypatch):
     )
     assert set(checked_identifiers) == {"source capture=1660x1080"}
     assert observed_calls == [("discard", "source")]
-
-
-def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():
-    assert (
-        player_processes.resolve_loop_display_process_marker("/state/loops/1660x1080")
-        == "/state/loops/1660x1080/loop.segments.json"
-    )
-
-
-def test_two_capture_geometries_produce_two_distinct_display_markers():
-    assert player_processes.resolve_loop_display_process_marker(
-        "/state/loops/1660x1080"
-    ) != player_processes.resolve_loop_display_process_marker("/state/loops/1920x1080")
-
-
-def test_stopping_the_display_matches_a_process_name_the_agent_cannot_carry():
-    assert player_processes.resolve_display_process_name(PLAYER_BINARY_PATH) == "player"

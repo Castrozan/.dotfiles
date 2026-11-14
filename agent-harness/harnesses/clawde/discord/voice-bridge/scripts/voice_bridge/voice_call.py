@@ -2,11 +2,9 @@ import asyncio
 import logging
 import os
 import time
-from collections.abc import Callable
-from dataclasses import dataclass
 
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
-from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE, SpeechSelection
+from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE
 from voice_bridge.voice_playback import play_audio_stream
 
 LISTEN_POLL_SECONDS = 0.05
@@ -26,13 +24,6 @@ def exit_for_supervisor_restart_on_crash(task):
         return
     logger.error("voice call task crashed", exc_info=task.exception())
     os._exit(1)
-
-
-@dataclass(frozen=True)
-class CallAudioServices:
-    ffmpeg: str
-    synthesizer: SpeechSelection
-    transcribe_audio: Callable[[bytes], str]
 
 
 class VoiceCall:

@@ -40,7 +40,6 @@ from render_ambient_canvas_loop import (
     resolve_index_file_path,
 )
 
-
 LOGGER = logging.getLogger("ambient_canvas.launcher")
 
 
@@ -91,11 +90,9 @@ def ensure_screensaver(
         if recording_result.exit_code is not None:
             return recording_result.exit_code
         recorded_loop_was_replaced = recording_result.replaced
-    if recorded_loop_is_fresh(loop_directory, source_identifier):
-        for discarded_path in discard_rendering_leftovers(
-            capture_target, rendering_source_identifier
-        ):
-            LOGGER.info("rendering_leftover_discarded path=%s", discarded_path)
+    discard_leftovers_for_fresh_loop(
+        capture_target, source_identifier, rendering_source_identifier
+    )
 
     if not recorded_loop_was_replaced and is_display_running_for_loop(loop_directory):
         LOGGER.info("player_already_running loop=%s", loop_directory)
@@ -106,6 +103,16 @@ def ensure_screensaver(
     return launch_display(
         player_binary_path, loop_directory, capture_target.playback_dwell_override_path
     )
+
+
+def discard_leftovers_for_fresh_loop(
+    capture_target, source_identifier, rendering_source_identifier
+):
+    if recorded_loop_is_fresh(capture_target.loop_directory, source_identifier):
+        for discarded_path in discard_rendering_leftovers(
+            capture_target, rendering_source_identifier
+        ):
+            LOGGER.info("rendering_leftover_discarded path=%s", discarded_path)
 
 
 def record_stale_loop(
