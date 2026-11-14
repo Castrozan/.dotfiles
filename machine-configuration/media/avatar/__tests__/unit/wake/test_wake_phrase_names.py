@@ -125,6 +125,8 @@ def test_a_nickname_as_hex_heard_it_reaches_its_servant(heard, servant):
         "oi tudo bem",
         "hi robot",
         "hey me",
+        "hey her mom",
+        "oi ama",
     ],
 )
 def test_ordinary_speech_wakes_nobody(heard):
@@ -157,6 +159,18 @@ def test_spelling_variants_of_one_sound_share_a_key():
     assert sound_key("sherazade") == sound_key("xerazade") == sound_key("scherazade")
     assert sound_key("phil") == sound_key("fil")
     assert sound_key("kirke") == sound_key("qirke")
+    assert sound_key("rama") == sound_key("hama")
+
+
+@pytest.mark.parametrize(
+    ("heard", "servant"),
+    [
+        ("Hey Hama, are you there?", "Rama"),
+        ("Hey Hobin, are you there?", "Robin Hood"),
+    ],
+)
+def test_a_brazilian_initial_r_heard_as_h_reaches_its_servant(heard, servant):
+    assert servant_matched_by(heard, WHOLE_ROSTER) == servant
 
 
 @given(servant=st.sampled_from(SERVANTS))

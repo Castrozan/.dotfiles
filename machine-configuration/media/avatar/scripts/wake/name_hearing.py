@@ -11,6 +11,7 @@ MEDIUM_NAME_SIMILARITY = 0.8
 LONG_NAME_SIMILARITY = 0.72
 SHORTEST_JOINED_WORD = 3
 REPEATED_SOUND = re.compile(r"(.)\1+")
+BRAZILIAN_INITIAL_R = re.compile(r"^r")
 SOUND_RULES = (
     ("sch", "S"),
     ("sh", "S"),
@@ -28,6 +29,7 @@ SOUND_RULES = (
 
 
 def sound_key(word):
+    word = BRAZILIAN_INITIAL_R.sub("h", word)
     for spelling, sound in SOUND_RULES:
         word = word.replace(spelling, sound)
     return REPEATED_SOUND.sub(r"\1", word)
