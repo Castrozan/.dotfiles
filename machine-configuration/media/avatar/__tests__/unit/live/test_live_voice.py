@@ -124,7 +124,7 @@ class RecordingSocket:
         return json.dumps({"type": "session.started", "session": {"id": "s-1"}})
 
 
-def started_session_voice(monkeypatch, tmp_path, live):
+def started_session(monkeypatch, tmp_path, live):
     socket = RecordingSocket()
 
     async def connect(*arguments, **options):
@@ -135,7 +135,24 @@ def started_session_voice(monkeypatch, tmp_path, live):
     monkeypatch.setattr(gpt_live, "KEY_FILE", key)
     monkeypatch.setattr(gpt_live.websockets, "connect", connect)
     asyncio.run(live.connect())
-    return socket.sent[0]["session"]["audio"]["output"]["voice"]
+    return socket.sent[0]["session"]
+
+
+def started_session_voice(monkeypatch, tmp_path, live):
+    return started_session(monkeypatch, tmp_path, live)["audio"]["output"]["voice"]
+
+
+@pytest.mark.parametrize("taking_over", [False, True])
+def test_a_live_session_starts_without_any_earlier_conversation(
+    monkeypatch, tmp_path, taking_over
+):
+    session = started_session(
+        monkeypatch, tmp_path, gpt_live.GptLive("meridian", taking_over)
+    )
+    assert "input" not in session
+    assert session["instructions"] == gpt_live.INSTRUCTIONS + (
+        gpt_live.TAKING_OVER if taking_over else ""
+    )
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])

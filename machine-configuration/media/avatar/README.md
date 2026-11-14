@@ -139,9 +139,9 @@ seat that ends stops the transcription.
 within about a second, so it can listen and speak while work runs. It speaks in the live voice of the floor holder's
 character, and the room audio streams to OpenAI for as long as the conversation stays open. GPT-Live fixes the voice
 when a session starts, so when the floor passes to a Servant with another voice the bridge opens a new session in that
-voice, starts it from the recent transcript as its history so it carries on without greeting, and closes the old one.
-The new session speaks the answer to a task the old one asked for. The transcript goes only to OpenAI, which already
-heard it, and sessions are not stored. `avatar-live.service` runs the
+voice, tells it to carry on without greeting, and closes the old one. The new session gets no transcript, so it starts
+without the earlier turns and asks when it needs them. It speaks the answer to a task the old one asked for.
+`avatar-live.service` runs the
 bridge inside `avatar-conversation.target` in place of the listener and plays a second copy of the voice into
 `AvatarLipSync` so the mouth moves.
 

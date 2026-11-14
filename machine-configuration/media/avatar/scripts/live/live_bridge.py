@@ -88,7 +88,7 @@ class LiveConversation:
 
     async def follow_the_room_holder(self):
         await self.voice.follow_the_room_holder(
-            self.directory, self.transcript, self.settle_after_a_new_voice
+            self.directory, self.settle_after_a_new_voice
         )
 
     def settle_after_a_new_voice(self):

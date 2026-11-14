@@ -15,7 +15,6 @@ from live_events import (
     UserSaid,
 )
 from live_voice import DEFAULT_VOICE
-from spoken_turns import Party
 
 ENDPOINT = "wss://api.openai.com/v1/live/sessions"
 KEY_FILE = Path.home() / ".secrets" / "openai-api-key"
@@ -44,18 +43,8 @@ Generate <|SpawnThinking|> before giving an answer that depends on backend work.
 Do not guess the result while waiting. Keep chatting naturally while the agent works."""
 TAKING_OVER = """
 
-You are taking over the conversation already in progress, in a new voice. Carry on from it
-without greeting again."""
-CONTENT_TYPE_BY_PARTY = {Party.HUMAN: "input_text", Party.AVATAR: "output_text"}
-ROLE_BY_PARTY = {Party.HUMAN: "user", Party.AVATAR: "assistant"}
-
-
-def history_message(turn):
-    return {
-        "type": "message",
-        "role": ROLE_BY_PARTY[turn.party],
-        "content": [{"type": CONTENT_TYPE_BY_PARTY[turn.party], "text": turn.text}],
-    }
+You are taking over a conversation already in progress, in a new voice, without its earlier
+turns. Do not greet again; if you need what was said before, ask Lucas briefly."""
 
 
 class GptLive:
@@ -63,10 +52,9 @@ class GptLive:
     input_rate = RATE
     output_rate = RATE
 
-    def __init__(self, speaking_voice=DEFAULT_VOICE, earlier_conversation=()):
+    def __init__(self, speaking_voice=DEFAULT_VOICE, taking_over=False):
         self.speaking_voice = speaking_voice
-        self.history = [history_message(turn) for turn in earlier_conversation]
-        self.instructions = INSTRUCTIONS + (TAKING_OVER if self.history else "")
+        self.instructions = INSTRUCTIONS + (TAKING_OVER if taking_over else "")
 
     async def connect(self):
         self.socket = await websockets.connect(
@@ -83,7 +71,6 @@ class GptLive:
                     "session": {
                         "model": "gpt-live-1",
                         "instructions": self.instructions,
-                        "input": self.history,
                         "audio": {
                             "format": {"type": "audio/pcm", "rate": RATE},
                             "output": {"voice": self.speaking_voice},
