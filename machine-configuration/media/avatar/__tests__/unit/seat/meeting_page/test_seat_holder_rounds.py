@@ -21,6 +21,9 @@ class Tunnel:
         self.rounds_open -= 1
         raise subprocess.TimeoutExpired("ssh", timeout)
 
+    def poll(self):
+        return None if self.rounds_open else 0
+
     def terminate(self):
         self.terminated = True
 

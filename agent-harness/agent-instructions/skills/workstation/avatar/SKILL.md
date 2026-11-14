@@ -128,4 +128,5 @@ There the camera and composite modes open that Mac's webcam, never chise's, and 
 what the call hears. A wake by name still opens a conversation during the meeting, and closing it leaves the meeting
 running. `avatar-controls` opens there while the meeting runs at that Mac and offers that Mac's cameras.
 `avatar-listen enroll` builds a voice from what its microphone or call carried. A call camera that dies during the
-meeting returns within a minute in avatar mode, so set the video mode again if another was chosen.
+meeting returns within a minute in avatar mode, so set the video mode again if another was chosen. The Mac's seat and
+OBS end a minute after the meeting stops on chise; after a longer avatar restart, run `avatar-start` there again.

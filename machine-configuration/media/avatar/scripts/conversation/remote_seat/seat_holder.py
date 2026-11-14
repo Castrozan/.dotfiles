@@ -101,6 +101,7 @@ def hold_seat(keeper):
                 report("The meeting ended on the host, so this seat ends too")
                 break
     finally:
+        report(f"This seat ends; its tunnel ended with {tunnel.poll()}")
         tunnel.terminate()
         keeper.end()
         local_seat.close_browsers()
