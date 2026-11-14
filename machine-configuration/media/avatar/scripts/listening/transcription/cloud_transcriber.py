@@ -8,7 +8,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-from transcription import ordinary_words, transcriber
+from transcription import ordinary_words, spoken_names, transcriber
 
 SCRIBE_URL = "https://api.elevenlabs.io/v1/speech-to-text"
 SCRIBE_MODEL = "scribe_v2"
@@ -47,11 +47,9 @@ def servant_names(roster_path):
     return tuple(dict.fromkeys(name for name in names if name))
 
 
-def familiarity(name, frequency_ranks):
-    ranks = [frequency_ranks.get(ordinary_words.folded(word)) for word in name.split()]
-    if None in ranks:
-        return -math.inf
-    return -max(ranks)
+def familiarity(word, frequency_ranks):
+    rank = frequency_ranks.get(ordinary_words.folded(word))
+    return -math.inf if rank is None else -rank
 
 
 def recognized_terms():
@@ -59,9 +57,10 @@ def recognized_terms():
     if not roster_path:
         return RECOGNIZED_TERMS
     frequency_ranks = ordinary_words.frequency_ranks() or {}
-    names = [
-        name for name in servant_names(roster_path) if name not in RECOGNIZED_TERMS
-    ]
+    called = dict.fromkeys(
+        spoken_names.called_name(name) for name in servant_names(roster_path)
+    )
+    names = [name for name in called if name not in RECOGNIZED_TERMS]
     names.sort(key=lambda name: familiarity(name, frequency_ranks))
     return RECOGNIZED_TERMS + tuple(
         names[: KEYTERMS_BEFORE_MINIMUM_BILLING - len(RECOGNIZED_TERMS)]
