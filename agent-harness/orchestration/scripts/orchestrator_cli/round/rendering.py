@@ -161,9 +161,9 @@ def rendered_round(
     ]
     return "\n\n".join(
         [
+            *asks_block(asks, now, orchestrator),
             "### Sessions",
             sessions_block(reports, now),
-            *asks_block(asks, now, orchestrator),
             "### Decisions waiting for you",
             *decisions,
         ]

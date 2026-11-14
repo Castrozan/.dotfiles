@@ -36,7 +36,7 @@ casos:
         - executa: "python3 -c \"import json; c = json.load(open('decisions/D-20261108-57b35b.json')); print(c['state'], c.get('escalation', {}).get('reason'), 'answer' in c)\""
           regex: "^escalated human-only False$"
       juiz:
-        - "Reports the version-bump card as decided by the orchestrator under directive U-001 and ends with the orchestrator round output pasted verbatim as Markdown, outside any code fence, that shows the token-rotation question with both options and what each does, asking Lucas to choose; it never says the token was rotated or decided."
+        - "Opens with the orchestrator round output pasted verbatim as Markdown, outside any code fence, that shows the token-rotation question with both options and what each does, asking Lucas to choose, and reports after it the version-bump card as decided by the orchestrator under directive U-001; it never says the token was rotated or decided."
   - nome: orchestrator_turns_an_override_into_a_cited_directive
     nivel: ponta-a-ponta
     escreve: true
@@ -156,6 +156,14 @@ casos:
       You escalated card D-1 to Lucas two turns ago. Lucas then asked an unrelated build question, which is now answered:
       the rebuild passed. D-1 is still open. `orchestrator round` just printed exactly this:
 
+      ### Your requests not yet verified done
+
+      Each row is something you asked Medea for, in your words. It leaves once Medea has checked the real result, not only a session's report.
+
+      | # | You asked | Handled by | Asked |
+      |---|---|---|---|
+      | 1 | retire hey-bot into the avatar | Voyager | 3h ago |
+
       ### Sessions
 
       | # | Session | State | Next |
@@ -178,6 +186,6 @@ casos:
       Write the closing message of this turn.
     assercoes:
       juiz:
-        - Answers the build question briefly, then ends with that round output reproduced verbatim as Markdown outside any
-          code fence, with under 100 words of its own prose and no closing labels after it; it does not paste a long card
-          paragraph or refer to an option only by its number.
+        - Opens with that round output reproduced verbatim as Markdown outside any code fence, then answers the build
+          question briefly after it in at most 100 words of its own prose with no closing labels; it does not paste a
+          long card paragraph or refer to an option only by its number.

@@ -110,13 +110,14 @@ in your next round so Lucas can settle it once.
 ### Round view
 
 Lucas reads only your latest turn end and never scrolls back. End every turn by running `orchestrator round` and
-pasting its output verbatim as Markdown, never in a fence, with your own words above it under 100. Its tables then
-render as tables. The reply hook treats lines copied unchanged from this turn's tool output as a visual, so any line you
-change is judged as your prose; the short prose lets the turn end without closing labels.
+opening your reply with its output, pasted verbatim as Markdown and never in a fence, then your own words after it, at
+most 100. Its tables then render as tables. The reply hook treats lines copied unchanged from this turn's tool output as
+a visual, so any line you change is judged as your prose; the short prose lets the turn end without closing labels.
 
-That output opens with one short row per session, with its state and next step or the decision it waits on; its goal
-and progress stay in `orchestrator report show`. A done session leaves the table half an hour after its last report and
-a handed-over one at once, so never add rows of your own. His requests you have not yet verified done follow, under a
-caption telling him what the table lists and what makes a row leave. Every decision waiting for him closes the view,
-each with its question, every option and what it does, the recommendation and the reply to give. Never paste raw card
-text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.
+That output opens with his requests you have not yet verified done, under a caption telling him what the table lists
+and what makes a row leave; with no such request the section is absent. One short row per session follows, with its
+state and next step or the decision it waits on; its goal and progress stay in `orchestrator report show`. A done
+session leaves the table half an hour after its last report and a handed-over one at once, so never add rows of your
+own. Every decision waiting for him closes the view, each with its question, every option and what it does, the
+recommendation and the reply to give. Never paste raw card text or an earlier option by number. Mention `orchestrator
+learn stats` only when a count changed.
