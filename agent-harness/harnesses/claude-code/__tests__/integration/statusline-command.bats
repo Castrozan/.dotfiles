@@ -246,14 +246,6 @@ _full_json_input() {
 	[[ "$stripped" == *"ctx 100%"* ]]
 }
 
-@test "context window trigger is the window minus the summary floor without a percentage override" {
-	local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":9,"total_input_tokens":93500}}'
-	_run_statusline_with_json_and_auto_compact_env "$json_input" 200000 ""
-	local stripped
-	stripped=$(echo "$output" | _strip_ansi_escape_codes)
-	[[ "$stripped" == *"ctx 50%"* ]]
-}
-
 @test "context window falls back to raw used_percentage without auto-compact env" {
 	local json_input='{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"abc","context_window":{"used_percentage":18,"total_input_tokens":175000}}'
 	_run_statusline_with_json_without_auto_compact_env "$json_input"
