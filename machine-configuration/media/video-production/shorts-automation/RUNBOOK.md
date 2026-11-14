@@ -101,6 +101,13 @@ the precise failed gate or unavailable dependency and do not claim publication. 
 overlap, and missed slots are not backfilled. This fresh scheduled session ends after one attempt. Do not edit dotfiles
 or launch extra agent sessions to finish it.
 
+### Run retention
+
+When a published run ends, every file of 1 MiB or more is deleted unless `episode.json` references it as the video,
+narration, a beat frame or review evidence, or it is `agent-events.jsonl`; `retention.json` lists what was removed.
+Write durable findings as small files. Unpublished runs keep everything. After each scheduled run only the newest five
+run directories remain, plus runs queued or running in `recovery-queue.json`.
+
 ### Explicit recovery
 
 An operator may enqueue inspected held slots using `shorts-production queue-recovery --run-id YYYY-MM-DD-HH00`.

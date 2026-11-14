@@ -36,16 +36,19 @@ def read_queue(root):
     return read_document(path) if path.exists() else {"runs": []}
 
 
+def pending_recoveries(root):
+    return {
+        item["run_id"]
+        for item in read_queue(root)["runs"]
+        if item["status"] in ("queued", "running")
+    }
+
+
 def queue_recoveries(root, identifiers, configuration):
     with (root / "production.lock").open("a") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         queue = read_queue(root)
-        pending = {
-            item["run_id"]
-            for item in queue["runs"]
-            if item["status"] in ("queued", "running")
-        }
-        if len(pending | set(identifiers)) > 2:
+        if len(pending_recoveries(root) | set(identifiers)) > 2:
             raise ValueError("Queue at most two explicitly requested recoveries")
         for identifier in identifiers:
             if any(item["run_id"] == identifier for item in queue["runs"]):
@@ -147,9 +150,7 @@ def drain_queue(root, configuration):
 
 
 def has_unfinished(root):
-    return any(
-        item["status"] in ("queued", "running") for item in read_queue(root)["runs"]
-    )
+    return bool(pending_recoveries(root))
 
 
 def launch_pending(root, configuration):

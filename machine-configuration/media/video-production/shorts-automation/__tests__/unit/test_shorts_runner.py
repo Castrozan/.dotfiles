@@ -180,3 +180,40 @@ def test_unavailable_browser_does_not_spend_a_production_session(tmp_path, monke
     assert result == {"status": "skipped", "reason": "Shorts browser unavailable"}
     start.assert_not_called()
     assert not (tmp_path / "runs").exists()
+
+
+def test_published_run_sheds_intermediates_and_old_runs_are_pruned(
+    tmp_path, monkeypatch
+):
+    agent_launcher(tmp_path, monkeypatch, 0)
+    for day in range(1, 7):
+        (tmp_path / "runs" / f"2026-10-{day:02d}-0900").mkdir(parents=True)
+
+    def publish(arguments, stdout, **options):
+        directory = sorted((tmp_path / "runs").iterdir())[-1]
+        write_document(
+            directory / "episode.json",
+            {
+                "video": "final.mp4",
+                "narration": {"file": "narration.wav"},
+                "beats": [],
+                "review": {},
+            },
+        )
+        for name in ("final.mp4", "narration.wav", "bin/composition"):
+            (directory / name).parent.mkdir(exist_ok=True)
+            (directory / name).write_bytes(b"x" * 2 * 1024 * 1024)
+        write_document(directory / "status.json", {"status": "published"})
+        process = Mock()
+        process.wait.return_value = 0
+        return process
+
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", publish)
+    result = shorts_runner.start_run(tmp_path, 9, configuration())
+    runs = sorted(path.name for path in (tmp_path / "runs").iterdir())
+    current = tmp_path / "runs" / runs[-1]
+    assert result["status"] == "published"
+    assert result["pruned_runs"] == ["2026-10-02-0900", "2026-10-01-0900"]
+    assert len(runs) == 5
+    assert (current / "final.mp4").is_file()
+    assert not (current / "bin").exists()

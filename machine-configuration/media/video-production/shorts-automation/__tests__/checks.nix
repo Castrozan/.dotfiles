@@ -14,7 +14,7 @@ in
       __tests__/unit/browser/test_shorts_browser.py __tests__/unit/browser/test_shorts_browser_upload.py \
       __tests__/unit/browser/test_shorts_browser_pages.py __tests__/unit/test_shorts_runner.py \
       __tests__/unit/browser/test_shorts_browser_scoping.py __tests__/unit/browser/test_shorts_browser_transport.py \
-      __tests__/unit/test_shorts_composition.py
+      __tests__/unit/test_shorts_composition.py __tests__/unit/test_shorts_retention.py
     touch "$out"
   '';
 }

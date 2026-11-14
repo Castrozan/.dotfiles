@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 
 from shorts_browser import browser_instance, browser_pages
 from shorts_composition import discard_build_caches
+from shorts_retention import discard_intermediates, prune_runs
 from shorts_store import (
     RUN_STATUS_FILENAME,
     TopicStore,
@@ -177,6 +178,7 @@ def execute_run(directory, configuration):
             discard_build_caches(directory)
             if read_document(directory / RUN_STATUS_FILENAME)["status"] == "started":
                 finish_run(directory, "needs_inspection")
+            discard_intermediates(directory)
 
 
 def start_run(root, slot, configuration):
@@ -192,4 +194,6 @@ def start_run(root, slot, configuration):
         claim = claim_slot(root, slot, configuration)
         if claim.directory is None:
             return claim.skipped
-        return execute_run(claim.directory, configuration)
+        result = execute_run(claim.directory, configuration)
+        result["pruned_runs"] = prune_runs(root)
+        return result
