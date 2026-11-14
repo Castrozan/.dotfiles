@@ -6,6 +6,7 @@ import time
 import conversation_addressee
 import listener_runtime
 import listener_session
+import room_holder
 import speech_segmenter
 from transcription import transcriber
 import transcript_log
@@ -81,7 +82,7 @@ class Boundaries:
     addressee: object = lambda: conversation_addressee.current(
         listener_runtime.runtime_directory()
     )
-    hand_to: object = lambda addressee: conversation_addressee.hand_to(
+    hand_to: object = lambda addressee: room_holder.give_the_room_to(
         listener_runtime.runtime_directory(), addressee
     )
     report: object = lambda line: print(line, file=sys.stderr, flush=True)

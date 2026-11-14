@@ -1,3 +1,5 @@
+import pathlib
+
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -7,6 +9,7 @@ IBARAKI = LiveSession("Ibaraki-dōji", "wW:pPY")
 VOYAGER = LiveSession("Voyager", "wW:pPZ")
 EDMOND = LiveSession("Edmond Dantès", "wW:pMX")
 LIVE = [IBARAKI, VOYAGER, EDMOND]
+ORDINARY_WORDS_FILE = pathlib.Path(__file__).parents[1] / "wake/ordinary-words.txt"
 
 message_words = st.lists(
     st.sampled_from(["check", "the", "build", "roda", "os", "testes", "agora"]),
@@ -41,7 +44,8 @@ def test_a_name_without_a_leading_greeting_wakes_nobody(session, message):
     assert addressed_session(f"yesterday {name} said {message}", LIVE) is None
 
 
-def test_a_misheard_name_still_reaches_its_session():
+def test_a_misheard_name_still_reaches_its_session(monkeypatch):
+    monkeypatch.setenv("AVATAR_ORDINARY_WORDS", str(ORDINARY_WORDS_FILE))
     match = addressed_session("Hey Iberaki, check the build.", LIVE)
     assert match.session == IBARAKI, (
         "transcription drift within the threshold is tolerated"

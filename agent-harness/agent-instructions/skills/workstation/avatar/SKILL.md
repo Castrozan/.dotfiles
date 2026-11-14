@@ -27,9 +27,8 @@ Start the avatar before opening the meeting, or reload its page: Avatar Cam is l
 
 ### Performing
 
-Run `avatar-command capabilities` for the current names. Once the avatar runs, choose from `characters` the description
-that best fits your Servant's personality and gender, ignoring the model's name, with `avatar-command character NAME`;
-that also sets your voice, and Servants may share one.
+Run `avatar-command capabilities` for the current names. Your Servant already has a character of its gender, with its
+model and voices, shown whenever you take the floor: never pick one with `avatar-command character`.
 
 Set the face with `expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`,
 move the eyes and head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list
@@ -75,7 +74,7 @@ conversation opened on chise; `--seat room` forces the room. The printed `seat` 
 a Mac, the user hears you only beside chise.
 
 Saying a greeting and your Servant name near a Mac wakes your session there too and seats the conversation at that
-Mac; naming another Servant mid-conversation does not move the room while it sits on a Mac.
+Mac. Naming another Servant mid-conversation moves the room wherever the conversation sits.
 
 `show` and `hide` from a Mac holding the seat open and close the avatar window on that Mac. `open --live` works from a
 Mac too: its tasks reach your session there, and the seat rule above decides where the voice is heard.

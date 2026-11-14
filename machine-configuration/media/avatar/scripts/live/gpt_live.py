@@ -14,6 +14,7 @@ from live_events import (
     Usage,
     UserSaid,
 )
+from live_voice import DEFAULT_VOICE
 
 ENDPOINT = "wss://api.openai.com/v1/live/sessions"
 KEY_FILE = Path.home() / ".secrets" / "openai-api-key"
@@ -40,12 +41,23 @@ Do not generate <|SpawnThinking|> when:
 
 Generate <|SpawnThinking|> before giving an answer that depends on backend work.
 Do not guess the result while waiting. Keep chatting naturally while the agent works."""
+EARLIER_CONVERSATION_HEADING = """
+
+You are taking over a conversation already in progress, in a new voice. Carry on from it
+without greeting again. The conversation so far, oldest first:
+"""
 
 
 class GptLive:
     name = "gpt-live-1"
     input_rate = RATE
     output_rate = RATE
+
+    def __init__(self, speaking_voice=DEFAULT_VOICE, earlier_conversation=""):
+        self.speaking_voice = speaking_voice
+        self.instructions = INSTRUCTIONS
+        if earlier_conversation:
+            self.instructions += EARLIER_CONVERSATION_HEADING + earlier_conversation
 
     async def connect(self):
         self.socket = await websockets.connect(
@@ -61,10 +73,10 @@ class GptLive:
                     "type": "session.start",
                     "session": {
                         "model": "gpt-live-1",
-                        "instructions": INSTRUCTIONS,
+                        "instructions": self.instructions,
                         "audio": {
                             "format": {"type": "audio/pcm", "rate": RATE},
-                            "output": {"voice": "marin"},
+                            "output": {"voice": self.speaking_voice},
                         },
                         "delegation": {"type": "client"},
                     },

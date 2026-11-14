@@ -7,10 +7,8 @@
 }:
 let
   programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
-  characters = import ./characters.nix { inherit pkgs; };
-  characterVoices = pkgs.writeText "avatar-character-voices.json" (
-    builtins.toJSON (map (character: { inherit (character) name cloudVoice localVoice; }) characters)
-  );
+  characters = import ./cast/characters.nix { inherit pkgs; };
+  characterVoices = import ./cast/character-voices.nix { inherit pkgs; };
   transcriptionModel = pkgs.fetchurl {
     url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
     sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
@@ -176,6 +174,10 @@ in
           };
           Service = {
             ExecStart = toString programs.live;
+            Environment = [
+              "AVATAR_CHARACTER_VOICES=${characterVoices}"
+              "AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}"
+            ];
             Restart = "on-failure";
             RestartSec = 5;
           };

@@ -11,9 +11,11 @@ import transcript_log
 from agent_route import ask_agent
 from gpt_live import GptLive
 from live_events import AssistantSaid, Audio, Failed, TaskRequested, Usage, UserSaid
+from live_voice import voice_of_the_room_holder
 from conversation_seat import Seat
 from room_audio import DEFAULT_SINK, LIP_SYNC_SINK, Speaker, microphone_chunks
 from spoken_turns import Party, TurnAssembler
+from voice_session import RoomVoice
 
 BARGE_IN_BUFFER_SECONDS = 0.4
 TURN_SETTLE_SECONDS = 1.2
@@ -84,6 +86,15 @@ class LiveConversation:
         self.handoffs.add(handoff)
         handoff.add_done_callback(self.handoffs.discard)
 
+    async def follow_the_room_holder(self):
+        await self.voice.follow_the_room_holder(
+            self.directory, self.transcript, self.settle_after_a_new_voice
+        )
+
+    def settle_after_a_new_voice(self):
+        self.write(self.turns.finish())
+        self.speaker.clear()
+
     def record_usage(self, event):
         self.usage = event.details
 
@@ -151,9 +162,9 @@ async def shut_down(voice, conversation, events, workers):
 
 
 async def run():
-    voice = GptLive()
-    session = await voice.connect()
     directory = listener_runtime.runtime_directory()
+    voice = RoomVoice(GptLive, await voice_of_the_room_holder(directory))
+    session = await voice.connect()
     seat = conversation_seat.configured(directory)
     conversation = LiveConversation(
         voice,
@@ -167,6 +178,7 @@ async def run():
     workers = [
         asyncio.create_task(conversation.stream_microphone()),
         asyncio.create_task(conversation.settle_turns()),
+        asyncio.create_task(conversation.follow_the_room_holder()),
         events,
     ]
     stopped = asyncio.create_task(stop.wait())

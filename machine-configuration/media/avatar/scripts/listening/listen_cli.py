@@ -1,9 +1,11 @@
 import argparse
+import dataclasses
 import json
 import re
 import subprocess
 import sys
 
+import conversation_addressee
 import conversation_seat
 import conversation_state
 import listener
@@ -93,6 +95,11 @@ def status(arguments, directory):
     )
 
 
+def addressee(arguments, directory):
+    holder = conversation_addressee.current(directory)
+    print(json.dumps(dataclasses.asdict(holder) if holder else None))
+
+
 def print_entries(entries):
     for entry in entries:
         print(json.dumps(entry, ensure_ascii=False), flush=True)
@@ -151,6 +158,7 @@ def parse_arguments():
     begin.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
     commands.add_parser("stop")
     commands.add_parser("status")
+    commands.add_parser("addressee")
     reading = commands.add_parser("read")
     reading.add_argument("--since", type=int, default=0)
     reading.add_argument("--wait", type=float, default=0)
@@ -173,6 +181,7 @@ def main():
         "start": start,
         "stop": stop,
         "status": status,
+        "addressee": addressee,
         "read": read,
         "follow": follow,
         "enroll": enroll,

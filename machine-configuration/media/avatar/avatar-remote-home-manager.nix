@@ -13,6 +13,12 @@ let
     pkgs.writeShellScriptBin command ''
       exec ssh chise ${command} "$(printf '%q ' "$@")"
     '';
+  forwardCommandToChise = pkgs.writeShellScriptBin "avatar-command" ''
+    if [ "''${1:-}" = speak ] && [ -n "''${HERDR_PANE_ID:-}" ]; then
+      ssh -n chise avatar-claim-floor --speaker "$(printf '%q' "${hostname}:$HERDR_PANE_ID")" || exit 1
+    fi
+    exec ssh chise avatar-command "$(printf '%q ' "$@")"
+  '';
   remoteMeeting =
     verb: command:
     pkgs.writeShellScriptBin command ''
@@ -32,6 +38,7 @@ let
       ]
     }:$PATH
     export AVATAR_AGENT_HOST=${hostname}
+    export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/conversation/remote_seat}:${./scripts/wake}:${programs.a2aLibrary}
@@ -43,7 +50,7 @@ in
   home.packages = [
     talk
     wake
-    (forwardToChise "avatar-command")
+    forwardCommandToChise
     (forwardToChise "avatar-audio")
     (remoteMeeting "start" "avatar-start")
     (remoteMeeting "stop" "avatar-stop")

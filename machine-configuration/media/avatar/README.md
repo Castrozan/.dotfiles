@@ -3,8 +3,10 @@
 The avatar runs locally and independently of an agent harness. Its VRM model, portrait assets and rendering libraries
 are pinned by Nix and served locally. The characters come from
 [VRoid's sample set](https://github.com/madjin/vrm-samples), each CC0 by its embedded VRM licence metadata, and are
-declared with their cloud and local voices in `characters.nix`. A new one needs a VRM with VRoid's `Fcl_` face morphs,
-which drive the mouth and blink. The first declared character shows at start, and `avatar-command character NAME` swaps
+declared in `cast/`, where every character has one gender and its model and cloud, local and live voices all match it.
+A new one needs a VRM with VRoid's `Fcl_` face morphs, which drive the mouth and blink. `cast/servant-characters.txt`
+gives every Servant in the roster a character of its gender, and whoever takes the floor appears as that character, so
+nobody picks one by hand. The first declared character shows at start, and `avatar-command character NAME` still swaps
 it and its voice while running. Start
 the avatar with `avatar-start`, which also opens her voice and the default microphone. `avatar-command mode camera` opens the external camera with no prompt: the avatar-owned
 browser loads only this local renderer, so it accepts camera requests by itself. `avatar-controls` chooses a camera by
@@ -118,8 +120,11 @@ microphone.
 
 `avatar-talk open --live` puts the conversation on a cloud speech-to-speech model:
 [GPT-Live](https://developers.openai.com/api/docs/guides/live-conversations) hears the room microphone and answers
-within about a second, so it can listen and speak while work runs. Its own voice replaces the character's ElevenLabs
-voice, and the room audio streams to OpenAI for as long as the conversation stays open. `avatar-live.service` runs the
+within about a second, so it can listen and speak while work runs. It speaks in the live voice of the floor holder's
+character, and the room audio streams to OpenAI for as long as the conversation stays open. GPT-Live fixes the voice
+when a session starts, so when the floor passes to a Servant with another voice the bridge opens a new session in that
+voice, gives it the recent transcript in its instructions so it carries on without greeting, and closes the old one.
+An answer to a task the old session asked for is printed, not spoken. `avatar-live.service` runs the
 bridge inside `avatar-conversation.target` in place of the listener and plays a second copy of the voice into
 `AvatarLipSync` so the mouth moves.
 
@@ -144,8 +149,9 @@ opens it in headless Chrome on the profile `~/.local/share/avatar/wake-browser` 
 place of `parec`. The page opens the default input, or the built-in microphone when the default is Bluetooth, which
 would otherwise force call-quality sound on everything the Mac plays. Each utterance goes to `avatar-transcribe` on
 chise over ssh. A wake opens the conversation with `avatar-talk open --seat remote`, then `ssh chise avatar-claim-floor
---agent HOST:PANE` gives the woken session the floor. A seat held on the Mac pauses the wake, as an open conversation
-does on chise; naming another Servant mid-conversation hands the room over only when it sits on chise.
+--agent HOST:PANE` gives the woken session the floor. While the Mac holds the seat, its wake reads that conversation's
+transcript from chise with `avatar-listen read` instead of the microphone, so a session on the Mac named
+mid-conversation gets the floor as one on chise does.
 
 During a conversation the wake reads that conversation's transcript instead of the microphone. Naming another live
 Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the
@@ -153,10 +159,17 @@ avatar runtime directory names the session now addressed, its `avatar-talk follo
 and the previous session's `follow` prints that the room turned and exits. Only lines from the room's own microphone
 prompt a session; a voice from a meeting moves the room without prompting anyone.
 
+Parakeet cannot be told the names, so the wake also accepts a misheard one, such as "chise hresnade" for Scheherazade,
+but only from words that are not ordinary speech: a window of words matches loosely only when none of them is among
+the most frequent English and Brazilian Portuguese words of
+[FrequencyWords](https://github.com/hermitdave/FrequencyWords), pinned in `ordinary-words.nix`. A wake opens a
+conversation for an unverified voice, so without the word lists only an exact name or one that sounds the same wakes.
+
 `addressee.json` is also the floor every speaking agent shares, in conversations and meetings alike. `avatar-command
 speak` from a herdr pane first runs `avatar-claim-floor` under a lock: the holder speaks at once, a live holder silences
 everyone else, and otherwise the first live Servant to claim takes it. A refused claim stops the speech and names the
-holder. Starting a listener frees the floor, and without one anyone may speak.
+holder. A Mac session speaking through chise claims as `avatar-claim-floor --speaker HOST:PANE`, under the same rules.
+Starting a listener frees the floor, and without one anyone may speak.
 
 ## Meetings
 
@@ -222,9 +235,10 @@ Transcription posts each utterance to ElevenLabs [Scribe](https://elevenlabs.io/
 about one second each, through the key `media-speech` uses, which needs the Speech to Text permission. On room audio it
 beat Hex's Parakeet and Whisper and invented nothing in silence; Parakeet ignores a pinned language and Whisper invents
 "Obrigado." A failed request falls back to the running [Hex](https://github.com/anomalyco/hex) service's Parakeet v3.
-`RECOGNIZED_TERMS` in `cloud_transcriber.py` are sent as
+`RECOGNIZED_TERMS` in `cloud_transcriber.py` and the roster's Servant names are sent as
 [keyterms](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/keyterm-prompting), which add 20%
-to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs".
+to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs". More than 100 keyterms bills
+every request as at least 20 seconds, so the names least like ordinary words fill the slots left by the fixed terms.
 
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
 `human` source into a private transcript under the user runtime directory, and refuses while a desktop conversation is

@@ -90,15 +90,9 @@ def test_the_floor_goes_to_the_woken_pane_on_this_host_through_the_avatar_host(
     on_a_mac.hand_to(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
     assert runner.call_args.args[0][-2:] == [
         "chise",
-        "avatar-claim-floor --agent kira:wW:pPZ",
+        "avatar-claim-floor --agent kira:wW:pPZ --heard-through 0",
     ]
     assert runner.call_args.kwargs["check"] is True
-
-
-def test_a_conversation_has_no_transcript_purpose_or_addressee_on_a_mac(on_a_mac):
-    assert on_a_mac.transcript_entries() == []
-    assert on_a_mac.listening_purpose() is None
-    assert on_a_mac.addressee() is None
 
 
 @pytest.mark.parametrize(

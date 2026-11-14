@@ -77,8 +77,10 @@ def test_character_request_reaches_the_renderer_with_its_identity():
         const sent = [];
         const forwarded = [];
         const connection = { isOpen: () => true, sendJson: value => sent.push(value) };
-        handleSetCharacterCommand({ name: "vita", id: "request-1" }, connection, { clientRegistry: { sendToRenderer: value => { forwarded.push(value); return true; } } });
-        handleSetCharacterCommand({ name: "vita", id: "request-2" }, connection, { clientRegistry: { sendToRenderer: () => false } });
+        const avatarState = { currentCharacter: null };
+        const textToSpeechGenerator = { selectCharacter: () => {} };
+        handleSetCharacterCommand({ name: "vita", id: "request-1" }, connection, { avatarState, textToSpeechGenerator, clientRegistry: { sendToRenderer: value => { forwarded.push(value); return true; } } });
+        handleSetCharacterCommand({ name: "vita", id: "request-2" }, connection, { avatarState, textToSpeechGenerator, clientRegistry: { sendToRenderer: () => false } });
         const result = { forwarded, sent };
         """
     )

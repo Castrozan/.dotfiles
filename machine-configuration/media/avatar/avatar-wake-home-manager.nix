@@ -11,12 +11,15 @@ let
     export PATH=${
       lib.makeBinPath [
         programs.a2a
+        programs.command
         programs.herdr
         programs.talk
         pkgs.pulseaudio
         pkgs.systemd
       ]
     }:$PATH
+    export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
+    export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}:${programs.a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake/wake_listener.py} "$@"
   '';
