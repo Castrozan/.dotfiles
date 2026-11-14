@@ -12,10 +12,10 @@ def test_launcher_defaults_to_sixty_frames_per_second():
     assert DEFAULT_CAPTURE_FRAMES_PER_SECOND == 60
 
 
-def test_recorder_produces_contiguous_sixty_frame_timestamps():
-    source = r"""
+RECORDER_HARNESS_SOURCE = r"""
 global.window = global;
 const frames = [];
+const configuredEncoders = [];
 window.location = { search: '?record=1&seconds=3' };
 window.requestAnimationFrame = callback => callback();
 eval(require('fs').readFileSync(process.argv[2], 'utf8'));
@@ -28,7 +28,8 @@ window.AmbientCanvasRecordingCompositor = {
 };
 window.AmbientCanvasRecordingEncoder = {
   createVideoFrame: window.AmbientCanvasRecordingEncoder.createVideoFrame,
-  createConfiguredMuxerAndEncoder(width, height, framesPerSecond) {
+  createConfiguredMuxerAndEncoder(width, height, framesPerSecond, bitsPerPixelPerFrame) {
+    configuredEncoders.push({width, height, framesPerSecond, bitsPerPixelPerFrame});
     return {
       muxer: {finalize() {}, target: {buffer: new ArrayBuffer(0)}},
       videoEncoder: {
@@ -40,7 +41,7 @@ window.AmbientCanvasRecordingEncoder = {
   },
   async uploadRecordedSegment() {},
   async uploadSegmentManifest() {
-    process.stdout.write(JSON.stringify(frames));
+    process.stdout.write(JSON.stringify({frames, configuredEncoders}));
   },
 };
 window.AmbientCanvasRecordingFingerprint = {
@@ -69,11 +70,14 @@ window.AMBIENT_CANVAS_RECORD_DRIVER({
   destroySegment() {},
 });
 """
+
+
+def record_three_seconds_with_stubbed_encoder():
     completed = subprocess.run(
         [
             "node",
             "-e",
-            source,
+            RECORDER_HARNESS_SOURCE,
             str(RECORDER_PATH),
             str(
                 RECORDER_PATH.parent / "record" / "ambient-canvas-recording-encoder.js"
@@ -85,7 +89,11 @@ window.AMBIENT_CANVAS_RECORD_DRIVER({
         text=True,
         timeout=10,
     )
-    frames = json.loads(completed.stdout)
+    return json.loads(completed.stdout)
+
+
+def test_recorder_produces_contiguous_sixty_frame_timestamps():
+    frames = record_three_seconds_with_stubbed_encoder()["frames"]
     assert len(frames) == 180
     assert frames[0]["timestamp"] == 0
     assert frames[-1]["timestamp"] + frames[-1]["duration"] == 3_000_000
@@ -97,3 +105,17 @@ window.AMBIENT_CANVAS_RECORD_DRIVER({
         0,
         120,
     ]
+
+
+def test_full_hd_bitrate_ceiling_stays_where_dense_line_art_still_reads_clean():
+    configured_encoder = record_three_seconds_with_stubbed_encoder()[
+        "configuredEncoders"
+    ][0]
+    bitrate_ceiling = (
+        configured_encoder["width"]
+        * configured_encoder["height"]
+        * configured_encoder["framesPerSecond"]
+        * configured_encoder["bitsPerPixelPerFrame"]
+    )
+    assert (configured_encoder["width"], configured_encoder["height"]) == (1920, 1080)
+    assert 15_000_000 <= bitrate_ceiling <= 20_000_000

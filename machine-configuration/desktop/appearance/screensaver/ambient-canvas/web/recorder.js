@@ -1,7 +1,7 @@
 {
   const recorderParameters = new URLSearchParams(window.location.search);
   const recorderPlan = window.AmbientCanvasRecordingPlan;
-  const recorderTargetBitsPerPixelPerFrame = 0.35;
+  const recorderTargetBitsPerPixelPerFrame = 0.16;
   const recorderKeyFrameIntervalSeconds = 2;
   const recorderEncoderQueueHighWatermark = 8;
   const recorderEncoderQueueDrainTarget = 4;
