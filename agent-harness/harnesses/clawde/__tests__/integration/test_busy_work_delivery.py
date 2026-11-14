@@ -81,7 +81,7 @@ def test_every_dispatch_to_one_target_is_its_own_task_until_the_turn_ends(owned_
     assert owned_fleet.target.submitted == inputs
     session = owned_fleet.registry.session_named("owned-peer")
     session.coordinator.observe_once_and_apply_to_active_task()
-    for task_id, text in zip(task_ids, inputs):
+    for task_id, text in zip(task_ids, inputs, strict=True):
         _, task = request_json(
             owned_fleet, "GET", f"/agents/owned-peer/tasks/{task_id}"
         )
