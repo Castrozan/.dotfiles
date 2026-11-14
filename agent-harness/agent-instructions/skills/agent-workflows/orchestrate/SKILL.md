@@ -95,10 +95,11 @@ this loop; [decisions](references/decisions.md) owns what it hears from you.
 The peer discussed nothing with you, so restate the goal, the constraint, the acceptance test, and every path in each
 task; a dispatch referring to what you decided earlier reaches an agent with no memory of it. Keep the task itself to
 one line and put depth in a file the peer reads, because newline handling differs per harness and a half-submitted
-prompt looks exactly like a task in progress. A dispatch lands in a busy peer's prompt at once and its harness treats it
-as input typed mid-turn. Every task riding one turn completes when that turn ends, and cancelling one interrupts the
-turn and cancels them all, so never split one goal into parallel tasks against the same peer. Only a composer already
-holding unsent text refuses the dispatch.
+prompt looks exactly like a task in progress.
+
+A dispatch lands in a busy peer's prompt at once and its harness treats it as input typed mid-turn. Every task riding
+one turn completes when that turn ends, and cancelling one interrupts the turn and cancels them all, so never split one
+goal into parallel tasks against the same peer. Only a composer already holding unsent text refuses the dispatch.
 
 ### Completion is inferred not reported
 
