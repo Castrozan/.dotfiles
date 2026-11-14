@@ -37,7 +37,7 @@ class CameraKeeper:
             self.miss_the_meeting()
             return
         self.looks_without_a_meeting = 0
-        self.keep_the_camera()
+        without_failing(self.keep_the_camera)
 
     def keep_the_camera(self):
         self.owed = self.owed or self.camera.started()
@@ -47,23 +47,35 @@ class CameraKeeper:
     def miss_the_meeting(self):
         self.looks_without_a_meeting += 1
         if self.looks_without_a_meeting == LOOKS_WITHOUT_A_MEETING_BEFORE_IT_ENDED:
-            self.end()
+            without_failing(self.camera.stop)
 
     def end(self):
         self.owed = False
-        self.camera.stop()
+        without_failing(self.camera.stop)
 
     def revive(self):
         try:
             self.camera.start()
-        except CAMERA_FAILURES as error:
-            print(error, file=sys.stderr, flush=True)
+        except CAMERA_FAILURES:
+            self.camera.stop()
+            raise
+
+
+def without_failing(step):
+    try:
+        step()
+    except CAMERA_FAILURES as error:
+        report(error)
+
+
+def report(error):
+    print(time.strftime("%Y-%m-%d %H:%M:%S"), error, file=sys.stderr, flush=True)
 
 
 def report_to_the_seat_log():
     log = pathlib.Path.home() / SEAT_LOG
     log.parent.mkdir(parents=True, exist_ok=True)
-    sys.stderr = log.open("w")
+    sys.stderr = log.open("a")
 
 
 def camera_of_a_seat_opened_as(query):
@@ -81,7 +93,7 @@ def tunnel_stays_open(tunnel):
 
 
 def hold_seat(keeper):
-    tunnel = subprocess.Popen(local_seat.TUNNEL_COMMAND)
+    tunnel = subprocess.Popen(local_seat.TUNNEL_COMMAND, stderr=sys.stderr)
     deadline = time.monotonic() + local_seat.LONGEST_SEAT_SECONDS
     try:
         while time.monotonic() < deadline and tunnel_stays_open(tunnel):
@@ -93,10 +105,15 @@ def hold_seat(keeper):
 
 
 def end_on_request(signal_number, frame):
+    signal.signal(signal.SIGTERM, signal.SIG_IGN)
     sys.exit(0)
 
 
-if __name__ == "__main__":
+def main(arguments):
     signal.signal(signal.SIGTERM, end_on_request)
     report_to_the_seat_log()
-    hold_seat(CameraKeeper(camera_of_a_seat_opened_as("".join(sys.argv[1:]))))
+    hold_seat(CameraKeeper(camera_of_a_seat_opened_as("".join(arguments))))
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

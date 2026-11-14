@@ -75,6 +75,16 @@ def meeting_held():
     return bool((health() or {}).get("meeting"))
 
 
+def meeting_seat_kept_here():
+    found = subprocess.run(
+        ["/usr/bin/pgrep", "-f", "--", f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}"],
+        capture_output=True,
+        check=False,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+    return found.returncode == 0
+
+
 def end_processes_matching(command_line, signal_name="TERM"):
     subprocess.run(
         ["/usr/bin/pkill", f"-{signal_name}", "-f", "--", command_line],

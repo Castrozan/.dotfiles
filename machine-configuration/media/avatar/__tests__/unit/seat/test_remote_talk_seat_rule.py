@@ -108,3 +108,26 @@ def test_closing_a_conversation_keeps_the_seat_a_meeting_still_holds(monkeypatch
 def test_closing_a_conversation_with_no_meeting_leaves_the_seat(monkeypatch):
     free = {"attached": True, "listening": False, "meeting": False}
     assert closing(monkeypatch, free) == ["run", "leave"]
+
+
+def test_a_meeting_seat_kept_here_is_neither_retaken_nor_left_by_a_conversation(
+    monkeypatch,
+):
+    monkeypatch.setattr(local_seat, "meeting_seat_kept_here", lambda: True)
+    monkeypatch.setattr(local_seat, "health", lambda: None)
+    for step in ("take", "leave"):
+        monkeypatch.setattr(local_seat, step, Mock(side_effect=AssertionError(step)))
+    status = '{"open": true, "seat": "remote"}'
+    answer = SimpleNamespace(returncode=0, stdout=status)
+    monkeypatch.setattr(remote_talk.subprocess, "run", Mock(return_value=answer))
+    assert remote_talk.open_here(["open"]) == 0
+    assert remote_talk.close_everywhere(["close"]) == 0
+
+
+def test_a_meeting_seat_is_found_by_the_holder_told_it_holds_a_meeting(monkeypatch):
+    monkeypatch.undo()
+    found = Mock(return_value=SimpleNamespace(returncode=0))
+    monkeypatch.setattr(local_seat.subprocess, "run", found)
+    assert local_seat.meeting_seat_kept_here()
+    pattern = found.call_args.args[0][-1]
+    assert pattern == f"{local_seat.HOLDER_SCRIPT} {local_seat.MEETING_PAGE_QUERY}"

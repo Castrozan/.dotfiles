@@ -119,9 +119,11 @@ picture.
 The process that holds a meeting seat's tunnel also keeps the call camera, so nothing else runs on the Mac. Every ten
 seconds it asks the seat whether a meeting is running. Once OBS has reported its virtual camera active, an OBS that ends
 during the meeting is started again, which takes up to a minute and brings the picture back in avatar mode. Three looks
-in a row without a meeting stop OBS, so a restart of the avatar's services on chise does not; a closed tunnel or a seat
-that was left stops it at once. A start that fails is retried every round and its reason is written to
-`~/.local/share/avatar/seat-holder.log`. A seat opened for a conversation keeps no camera.
+in a row without a meeting stop OBS, and a meeting that returns while the seat is still held starts it again; a closed
+tunnel, `avatar-stop` or a seat that was left stops it at once. A start that fails stops the OBS it left, is tried
+again the next round, and its time and reason are appended to `~/.local/share/avatar/seat-holder.log` with the tunnel's
+own errors. A seat opened for a conversation keeps no camera, and opening or closing a conversation never takes or
+leaves a meeting seat held on that Mac.
 
 The seat page fails with the name of the missing device when `BlackHole 2ch` or `BlackHole 16ch` is not installed, and a
 seat that ends stops the transcription.

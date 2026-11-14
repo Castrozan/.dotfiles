@@ -74,14 +74,18 @@ def open_here(arguments):
     sys.stdout.flush()
     if opened.returncode:
         return opened.returncode
-    if reported_seat(opened.stdout) == REMOTE_SEAT and not local_seat.attached():
+    if reported_seat(opened.stdout) == REMOTE_SEAT and not seat_held_here():
         local_seat.take()
     return 0
 
 
+def seat_held_here():
+    return local_seat.attached() or local_seat.meeting_seat_kept_here()
+
+
 def close_everywhere(arguments):
     returncode = forward(arguments)
-    if not local_seat.meeting_held():
+    if not (local_seat.meeting_held() or local_seat.meeting_seat_kept_here()):
         local_seat.leave()
     return returncode
 

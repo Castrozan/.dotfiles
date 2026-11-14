@@ -20,16 +20,33 @@ def test_the_holder_is_told_how_its_seat_was_opened(holder, query):
     assert holder.call_args.args[0][1:] == [str(local_seat.HOLDER_PATH), query]
 
 
-def test_what_the_holder_reports_is_kept_for_this_seat_alone(tmp_path, monkeypatch):
+def test_what_the_holder_reports_joins_the_seat_log_with_its_time(tmp_path, monkeypatch):
     monkeypatch.setenv("HOME", str(tmp_path))
     monkeypatch.setattr(seat_holder.sys, "stderr", None)
     log = tmp_path / ".local/share/avatar/seat-holder.log"
     log.parent.mkdir(parents=True)
-    log.write_text("an earlier seat")
+    log.write_text("an earlier seat\n")
     seat_holder.report_to_the_seat_log()
     seat_holder.CameraKeeper(FailingCamera()).look({"meeting": True})
     seat_holder.sys.stderr.close()
-    assert log.read_text() == "OBS Studio is not installed\n"
+    earlier, failure = log.read_text().splitlines()
+    assert earlier == "an earlier seat"
+    assert failure.endswith(" OBS Studio is not installed")
+    assert failure[:4].isdigit()
+
+
+@pytest.mark.parametrize(
+    ("arguments", "camera"),
+    [([], "NoCamera"), ([local_seat.MEETING_PAGE_QUERY], "meeting_camera")],
+)
+def test_the_holder_keeps_the_camera_its_arguments_name(monkeypatch, arguments, camera):
+    held = Mock()
+    monkeypatch.setattr(seat_holder, "hold_seat", held)
+    monkeypatch.setattr(seat_holder, "report_to_the_seat_log", Mock())
+    monkeypatch.setattr(seat_holder.signal, "signal", Mock())
+    seat_holder.main(arguments)
+    kept = held.call_args.args[0].camera
+    assert getattr(kept, "__name__", type(kept).__name__) == camera
 
 
 class FailingCamera:
@@ -41,6 +58,9 @@ class FailingCamera:
 
     def start(self):
         raise RuntimeError("OBS Studio is not installed")
+
+    def stop(self):
+        return None
 
 
 def look_each(keeper, *seats):

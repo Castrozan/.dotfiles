@@ -33,8 +33,9 @@ const receive = (message) => socket.onmessage({ data: JSON.stringify(message) })
     { deviceId: "desk", label: "Desk camera" }, { deviceId: "lid", label: "" } ] });
   elements["#devices"].value = "lid";
   elements["#enable"].onclick();
-  receive({ type: "cameraResult", message: "Camera enabled" });
+  receive({ type: "cameraResult", message: "Camera enabled", id: socket.sent.at(-1).id });
   const statusAfterChoice = elements["#status"].textContent;
+  receive({ type: "cameraResult", message: "Devices are unreadable", id: socket.sent.at(-1).id });
   elements["#disable"].onclick();
   modes[1].onclick();
   receive({ type: "videoModeError", message: "No physical camera is connected" });

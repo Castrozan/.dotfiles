@@ -1,7 +1,6 @@
 import subprocess
 from unittest.mock import Mock
 
-import local_seat
 import pytest
 import seat_holder
 from hypothesis import given
@@ -19,6 +18,7 @@ class Camera:
         self.starts = 0
         self.stops = 0
         self.start_failure = None
+        self.leaves_obs_running = False
 
     def running(self):
         return self.is_running
@@ -30,6 +30,7 @@ class Camera:
         self.starts += 1
         self.has_started = False
         if self.start_failure:
+            self.is_running = self.leaves_obs_running
             raise self.start_failure
         self.is_running = self.has_started = True
 
@@ -97,96 +98,54 @@ def test_an_unreachable_seat_changes_nothing():
     assert (camera.starts, camera.stops) == (0, 0)
 
 
-SEATS = st.sampled_from([MEETING, NO_MEETING, UNREACHABLE])
+def test_obs_left_running_by_a_failed_start_is_stopped_and_started_again():
+    camera = Camera(running=False, started=True)
+    keeper = seat_holder.CameraKeeper(camera)
+    camera.start_failure = RuntimeError("OBS did not start its virtual camera")
+    camera.leaves_obs_running = True
+    keeper.look(MEETING)
+    assert not camera.is_running
+    camera.start_failure = None
+    keeper.look(MEETING)
+    assert (camera.starts, camera.is_running) == (2, True)
 
 
-@given(st.lists(SEATS, max_size=30), st.booleans(), st.booleans())
+def test_a_meeting_that_returns_after_the_camera_stopped_brings_it_back():
+    camera = Camera(running=True, started=True)
+    keeper = seat_holder.CameraKeeper(camera)
+    look_each(keeper, MEETING, *[NO_MEETING] * 4)
+    assert not camera.is_running
+    keeper.look(MEETING)
+    assert camera.is_running
+
+
+def test_a_camera_that_cannot_be_asked_is_reported_and_the_holder_goes_on(capsys):
+    camera = Camera(started=True)
+    camera.running = Mock(side_effect=subprocess.TimeoutExpired("pgrep", 30))
+    keeper = seat_holder.CameraKeeper(camera)
+    keeper.look(MEETING)
+    camera.stop = Mock(side_effect=OSError("pkill is missing"))
+    keeper.end()
+    assert "pgrep" in capsys.readouterr().err
+
+
+LOOKS = st.tuples(st.sampled_from([MEETING, NO_MEETING, UNREACHABLE]), st.booleans())
+
+
+@given(st.lists(LOOKS, max_size=30), st.booleans(), st.booleans())
 def test_the_camera_follows_the_meeting_whatever_the_looks(looks, running, started):
     camera = Camera(running, started)
     keeper = seat_holder.CameraKeeper(camera)
+    camera.leaves_obs_running = True
+    seen_sending = False
     missed = 0
-    for seat in looks:
-        owed = camera.has_started or keeper.owed
+    for seat, start_fails in looks:
+        camera.start_failure = RuntimeError("no camera") if start_fails else None
+        seen_sending = seen_sending or (seat is MEETING and camera.has_started)
+        was_running = camera.is_running
         keeper.look(seat)
-        if seat is MEETING:
-            missed = 0
-            assert camera.is_running or not owed
-        if seat is NO_MEETING:
-            missed += 1
+        missed = missed + 1 if seat is NO_MEETING else 0 if seat is MEETING else missed
+        if seat is MEETING and seen_sending:
+            assert camera.is_running == (was_running or not start_fails)
         if missed >= seat_holder.LOOKS_WITHOUT_A_MEETING_BEFORE_IT_ENDED:
             assert not camera.is_running
-
-
-class Tunnel:
-    def __init__(self, rounds_open):
-        self.rounds_open = rounds_open
-        self.terminated = False
-
-    def wait(self, timeout):
-        assert timeout == seat_holder.ROUND_SECONDS
-        if self.rounds_open == 0:
-            return 0
-        self.rounds_open -= 1
-        raise subprocess.TimeoutExpired("ssh", timeout)
-
-    def terminate(self):
-        self.terminated = True
-
-
-@pytest.fixture
-def seat(monkeypatch):
-    seat = Mock()
-    seat.health.return_value = MEETING
-    monkeypatch.setattr(local_seat, "health", seat.health)
-    monkeypatch.setattr(local_seat, "close_browsers", seat.close_browsers)
-    seat.open_tunnel = lambda rounds_open: monkeypatch.setattr(
-        seat_holder.subprocess, "Popen", lambda command: Tunnel(rounds_open)
-    )
-    return seat
-
-
-def test_the_holder_looks_once_per_round_while_the_tunnel_stays_open(seat):
-    seat.open_tunnel(3)
-    keeper = Mock()
-    seat_holder.hold_seat(keeper)
-    assert keeper.look.call_count == 3
-    keeper.look.assert_called_with(MEETING)
-
-
-def test_a_tunnel_that_ends_stops_the_camera_then_closes_the_browsers(seat):
-    seat.open_tunnel(1)
-    camera = Camera(running=True)
-    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
-    assert camera.stops == 1
-    seat.close_browsers.assert_called_once_with()
-
-
-def test_a_seat_that_ends_before_its_first_look_still_stops_the_camera(seat):
-    seat.open_tunnel(0)
-    camera = Camera(running=True)
-    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
-    assert not camera.is_running
-
-
-def test_a_holder_asked_to_end_still_stops_the_camera_and_the_browsers(seat):
-    seat.open_tunnel(5)
-    camera = Camera(running=True)
-    keeper = seat_holder.CameraKeeper(camera)
-    seat.health.side_effect = lambda: seat_holder.end_on_request(15, None)
-    with pytest.raises(SystemExit):
-        seat_holder.hold_seat(keeper)
-    assert camera.stops == 1
-    seat.close_browsers.assert_called_once_with()
-
-
-def test_the_holder_never_outlives_the_longest_seat(seat, monkeypatch):
-    seat.open_tunnel(5)
-    clock = iter([0, 0, local_seat.LONGEST_SEAT_SECONDS + 1])
-    monkeypatch.setattr(seat_holder.time, "monotonic", lambda: next(clock))
-    keeper = Mock()
-    seat_holder.hold_seat(keeper)
-    assert keeper.look.call_count == 1
-
-
-def test_the_seat_starts_this_holder():
-    assert local_seat.HOLDER_PATH.samefile(seat_holder.__file__)

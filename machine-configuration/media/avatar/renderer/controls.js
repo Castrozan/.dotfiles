@@ -2,8 +2,16 @@ const status = document.querySelector("#status");
 const devices = document.querySelector("#devices");
 const socket = new WebSocket("ws://127.0.0.1:8765");
 
+const choices = new Set();
+
 function send(command) {
-  socket.send(JSON.stringify({ ...command, id: crypto.randomUUID() }));
+  const id = crypto.randomUUID();
+  socket.send(JSON.stringify({ ...command, id }));
+  return id;
+}
+
+function choose(command) {
+  choices.add(send(command));
 }
 
 function listCameras({ cameras }) {
@@ -23,9 +31,9 @@ const shown = {
     send({ type: "listCameras" });
   },
   cameraList: listCameras,
-  cameraResult: ({ message }) => {
+  cameraResult: ({ message, id }) => {
     status.textContent = message;
-    send({ type: "listCameras" });
+    if (choices.delete(id)) send({ type: "listCameras" });
   },
 };
 
@@ -47,6 +55,6 @@ document.querySelectorAll("[data-mode]").forEach((button) => {
     send({ type: "setVideoMode", mode: button.dataset.mode });
 });
 document.querySelector("#enable").onclick = () =>
-  send({ type: "enableCamera", deviceId: devices.value });
+  choose({ type: "enableCamera", deviceId: devices.value });
 document.querySelector("#disable").onclick = () =>
-  send({ type: "disableCamera" });
+  choose({ type: "disableCamera" });
