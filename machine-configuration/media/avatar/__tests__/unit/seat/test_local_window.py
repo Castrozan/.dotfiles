@@ -99,7 +99,6 @@ def test_the_seat_page_runs_without_any_window(monkeypatch):
 def test_only_the_renderer_announces_its_character(role, announced):
     program = r"""
     const fs = require("node:fs");
-    globalThis.BroadcastChannel = class {};
     globalThis.WebSocket = class {
       constructor() { this.sent = []; }
       send(value) { this.sent.push(JSON.parse(value)); }

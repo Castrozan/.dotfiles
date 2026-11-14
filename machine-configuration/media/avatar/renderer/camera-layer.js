@@ -9,11 +9,15 @@ const SUPERSEDED_REQUEST_MESSAGE = "A newer camera request replaced this one";
 const VIRTUAL_CAMERA = /Avatar Cam|OBS Virtual Camera/i;
 const BUILT_IN_CAMERA = /integrated|built-in|FaceTime|MacBook/i;
 
-export function preferredCamera(devices) {
-  const physical = devices.filter(
+export function physicalCameras(devices) {
+  return devices.filter(
     (device) =>
       device.kind === "videoinput" && !VIRTUAL_CAMERA.test(device.label),
   );
+}
+
+export function preferredCamera(devices) {
+  const physical = physicalCameras(devices);
   return (
     physical.find((device) => !BUILT_IN_CAMERA.test(device.label)) ??
     physical[0]
@@ -38,6 +42,14 @@ export class CameraLayer {
 
   get active() {
     return ACTIVE_PHASES.includes(this.phase.name);
+  }
+
+  async cameras() {
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return physicalCameras(devices).map(({ deviceId, label }) => ({
+      deviceId,
+      label,
+    }));
   }
 
   async enablePreferred() {

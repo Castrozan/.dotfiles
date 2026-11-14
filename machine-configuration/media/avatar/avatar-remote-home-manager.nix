@@ -47,6 +47,7 @@ in
     (forwardToChise "avatar-audio")
     (remoteMeeting "start" "avatar-start")
     (remoteMeeting "stop" "avatar-stop")
+    (remoteMeeting "controls" "avatar-controls")
     (remoteMeeting "listen" "avatar-listen")
   ];
 

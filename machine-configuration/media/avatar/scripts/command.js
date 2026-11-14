@@ -10,6 +10,8 @@ const IDENTIFIED_RESPONSES = [
   "performanceError",
   "characterChanged",
   "characterError",
+  "cameraList",
+  "cameraResult",
 ];
 
 const builders = {

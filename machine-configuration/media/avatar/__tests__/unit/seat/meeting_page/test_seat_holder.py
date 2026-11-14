@@ -172,3 +172,7 @@ def test_the_holder_never_outlives_the_longest_seat(seat, monkeypatch):
     keeper = Mock()
     seat_holder.hold_seat(keeper)
     assert keeper.look.call_count == 1
+
+
+def test_the_seat_starts_this_holder():
+    assert local_seat.HOLDER_PATH.samefile(seat_holder.__file__)

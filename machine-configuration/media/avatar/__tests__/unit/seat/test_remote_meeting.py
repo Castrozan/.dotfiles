@@ -164,9 +164,7 @@ def test_only_a_start_is_given_a_seat(mac, monkeypatch, verb):
 @pytest.mark.parametrize("arguments", [[], ["fly"], ["start", "now"], ["stop", "now"]])
 def test_anything_else_is_a_usage_error(mac, monkeypatch, capsys, arguments):
     assert run_main(monkeypatch, *arguments) == 1
-    assert (
-        "Usage: avatar-start | avatar-stop | avatar-listen" in capsys.readouterr().err
-    )
+    assert "Usage: avatar-start | avatar-stop" in capsys.readouterr().err
     mac.ssh.assert_not_called()
 
 

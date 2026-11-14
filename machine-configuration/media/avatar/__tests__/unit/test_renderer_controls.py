@@ -15,9 +15,7 @@ SOURCE = Path(__file__).resolve().parents[2] / "renderer/renderer-controls.js"
 def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
     program = r"""
     const fs = require("node:fs");
-    class Channel { constructor() { this.sent = []; } postMessage(value) { this.sent.push(value); } }
     class Socket { constructor() { this.sent = []; } send(value) { this.sent.push(JSON.parse(value)); } }
-    globalThis.BroadcastChannel = Channel;
     globalThis.WebSocket = Socket;
     globalThis.window = { avatarStatus: { levelMessages: 0 } };
     (async () => {
@@ -39,11 +37,11 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
       controls.dispatch({ type: "setIdle", mode: "floating" });
       controls.dispatch({ type: "updateExpression", expression: "happy" });
       controls.dispatch({ type: "constructor" });
-      await controls.handleLocal({ data: { type: "enableCamera", deviceId: "chosen" } });
+      await controls.dispatch({ type: "enableCamera", deviceId: "chosen", id: "pick" });
       await controls.requestVideoMode({ mode: "composite", id: "allowed" });
-      await controls.handleLocal({ data: { type: "disableCamera" } });
+      await controls.dispatch({ type: "disableCamera", id: "drop" });
       await controls.requestVideoMode({ mode: "camera", id: "denied" });
-      console.log(JSON.stringify({ state, chosen, levels: window.avatarStatus.levelMessages, socket: controls.socket.sent, local: controls.channel.sent }));
+      console.log(JSON.stringify({ state, chosen, levels: window.avatarStatus.levelMessages, socket: controls.socket.sent }));
     })().catch(error => { console.error(error); process.exitCode = 1; });
     """
     completed = subprocess.run(
@@ -56,7 +54,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
     assert result["state"]["mode"] == "avatar"
     assert result["chosen"] == "chosen"
     assert result["levels"] == 1
-    assert result["socket"][-2] == {
+    assert result["socket"][-3] == {
         "type": "videoModeChanged",
         "mode": "composite",
         "id": "allowed",
@@ -66,13 +64,16 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
         "message": "Enable camera first",
         "id": "denied",
     }
-    assert result["local"][-1]["message"] == "Camera released"
+    assert result["socket"][-2] == {
+        "type": "cameraResult",
+        "message": "Camera released",
+        "id": "drop",
+    }
 
 
 def follow_level(current, target, delta):
     program = f"""
     const fs = require("node:fs");
-    globalThis.BroadcastChannel = class {{}};
     (async () => {{
       const source = fs.readFileSync(process.argv[1], "utf8");
       const {{ followLevel }} = await import("data:text/javascript," + encodeURIComponent(source));
@@ -109,7 +110,6 @@ def test_a_presence_message_reaches_the_renderer():
         "renderer-controls.js",
         """
         globalThis.window = { avatarStatus: {} };
-        globalThis.BroadcastChannel = class {};
         const presented = [];
         const controls = new rendererModule.RendererControls(
           {},
@@ -129,7 +129,6 @@ def test_she_replaces_the_camera_only_while_she_speaks():
         "renderer-controls.js",
         """
         globalThis.window = { avatarStatus: {} };
-        globalThis.BroadcastChannel = class {};
         const state = {};
         const controls = new rendererModule.RendererControls(state, {
           beginSpeech: () => {},

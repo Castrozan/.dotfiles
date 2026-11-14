@@ -9,8 +9,16 @@ def hide():
     local_seat.end_processes_matching(local_seat.WINDOW_PROFILE_FLAG)
 
 
+def show_controls():
+    open_window("controls.html")
+
+
 def show():
     hide()
+    open_window("?viewer")
+
+
+def open_window(page):
     subprocess.run(
         [
             "/usr/bin/open",
@@ -19,7 +27,7 @@ def show():
             local_seat.BROWSER,
             "--args",
             local_seat.WINDOW_PROFILE_FLAG,
-            f"--app=http://localhost:{local_seat.WINDOW_PORT}/?viewer",
+            f"--app=http://localhost:{local_seat.WINDOW_PORT}/{page}",
             f"--window-size={WINDOW_SIZE}",
             "--no-first-run",
             "--no-default-browser-check",

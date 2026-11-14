@@ -4,6 +4,7 @@ import subprocess
 import sys
 
 import local_seat
+import local_window
 import meeting_camera
 
 REMOTE_SEAT = "remote"
@@ -14,7 +15,8 @@ CALL_DEVICES_READY = (
     "Avatar ready. In the call, select the camera OBS Virtual Camera, "
     "the microphone BlackHole 2ch and the speaker BlackHole 16ch"
 )
-USAGE = "Usage: avatar-start | avatar-stop | avatar-listen ARGS"
+CONTROLS_NEED_A_SEAT = "Start the avatar on this Mac before opening its controls"
+USAGE = "Usage: avatar-start | avatar-stop | avatar-controls | avatar-listen ARGS"
 
 
 def chise_command(program, arguments):
@@ -70,7 +72,14 @@ def listen(arguments):
     ).returncode
 
 
-MEETING_STEPS = {"start": start, "stop": stop}
+def controls():
+    if not local_seat.attached():
+        raise RuntimeError(CONTROLS_NEED_A_SEAT)
+    local_window.show_controls()
+    return 0
+
+
+MEETING_STEPS = {"start": start, "stop": stop, "controls": controls}
 
 
 def carry_out(verb, arguments):
