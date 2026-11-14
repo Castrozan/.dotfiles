@@ -2,8 +2,8 @@ import asyncio
 
 import pytest
 
-from voice_bridge import agent_conversations
-from voice_bridge.agent_conversations import A2AConversation
+from voice_bridge import a2a_conversation
+from voice_bridge.a2a_conversation import A2AConversation
 
 
 def test_cancellation_during_submission_waits_for_receipt_then_cancels_exact_task(
@@ -32,8 +32,8 @@ def test_cancellation_during_submission_waits_for_receipt_then_cancels_exact_tas
                 return {"id": "receipt-after-cancellation"}
             return {"state": "canceled"}
 
-        monkeypatch.setattr(agent_conversations, "live_peer", live_peer)
-        monkeypatch.setattr(agent_conversations, "peer_request", request)
+        monkeypatch.setattr(a2a_conversation, "live_peer", live_peer)
+        monkeypatch.setattr(a2a_conversation, "peer_request", request)
         replying = asyncio.create_task(A2AConversation(selected).reply_to("hello"))
         await entered.wait()
         replying.cancel()

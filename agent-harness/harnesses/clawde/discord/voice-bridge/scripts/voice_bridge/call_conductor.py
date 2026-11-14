@@ -5,12 +5,9 @@ import os
 import signal
 from pathlib import Path
 
-from voice_bridge.agent_conversations import (
-    A2AConversation,
-    ConversationTurnError,
-    HermesConversation,
-    live_peer,
-)
+from voice_bridge.a2a_conversation import A2AConversation, live_peer
+from voice_bridge.conversation_turn import ConversationTurnError
+from voice_bridge.hermes_conversation import HermesConversation
 from voice_bridge.conversation_router import ConversationRouter
 
 CONTROL_CONNECT_RETRY_SECONDS = 1

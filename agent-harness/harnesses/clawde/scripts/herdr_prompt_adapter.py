@@ -123,7 +123,7 @@ def _prompt_has_claude_borders(rows, prompt_index):
         return False
     before = "".join(character for character, _ in rows[prompt_index - 1]).strip()
     after = "".join(character for character, _ in rows[prompt_index + 1]).strip()
-    if len(after) < 3 or set(after) != {"─"}:
+    if re.fullmatch(r"─{3,}", after) is None:
         return False
     return before == after or CLAUDE_NAMED_BORDER_PATTERN.fullmatch(before) is not None
 

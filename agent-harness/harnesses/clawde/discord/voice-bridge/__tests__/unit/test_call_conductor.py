@@ -10,10 +10,8 @@ from voice_bridge.call_conductor import (
     reply_worth_speaking,
     spoken_turn_prompt,
 )
-from voice_bridge.agent_conversations import (
-    ConversationTurnError,
-    final_reply_from_turn_events,
-)
+from voice_bridge.conversation_turn import ConversationTurnError
+from voice_bridge.hermes_conversation import final_reply_from_turn_events
 
 
 def conversation_outcome(queued_lines, reply_to):

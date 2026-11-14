@@ -70,6 +70,7 @@ def test_default_agent_can_be_restored_without_reconnecting_discord(monkeypatch)
         [],
         {},
         {"command": "invalid"},
+        {"command": []},
         {"command": "agent"},
         {"command": "agent", "target": "x", "default": True},
     ],
