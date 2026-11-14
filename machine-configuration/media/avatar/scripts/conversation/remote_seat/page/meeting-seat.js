@@ -116,6 +116,7 @@ export async function joinMeeting({
       socket.onclose = resolve;
     }),
     setLevels: (levels) => applyLevels(gains, levels),
+    outputsByDisplayCopy: { stage: toCall },
     leave() {
       for (const track of callAudio.getTracks()) track.stop();
       earpiece.srcObject = null;

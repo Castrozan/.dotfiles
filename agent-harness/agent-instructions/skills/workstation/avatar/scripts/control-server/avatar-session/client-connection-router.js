@@ -74,6 +74,12 @@ function handleIdentification(role, connection, context) {
     return;
   }
 
+  if (role === "seat") {
+    clientRegistry.registerSeat(connection);
+    acknowledgeIdentification(connection, "seat");
+    return;
+  }
+
   sendError(connection, `Unknown role: ${role}`);
   connection.close();
 }
@@ -98,25 +104,38 @@ function handleStageEvent(event, context) {
   }
 }
 
+function handleSeatEvent(event, context) {
+  if (event.type === "voiceDelay") {
+    context.clientRegistry.followVoiceDelay(event);
+  }
+}
+
+const IDENTIFIED_ROUTES = [
+  [
+    "isSeat",
+    (rawMessage, _connection, context) =>
+      handleSeatEvent(JSON.parse(rawMessage), context),
+  ],
+  ["isAgent", routeAgentCommand],
+  [
+    "isRenderer",
+    (rawMessage, _connection, context) =>
+      handleRendererEvent(JSON.parse(rawMessage), context),
+  ],
+  [
+    "isStage",
+    (rawMessage, _connection, context) =>
+      handleStageEvent(JSON.parse(rawMessage), context),
+  ],
+  ["isViewer", () => {}],
+];
+
 async function routeIdentifiedMessage(rawMessage, connection, context) {
-  const { clientRegistry } = context;
-
-  if (clientRegistry.isAgent(connection)) {
-    await routeAgentCommand(rawMessage, connection, context);
-    return;
-  }
-
-  if (clientRegistry.isRenderer(connection)) {
-    handleRendererEvent(JSON.parse(rawMessage), context);
-    return;
-  }
-
-  if (clientRegistry.isStage(connection)) {
-    handleStageEvent(JSON.parse(rawMessage), context);
-    return;
-  }
-
-  if (clientRegistry.isViewer(connection)) {
+  const route = IDENTIFIED_ROUTES.find(([isRole]) =>
+    context.clientRegistry[isRole](connection),
+  );
+  if (route) {
+    await route[1](rawMessage, connection, context);
     return;
   }
 

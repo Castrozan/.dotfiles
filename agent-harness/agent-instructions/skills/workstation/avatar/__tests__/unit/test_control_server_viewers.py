@@ -70,7 +70,7 @@ def test_a_viewer_mirrors_the_renderer_without_speaking_for_it():
 
 
 @requires_node
-def test_the_control_socket_admits_the_renderer_and_the_remote_window_only():
+def test_the_control_socket_admits_the_renderer_and_the_remote_pages_only():
     result = evaluate_node_json(
         """
         const { controlOrigins } = require("./avatar-session/page-origins");
@@ -79,8 +79,10 @@ def test_the_control_socket_admits_the_renderer_and_the_remote_window_only():
     )
     assert sorted(result) == [
         "http://127.0.0.1:3000",
+        "http://127.0.0.1:8769",
         "http://127.0.0.1:8770",
         "http://localhost:3000",
+        "http://localhost:8769",
         "http://localhost:8770",
     ]
 
