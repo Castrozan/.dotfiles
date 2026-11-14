@@ -1,6 +1,9 @@
+from unittest.mock import Mock
+
 import pytest
 
 import shorts_retention
+import shorts_runner
 from shorts_store import read_document, write_document
 
 LARGE = shorts_retention.INTERMEDIATE_MINIMUM_BYTES
@@ -100,3 +103,41 @@ def test_pruning_keeps_newest_runs_and_queued_recoveries(tmp_path):
 
 def test_pruning_without_runs_is_a_no_op(tmp_path):
     assert shorts_retention.prune_runs(tmp_path) == []
+
+
+def test_runner_trims_published_run_and_prunes_old_runs(tmp_path, monkeypatch):
+    for day in range(1, 7):
+        scheduled_run(tmp_path, f"2026-10-{day:02d}-0900")
+    current = scheduled_run(tmp_path, "2026-11-14-0900")
+    write_document(current / "status.json", {"status": "started"})
+
+    def publish(*arguments, **options):
+        write_document(
+            current / "episode.json",
+            {
+                "video": "final.mp4",
+                "narration": {"file": "n.wav"},
+                "beats": [],
+                "review": {},
+            },
+        )
+        for name in ("final.mp4", "n.wav", "bin/composition"):
+            write_file(current, name, LARGE)
+        write_document(current / "status.json", {"status": "published"})
+        return Mock(wait=Mock(return_value=0))
+
+    monkeypatch.setattr(shorts_runner, "publisher_readiness", lambda *arguments: None)
+    monkeypatch.setattr(
+        shorts_runner,
+        "claim_slot",
+        lambda *arguments: shorts_runner.SlotClaim(current, None),
+    )
+    monkeypatch.setattr(shorts_runner, "browser_pages", lambda *arguments: Mock())
+    monkeypatch.setattr(shorts_runner, "agent_arguments", lambda *arguments: [])
+    monkeypatch.setattr(shorts_runner.subprocess, "Popen", publish)
+    result = shorts_runner.start_run(tmp_path, 9, {})
+    assert result["status"] == "published"
+    assert result["pruned_runs"] == ["2026-10-02-0900", "2026-10-01-0900"]
+    assert len(list((tmp_path / "runs").iterdir())) == 5
+    assert (current / "final.mp4").is_file()
+    assert not (current / "bin").exists()

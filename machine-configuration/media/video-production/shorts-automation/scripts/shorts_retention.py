@@ -28,22 +28,28 @@ def retained_files(directory):
     return {(directory / name).resolve() for name in names}
 
 
+def run_files(directory):
+    for parent, _, names in os.walk(directory):
+        yield from (Path(parent) / name for name in names)
+
+
 def intermediate_files(directory):
     retained = retained_files(directory)
-    for parent, _, names in os.walk(directory):
-        for name in names:
-            path = Path(parent) / name
-            if path.is_symlink() or path.resolve() in retained:
-                continue
-            if path.stat().st_size >= INTERMEDIATE_MINIMUM_BYTES:
-                yield path
+    for path in run_files(directory):
+        if path.is_symlink() or path.resolve() in retained:
+            continue
+        if path.stat().st_size >= INTERMEDIATE_MINIMUM_BYTES:
+            yield path
+
+
+def removable_directory(path, directory):
+    return path != directory and not path.is_symlink() and not any(path.iterdir())
 
 
 def remove_empty_directories(directory):
     for parent, _, _ in os.walk(directory, topdown=False):
-        path = Path(parent)
-        if path != directory and not path.is_symlink() and not any(path.iterdir()):
-            path.rmdir()
+        if removable_directory(Path(parent), directory):
+            Path(parent).rmdir()
 
 
 def discard_intermediates(directory):
