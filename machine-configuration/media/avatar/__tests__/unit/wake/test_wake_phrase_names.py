@@ -5,6 +5,7 @@ from hypothesis import given
 from hypothesis import strategies as st
 
 from name_hearing import sound_key
+from transcription.spoken_names import NICKNAMES, called_name
 from wake_phrase import (
     GREETINGS,
     LiveSession,
@@ -76,6 +77,41 @@ def test_a_garbled_name_closing_a_line_addresses_its_servant():
 )
 def test_a_name_heard_wrong_still_reaches_its_servant(heard, servant):
     assert servant_matched_by(heard, FEW_LIVE) == servant
+
+
+def test_every_nickname_belongs_to_a_roster_servant():
+    assert set(NICKNAMES) <= {called_name(servant) for servant in SERVANTS}
+
+
+@given(
+    nicknamed=st.sampled_from(
+        [
+            (called, nickname)
+            for called, names in NICKNAMES.items()
+            for nickname in names
+        ]
+    )
+)
+def test_a_servant_answers_to_each_of_its_nicknames(nicknamed):
+    called, nickname = nicknamed
+    match = addressed_session(f"hey {nickname} status", WHOLE_ROSTER)
+    assert called_name(match.session.servant) == called
+    assert match.message == "status"
+
+
+@pytest.mark.parametrize(
+    ("heard", "servant"),
+    [
+        ("Hey Shera, how are you doing?", "Scheherazade"),
+        ("Hey Shira, how are you doing?", "Scheherazade"),
+        ("Hey Ozzie, how are you doing?", "Ozymandias"),
+        ("Hey Ashiwaka, how are you doing?", "Ushiwakamaru"),
+        ("Hey Katzall, how are you doing?", "Quetzalcoatl"),
+        ("Hey Hokasai, how are you doing?", "Katsushika Hokusai"),
+    ],
+)
+def test_a_nickname_as_hex_heard_it_reaches_its_servant(heard, servant):
+    assert servant_matched_by(heard, WHOLE_ROSTER) == servant
 
 
 @pytest.mark.parametrize(
