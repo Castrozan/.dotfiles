@@ -9,7 +9,19 @@ const DISPLAY_COPY_REGISTRATIONS = {
   viewer: "registerViewer",
   stage: "registerStage",
 };
-const CAMERA_OWNER_EVENTS = ["videoModeChanged", "videoModeError"];
+const CAMERA_OWNER_EVENTS = [
+  "videoModeChanged",
+  "videoModeError",
+  "cameraList",
+  "cameraResult",
+];
+const RENDERER_EVENTS_FOR_AGENTS = [
+  ...CAMERA_OWNER_EVENTS,
+  "performanceApplied",
+  "performanceError",
+  "characterChanged",
+  "characterError",
+];
 
 function acknowledgeIdentification(connection, role) {
   sendResponse(connection, {
@@ -68,16 +80,7 @@ function handleIdentification(role, connection, context) {
 
 function handleRendererEvent(event, context) {
   console.log("📥 Renderer event:", event.type);
-  if (
-    [
-      "videoModeChanged",
-      "videoModeError",
-      "performanceApplied",
-      "performanceError",
-      "characterChanged",
-      "characterError",
-    ].includes(event.type)
-  ) {
+  if (RENDERER_EVENTS_FOR_AGENTS.includes(event.type)) {
     context.clientRegistry.sendToAgents(event);
   }
   if (event.type === "characterChanged") {

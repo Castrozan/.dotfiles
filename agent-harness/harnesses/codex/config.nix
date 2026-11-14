@@ -78,7 +78,6 @@ let
     approval_policy = "never";
     check_for_update_on_startup = false;
     model_reasoning_effort = "xhigh";
-    model_auto_compact_token_limit = 200000;
     default_permissions = ":danger-full-access";
     suppress_unstable_features_warning = true;
     desktop = {

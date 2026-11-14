@@ -37,8 +37,6 @@ export class RendererControls {
     this.actions = actions;
     this.role = role;
     this.voicePeak = 0;
-    this.channel = new BroadcastChannel("avatar-local-controls");
-    this.channel.onmessage = this.handleLocal.bind(this);
     this.handlers = {
       audioLevel: ({ level }) => {
         this.voicePeak = followVoicePeak(this.voicePeak, level);
@@ -64,6 +62,13 @@ export class RendererControls {
       perform: this.requestPerformance.bind(this),
       setVideoMode: this.requestVideoMode.bind(this),
       setCharacter: this.requestCharacter.bind(this),
+      listCameras: this.reportCameras.bind(this),
+      enableCamera: (message) =>
+        this.chooseCamera(message, () =>
+          actions.enableCamera(message.deviceId),
+        ),
+      disableCamera: (message) =>
+        this.chooseCamera(message, actions.disableCamera),
     };
   }
 
@@ -89,7 +94,8 @@ export class RendererControls {
 
   dispatch(message) {
     if (Object.hasOwn(this.handlers, message.type))
-      this.handlers[message.type](message);
+      return this.handlers[message.type](message);
+    return undefined;
   }
 
   requestPerformance({ action, name, id }) {
@@ -157,22 +163,26 @@ export class RendererControls {
     }
   }
 
-  async handleLocal(event) {
+  async reportCameras({ id }) {
+    let answer;
     try {
-      if (event.data.type === "enableCamera")
-        await this.actions.enableCamera(event.data.deviceId);
-      if (event.data.type === "disableCamera") this.actions.disableCamera();
-      this.channel.postMessage({
-        type: "cameraResult",
-        message: this.actions.cameraActive()
-          ? "Camera enabled"
-          : "Camera released",
-      });
+      answer = { type: "cameraList", cameras: await this.actions.cameras() };
     } catch (error) {
-      this.channel.postMessage({
-        type: "cameraResult",
-        message: error.message,
-      });
+      answer = { type: "cameraResult", message: error.message };
     }
+    this.socket.send(JSON.stringify({ ...answer, id }));
+  }
+
+  async chooseCamera({ id }, choose) {
+    let message;
+    try {
+      await choose();
+      message = this.actions.cameraActive()
+        ? "Camera enabled"
+        : "Camera released";
+    } catch (error) {
+      message = error.message;
+    }
+    this.socket.send(JSON.stringify({ type: "cameraResult", message, id }));
   }
 }

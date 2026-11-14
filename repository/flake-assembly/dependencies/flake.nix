@@ -34,7 +34,7 @@
       inputs.home-manager.follows = "home-manager";
     };
 
-    clawde.url = "github:Castrozan/clawde/cb42491801a1529750d3ab4557c7c0c59bccea33";
+    clawde.url = "github:Castrozan/clawde/d707cf1441140c49a3cd2d62387d51297dcfd9e8";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
     agent-evals.url = "github:Castrozan/agent-evals/dc8600fc5f8ec9adc16c5f39af5e15176bb630f5";

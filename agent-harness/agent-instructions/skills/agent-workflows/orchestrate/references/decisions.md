@@ -4,6 +4,14 @@ Hold your sub-sessions in a workspace of their own: create one with `herdr works
 and start each sub-session as its own tab there, never as a split of your tab. Only orchestrate; the sub-sessions do the
 work.
 
+### Tidying
+
+Lucas finds sessions by their names. When an event already has you looking at your workspace, rename any workspace, tab
+or session whose label no longer says what it holds, your own tab included. Close the tab and remove the worktree of a
+session once you have verified its goal done and its work has landed or been handed over.
+
+Tidy only what you launched: closing a pane kills the agent in it, and one you do not recognize belongs to someone else.
+
 ### Brief template
 
 Write every brief as a file with these headings in this order: Goal, Context, Done when, Constraints, Workspace and
@@ -72,8 +80,8 @@ silent for it until a card is answered or the report changes. Send it no status 
 notice wakes it.
 
 Message a sub-session only through `orchestrator`, whose notices queue until it is idle; never loop on `a2a send`,
-which refuses a busy peer. Name a session that times out twice running in your round. Restart the watch the moment its
-monitor expires, because a dead watch cannot fire.
+which interrupts a busy peer mid-turn. Name a session that times out twice running in your round. Restart the watch
+the moment its monitor expires, because a dead watch cannot fire.
 
 ### Deciding as Lucas
 
@@ -110,13 +118,16 @@ in your next round so Lucas can settle it once.
 ### Round view
 
 Lucas reads only your latest turn end and never scrolls back. End every turn by running `orchestrator round` and
-pasting its output verbatim as Markdown, never in a fence, with your own words above it under 100. Its tables then
-render as tables. The reply hook treats lines copied unchanged from this turn's tool output as a visual, so any line you
-change is judged as your prose; the short prose lets the turn end without closing labels.
+opening your reply with its output, pasted verbatim as Markdown and never in a fence, then your own words after it, at
+most 100. Its tables then render as tables. The reply hook treats lines copied unchanged from this turn's tool output as
+a visual, so any line you change is judged as your prose; the short prose lets the turn end without closing labels.
 
-That output opens with one short row per session, with its state and next step or the decision it waits on; its goal
-and progress stay in `orchestrator report show`. A done session leaves the table half an hour after its last report and
-a handed-over one at once, so never add rows of your own. His requests you have not yet verified done follow, under a
-caption telling him what the table lists and what makes a row leave. Every decision waiting for him closes the view,
-each with its question, every option and what it does, the recommendation and the reply to give. Never paste raw card
-text or an earlier option by number. Mention `orchestrator learn stats` only when a count changed.
+That output opens with his requests you have not yet verified done, under a caption telling him what the table lists
+and what makes a row leave; with no such request the section is absent. One short row per session follows, with its
+state and next step or the decision it waits on; its goal and progress stay in `orchestrator report show`. A done
+session leaves the table half an hour after its last report and a handed-over one at once, so never add rows of your
+own.
+
+Every decision waiting for him closes the view, each with its question, every option and what it does, the
+recommendation and the reply to give. Never paste raw card text or an earlier option by number. Mention `orchestrator
+learn stats` only when a count changed.

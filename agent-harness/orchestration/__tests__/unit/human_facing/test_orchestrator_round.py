@@ -94,7 +94,7 @@ def headings(output):
     return [line for line in output.splitlines() if line.startswith("### ")]
 
 
-def test_the_round_runs_sessions_then_requests_then_decisions_and_ends_on_the_reply(
+def test_the_round_runs_requests_then_sessions_then_decisions_and_ends_on_the_reply(
     monkeypatch, directories, tmp_path, capsys, notifications
 ):
     cards, reports = directories
@@ -104,10 +104,11 @@ def test_the_round_runs_sessions_then_requests_then_decisions_and_ends_on_the_re
     record_open_ask(tmp_path / "state", "L-20261110-000001", "merge these two mrs")
     output = run_round(monkeypatch, cards, reports, capsys)
     assert headings(output) == [
-        "### Sessions",
         REQUESTS_HEADING,
+        "### Sessions",
         "### Decisions waiting for you",
     ]
+    assert output.startswith(REQUESTS_HEADING)
     assert output.rstrip().endswith(
         f"Reply with `{waiting}` and one option: drop, keep"
     )

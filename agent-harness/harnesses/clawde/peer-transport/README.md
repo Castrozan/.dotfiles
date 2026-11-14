@@ -13,8 +13,15 @@ same batch, and session/delivery-object reconstruction during fleet reconciliati
 
 `HerdrPromptAdapter` distinguishes its read-only preflight refusal (`PromptNotSubmitted`) from an error returned after
 invoking `herdr agent prompt`. Herdr can accept input before its wait reports timeout or `agent_prompt_stalled`, so a
-nonzero result from that command does not establish non-submission. Explicit task HTTP statuses and occupied-input guards
-retain their existing behavior; this fix changes automatic notification retry only.
+nonzero result from that command does not establish non-submission.
+
+## Work delivered to a busy target
+
+`a2a send` and `a2a ask` submit into a target that is mid-turn; no task holds the target against the next one. Each
+dispatch is its own task, deliveries to one target are serialized, and every delivered task completes when a turn
+observed after its delivery ends. Cancelling any of them interrupts the turn once and cancels all of them. A composer
+holding unsent text and a blocked target still refuse with 502 before any input. Notifications keep waiting for an idle
+target with no unfinished task.
 
 ## Explicit recovery
 

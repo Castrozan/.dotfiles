@@ -19,9 +19,9 @@ FINISHED_VISIBLE_FOR = timedelta(minutes=30)
 def add_parser(subcommands) -> None:
     round_command = subcommands.add_parser(
         "round",
-        help="the turn-end view for the human: one row per session, their requests "
-        "not yet verified done, then each decision waiting for them with every "
-        "option; relay it verbatim as Markdown",
+        help="the turn-end view for the human: their requests not yet verified "
+        "done, one row per session, then each decision waiting for them with every "
+        "option; relay it verbatim as Markdown, above your own words",
     )
     round_command.add_argument(
         "--dir", default=str(state_directory("orchestrator-decisions"))

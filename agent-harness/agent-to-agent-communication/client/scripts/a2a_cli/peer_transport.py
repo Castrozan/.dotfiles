@@ -152,11 +152,6 @@ def submit_task_to_peer(endpoint: str, input_text: str) -> dict:
     status_code, task = request_peer_json(
         "POST", f"{endpoint}/tasks/send", {"input": input_text}
     )
-    if status_code == 409:
-        raise PeerRequestFailure(
-            f"peer is already working on task {task.get('id', 'unknown')}; "
-            "cancel it or wait for it to finish"
-        )
     if status_code != 201:
         raise PeerRequestFailure(
             f"peer refused the task with status {status_code}: {task}"

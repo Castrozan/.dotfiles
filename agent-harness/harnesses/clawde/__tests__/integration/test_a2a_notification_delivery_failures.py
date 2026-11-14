@@ -35,7 +35,7 @@ def test_batch_is_bounded_and_preserves_later_arrivals(
         )
         notifications.append(notification)
     session = owned_fleet.registry.session_named("owned-peer")
-    send_input = session.backend.send_input_text
+    send_input = session.backend.send_input_text_when_idle
 
     def send_and_publish(content):
         send_input(content)
@@ -46,7 +46,7 @@ def test_batch_is_bounded_and_preserves_later_arrivals(
             {"claimedSender": "late-peer", "content": "arrived during delivery"},
         )
 
-    monkeypatch.setattr(session.backend, "send_input_text", send_and_publish)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", send_and_publish)
     observe_fleet()
     content = owned_fleet.target.submitted[0]
     assert len(content.encode()) <= 32768
@@ -61,7 +61,7 @@ def test_batch_is_bounded_and_preserves_later_arrivals(
     ]
     assert delivered + unread[:-1] == notifications
     assert unread[-1]["claimedSender"] == "late-peer"
-    monkeypatch.setattr(session.backend, "send_input_text", send_input)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", send_input)
     for _ in notifications:
         if not unread:
             break
@@ -73,7 +73,7 @@ def test_batch_is_bounded_and_preserves_later_arrivals(
     assert unread == []
 
 
-def test_explicit_work_cannot_submit_during_notification_delivery(
+def test_explicit_work_waits_its_turn_behind_a_notification_delivery(
     owned_fleet, observe_fleet, monkeypatch
 ):
     import threading
@@ -81,14 +81,16 @@ def test_explicit_work_cannot_submit_during_notification_delivery(
     entered_submission = threading.Event()
     release_submission = threading.Event()
     session = owned_fleet.registry.session_named("owned-peer")
-    send_input = session.backend.send_input_text
+    send_input = session.backend.send_input_text_when_idle
 
     def delayed_submission(content):
         entered_submission.set()
         assert release_submission.wait(timeout=2)
         send_input(content)
 
-    monkeypatch.setattr(session.backend, "send_input_text", delayed_submission)
+    monkeypatch.setattr(
+        session.backend, "send_input_text_when_idle", delayed_submission
+    )
     request_json(
         owned_fleet,
         "POST",
@@ -107,8 +109,8 @@ def test_explicit_work_cannot_submit_during_notification_delivery(
         )
         release_submission.set()
         delivery.result(timeout=3)
-        assert task_submission.result(timeout=3)[0] == 409
-    assert len(owned_fleet.target.submitted) == 1
+        assert task_submission.result(timeout=3)[0] == 201
+    assert owned_fleet.target.submitted == ["From peer:\nresult", "new task"]
 
 
 def test_unconfirmed_submission_keeps_the_message_and_occupied_composer(

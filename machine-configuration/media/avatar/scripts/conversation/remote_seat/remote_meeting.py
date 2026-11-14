@@ -4,17 +4,21 @@ import subprocess
 import sys
 
 import local_seat
+import local_window
 import meeting_camera
 
 REMOTE_SEAT = "remote"
-MEETING_PAGE_QUERY = "?meeting"
 START_TIMEOUT_SECONDS = 180
 STOP_TIMEOUT_SECONDS = 120
 CALL_DEVICES_READY = (
     "Avatar ready. In the call, select the camera OBS Virtual Camera, "
     "the microphone BlackHole 2ch and the speaker BlackHole 16ch"
 )
-USAGE = "Usage: avatar-start | avatar-stop | avatar-listen ARGS"
+CONTROLS_NEED_A_MEETING = (
+    "Run avatar-start on this Mac before opening its controls: they choose the "
+    "camera of the call picture, which is not running here"
+)
+USAGE = "Usage: avatar-start | avatar-stop | avatar-controls | avatar-listen ARGS"
 
 
 def chise_command(program, arguments):
@@ -31,7 +35,7 @@ def start():
             f"avatar-start failed on {local_seat.AVATAR_HOST} with exit code {started.returncode}"
         )
     try:
-        local_seat.take(MEETING_PAGE_QUERY)
+        local_seat.take(local_seat.MEETING_PAGE_QUERY)
         meeting_camera.start()
     except BaseException:
         with contextlib.suppress(OSError, subprocess.SubprocessError):
@@ -42,8 +46,8 @@ def start():
 
 
 def stop():
-    meeting_camera.stop()
     local_seat.leave()
+    meeting_camera.stop()
     return subprocess.run(
         chise_command("avatar-stop", []), timeout=STOP_TIMEOUT_SECONDS
     ).returncode
@@ -70,7 +74,14 @@ def listen(arguments):
     ).returncode
 
 
-MEETING_STEPS = {"start": start, "stop": stop}
+def controls():
+    if not (local_seat.attached() and meeting_camera.running()):
+        raise RuntimeError(CONTROLS_NEED_A_MEETING)
+    local_window.show_controls()
+    return 0
+
+
+MEETING_STEPS = {"start": start, "stop": stop, "controls": controls}
 
 
 def carry_out(verb, arguments):

@@ -45,11 +45,9 @@ def test_existing_human_draft_fails_before_any_terminal_input(
     response_status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "peer work"}
     )
-    assert response_status == (409 if status == "working" else 502)
+    assert response_status == 502
     assert task["state"] == "failed"
-    assert ("target_busy" if status == "working" else "composer_occupied") in task[
-        "errorMessage"
-    ]
+    assert "composer_occupied" in task["errorMessage"]
     assert target.draft == draft
     assert all(
         command[:2] in (["pane", "get"], ["pane", "read"])

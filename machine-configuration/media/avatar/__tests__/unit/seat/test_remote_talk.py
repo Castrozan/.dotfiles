@@ -168,7 +168,7 @@ def test_leaving_ends_the_holder_before_it_can_close_a_newer_browser(monkeypatch
     local_seat.leave()
     assert ended.call_args_list[0].args == (local_seat.HOLDER_SCRIPT,)
     assert ended.call_count == 4
-    assert local_seat.HOLDER_SCRIPT in local_seat.__file__
+    assert local_seat.HOLDER_PATH.match(f"*/{local_seat.HOLDER_SCRIPT}")
 
 
 def test_a_seat_that_never_attaches_is_left_again(monkeypatch):

@@ -91,17 +91,6 @@ def test_the_seat_page_runs_without_any_window(monkeypatch):
     assert local_seat.BROWSER_PROFILE_FLAG in command
 
 
-def test_a_tunnel_that_ends_closes_the_seat_page_and_the_window(monkeypatch):
-    ended = Mock()
-    monkeypatch.setattr(local_seat, "end_processes_matching", ended)
-    monkeypatch.setattr(local_seat.subprocess, "run", Mock())
-    local_seat.hold_tunnel_then_close_browsers()
-    assert [call.args[0] for call in ended.call_args_list] == [
-        local_seat.BROWSER_PROFILE_FLAG,
-        local_seat.WINDOW_PROFILE_FLAG,
-    ]
-
-
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
 @pytest.mark.parametrize(
     ("role", "announced"),
@@ -110,7 +99,6 @@ def test_a_tunnel_that_ends_closes_the_seat_page_and_the_window(monkeypatch):
 def test_only_the_renderer_announces_its_character(role, announced):
     program = r"""
     const fs = require("node:fs");
-    globalThis.BroadcastChannel = class {};
     globalThis.WebSocket = class {
       constructor() { this.sent = []; }
       send(value) { this.sent.push(JSON.parse(value)); }

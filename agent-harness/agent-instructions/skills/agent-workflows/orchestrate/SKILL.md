@@ -95,9 +95,11 @@ this loop; [decisions](references/decisions.md) owns what it hears from you.
 The peer discussed nothing with you, so restate the goal, the constraint, the acceptance test, and every path in each
 task; a dispatch referring to what you decided earlier reaches an agent with no memory of it. Keep the task itself to
 one line and put depth in a file the peer reads, because newline handling differs per harness and a half-submitted
-prompt looks exactly like a task in progress. A peer holds one active task: a second dispatch is refused and names the
-task already running, so wait or cancel rather than resending, and never split one goal into parallel tasks against the
-same peer.
+prompt looks exactly like a task in progress.
+
+A dispatch lands in a busy peer's prompt at once and its harness treats it as input typed mid-turn. Every task riding
+one turn completes when that turn ends, and cancelling one interrupts the turn and cancels them all, so never split one
+goal into parallel tasks against the same peer. Only a composer already holding unsent text refuses the dispatch.
 
 ### Completion is inferred not reported
 
@@ -129,7 +131,7 @@ infer it.
 ### When a peer stalls
 
 Blocked means it is waiting on a decision, a permission prompt or a question, so answer that prompt rather than
-dispatching again, which the peer refuses while its task is still active. A pane whose agent exited fails the task as a
+dispatching again, which a blocked peer refuses. A pane whose agent exited fails the task as a
 vanished target, so check liveness before retrying into a dead session. Take the keyboard through herdr when correction
 has stopped working, and never leave a stalled peer unattended, because a peer blocked on a prompt burns the goal's time
 without reporting anything.

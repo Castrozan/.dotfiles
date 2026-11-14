@@ -100,13 +100,16 @@ class TestEndpointResolution:
 
 
 class TestTaskSubmission:
-    def test_a_busy_peer_reports_the_task_that_is_holding_it(self, monkeypatch):
+    def test_an_undelivered_task_reports_why_the_peer_took_no_input(self, monkeypatch):
         monkeypatch.setattr(
             peer_transport,
             "request_peer_json",
-            lambda *_args, **_kwargs: (409, {"id": "task-in-flight"}),
+            lambda *_args, **_kwargs: (
+                502,
+                {"state": "failed", "errorMessage": "composer_occupied"},
+            ),
         )
-        with pytest.raises(PeerRequestFailure, match="task-in-flight"):
+        with pytest.raises(PeerRequestFailure, match="composer_occupied"):
             submit_task_to_peer("http://127.0.0.1:7001", "hello")
 
     def test_an_accepted_task_is_returned_as_submitted(self, monkeypatch):
