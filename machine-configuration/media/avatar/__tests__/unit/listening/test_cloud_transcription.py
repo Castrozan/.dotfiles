@@ -79,6 +79,18 @@ def test_a_servant_is_a_keyterm_by_the_name_the_wake_hears(monkeypatch, tmp_path
     }
 
 
+def test_a_nickname_follows_the_name_its_servant_is_called_by(monkeypatch, tmp_path):
+    roster = tmp_path / "roster.txt"
+    roster.write_text("Scheherazade | caster\n")
+    monkeypatch.setenv("AVATAR_SERVANT_ROSTER", str(roster))
+    terms = cloud_transcriber.recognized_terms()
+    assert terms[len(cloud_transcriber.RECOGNIZED_TERMS) :] == (
+        "Scheherazade",
+        "Shera",
+        "Shira",
+    )
+
+
 def test_the_least_familiar_names_are_kept_when_the_roster_is_long(
     monkeypatch, tmp_path
 ):

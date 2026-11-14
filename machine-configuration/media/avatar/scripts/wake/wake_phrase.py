@@ -2,7 +2,7 @@ import dataclasses
 
 import name_hearing
 from transcription.ordinary_words import folded
-from transcription.spoken_names import WORD, called_name
+from transcription.spoken_names import WORD, answered_names, called_name
 
 GREETINGS = frozenset(
     {"hey", "hei", "hi", "ok", "okay", "ei", "oi", "ola", "ai", "o", "e", "em"}
@@ -27,10 +27,15 @@ def spoken_name(servant):
     return folded(called_name(servant))
 
 
+def spoken_names_of(servant):
+    return dict.fromkeys(folded(name) for name in answered_names(servant))
+
+
 def sessions_by_spoken_name(sessions):
     grouped = {}
     for session in sessions:
-        grouped.setdefault(spoken_name(session.servant), []).append(session)
+        for name in spoken_names_of(session.servant):
+            grouped.setdefault(name, []).append(session)
     return {name: group[0] for name, group in grouped.items() if len(group) == 1}
 
 

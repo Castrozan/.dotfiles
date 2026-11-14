@@ -57,10 +57,12 @@ def recognized_terms():
     if not roster_path:
         return RECOGNIZED_TERMS
     frequency_ranks = ordinary_words.frequency_ranks() or {}
-    called = dict.fromkeys(
-        spoken_names.called_name(name) for name in servant_names(roster_path)
+    answered = dict.fromkeys(
+        name
+        for servant in servant_names(roster_path)
+        for name in spoken_names.answered_names(servant)
     )
-    names = [name for name in called if name not in RECOGNIZED_TERMS]
+    names = [name for name in answered if name not in RECOGNIZED_TERMS]
     names.sort(key=lambda name: familiarity(name, frequency_ranks))
     return RECOGNIZED_TERMS + tuple(
         names[: KEYTERMS_BEFORE_MINIMUM_BILLING - len(RECOGNIZED_TERMS)]

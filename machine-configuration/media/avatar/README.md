@@ -160,7 +160,7 @@ finished turn to the shared transcript: the room's lines as `human`, its own as 
 `avatar-wake.service` keeps the default microphone open while any agent session with a Servant name is live, and closes
 it while an avatar conversation runs, because that conversation's own listener then owns the room. Each utterance is
 transcribed locally by Hex's Parakeet, and nothing is stored. One that starts with a greeting and a live Servant's first
-name, such as "hey Voyager, check the build", is delivered to that session's pane with `herdr agent prompt`, which lands
+name or nickname, such as "hey Voyager, check the build", is delivered to that session's pane with `herdr agent prompt`, which lands
 even mid-turn, and the avatar conversation then opens, so the reply continues on ElevenLabs. Anyone in the room can say
 a name, so the prompt marks the speaker as not verified. `systemctl --user stop avatar-wake` turns it off;
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
@@ -186,6 +186,10 @@ but only from words that are not ordinary speech: a window of words matches loos
 the most frequent English and Brazilian Portuguese words of
 [FrequencyWords](https://github.com/hermitdave/FrequencyWords), pinned in `ordinary-words.nix`. A wake opens a
 conversation for an unverified voice, so without the word lists only an exact name or one that sounds the same wakes.
+
+A Servant with a long or hard name also answers to the nicknames `NICKNAMES` in `spoken_names.py` gives it, such as
+"Shera" for Scheherazade. A short name only matches exactly, so its list also holds the spelling Parakeet writes for it,
+"Shira", but never an ordinary word such as "Sara", which would wake that Servant on ordinary speech.
 
 `addressee.json` is also the floor every speaking agent shares, in conversations and meetings alike. `avatar-command
 speak` from a herdr pane first runs `avatar-claim-floor` under a lock: the holder speaks at once, a live holder silences
@@ -258,8 +262,8 @@ Transcription posts each utterance to ElevenLabs [Scribe](https://elevenlabs.io/
 about one second each, through the key `media-speech` uses, which needs the Speech to Text permission. On room audio it
 beat Hex's Parakeet and Whisper and invented nothing in silence; Parakeet ignores a pinned language and Whisper invents
 "Obrigado." A failed request falls back to the running [Hex](https://github.com/anomalyco/hex) service's Parakeet v3.
-`RECOGNIZED_TERMS` in `cloud_transcriber.py` and the first word of each roster Servant's name, the one the wake listens
-for, are sent as
+`RECOGNIZED_TERMS` in `cloud_transcriber.py`, the first word of each roster Servant's name, the one the wake listens
+for, and its nicknames are sent as
 [keyterms](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/keyterm-prompting), which add 20%
 to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs". The full name biases nothing
 toward the word people say: with "Hassan-i-Sabbah" as a keyterm, "Hey Hassan" came out as "Hey, what's up?". More than
