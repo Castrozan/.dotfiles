@@ -28,7 +28,6 @@
     virtio-win
     win-spice
     adwaita-icon-theme
-    quickemu
   ];
 
   virtualisation = {

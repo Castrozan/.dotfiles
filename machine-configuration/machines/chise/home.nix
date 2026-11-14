@@ -30,7 +30,6 @@ in
     ../../../agent-harness/harnesses/hermes
     ../../../agent-harness/harnesses/hermes/gateway.nix
     ../../development/testing/testing-home-manager.nix
-    ../../development/local-language-models/llama-cpp-home-manager.nix
 
     ../../terminal/shell/bash/bash-home-manager.nix
     ../../terminal/emulators/kitty/kitty-home-manager.nix
@@ -40,7 +39,6 @@ in
     ../../terminal/terminal-command-packages-home-manager.nix
     ../../terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
-    ../../editors/cursor/cursor-home-manager.nix
     ../../editors/neovim/neovim-home-manager.nix
     ../../editors/visual-studio-code/visual-studio-code-home-manager.nix
     ../../editors/editor-command-packages-home-manager.nix

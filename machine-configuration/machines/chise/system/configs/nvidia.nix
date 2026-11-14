@@ -56,9 +56,5 @@
     SUBSYSTEM=="drm", KERNEL=="card[0-9]*", SUBSYSTEMS=="pci", KERNELS=="0000:05:00.0", SYMLINK+="dri/amd-card"
   '';
 
-  environment.systemPackages = with pkgs; [
-    cudatoolkit
-  ];
-
   environment.sessionVariables.AQ_DRM_DEVICES = "/dev/dri/amd-card:/dev/dri/nvidia-card";
 }

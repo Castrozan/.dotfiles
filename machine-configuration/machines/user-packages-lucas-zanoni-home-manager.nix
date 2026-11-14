@@ -87,7 +87,6 @@
         playerctl
         pavucontrol
         pulsemixer
-        quickemu
         redisinsight
         wiremix
         wl-clipboard

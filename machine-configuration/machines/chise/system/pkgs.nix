@@ -58,7 +58,6 @@
       nixpkgs-fmt
       nodejs_22
       prettier
-      obs-studio
       obsidian
       pavucontrol
       p7zip
@@ -112,8 +111,5 @@
     ++ (with latest; [
       brave
       gemini-cli
-    ])
-    ++ [
-      (import ./vivaldi-codec-lib-path-fixed.nix { vivaldiPackages = latest; })
-    ];
+    ]);
 }

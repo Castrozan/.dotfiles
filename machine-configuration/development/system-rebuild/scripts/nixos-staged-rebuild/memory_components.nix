@@ -15,37 +15,19 @@ let
     config.allowUnfree = true;
   };
   source = publicFlake.outPath;
-  llamaModule =
-    import
-      (source + "/machine-configuration/development/local-language-models/llama-cpp-home-manager.nix")
-      {
-        inherit pkgs latest;
-        inherit (pkgs) lib;
-        config = { };
-        isNixOS = true;
-      };
-  latestPackages =
-    with latest;
-    [
-      brave
-      gemini-cli
-      vscode
-      bun
-      google-chrome
-      prismlauncher
-      vial
-      yt-dlp
-      (import (source + "/machine-configuration/machines/chise/system/vivaldi-codec-lib-path-fixed.nix") {
-        vivaldiPackages = latest;
-      })
-      (import (source + "/machine-configuration/terminal/emulators/wezterm/patched-wezterm.nix") {
-        inherit latest;
-      })
-    ]
-    ++ llamaModule.config.content.home.packages
-    ++ (import (source + "/machine-configuration/editors/cursor/cursor-package-home-manager.nix") {
-      inherit pkgs latest;
-    }).home.packages;
+  latestPackages = with latest; [
+    brave
+    gemini-cli
+    vscode
+    bun
+    google-chrome
+    prismlauncher
+    vial
+    yt-dlp
+    (import (source + "/machine-configuration/terminal/emulators/wezterm/patched-wezterm.nix") {
+      inherit latest;
+    })
+  ];
   components = {
     devenv =
       if pkgs.stdenv.hostPlatform.isLinux then
