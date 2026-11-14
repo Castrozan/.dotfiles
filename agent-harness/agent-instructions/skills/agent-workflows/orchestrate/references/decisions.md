@@ -4,6 +4,14 @@ Hold your sub-sessions in a workspace of their own: create one with `herdr works
 and start each sub-session as its own tab there, never as a split of your tab. Only orchestrate; the sub-sessions do the
 work.
 
+### Tidying
+
+Lucas finds sessions by their names. When an event already has you looking at your workspace, rename any workspace, tab
+or session whose label no longer says what it holds. Close the tab and remove the worktree of a session once you have
+verified its goal done and its work has landed or been handed over.
+
+Tidy only what you launched: closing a pane kills the agent in it, and one you do not recognize belongs to someone else.
+
 ### Brief template
 
 Write every brief as a file with these headings in this order: Goal, Context, Done when, Constraints, Workspace and
