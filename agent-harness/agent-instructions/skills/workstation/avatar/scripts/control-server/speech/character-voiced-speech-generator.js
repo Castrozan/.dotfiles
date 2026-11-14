@@ -11,13 +11,14 @@ class CharacterVoicedSpeechGenerator {
       this.selected;
   }
 
-  generate(text, outputId, voice, emotion) {
+  generate(text, outputId, voice, emotion, model) {
     return this.speechGenerator.generate(
       text,
       outputId,
       voice || this.selected.cloudVoice,
       emotion,
       this.selected.localVoice,
+      model,
     );
   }
 }

@@ -1,4 +1,5 @@
 import base64
+from media_speech.delivery import speech_model_capabilities
 
 from media_speech.elevenlabs_alignment import normalize_trailing_separators
 
@@ -72,7 +73,9 @@ class ElevenLabsSpeechProvider:
         self.model = model or type(self).model
 
     def preflight(self, request: SpeechRequest):
-        if self.model not in ("eleven_multilingual_v2", "eleven_v4"):
+        if self.model not in {
+            capability["model"] for capability in speech_model_capabilities(self.name)
+        }:
             raise SpeechError("unsupported_model")
         if not self.api_key:
             raise SpeechError("missing_credentials")

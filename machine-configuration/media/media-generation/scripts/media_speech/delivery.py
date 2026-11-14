@@ -16,6 +16,15 @@ def speech_model_capabilities(provider_name):
                 "directions": True,
                 "alignment": "character",
             },
+            *[
+                {
+                    "model": model,
+                    "delivery_instructions": "text",
+                    "directions": False,
+                    "alignment": "character",
+                }
+                for model in ("eleven_turbo_v2_5", "eleven_flash_v2_5")
+            ],
         ]
     if provider_name == "kokoro":
         return [

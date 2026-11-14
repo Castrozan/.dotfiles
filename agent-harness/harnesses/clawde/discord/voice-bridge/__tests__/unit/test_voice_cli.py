@@ -30,6 +30,19 @@ def test_default_and_target_cannot_be_selected_together():
         silver_voice_cli.parse_arguments(["agent", "work-peer", "--default"])
 
 
+def test_meeting_preparation_refuses_same_discord_listener_feedback(monkeypatch):
+    monkeypatch.setattr(
+        silver_voice_cli, "request_running_bridge", lambda **request: {"joined": True}
+    )
+    runner = Mock()
+    monkeypatch.setattr(silver_voice_cli.subprocess, "run", runner)
+    parsed = silver_voice_cli.parse_arguments(["meeting-start"])
+    assert parsed.handler(parsed) == {
+        "error": "leave_discord_before_meeting_microphone_use"
+    }
+    runner.assert_not_called()
+
+
 @pytest.mark.parametrize(
     "arguments", [["catalog"], ["character", "Second"], ["model", "eleven_flash_v2_5"]]
 )

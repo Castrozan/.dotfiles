@@ -82,6 +82,14 @@ def request_join(preferred=None, follow_listener=False):
 
 
 def join(arguments):
+    meeting = subprocess.run(
+        ["systemctl", "--user", "is-active", "avatar.target"],
+        capture_output=True,
+        text=True,
+        timeout=5,
+    )
+    if meeting.stdout.strip() in {"active", "activating", "reloading"}:
+        return {"error": "meeting_devices_active_leave_meeting_before_discord"}
     control_bridge_service("start")
     deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
     while True:
@@ -126,6 +134,52 @@ def presentation(arguments):
     if arguments.command != "catalog":
         request["name"] = arguments.name
     return request_running_bridge(**request)
+
+
+def meeting_start(_arguments):
+    state = request_running_bridge(command="status")
+    if "error" in state:
+        return state
+    if state["joined"]:
+        return {"error": "leave_discord_before_meeting_microphone_use"}
+    prepared = subprocess.run(
+        ["avatar-start", "--virtual-only"], capture_output=True, text=True, timeout=65
+    )
+    if prepared.returncode:
+        return {
+            "error": "virtual_meeting_preparation_failed",
+            "detail": prepared.stderr.strip(),
+        }
+    devices = json.loads(prepared.stdout)
+    character = state["speech"]["character"]
+    if character:
+        changed = subprocess.run(
+            ["avatar-command", "character", character],
+            capture_output=True,
+            text=True,
+            timeout=15,
+        )
+        if changed.returncode:
+            return {
+                **devices,
+                "error": "meeting_character_failed",
+                "detail": changed.stderr.strip(),
+                "runtime": "avatar.target remains active under avatar lifecycle ownership",
+            }
+        confirmed = subprocess.run(
+            ["avatar-command", "status"], capture_output=True, text=True, timeout=15
+        )
+        if (
+            confirmed.returncode
+            or json.loads(confirmed.stdout).get("currentCharacter") != character
+        ):
+            return {**devices, "error": "meeting_character_not_confirmed"}
+    return {
+        **devices,
+        "speech": state["speech"],
+        "speech_command": "avatar-command speak TEXT EMOTION mic VOICE MODEL",
+        "automatic_discord_receive": False,
+    }
 
 
 def agent(arguments):
@@ -189,6 +243,10 @@ def parse_arguments(arguments=None):
     commands.add_parser(
         "catalog", help="List shared avatar characters and speech models."
     ).set_defaults(handler=presentation)
+    commands.add_parser(
+        "meeting-start",
+        help="Prepare fresh existing Avatar Cam/AvatarMicrophone without physical capture; first leave Discord to prevent feedback. Existing avatar lifecycle owns these devices, not this bridge.",
+    ).set_defaults(handler=meeting_start)
     for command in ("character", "model"):
         selection_parser = commands.add_parser(
             command, help=f"Select the speech {command}; resets on restart."
@@ -230,7 +288,7 @@ def main():
     arguments = parse_arguments()
     try:
         reply = arguments.handler(arguments)
-    except (OSError, ValueError) as error:
+    except (OSError, ValueError, subprocess.SubprocessError) as error:
         reply = {"error": f"control_request_failed_{type(error).__name__}"}
     if reply is None:
         return 0

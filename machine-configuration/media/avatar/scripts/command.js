@@ -33,12 +33,13 @@ const builders = {
     presented: presence === "shown",
   }),
   "stop-speaking": () => ({ type: "stopSpeaking" }),
-  speak: (text, emotion = "neutral", output, voice) => ({
+  speak: (text, emotion = "neutral", output, voice, model) => ({
     type: "speak",
     text,
     emotion,
     output,
     voice,
+    model,
   }),
 };
 
@@ -48,7 +49,7 @@ function parseCommand(arguments_) {
     : null;
   if (!build)
     throw new Error(
-      "Usage: avatar-command status | mode avatar|camera|composite | character NAME | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both|remote] [VOICE] (the output defaults to both, or to remote while a Mac holds the seat)",
+      "Usage: avatar-command status | mode avatar|camera|composite | character NAME | expression NAME [INTENSITY] | gesture NAME | pose NAME | look TARGET | capabilities | idle MODE | presence shown|hidden | stop-speaking | speak TEXT [EMOTION] [mic|speakers|both|remote] [VOICE] [MODEL] (the output defaults to both, or to remote while a Mac holds the seat)",
     );
   return build(...arguments_.slice(1));
 }

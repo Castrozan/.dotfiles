@@ -8,6 +8,7 @@ async function handleGetStatusCommand(command, connection, context) {
     type: "status",
     state,
     currentExpression: avatarState.currentExpression,
+    currentCharacter: avatarState.currentCharacter,
     currentIdleMode: avatarState.currentIdleMode,
     intensity: avatarState.intensity,
     speaking: state !== "idle",

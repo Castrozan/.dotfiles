@@ -24,7 +24,6 @@ function handleSetCharacterCommand(command, connection, context) {
     sendError(connection, "No renderer is connected");
     return;
   }
-  textToSpeechGenerator.selectCharacter(command.name);
   sendResponse(connection, {
     type: "characterRequested",
     name: command.name,

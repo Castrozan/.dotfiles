@@ -78,7 +78,7 @@ def test_the_cloud_receives_the_voice_and_emotion():
           .then(() => calls);
         """
     )
-    assert result == [["hi", None, "happy"]]
+    assert result == [["hi", None, "happy", None]]
 
 
 @requires_node

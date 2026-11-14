@@ -42,7 +42,7 @@ function controlPlaybacks(playbacks) {
 }
 
 function performSpeech(command, context, delivery) {
-  const { text, emotion, output, voice, id } = command;
+  const { text, emotion, output, voice, model, id } = command;
   const { clientRegistry, textToSpeechGenerator } = context;
   return async (holdsFloor) => {
     const speech = await textToSpeechGenerator.generate(
@@ -50,6 +50,7 @@ function performSpeech(command, context, delivery) {
       id,
       voice,
       emotion,
+      model,
     );
     delivery.source = speech.source;
     if (!holdsFloor()) {
@@ -70,6 +71,7 @@ async function handleSpeakCommand(command, connection, context) {
     emotion = "neutral",
     output = "speakers",
     voice = null,
+    model,
     id = Date.now().toString(),
   } = command;
 
@@ -81,7 +83,7 @@ async function handleSpeakCommand(command, connection, context) {
   const usesAgentChannel = output === "mic" || output === "both";
   const delivery = {};
   const speech = performSpeech(
-    { text, emotion, output, voice, id },
+    { text, emotion, output, voice, model, id },
     context,
     delivery,
   );

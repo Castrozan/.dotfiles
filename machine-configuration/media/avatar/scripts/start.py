@@ -97,10 +97,15 @@ def bring_up(target, readiness_checks):
         raise
 
 
-def parse_seat(arguments=None):
+def parse_arguments(arguments=None):
     parser = argparse.ArgumentParser(prog="avatar-start")
     parser.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
-    return parser.parse_args(arguments).seat
+    parser.add_argument(
+        "--virtual-only",
+        action="store_true",
+        help="Start fresh virtual meeting devices without physical capture; refuse an existing runtime.",
+    )
+    return parser.parse_args(arguments)
 
 
 def open_call_channels():
@@ -113,7 +118,58 @@ def open_call_channels():
         )
 
 
-def main(seat=Seat.ROOM):
+def main(seat=Seat.ROOM, virtual_only=False):
+    if virtual_only:
+        if seat is not Seat.ROOM:
+            raise RuntimeError(
+                "Virtual-only preparation requires the local meeting seat"
+            )
+        units = [
+            MEETING_TARGET,
+            CONVERSATION_TARGET,
+            "avatar-listener.service",
+            *TARGET_UNITS[MEETING_TARGET],
+        ]
+        observed = subprocess.run(
+            ["systemctl", "--user", "is-active", *units],
+            capture_output=True,
+            text=True,
+            timeout=SYSTEMCTL_QUERY_TIMEOUT_SECONDS,
+        )
+        if observed.returncode not in (0, 3) or not observed.stdout.strip():
+            raise RuntimeError("Avatar resource state could not be established")
+        if (
+            any(
+                state in {"active", "activating", "reloading"}
+                for state in observed.stdout.splitlines()
+            )
+            or audio_ready()
+        ):
+            raise RuntimeError(
+                "Existing avatar resources must be left untouched; virtual-only start refused"
+            )
+        try:
+            bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
+        except BaseException:
+            subprocess.run(
+                ["avatar-audio", "stop"],
+                check=False,
+                timeout=AUDIO_COMMAND_TIMEOUT_SECONDS,
+            )
+            raise
+        print(
+            json.dumps(
+                {
+                    "ready": True,
+                    "owner": "avatar.target",
+                    "camera": "Avatar Cam",
+                    "microphone": "AvatarMicrophone",
+                    "physical_capture": False,
+                    "client_device_selection": "required",
+                }
+            )
+        )
+        return
     bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
     if seat is Seat.REMOTE:
         conversation_seat.prepare(seat)
@@ -127,4 +183,5 @@ def main(seat=Seat.ROOM):
 
 
 if __name__ == "__main__":
-    main(parse_seat())
+    arguments = parse_arguments()
+    main(arguments.seat, arguments.virtual_only)

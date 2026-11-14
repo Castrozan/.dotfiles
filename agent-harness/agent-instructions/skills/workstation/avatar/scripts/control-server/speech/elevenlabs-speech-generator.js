@@ -25,16 +25,17 @@ class ElevenLabsSpeechGenerator {
     this.language = language;
   }
 
-  async generate(text, voice, emotion) {
+  async generate(text, voice, emotion, model = MODEL) {
     const result = await runMediaSpeech(
       [
         "generate",
         "--provider",
         "elevenlabs",
         "--model",
-        MODEL,
-        "--directions",
-        EMOTION_DELIVERY[emotion] ?? NATURAL_DELIVERY,
+        model,
+        ...(model === MODEL
+          ? ["--directions", EMOTION_DELIVERY[emotion] ?? NATURAL_DELIVERY]
+          : []),
         "--language",
         this.language,
         "--voice",
