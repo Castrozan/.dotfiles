@@ -7,7 +7,8 @@ description: "Talk with the user by voice through the desktop avatar, or control
 
 Use the installed `avatar-start`, `avatar-stop`, and `avatar-audio` commands on NixOS. The user services belong to
 `avatar.target`; no meeting is joined by starting them. Inspect service state and the control server health endpoint
-before reporting readiness. The renderer serves its model and libraries locally.
+before reporting readiness. The renderer serves its model and libraries locally. A rebuild never restarts a running
+avatar, so rebuild while it talks; a change runs once its services next start, and a live check of it needs that start.
 
 ### Audio routing
 

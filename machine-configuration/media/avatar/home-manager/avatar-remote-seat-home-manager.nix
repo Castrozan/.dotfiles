@@ -6,7 +6,7 @@
   ...
 }:
 let
-  programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
+  programs = import ../avatar-programs.nix { inherit pkgs lib inputs; };
 in
 {
   config = lib.mkIf isNixOS {
