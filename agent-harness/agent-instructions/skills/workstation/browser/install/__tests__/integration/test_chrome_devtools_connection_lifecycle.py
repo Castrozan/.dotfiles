@@ -26,9 +26,10 @@ def fixture_commands(tmp_path, monkeypatch):
         "import json, os, sys, time\n"
         "from pathlib import Path\n"
         "operation = sys.argv[3]\n"
-        "with open(os.environ['BROWSER_EVENT_LOG'], 'a') as stream: stream.write(operation + '\\n')\n"
         "if operation == 'list_pages':\n"
         "    Path(os.environ['BROWSER_EVENT_LOG'] + '.request.pid').write_text(str(os.getpid()))\n"
+        "with open(os.environ['BROWSER_EVENT_LOG'], 'a') as stream: stream.write(operation + '\\n')\n"
+        "if operation == 'list_pages':\n"
         "    if os.environ.get('BROWSER_BLOCK'): time.sleep(20)\n"
         "    print(json.dumps({'pages': [{'id': 1, 'url': 'about:blank'}]}))\n"
     )
