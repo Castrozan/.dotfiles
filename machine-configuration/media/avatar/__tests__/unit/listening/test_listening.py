@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
+import conversation_addressee
 import listen_cli
 import source_capture
 import speech_segmenter
@@ -139,6 +140,21 @@ def test_reading_prints_entries_after_the_sequence(tmp_path, capsys):
     listen_cli.print_entries(transcript_log.read_since(path, 1))
     printed = [json.loads(line) for line in capsys.readouterr().out.splitlines()]
     assert [item["text"] for item in printed] == ["two"]
+
+
+def test_the_addressee_command_prints_the_floor_holder_or_null(tmp_path, capsys):
+    listen_cli.addressee(None, tmp_path)
+    assert json.loads(capsys.readouterr().out) is None
+    conversation_addressee.hand_to(
+        tmp_path, conversation_addressee.Addressee("w1:p2", "Voyager", 4, "kira")
+    )
+    listen_cli.addressee(None, tmp_path)
+    assert json.loads(capsys.readouterr().out) == {
+        "pane": "w1:p2",
+        "servant": "Voyager",
+        "heard_through": 4,
+        "host": "kira",
+    }
 
 
 def stub_hex(monkeypatch, tmp_path, status, payload):

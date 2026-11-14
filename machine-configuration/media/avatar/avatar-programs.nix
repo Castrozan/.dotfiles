@@ -13,14 +13,25 @@ let
     "${../../../agent-harness/servants}"
     "${../../../agent-harness/hooks/runtime/common}"
   ];
+  servantCharacters = ./cast/servant-characters.txt;
+  ordinaryWords = import ./scripts/listening/transcription/ordinary-words.nix { inherit pkgs; };
+  sendCommand = pkgs.writeShellScript "avatar-send-command" ''
+    export NODE_PATH=${control}/node_modules
+    exec ${pkgs.nodejs_22}/bin/node ${./scripts/command.js} "$@"
+  '';
+  unclaimedCommand = pkgs.writeShellScriptBin "avatar-command" ''
+    exec ${sendCommand} "$@"
+  '';
   floor = pkgs.writeShellScriptBin "avatar-claim-floor" ''
     export PATH=${
       lib.makeBinPath [
         herdr
+        unclaimedCommand
         pkgs.openssh
         pkgs.systemd
       ]
     }:$PATH
+    export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/wake}:${a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py "$@"
   '';
@@ -74,8 +85,7 @@ let
     if [ "''${1:-}" = speak ]; then
       ${floor}/bin/avatar-claim-floor || exit 1
     fi
-    export NODE_PATH=${control}/node_modules
-    exec ${pkgs.nodejs_22}/bin/node ${./scripts/command.js} "$@"
+    exec ${sendCommand} "$@"
   '';
   start = pkgs.writeShellScriptBin "avatar-start" ''
     export PATH=${
@@ -116,6 +126,8 @@ let
     }:$PATH
     export AVATAR_SPEAKER_MODEL=${speakerModel}
     export AVATAR_TURN_MODEL=${turnModel}
+    export AVATAR_ORDINARY_WORDS=${ordinaryWords}
+    export AVATAR_SERVANT_ROSTER=${../../../agent-harness/servants/roster.txt}
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}
     exec ${listenerPython}/bin/python3 ${./scripts/listening/listener.py}
   '';
@@ -128,7 +140,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
+    export PYTHONPATH=${./scripts/live}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
     exec ${websocketPython}/bin/python3 ${./scripts/live/live_bridge.py}
   '';
   remoteSeat = pkgs.writeShellScript "avatar-remote-seat" ''
@@ -155,6 +167,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
+    export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
     export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
@@ -174,8 +187,10 @@ in
     listen
     listener
     live
+    ordinaryWords
     remoteSeat
     serve
+    servantCharacters
     start
     stop
     talk

@@ -2,6 +2,7 @@ import dataclasses
 
 import conversation_addressee
 import remote_agent
+import room_holder
 from conversation_addressee import Addressee
 
 
@@ -45,10 +46,10 @@ def may_speak(holder, pane):
     return holder is None or holder.pane == pane
 
 
-def hand_to_remote_agent(directory, agent):
+def hand_to_remote_agent(directory, agent, heard_through=0):
     servant = remote_agent.servant_at(agent)
     if servant:
-        conversation_addressee.hand_to(
-            directory, Addressee(agent.pane, servant, 0, agent.host)
+        room_holder.give_the_room_to(
+            directory, Addressee(agent.pane, servant, heard_through, agent.host)
         )
     return bool(servant)

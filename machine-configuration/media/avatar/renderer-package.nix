@@ -8,7 +8,7 @@ let
     url = "https://registry.npmjs.org/@pixiv/three-vrm/-/three-vrm-1.0.9.tgz";
     hash = "sha512-OXExupt3p/6oT3acM236Z5f6nVGAU0nYz2Al8UZXkaZKwVklaIBTCy0iC+57PFTkdpj+6Urxa9CiWagKg3ihXA==";
   };
-  characters = import ./characters.nix { inherit pkgs; };
+  characters = import ./cast/characters.nix { inherit pkgs; };
   characterCatalog = pkgs.writeText "characters.json" (
     builtins.toJSON (map (character: { inherit (character) name description; }) characters)
   );

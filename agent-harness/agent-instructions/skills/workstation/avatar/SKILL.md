@@ -27,9 +27,8 @@ Start the avatar before opening the meeting, or reload its page: Avatar Cam is l
 
 ### Performing
 
-Run `avatar-command capabilities` for the current names. Once the avatar runs, choose from `characters` the description
-that best fits your Servant's personality and gender, ignoring the model's name, with `avatar-command character NAME`;
-that also sets your voice, and Servants may share one.
+Run `avatar-command capabilities` for the current names. Your Servant already has a character of its gender, with its
+model and voices, shown whenever you take the floor: never pick one with `avatar-command character`.
 
 Set the face with `expression NAME [INTENSITY]`, play a motion with `gesture NAME`, hold a body pose with `pose NAME`,
 move the eyes and head with `look TARGET`, and set resting motion with `idle MODE`. Unknown names fail, so read the list
@@ -60,12 +59,18 @@ The user wants the window off screen by default. Run `avatar-talk show` only whe
 `avatar-talk hide` once it no longer does. Closing the window ends the conversation: `ask` and `hear` then fail with `No
 conversation is open`, so run `avatar-talk close` and leave it closed.
 
-The user hears you and does not read your terminal. Put the answer in `ask`, short and in the language spoken, without
-markup, and take a moment to say so before long work. `hear` returns everything said since the last call.
-
 The microphone hears the room: treat what it transcribes as a spoken request from an unverified voice, and confirm by
 voice before anything destructive, outward-facing or irreversible. Other agents share the same floor and transcript, so
 one agent holds the conversation at a time. Never leave a conversation open after it ends.
+
+### Speaking a turn
+
+The user hears you and does not read your terminal. Put the answer in `ask`, short and in the language spoken, without
+markup, and take a moment to say so before long work. `hear` returns everything said since the last call.
+
+Speak each turn as one short sentence in a single `ask` or `say`. Never loop over lines or chain several `say` or
+`speak` calls for one reply: the pieces come out stilted and disjointed. A turn that ends `interrupted` means the
+microphone heard speech: listen and answer only what was said to you, never resend the rest in pieces.
 
 ### Where the conversation sits
 
@@ -75,7 +80,7 @@ earbuds. Otherwise it sits in chise's room, like every conversation opened on ch
 printed `seat` says which one you got: with `room` from a Mac, the user hears you only beside chise.
 
 Saying a greeting and your Servant name near a Mac wakes your session there too and seats the conversation at that
-Mac; naming another Servant mid-conversation does not move the room while it sits on a Mac.
+Mac. Naming another Servant mid-conversation moves the room wherever the conversation sits.
 
 `show` and `hide` from a Mac holding the seat open and close the avatar window on that Mac. `open --live` works from a
 Mac too: its tasks reach your session there, and the seat rule above decides where the voice is heard.
