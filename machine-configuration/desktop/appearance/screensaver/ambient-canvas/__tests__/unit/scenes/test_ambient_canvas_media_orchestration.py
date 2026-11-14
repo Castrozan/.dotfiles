@@ -49,6 +49,12 @@ def _install_orchestration_stubs(
         return 0
 
     monkeypatch.setattr(ensure, "launch_display", fake_launch)
+
+    def fake_discard(capture_target, rendering_source_identifier):
+        observed_calls.append(("discard", rendering_source_identifier))
+        return []
+
+    monkeypatch.setattr(ensure, "discard_rendering_leftovers", fake_discard)
     return observed_calls
 
 
@@ -66,12 +72,12 @@ def _run_ensure(monkeypatch, **stub_arguments):
     return result, observed_calls
 
 
-def test_fresh_loop_with_running_display_does_nothing(monkeypatch):
+def test_fresh_loop_with_running_display_only_discards_render_leftovers(monkeypatch):
     result, calls = _run_ensure(
         monkeypatch, fresh=True, render_result=None, display_running=True
     )
     assert result == 0
-    assert calls == []
+    assert calls == [("discard", "source")]
 
 
 def test_fresh_loop_with_stopped_display_relaunches(monkeypatch):
@@ -79,7 +85,7 @@ def test_fresh_loop_with_stopped_display_relaunches(monkeypatch):
         monkeypatch, fresh=True, render_result=None, display_running=False
     )
     assert result == 0
-    assert calls == ["stop", "wait", "launch"]
+    assert calls == [("discard", "source"), "stop", "wait", "launch"]
 
 
 def test_a_cached_display_swap_repoints_the_player_without_recording(monkeypatch):
@@ -159,6 +165,59 @@ def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
     )
     assert result == 0
     assert calls == []
+
+
+def test_a_render_that_makes_the_loop_current_discards_leftovers_before_launch(
+    monkeypatch,
+):
+    observed_calls = _install_orchestration_stubs(
+        monkeypatch,
+        fresh=False,
+        render_result="loop.segments.json",
+        display_running=False,
+    )
+    freshness_answers = iter([False, True])
+    monkeypatch.setattr(
+        ensure, "recorded_loop_is_fresh", lambda *ignored: next(freshness_answers)
+    )
+    assert (
+        ensure.ensure_screensaver(
+            "index",
+            LAPTOP_CAPTURE_TARGET,
+            "source",
+            "#241010",
+            PLAYER_BINARY_PATH,
+            30,
+            30,
+        )
+        == 0
+    )
+    assert observed_calls == [
+        "render",
+        ("discard", "source"),
+        "stop",
+        "wait",
+        "launch",
+    ]
+
+
+def test_freshness_is_judged_against_the_capture_geometry(monkeypatch):
+    observed_calls = _install_orchestration_stubs(
+        monkeypatch, fresh=True, render_result=None, display_running=True
+    )
+    checked_identifiers = []
+    monkeypatch.setattr(
+        ensure,
+        "recorded_loop_is_fresh",
+        lambda loop_directory, identifier: (
+            checked_identifiers.append(identifier) or True
+        ),
+    )
+    ensure.ensure_screensaver(
+        "index", LAPTOP_CAPTURE_TARGET, "source", "#241010", PLAYER_BINARY_PATH, 30, 30
+    )
+    assert set(checked_identifiers) == {"source capture=1660x1080"}
+    assert observed_calls == [("discard", "source")]
 
 
 def test_the_running_display_is_matched_by_the_manifest_it_was_launched_with():

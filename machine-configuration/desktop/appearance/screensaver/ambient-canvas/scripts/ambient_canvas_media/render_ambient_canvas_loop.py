@@ -21,6 +21,7 @@ from recording.recorded_loop_capture_target import (
 )
 from recording.recorded_loop_commit import commit_recorded_segment_manifest
 from recording.recorded_loop_capture_pool import capture_recorded_playlist
+from recording.recorded_loop_retention import discard_rendering_leftovers
 from scene_video_cache import download_missing_scene_videos
 
 
@@ -89,14 +90,14 @@ def main():
     theme_background_hex = resolve_theme_background_color(
         parsed_arguments.theme_colors_path
     )
+    rendering_source_identifier = compose_theme_source_identifier(
+        parsed_arguments.source_identifier, theme_background_hex
+    )
     manifest_path = render_recorded_loop(
         index_file_path,
         capture_target,
         compose_recorded_source_identifier(
-            compose_theme_source_identifier(
-                parsed_arguments.source_identifier, theme_background_hex
-            ),
-            capture_target.capture_signature,
+            rendering_source_identifier, capture_target.capture_signature
         ),
         parsed_arguments.seconds,
         parsed_arguments.fps,
@@ -104,6 +105,7 @@ def main():
     )
     if manifest_path is None:
         return 1
+    discard_rendering_leftovers(capture_target, rendering_source_identifier)
     print(manifest_path)
     return 0
 

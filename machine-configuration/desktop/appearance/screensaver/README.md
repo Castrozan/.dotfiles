@@ -292,9 +292,10 @@ forever, whereas here it is paid once at record time and the 24/7 window only de
 The port needs neither `ffmpeg` nor `chafa`. Chrome decodes the source and
 `braille_frame_renderer` rasterises the braille itself, so the AMFI-killed `ffmpeg` is never
 invoked; `scene_video_cache` asks yt-dlp for a pre-muxed format 18, so no stream merge is
-needed either. Sources are declared in `web/scene-videos.json`, cached under
-`~/.local/state/ambient-canvas/videos/`, and served to the record browser at
-`/ambient-canvas-videos/`.
+needed either. Sources are declared in `web/scene-videos.json`, downloaded into
+`~/.local/state/ambient-canvas/videos/` for a record pass, and served to the record browser at
+`/ambient-canvas-videos/`. They are render input only: once the loop is current they are deleted,
+and the next record pass downloads them again.
 
 Two things are load-bearing and easy to regress. The record server **must** answer HTTP Range
 requests: `SimpleHTTPRequestHandler` does not, and without `206` responses Chrome reports the
@@ -330,8 +331,15 @@ manifest, not a re-encode, and only a `web/` change or a never-before-seen geome
 all. Sharing one slot instead made each swap invalidate all nineteen compositions, and since a
 record pass is capped at `RECORD_PASS_WALL_CLOCK_CEILING_SECONDS` it took several passes to get
 through them, so unplugging a monitor cost roughly twenty minutes of a pinned Chrome GPU process.
-Scene videos stay shared in `videos/` across every geometry, because the source clips do not
+Scene videos are shared in `videos/` across every geometry, because the source clips do not
 depend on the frame size.
+
+Disk stays bounded by what can still play. Once the current geometry's loop is fresh, the
+launcher and `ambient-canvas-render` run `recorded_loop_retention`: it deletes `videos/` and every
+other geometry's directory whose `loop.source` does not match the current `web/` store path and
+theme. Such a directory could only be re-encoded, never played. A sibling that is still current
+stays, so a monitor swap without a `web/` or theme change remains a player relaunch. Nothing is
+deleted while any record pass runs, which protects another geometry's half-recorded segments.
 
 That store-path check is deliberately coarse, and the record pass is what makes it cheap. A
 segment file is named by a fingerprint over the composition's own JSON, its resolved duration,

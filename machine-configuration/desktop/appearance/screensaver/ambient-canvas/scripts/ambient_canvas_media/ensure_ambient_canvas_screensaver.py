@@ -30,6 +30,7 @@ from recording.recorded_loop_capture_target import (
     compose_recorded_source_identifier,
     resolve_recorded_loop_capture_target,
 )
+from recording.recorded_loop_retention import discard_rendering_leftovers
 from recording.recorded_segment_store import (
     read_recorded_source_identifier,
     resolve_playable_segment_manifest_path,
@@ -61,13 +62,16 @@ def recorded_loop_is_fresh(loop_directory, source_identifier):
 def ensure_screensaver(
     index_file_path,
     capture_target,
-    source_identifier,
+    rendering_source_identifier,
     theme_background_hex,
     player_binary_path,
     duration_seconds,
     frames_per_second,
 ):
     loop_directory = capture_target.loop_directory
+    source_identifier = compose_recorded_source_identifier(
+        rendering_source_identifier, capture_target.capture_signature
+    )
     recorded_loop_was_replaced = False
     LOGGER.info(
         "launcher_check loop=%s source=%s player=%s",
@@ -87,6 +91,11 @@ def ensure_screensaver(
         if recording_result.exit_code is not None:
             return recording_result.exit_code
         recorded_loop_was_replaced = recording_result.replaced
+    if recorded_loop_is_fresh(loop_directory, source_identifier):
+        for discarded_path in discard_rendering_leftovers(
+            capture_target, rendering_source_identifier
+        ):
+            LOGGER.info("rendering_leftover_discarded path=%s", discarded_path)
 
     if not recorded_loop_was_replaced and is_display_running_for_loop(loop_directory):
         LOGGER.info("player_already_running loop=%s", loop_directory)
@@ -163,11 +172,8 @@ def main():
     return ensure_screensaver(
         index_file_path,
         capture_target,
-        compose_recorded_source_identifier(
-            compose_theme_source_identifier(
-                parsed_arguments.source_identifier, theme_background_hex
-            ),
-            capture_target.capture_signature,
+        compose_theme_source_identifier(
+            parsed_arguments.source_identifier, theme_background_hex
         ),
         theme_background_hex,
         parsed_arguments.player_binary,
