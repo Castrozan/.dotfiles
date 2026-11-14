@@ -7,8 +7,8 @@ work.
 ### Tidying
 
 Lucas finds sessions by their names. When an event already has you looking at your workspace, rename any workspace, tab
-or session whose label no longer says what it holds. Close the tab and remove the worktree of a session once you have
-verified its goal done and its work has landed or been handed over.
+or session whose label no longer says what it holds, your own tab included. Close the tab and remove the worktree of a
+session once you have verified its goal done and its work has landed or been handed over.
 
 Tidy only what you launched: closing a pane kills the agent in it, and one you do not recognize belongs to someone else.
 
