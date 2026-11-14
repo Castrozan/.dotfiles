@@ -1,7 +1,7 @@
-import contextlib
 import http.client
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import time
@@ -43,7 +43,9 @@ BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
 WINDOW_PROFILE = pathlib.Path.home() / ".local/share/avatar/window-browser"
 WINDOW_PROFILE_FLAG = f"--user-data-dir={WINDOW_PROFILE}"
-HOLDER_SCRIPT = "remote_seat/local_seat.py"
+HOLDER_SCRIPT = "remote_seat/seat_holder.py"
+HOLDER_PATH = pathlib.Path(__file__).with_name("seat_holder.py")
+MEETING_PAGE_QUERY = "?meeting"
 TUNNEL_WAIT_SECONDS = 15
 LONGEST_SEAT_SECONDS = 12 * 60 * 60
 COMMAND_TIMEOUT_SECONDS = 30
@@ -74,6 +76,16 @@ def meeting_held():
     return bool((health() or {}).get("meeting"))
 
 
+def meeting_seat_kept_here():
+    found = subprocess.run(
+        ["/usr/bin/pgrep", "-f", "--", re.escape(f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}")],
+        capture_output=True,
+        check=False,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+    return found.returncode == 0
+
+
 def end_processes_matching(command_line, signal_name="TERM"):
     subprocess.run(
         ["/usr/bin/pkill", f"-{signal_name}", "-f", "--", command_line],
@@ -91,14 +103,6 @@ def leave():
     for command_line in (HOLDER_SCRIPT, TUNNEL_FORWARD):
         end_processes_matching(command_line)
     close_browsers()
-
-
-def hold_tunnel_then_close_browsers():
-    try:
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            subprocess.run(TUNNEL_COMMAND, check=False, timeout=LONGEST_SEAT_SECONDS)
-    finally:
-        close_browsers()
 
 
 def wait_for_tunnel():
@@ -160,7 +164,7 @@ def take(query=""):
     leave()
     try:
         subprocess.Popen(
-            [sys.executable, __file__],
+            [sys.executable, str(HOLDER_PATH), query],
             start_new_session=True,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
@@ -172,7 +176,3 @@ def take(query=""):
     except BaseException:
         leave()
         raise
-
-
-if __name__ == "__main__":
-    hold_tunnel_then_close_browsers()

@@ -75,7 +75,7 @@ def test_a_failure_after_the_remote_start_undoes_every_earlier_step(
     getattr(mac, failing_step).side_effect = failure
     assert run_main(monkeypatch, "start") == 1
     steps = [call[0] for call in mac.mock_calls]
-    assert steps[-3:] == ["camera_stop", "leave", "ssh"]
+    assert steps[-3:] == ["leave", "camera_stop", "ssh"]
     assert ssh_commands(mac)[-1] == ["ssh", "chise", "avatar-stop"]
     reported = capsys.readouterr()
     assert str(failure) in reported.err
@@ -94,11 +94,11 @@ def test_an_undo_that_cannot_reach_the_avatar_does_not_hide_the_first_failure(
     assert "OBS Studio is not installed" in capsys.readouterr().err
 
 
-def test_stopping_closes_the_camera_and_the_seat_before_stopping_the_avatar(
+def test_stopping_ends_the_seat_then_its_camera_before_stopping_the_avatar(
     mac, monkeypatch
 ):
     assert run_main(monkeypatch, "stop") == 0
-    assert [call[0] for call in mac.mock_calls] == ["camera_stop", "leave", "ssh"]
+    assert [call[0] for call in mac.mock_calls] == ["leave", "camera_stop", "ssh"]
     assert ssh_commands(mac) == [["ssh", "chise", "avatar-stop"]]
 
 
@@ -164,9 +164,7 @@ def test_only_a_start_is_given_a_seat(mac, monkeypatch, verb):
 @pytest.mark.parametrize("arguments", [[], ["fly"], ["start", "now"], ["stop", "now"]])
 def test_anything_else_is_a_usage_error(mac, monkeypatch, capsys, arguments):
     assert run_main(monkeypatch, *arguments) == 1
-    assert (
-        "Usage: avatar-start | avatar-stop | avatar-listen" in capsys.readouterr().err
-    )
+    assert "Usage: avatar-start | avatar-stop" in capsys.readouterr().err
     mac.ssh.assert_not_called()
 
 

@@ -19,6 +19,10 @@ const {
 const {
   handleSetCharacterCommand,
 } = require("./set-character-command-handler");
+const {
+  CAMERA_CHOICE_COMMANDS,
+  handleCameraChoiceCommand,
+} = require("./camera-choice-command-handler");
 
 const COMMAND_HANDLERS_BY_TYPE = {
   speak: handleSpeakCommand,
@@ -30,6 +34,9 @@ const COMMAND_HANDLERS_BY_TYPE = {
   setPresented: handleSetPresentedCommand,
   getStatus: handleGetStatusCommand,
   perform: handlePerformCommand,
+  ...Object.fromEntries(
+    CAMERA_CHOICE_COMMANDS.map((type) => [type, handleCameraChoiceCommand]),
+  ),
 };
 
 async function routeAgentCommand(rawMessage, connection, context) {
@@ -37,7 +44,9 @@ async function routeAgentCommand(rawMessage, connection, context) {
     const command = JSON.parse(rawMessage);
     console.log(`📥 Agent command: ${command.type}`);
 
-    const handler = COMMAND_HANDLERS_BY_TYPE[command.type];
+    const handler = Object.hasOwn(COMMAND_HANDLERS_BY_TYPE, command.type)
+      ? COMMAND_HANDLERS_BY_TYPE[command.type]
+      : null;
     if (!handler) {
       sendError(connection, `Unknown command type: ${command.type}`);
       return;

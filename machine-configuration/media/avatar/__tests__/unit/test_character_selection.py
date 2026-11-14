@@ -26,7 +26,6 @@ def test_renderer_controls_answer_character_requests_with_their_identity():
     program = r"""
     const fs = require("node:fs");
     class Socket { constructor() { this.sent = []; } send(value) { this.sent.push(JSON.parse(value)); } }
-    globalThis.BroadcastChannel = class {};
     globalThis.WebSocket = Socket;
     (async () => {
       const source = fs.readFileSync(process.argv[1], "utf8");
@@ -55,7 +54,6 @@ def test_renderer_announces_its_character_on_every_connection():
     program = r"""
     const fs = require("node:fs");
     class Socket { constructor() { this.sent = []; } send(value) { this.sent.push(JSON.parse(value)); } }
-    globalThis.BroadcastChannel = class {};
     globalThis.WebSocket = Socket;
     (async () => {
       const source = fs.readFileSync(process.argv[1], "utf8");

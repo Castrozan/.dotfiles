@@ -158,6 +158,7 @@ loadAvatar()
         enableCamera,
         disableCamera,
         cameraActive: () => cameraLayer.active,
+        cameras: () => cameraLayer.cameras(),
       },
       controlRole,
     ).connect(),

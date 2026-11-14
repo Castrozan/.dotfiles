@@ -154,4 +154,3 @@ def test_disable_while_choosing_a_camera_never_opens_one():
         "active": False,
         "cameraRequests": 0,
     }
-
