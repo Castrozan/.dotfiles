@@ -7,16 +7,30 @@ import sys
 import time
 
 BRIDGE_SERVICE = "silver-voice-bridge.service"
-CONTROL_SOCKET = os.path.join(
-    os.environ["XDG_RUNTIME_DIR"], "silver-voice", "control.sock"
+CONTROL_SOCKET = os.environ.get(
+    "VOICE_BRIDGE_CONTROL_SOCKET",
+    os.path.join(
+        os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"),
+        "silver-voice",
+        "control.sock",
+    ),
+)
+CONDUCTOR_SOCKET = os.environ.get(
+    "VOICE_CONDUCTOR_CONTROL_SOCKET",
+    os.path.join(os.path.dirname(CONTROL_SOCKET), "conductor.sock"),
 )
 JOIN_DEADLINE_SECONDS = 45
 JOIN_RETRY_SECONDS = 0.2
 
 
-def connected_control_socket():
+def connected_control_socket(socket_path=CONTROL_SOCKET):
     connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    connection.connect(CONTROL_SOCKET)
+    connection.settimeout(180)
+    try:
+        connection.connect(socket_path)
+    except OSError:
+        connection.close()
+        raise
     return connection
 
 
@@ -24,10 +38,11 @@ def send_request(connection, **request):
     connection.sendall(json.dumps(request).encode() + b"\n")
 
 
-def request_once(**request):
-    with connected_control_socket() as connection:
+def request_once(socket_path=CONTROL_SOCKET, **request):
+    with connected_control_socket(socket_path) as connection:
         send_request(connection, **request)
-        reply = connection.makefile(encoding="utf-8").readline()
+        with connection.makefile(encoding="utf-8") as replies:
+            reply = replies.readline()
     if not reply:
         return {"error": "bridge_closed_the_connection"}
     return json.loads(reply)
@@ -74,22 +89,38 @@ def speak(arguments):
     )
 
 
+def agent(arguments):
+    request = {"command": "status"}
+    if arguments.target or arguments.default:
+        request = {
+            "command": "agent",
+            "target": arguments.target,
+            "default": arguments.default,
+        }
+    try:
+        return request_once(socket_path=CONDUCTOR_SOCKET, **request)
+    except (FileNotFoundError, ConnectionRefusedError):
+        return {"error": "conductor_not_running"}
+
+
 def follow(arguments):
     try:
         connection = connected_control_socket()
     except (FileNotFoundError, ConnectionRefusedError):
         return {"error": "bridge_not_running"}
     with connection:
+        connection.settimeout(None)
         send_request(connection, command="follow", after=arguments.after)
-        for line in connection.makefile(encoding="utf-8"):
-            print(line, end="", flush=True)
+        with connection.makefile(encoding="utf-8") as lines:
+            for line in lines:
+                print(line, end="", flush=True)
     return None
 
 
-def parse_arguments():
+def parse_arguments(arguments=None):
     parser = argparse.ArgumentParser(
-        prog="silver-voice",
-        description="Carry the listener's speech and Silver's replies through a Discord voice call.",
+        prog="discord-voice",
+        description="Carry an authorized listener's speech and agent replies through Discord voice.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser(
@@ -114,12 +145,29 @@ def parse_arguments():
     follow_parser.add_argument(
         "--after", type=int, help="Replay retained lines after this sequence."
     )
-    return parser.parse_args()
+    agent_parser = commands.add_parser(
+        "agent",
+        help="Show or select the answering A2A conversation; selection resets on restart.",
+    )
+    agent_parser.set_defaults(handler=agent)
+    selection = agent_parser.add_mutually_exclusive_group()
+    selection.add_argument(
+        "target", nargs="?", help="Live A2A peer, pane, Servant or session ID."
+    )
+    selection.add_argument(
+        "--default",
+        action="store_true",
+        help="Restore the declarative answering agent.",
+    )
+    return parser.parse_args(arguments)
 
 
 def main():
     arguments = parse_arguments()
-    reply = arguments.handler(arguments)
+    try:
+        reply = arguments.handler(arguments)
+    except (OSError, ValueError) as error:
+        reply = {"error": f"control_request_failed_{type(error).__name__}"}
     if reply is None:
         return 0
     print(json.dumps(reply, ensure_ascii=False))

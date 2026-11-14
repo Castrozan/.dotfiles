@@ -1,0 +1,64 @@
+import asyncio
+import json
+
+from voice_bridge.agent_conversations import (
+    A2AConversation,
+    ConversationTurnError,
+    live_peer,
+)
+
+
+class ConversationRouter:
+    def __init__(self, default_conversation):
+        self._default_conversation = default_conversation
+        self._conversation = default_conversation
+        self._turn_lock = asyncio.Lock()
+
+    def status(self):
+        return {**self._conversation.status(), "busy": self._turn_lock.locked()}
+
+    async def reply_to(self, prompt):
+        async with self._turn_lock:
+            return await self._conversation.reply_to(prompt)
+
+    async def answer(self, request):
+        if not isinstance(request, dict):
+            return {"error": "invalid_request"}
+        if request.get("command") == "status":
+            return self.status()
+        if request.get("command") != "agent":
+            return {"error": "unknown_command"}
+        target = request.get("target")
+        use_default = request.get("default") is True
+        if use_default == bool(target) or (
+            target is not None and not isinstance(target, str)
+        ):
+            return {"error": "choose_target_or_default"}
+        if self._turn_lock.locked():
+            return {"error": "agent_busy"}
+        async with self._turn_lock:
+            try:
+                conversation = (
+                    self._default_conversation
+                    if use_default
+                    else A2AConversation(await live_peer(target))
+                )
+            except ConversationTurnError as error:
+                return {"error": str(error)}
+            self._conversation = conversation
+        return self.status()
+
+    async def serve_connection(self, reader, writer):
+        try:
+            try:
+                request = json.loads(await reader.readline())
+                reply = await self.answer(request)
+            except (ValueError, UnicodeDecodeError):
+                reply = {"error": "invalid_request"}
+            writer.write(json.dumps(reply).encode() + b"\n")
+            await writer.drain()
+        except ConnectionError:
+            pass
+        finally:
+            writer.close()
+            await writer.wait_closed()

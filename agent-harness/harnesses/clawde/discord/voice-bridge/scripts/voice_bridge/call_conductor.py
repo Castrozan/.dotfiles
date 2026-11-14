@@ -2,11 +2,19 @@ import asyncio
 import json
 import logging
 import os
-import sys
-from datetime import date
+import signal
+from pathlib import Path
+
+from voice_bridge.agent_conversations import (
+    A2AConversation,
+    ConversationTurnError,
+    HermesConversation,
+    live_peer,
+)
+from voice_bridge.conversation_router import ConversationRouter
 
 CONTROL_CONNECT_RETRY_SECONDS = 1
-HERMES_TURN_DEADLINE_SECONDS = 120
+PENDING_LINE_LIMIT = 64
 SPEECH_LANGUAGE = "pt-br"
 STAY_SILENT_REPLY = "SILENCIO"
 FAILED_TURN_APOLOGY = "Tive um problema para responder agora."
@@ -20,65 +28,12 @@ SPOKEN_CALL_INSTRUCTION = (
 logger = logging.getLogger(__name__)
 
 
-class HermesTurnError(Exception):
-    pass
-
-
 def spoken_turn_prompt(spoken_lines):
     return f"{SPOKEN_CALL_INSTRUCTION}\n\nLucas: {' '.join(spoken_lines)}"
 
 
 def reply_worth_speaking(reply):
     return bool(reply) and reply.strip(" .\n") != STAY_SILENT_REPLY
-
-
-def final_reply_from_turn_events(turn_output):
-    for line in reversed(turn_output.splitlines()):
-        try:
-            event = json.loads(line)
-        except ValueError:
-            continue
-        if isinstance(event, dict) and event.get("type") == "result":
-            return event.get("text", "")
-    raise HermesTurnError("turn_produced_no_result")
-
-
-class HermesConversation:
-    def __init__(self, hermes_executable, profile):
-        self._hermes_executable = hermes_executable
-        self._profile = profile
-
-    async def reply_to(self, prompt):
-        process = await asyncio.create_subprocess_exec(
-            self._hermes_executable,
-            "-p",
-            self._profile,
-            "chat",
-            "--query",
-            prompt,
-            "--oneshot",
-            "--continue",
-            f"voice-call-{date.today().isoformat()}",
-            "--create-if-missing",
-            "--reasoning",
-            "low",
-            "--source",
-            "tool",
-            "--format",
-            "stream-json",
-            stdout=asyncio.subprocess.PIPE,
-            stderr=asyncio.subprocess.DEVNULL,
-        )
-        try:
-            turn_output, _ = await asyncio.wait_for(
-                process.communicate(), HERMES_TURN_DEADLINE_SECONDS
-            )
-        except TimeoutError as error:
-            process.kill()
-            raise HermesTurnError("turn_timed_out") from error
-        if process.returncode != 0:
-            raise HermesTurnError(f"turn_exited_{process.returncode}")
-        return final_reply_from_turn_events(turn_output.decode())
 
 
 class BridgeControl:
@@ -96,18 +51,25 @@ class BridgeControl:
         reader, writer = await self._connected()
         writer.write(json.dumps({"command": "follow"}).encode() + b"\n")
         await writer.drain()
-        while line := await reader.readline():
-            text = json.loads(line).get("text")
-            if text:
-                yield text
+        try:
+            while line := await reader.readline():
+                text = json.loads(line).get("text")
+                if text:
+                    yield text
+        finally:
+            writer.close()
+            await writer.wait_closed()
 
     async def speak(self, text):
         reader, writer = await self._connected()
         request = {"command": "speak", "text": text, "language": SPEECH_LANGUAGE}
-        writer.write(json.dumps(request).encode() + b"\n")
-        await writer.drain()
-        reply = await reader.readline()
-        writer.close()
+        try:
+            writer.write(json.dumps(request).encode() + b"\n")
+            await writer.drain()
+            reply = await reader.readline()
+        finally:
+            writer.close()
+            await writer.wait_closed()
         if reply and "error" in json.loads(reply):
             logger.warning("speech rejected: %s", json.loads(reply)["error"])
 
@@ -121,7 +83,7 @@ def drained_spoken_lines(first_line, pending_lines):
 
 async def collect_spoken_lines(transcript_lines, pending_lines):
     async for text in transcript_lines:
-        pending_lines.put_nowait(text)
+        await pending_lines.put(text)
 
 
 async def answer_spoken_lines(pending_lines, reply_to, speak):
@@ -129,8 +91,8 @@ async def answer_spoken_lines(pending_lines, reply_to, speak):
         spoken_lines = drained_spoken_lines(await pending_lines.get(), pending_lines)
         try:
             reply = await reply_to(spoken_turn_prompt(spoken_lines))
-        except HermesTurnError as error:
-            logger.warning("hermes turn failed: %s", error)
+        except ConversationTurnError as error:
+            logger.warning("agent turn failed: %s", error)
             reply = FAILED_TURN_APOLOGY
         if reply_worth_speaking(reply):
             await speak(reply)
@@ -138,25 +100,51 @@ async def answer_spoken_lines(pending_lines, reply_to, speak):
 
 async def conduct_call():
     bridge = BridgeControl(os.environ["VOICE_BRIDGE_CONTROL_SOCKET"])
-    conversation = HermesConversation(
-        os.environ["VOICE_CONDUCTOR_HERMES"], os.environ["VOICE_CONDUCTOR_PROFILE"]
+    agent = os.environ.get("VOICE_CONDUCTOR_AGENT")
+    conversation = (
+        A2AConversation(await live_peer(agent))
+        if agent
+        else HermesConversation(
+            os.environ["VOICE_CONDUCTOR_HERMES"], os.environ["VOICE_CONDUCTOR_PROFILE"]
+        )
     )
-    pending_lines = asyncio.Queue()
+    router = ConversationRouter(conversation)
+    socket_path = Path(os.environ["VOICE_CONDUCTOR_CONTROL_SOCKET"])
+    server = await asyncio.start_unix_server(router.serve_connection, path=socket_path)
+    socket_path.chmod(0o600)
+    pending_lines = asyncio.Queue(maxsize=PENDING_LINE_LIMIT)
     collection = asyncio.create_task(
         collect_spoken_lines(bridge.spoken_lines(), pending_lines)
     )
     answering = asyncio.create_task(
-        answer_spoken_lines(pending_lines, conversation.reply_to, bridge.speak)
+        answer_spoken_lines(pending_lines, router.reply_to, bridge.speak)
     )
-    await asyncio.wait({collection, answering}, return_when=asyncio.FIRST_COMPLETED)
-    answering.cancel()
-    collection.cancel()
+    stop_requested = asyncio.Event()
+    loop = asyncio.get_running_loop()
+    for stop_signal in (signal.SIGTERM, signal.SIGINT):
+        loop.add_signal_handler(stop_signal, stop_requested.set)
+    stopping = asyncio.create_task(stop_requested.wait())
+    async with server:
+        try:
+            finished, _ = await asyncio.wait(
+                {collection, answering, stopping}, return_when=asyncio.FIRST_COMPLETED
+            )
+            for task in finished:
+                task.result()
+            if stopping not in finished:
+                raise ConnectionError("bridge_closed_the_transcript")
+        finally:
+            answering.cancel()
+            collection.cancel()
+            stopping.cancel()
+            await asyncio.gather(
+                answering, collection, stopping, return_exceptions=True
+            )
 
 
 def main():
     logging.basicConfig(level=logging.WARNING)
     asyncio.run(conduct_call())
-    sys.exit("bridge closed the transcript")
 
 
 if __name__ == "__main__":

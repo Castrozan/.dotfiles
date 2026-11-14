@@ -5,12 +5,14 @@ import pytest
 
 from voice_bridge.call_conductor import (
     FAILED_TURN_APOLOGY,
-    HermesTurnError,
     STAY_SILENT_REPLY,
     answer_spoken_lines,
-    final_reply_from_turn_events,
     reply_worth_speaking,
     spoken_turn_prompt,
+)
+from voice_bridge.agent_conversations import (
+    ConversationTurnError,
+    final_reply_from_turn_events,
 )
 
 
@@ -59,7 +61,7 @@ def test_silver_stays_quiet_when_it_judges_the_line_noise():
 
 def test_a_failed_turn_is_said_out_loud_instead_of_going_silent():
     async def reply_to(_prompt):
-        raise HermesTurnError("turn_timed_out")
+        raise ConversationTurnError("turn_timed_out")
 
     assert conversation_outcome(["oi"], reply_to) == [FAILED_TURN_APOLOGY]
 
@@ -78,7 +80,7 @@ def test_the_final_reply_comes_from_the_result_event_past_the_trailer():
 
 
 def test_a_turn_without_a_result_event_is_an_error():
-    with pytest.raises(HermesTurnError):
+    with pytest.raises(ConversationTurnError):
         final_reply_from_turn_events("session_id: local-1")
 
 
