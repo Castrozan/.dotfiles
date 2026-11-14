@@ -1,4 +1,5 @@
 import { joinMeeting } from "/meeting-seat.js";
+import { openMicrophone } from "/seat-microphone.js";
 
 const MICROPHONE_RATE = 16000;
 const VOICE_RATE = 24000;
@@ -9,17 +10,6 @@ const noMeeting = {
   setLevels() {},
   leave() {},
 };
-
-function openMicrophone() {
-  return navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-    },
-  });
-}
 
 async function openAudioGraph(sampleRate) {
   const context = new AudioContext({ sampleRate });
@@ -36,7 +26,7 @@ function leaveSeat(microphone, graphs, meeting) {
 }
 
 async function takeSeat() {
-  const microphone = await openMicrophone();
+  const microphone = await openMicrophone(navigator.mediaDevices);
   const capture = await openAudioGraph(MICROPHONE_RATE);
   const playback = await openAudioGraph(VOICE_RATE);
   const frames = new AudioWorkletNode(capture, "microphone-frames");
