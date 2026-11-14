@@ -3,6 +3,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { artifactInputs } from "./artifact_inputs.mjs";
 import { conventionalInputs } from "./evidence_inputs.mjs";
+import { compactEvidence } from "./compact_evidence.mjs";
 import { remainingGaps } from "./remaining_gaps.mjs";
 
 const [verdrLocation, contextLocation, downloadsLocation, outputLocation] =
@@ -127,6 +128,7 @@ const overview = await buildOverview(
   site,
   join(output, "configuration"),
 );
+await compactEvidence(site);
 await cp(join(output, "raw"), join(site, "raw"), { recursive: true });
 await writeFile(
   join(output, "payload.json"),
