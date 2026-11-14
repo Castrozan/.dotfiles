@@ -4,6 +4,7 @@ from .backends import herdr_pane_resolution
 from .backends.base import AgentBusyError, PromptNotSubmitted
 
 ANSI_STYLE_PATTERN = re.compile(r"\x1b\[([0-9;]*)m")
+CLAUDE_NAMED_BORDER_PATTERN = re.compile(r"─{3,} [^─\r\n]+ ─+")
 PROMPT_PREFIXES = {"codex": "›", "claude": "❯", "opencode": ">"}
 DELIVERY_OBSERVATION_TIMEOUT_MILLISECONDS = 2000
 STATUS_DURING_A_TURN = "working"
@@ -122,7 +123,9 @@ def _prompt_has_claude_borders(rows, prompt_index):
         return False
     before = "".join(character for character, _ in rows[prompt_index - 1]).strip()
     after = "".join(character for character, _ in rows[prompt_index + 1]).strip()
-    return len(before) >= 3 and set(before) == {"─"} and before == after
+    if len(after) < 3 or set(after) != {"─"}:
+        return False
+    return before == after or CLAUDE_NAMED_BORDER_PATTERN.fullmatch(before) is not None
 
 
 class HerdrPromptAdapter:

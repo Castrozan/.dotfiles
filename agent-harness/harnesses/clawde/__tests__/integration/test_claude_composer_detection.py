@@ -1,4 +1,5 @@
 import pytest
+from hypothesis import given, strategies as st
 
 from a2a_test_client import request_json
 
@@ -57,6 +58,53 @@ def test_claude_prompt_suggestion_does_not_block_peer_work(owned_fleet):
     assert response_status == 201
     assert task["state"] == "working"
     assert target.submitted == ["peer work"]
+
+
+@pytest.mark.parametrize(
+    "inside,empty",
+    [
+        ('❯\u00a0\x1b[2mTry "create a util logging.py that..."\x1b[0m', True),
+        ("❯ unfinished", False),
+        ("❯ \ncontinued", False),
+        ("[Image #1]\n❯ ", False),
+        ("❯ \n[Image #1]", False),
+    ],
+)
+def test_claude_session_name_border_preserves_the_composer_guard(
+    transport_package, inside, empty
+):
+    capture = "─" * 121 + " silver-voice-adapter-probe ─\n" + inside + "\n" + "─" * 150
+    assert (
+        bool(
+            transport_package.prompt_adapter.composer_is_observably_empty(
+                capture, "claude"
+            )
+        )
+        is empty
+    )
+
+
+@given(
+    st.text(
+        alphabet=st.characters(whitelist_categories=("L", "N", "P")),
+        min_size=1,
+        max_size=80,
+    )
+)
+def test_named_claude_borders_keep_arbitrary_session_labels_outside_the_composer(
+    transport_package, label
+):
+    border = "─" * 80
+    for content, empty in (("\x1b[2msuggestion\x1b[0m", True), ("human draft", False)):
+        capture = f"{border} {label} ─\n❯ {content}\n{border}"
+        assert (
+            bool(
+                transport_package.prompt_adapter.composer_is_observably_empty(
+                    capture, "claude"
+                )
+            )
+            is empty
+        )
 
 
 def test_claude_human_draft_still_blocks_peer_work(owned_fleet):
