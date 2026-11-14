@@ -2,9 +2,40 @@ import re
 from pathlib import Path
 
 AVATAR = Path(__file__).resolve().parents[3]
-REMOTE_SEAT_UNIT = (AVATAR / "avatar-remote-seat-home-manager.nix").read_text()
+REMOTE_SEAT_UNIT = (
+    AVATAR / "home-manager/avatar-remote-seat-home-manager.nix"
+).read_text()
 MAC_COMMANDS = (AVATAR / "avatar-remote-home-manager.nix").read_text()
 PROGRAMS = (AVATAR / "avatar-programs.nix").read_text()
+UNITS = (AVATAR / "avatar-home-manager.nix").read_text()
+REBUILD = (AVATAR / "home-manager/avatar-rebuild-home-manager.nix").read_text()
+
+
+def kept_through_rebuild(kind):
+    block = re.search(
+        rf"systemd\.user\.{kind} = keepRunningThroughRebuild \[(.*?)\];", REBUILD, re.S
+    )
+    return set(re.findall(r'"([a-z-]+)"', block.group(1)))
+
+
+def defined_services():
+    services = UNITS[UNITS.index("services = {") :]
+    own = re.findall(r"^        (avatar-[a-z-]+) = \{", services, re.M)
+    seat = re.findall(r"systemd\.user\.services\.(avatar-[a-z-]+) =", REMOTE_SEAT_UNIT)
+    return set(own) | set(seat)
+
+
+def test_every_avatar_service_keeps_its_running_version_through_a_rebuild():
+    assert kept_through_rebuild("services") == defined_services()
+
+
+def test_every_avatar_target_keeps_running_through_a_rebuild():
+    targets = set(re.findall(r"targets\.(avatar[a-z-]*)\.Unit", UNITS))
+    assert kept_through_rebuild("targets") == targets
+
+
+def test_a_rebuild_keeps_the_old_version_instead_of_restarting_it():
+    assert 'Unit.X-SwitchMethod = "keep-old"' in REBUILD
 
 
 def wrapper(source, name):

@@ -15,6 +15,11 @@ hand.
 Starting the avatar never takes over the screen: its output window opens on the hidden `special:avatar` Hyprland
 workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
 
+A rebuild leaves a running avatar alone: every avatar unit asks Home Manager to keep its old version, so a conversation
+or meeting never drops when chise is rebuilt. New code runs only once a unit starts again: the conversation's
+microphone, listener and live voice at the next conversation, and the audio, renderer, browser, camera, control server
+and seat at the next `avatar-stop` and `avatar-start`, which is how a deployed change is made live once nobody listens.
+
 ## Desktop conversation
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
