@@ -50,7 +50,8 @@ now", which hands the room back to the wake. When `follow` reports that the room
 is talking to that session: stop replying.
 
 Speak each turn as one short sentence in a single `ask` or `say`. Never loop over lines or chain several `say` or
-`speak` calls for one reply: the pieces come out stilted and disjointed.
+`speak` calls for one reply: the pieces come out stilted and disjointed. A turn that ends `interrupted` means the
+microphone heard speech: listen and answer only what was said to you, never resend the rest in pieces.
 
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
 speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
