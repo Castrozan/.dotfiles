@@ -18,7 +18,7 @@ def test_the_request_streams_raw_flash_speech_in_the_spoken_language():
     )
     assert json.loads(request.data) == {
         "text": "Oi, Lucas.",
-        "model_id": "eleven_flash_v2_5",
+        "model_id": "eleven_turbo_v2_5",
         "language_code": "pt",
     }
     assert request.get_header("Xi-api-key") == "key"

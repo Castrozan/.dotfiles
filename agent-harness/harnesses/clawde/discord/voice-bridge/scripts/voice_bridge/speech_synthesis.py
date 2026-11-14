@@ -13,7 +13,7 @@ from pathlib import Path
 STREAMING_SPEECH_URL = (
     "https://api.elevenlabs.io/v1/text-to-speech/{voice}/stream?output_format=pcm_48000"
 )
-SPEECH_MODEL = "eleven_flash_v2_5"
+SPEECH_MODEL = "eleven_turbo_v2_5"
 SPEECH_SAMPLE_RATE = 48000
 SYNTHESIS_TIMEOUT_SECONDS = 15
 API_KEY_FILE = Path.home() / ".secrets" / "elevenlabs-api-key"
