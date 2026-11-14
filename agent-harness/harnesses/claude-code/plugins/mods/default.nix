@@ -6,8 +6,8 @@ let
     cache-tax = pkgs.fetchFromGitHub {
       owner = "Castrozan";
       repo = "cache-tax";
-      rev = "1518027c553ff1c19dcc9297c07f68ac12009be7";
-      hash = "sha256-GuZoZaIiQIN6HAipnX+7ugPx489iCTkEretbfOcXuFI=";
+      rev = "2e3796e2964f8d9c0afd647f767d46243d5a11c2";
+      hash = "sha256-f713CgpvxI2SQLCRWt65q+e69dSCongxQJRSweAjTQ0=";
     };
     crayon = pkgs.fetchFromGitHub {
       owner = "Castrozan";
