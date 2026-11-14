@@ -186,6 +186,8 @@ but only from words that are not ordinary speech: a window of words matches loos
 the most frequent English and Brazilian Portuguese words of
 [FrequencyWords](https://github.com/hermitdave/FrequencyWords), pinned in `ordinary-words.nix`. A wake opens a
 conversation for an unverified voice, so without the word lists only an exact name or one that sounds the same wakes.
+A Brazilian R at the start of a word sounds like an H, so the key hears "Hama" as Rama. A name heard as ordinary words,
+as "Hey Rama" once came out "her mom", still wakes nobody.
 
 A Servant with a long or hard name also answers to the nicknames `NICKNAMES` in `spoken_names.py` gives it, such as
 "Shera" for Scheherazade. A short name only matches exactly, so its list also holds the spelling Parakeet writes for it,
