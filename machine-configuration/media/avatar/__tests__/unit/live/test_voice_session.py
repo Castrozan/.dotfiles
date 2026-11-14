@@ -2,18 +2,17 @@ import asyncio
 import json
 
 import conversation_addressee
-import gpt_live
 import live_voice
 import servant_character
 import transcript_log
 import voice_session
 from conversation_addressee import Addressee
-from hypothesis import given
-from hypothesis import strategies as st
 from live_events import TaskRequested, UserSaid
+from spoken_turns import Party, SpokenTurn
 from voice_session import RoomVoice
 
 FINISHED = object()
+LUCAS_NAMES_SASAKI = SpokenTurn(Party.HUMAN, "Lucas: hey Sasaki")
 
 
 class QueuedVoice:
@@ -46,6 +45,9 @@ class QueuedVoice:
 
     async def close(self):
         self.closed = True
+
+    async def retire(self):
+        await self.close()
         self.pending.put_nowait(FINISHED)
 
 
@@ -71,7 +73,7 @@ def test_a_new_voice_replaces_the_old_one_and_the_events_carry_on():
         stream = room.events()
         opened[0].pending.put_nowait(UserSaid("oi"))
         assert await next_event(stream) == UserSaid("oi")
-        await room.change_to("meridian", "Lucas: hey Medea")
+        await room.change_to("meridian", [LUCAS_NAMES_SASAKI])
         opened[0].pending.put_nowait(UserSaid("late"))
         opened[1].pending.put_nowait(UserSaid("tudo bem"))
         assert await next_event(stream) == UserSaid("tudo bem")
@@ -80,29 +82,34 @@ def test_a_new_voice_replaces_the_old_one_and_the_events_carry_on():
 
     opened, room = asyncio.run(scenario())
     assert [voice.speaking_voice for voice in opened] == ["gleam", "meridian"]
-    assert opened[1].earlier_conversation == "Lucas: hey Medea"
+    assert opened[1].earlier_conversation == [LUCAS_NAMES_SASAKI]
     assert opened[0].closed and opened[1].connected and not opened[1].closed
     assert room.speaking_voice == "meridian"
     assert opened[1].heard == [b"pcm"] and opened[0].heard == []
 
 
-def test_an_answer_for_a_retired_voice_is_not_sent_to_the_new_one():
+def test_an_answer_for_a_retired_voice_is_spoken_by_the_new_one_outside_its_tasks():
     async def scenario():
         opened, open_voice = opened_voices()
         room = RoomVoice(open_voice, "gleam")
         stream = room.events()
         opened[0].pending.put_nowait(TaskRequested("old-task", "status"))
         await next_event(stream)
-        await room.change_to("meridian", "")
+        await room.change_to("meridian", [])
         opened[1].pending.put_nowait(TaskRequested("new-task", "build"))
         await next_event(stream)
+        await room.deliver("old-task", "Checking.", False)
         await room.deliver("old-task", "Main is clean.", True)
         await room.deliver("new-task", "Built.", True)
         return opened
 
     opened = asyncio.run(scenario())
     assert opened[0].delivered == []
-    assert opened[1].delivered == [("new-task", "Built.", True)]
+    assert opened[1].delivered == [
+        (None, "Checking.", False),
+        (None, "Main is clean.", True),
+        ("new-task", "Built.", True),
+    ]
 
 
 def test_the_voice_follows_whoever_takes_the_room(monkeypatch, tmp_path):
@@ -134,29 +141,5 @@ def test_the_voice_follows_whoever_takes_the_room(monkeypatch, tmp_path):
 
     opened = asyncio.run(scenario())
     assert [voice.speaking_voice for voice in opened] == ["gleam", "meridian"]
-    assert opened[1].earlier_conversation == "Lucas: hey Sasaki"
+    assert opened[1].earlier_conversation == [LUCAS_NAMES_SASAKI]
     assert changes == [1]
-
-
-@given(texts=st.lists(st.text(min_size=1, max_size=400), max_size=40))
-def test_the_earlier_conversation_keeps_only_its_most_recent_part(texts):
-    entries = [
-        {"sequence": index + 1, "source": "human", "speaker": None, "text": text}
-        for index, text in enumerate(texts)
-    ]
-    full = "\n".join(f"human: {text}" for text in texts)
-    original = transcript_log.read_since
-    transcript_log.read_since = lambda path, sequence: entries
-    try:
-        seeded = voice_session.earlier_conversation("transcript.jsonl")
-    finally:
-        transcript_log.read_since = original
-    assert seeded == full[-voice_session.EARLIER_CONVERSATION_CHARACTERS :]
-
-
-def test_a_new_live_session_is_told_the_conversation_so_far():
-    fresh = gpt_live.GptLive("meridian")
-    taking_over = gpt_live.GptLive("meridian", "Lucas: hey Sasaki")
-    assert fresh.instructions == gpt_live.INSTRUCTIONS
-    assert taking_over.instructions.startswith(gpt_live.INSTRUCTIONS)
-    assert taking_over.instructions.endswith("Lucas: hey Sasaki")

@@ -3,23 +3,37 @@ import asyncio
 import live_voice
 import transcript_log
 from live_events import TaskRequested
+from spoken_turns import Party, SpokenTurn
 
-EARLIER_CONVERSATION_CHARACTERS = 6000
+EARLIER_CONVERSATION_CHARACTERS = 12000
+EARLIER_CONVERSATION_TURNS = 128
 HOLDER_CHECK_SECONDS = 0.5
 
 
+def spoken_turn(entry):
+    if Party.AVATAR in (entry["source"], entry["speaker"]):
+        return SpokenTurn(Party.AVATAR, entry["text"])
+    speaker = entry["speaker"]
+    return SpokenTurn(
+        Party.HUMAN, f"{speaker}: {entry['text']}" if speaker else entry["text"]
+    )
+
+
 def earlier_conversation(transcript):
-    lines = [
-        f"{entry['speaker'] or entry['source']}: {entry['text']}"
-        for entry in transcript_log.read_since(transcript, 0)
-    ]
-    return "\n".join(lines)[-EARLIER_CONVERSATION_CHARACTERS:]
+    turns = [spoken_turn(entry) for entry in transcript_log.read_since(transcript, 0)]
+    kept, characters = [], 0
+    for turn in reversed(turns[-EARLIER_CONVERSATION_TURNS:]):
+        characters += len(turn.text)
+        if characters > EARLIER_CONVERSATION_CHARACTERS:
+            break
+        kept.append(turn)
+    return kept[::-1]
 
 
 class RoomVoice:
     def __init__(self, open_voice, speaking_voice):
         self.open_voice = open_voice
-        self.current = open_voice(speaking_voice, "")
+        self.current = open_voice(speaking_voice, ())
         self.name = self.current.name
         self.input_rate = self.current.input_rate
         self.output_rate = self.current.output_rate
@@ -36,7 +50,7 @@ class RoomVoice:
         replacement = self.open_voice(speaking_voice, conversation_so_far)
         await replacement.connect()
         previous, self.current = self.current, replacement
-        await previous.close()
+        await previous.retire()
 
     async def follow_the_room_holder(self, directory, transcript, after_change):
         while True:
@@ -63,9 +77,10 @@ class RoomVoice:
 
     async def deliver(self, task_id, result, final):
         owner = self.task_owners.get(task_id, self.current)
+        if final:
+            self.task_owners.pop(task_id, None)
         if owner is not self.current:
-            print(f"answer for a retired voice, not spoken: {result}", flush=True)
-            return
+            task_id = None
         await self.current.deliver(task_id, result, final)
 
     async def close(self):

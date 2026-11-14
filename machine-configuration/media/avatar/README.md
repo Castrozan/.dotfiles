@@ -123,8 +123,9 @@ microphone.
 within about a second, so it can listen and speak while work runs. It speaks in the live voice of the floor holder's
 character, and the room audio streams to OpenAI for as long as the conversation stays open. GPT-Live fixes the voice
 when a session starts, so when the floor passes to a Servant with another voice the bridge opens a new session in that
-voice, gives it the recent transcript in its instructions so it carries on without greeting, and closes the old one.
-An answer to a task the old session asked for is printed, not spoken. `avatar-live.service` runs the
+voice, starts it from the recent transcript as its history so it carries on without greeting, and closes the old one.
+The new session speaks the answer to a task the old one asked for. The transcript goes only to OpenAI, which already
+heard it, and sessions are not stored. `avatar-live.service` runs the
 bridge inside `avatar-conversation.target` in place of the listener and plays a second copy of the voice into
 `AvatarLipSync` so the mouth moves.
 
@@ -168,7 +169,8 @@ conversation for an unverified voice, so without the word lists only an exact na
 `addressee.json` is also the floor every speaking agent shares, in conversations and meetings alike. `avatar-command
 speak` from a herdr pane first runs `avatar-claim-floor` under a lock: the holder speaks at once, a live holder silences
 everyone else, and otherwise the first live Servant to claim takes it. A refused claim stops the speech and names the
-holder. A Mac session speaking through chise claims as `avatar-claim-floor --speaker HOST:PANE`, under the same rules.
+holder. A Mac session speaking through chise first runs `avatar-claim-floor --speaker HOST:PANE`, which refuses it
+while another session holds the floor and shows its character otherwise.
 Starting a listener frees the floor, and without one anyone may speak.
 
 ## Meetings
