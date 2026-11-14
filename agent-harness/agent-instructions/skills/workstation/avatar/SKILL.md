@@ -75,9 +75,9 @@ microphone heard speech: listen and answer only what was said to you, never rese
 ### Where the conversation sits
 
 `avatar-talk open` on a Mac seats the conversation at that Mac when its keyboard or mouse was used in the last five
-minutes: the Mac's default microphone and output carry both voices. Otherwise it sits in chise's room, like every
-conversation opened on chise; `--seat room` forces the room. The printed `seat` says which one you got: with `room` from
-a Mac, the user hears you only beside chise.
+minutes: the Mac's default microphone and output carry both voices, with the built-in microphone in place of Bluetooth
+earbuds. Otherwise it sits in chise's room, like every conversation opened on chise; `--seat room` forces the room. The
+printed `seat` says which one you got: with `room` from a Mac, the user hears you only beside chise.
 
 Saying a greeting and your Servant name near a Mac wakes your session there too and seats the conversation at that
 Mac. Naming another Servant mid-conversation moves the room wherever the conversation sits.
