@@ -1,4 +1,3 @@
-import contextlib
 import http.client
 import json
 import pathlib
@@ -43,7 +42,8 @@ BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
 WINDOW_PROFILE = pathlib.Path.home() / ".local/share/avatar/window-browser"
 WINDOW_PROFILE_FLAG = f"--user-data-dir={WINDOW_PROFILE}"
-HOLDER_SCRIPT = "remote_seat/local_seat.py"
+HOLDER_SCRIPT = "remote_seat/seat_holder.py"
+HOLDER_PATH = pathlib.Path(__file__).with_name("seat_holder.py")
 TUNNEL_WAIT_SECONDS = 15
 LONGEST_SEAT_SECONDS = 12 * 60 * 60
 COMMAND_TIMEOUT_SECONDS = 30
@@ -91,14 +91,6 @@ def leave():
     for command_line in (HOLDER_SCRIPT, TUNNEL_FORWARD):
         end_processes_matching(command_line)
     close_browsers()
-
-
-def hold_tunnel_then_close_browsers():
-    try:
-        with contextlib.suppress(subprocess.TimeoutExpired):
-            subprocess.run(TUNNEL_COMMAND, check=False, timeout=LONGEST_SEAT_SECONDS)
-    finally:
-        close_browsers()
 
 
 def wait_for_tunnel():
@@ -160,7 +152,7 @@ def take(query=""):
     leave()
     try:
         subprocess.Popen(
-            [sys.executable, __file__],
+            [sys.executable, str(HOLDER_PATH)],
             start_new_session=True,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
@@ -173,6 +165,3 @@ def take(query=""):
         leave()
         raise
 
-
-if __name__ == "__main__":
-    hold_tunnel_then_close_browsers()

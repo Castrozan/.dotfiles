@@ -148,6 +148,16 @@ def stop():
     local_seat.end_processes_matching(COLLECTION_FLAG, OWNED_INSTANCE_END_SIGNAL)
 
 
+def running():
+    found = subprocess.run(
+        ["/usr/bin/pgrep", "-f", "--", COLLECTION_FLAG],
+        capture_output=True,
+        check=False,
+        timeout=local_seat.COMMAND_TIMEOUT_SECONDS,
+    )
+    return found.returncode == 0
+
+
 def reported_camera_state():
     report = camera_report_path()
     deadline = time.monotonic() + CAMERA_REPORT_WAIT_SECONDS
