@@ -60,14 +60,20 @@ class RoomVoice:
                 await self.change_to(wanted, earlier_conversation(transcript))
                 after_change()
 
+    def remember_task_owner(self, voice, event):
+        if isinstance(event, TaskRequested):
+            self.task_owners[event.task_id] = voice
+
+    async def events_while_current(self, voice):
+        async for event in voice.events():
+            if voice is self.current:
+                self.remember_task_owner(voice, event)
+                yield event
+
     async def events(self):
         while True:
             voice = self.current
-            async for event in voice.events():
-                if voice is not self.current:
-                    continue
-                if isinstance(event, TaskRequested):
-                    self.task_owners[event.task_id] = voice
+            async for event in self.events_while_current(voice):
                 yield event
             if voice is self.current:
                 return

@@ -98,7 +98,7 @@ def test_a_speaking_pane_shows_the_character_of_its_own_servant_only(
 ):
     sessions = [
         LiveSession(servant=servant, pane=session_pane)
-        for session_pane, servant in zip(panes, servants)
+        for session_pane, servant in zip(panes, servants, strict=False)
     ]
     shown.clear()
     with tempfile.TemporaryDirectory() as directory:
