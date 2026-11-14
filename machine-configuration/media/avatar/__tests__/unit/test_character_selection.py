@@ -9,7 +9,7 @@ import conversation_state
 import listener_runtime
 import listener_session
 import pytest
-import start
+from meetings import start
 import conversation_effects
 import utterances
 from conversation_state import ConversationPhase

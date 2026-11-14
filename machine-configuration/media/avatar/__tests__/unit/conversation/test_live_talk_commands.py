@@ -7,7 +7,7 @@ import conversation_state
 import listener_session
 import live_opening
 import pytest
-import start
+from meetings import start
 from conversation_addressee import Addressee
 from conversation_state import ConversationPhase
 from talk_runner import run_talk

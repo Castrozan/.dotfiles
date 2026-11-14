@@ -12,7 +12,7 @@ import local_seat
 import pytest
 import remote_agent
 import remote_talk
-import start
+from meetings import start
 from conversation_addressee import Addressee
 from conversation_state import ConversationPhase
 from talk_runner import run_talk

@@ -15,7 +15,9 @@ from voice_bridge.speech_synthesis import SpeechSelection
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
 from voice_bridge.voice_call import VoiceCall
-from voice_identity import VoiceIdentity, VoiceIdentityPool, identity_specifications
+from voice_connection import IdentityConnection
+from voice_identity import VoiceIdentity, VoiceIdentityPool
+from voice_permissions import identity_specifications
 
 
 @dataclass(frozen=True)
@@ -81,44 +83,14 @@ async def run_bridge():
 
     claimed_bot_ids = set()
 
-    async def run_identity(identity):
-        client = identity.client
-
-        @client.event
-        async def on_ready():
-            await call.follow_listener()
-
-        @client.event
-        async def on_voice_state_update(member, before, after):
-            if member.id == listener_user_id and before.channel != after.channel:
-                await call.follow_listener()
-            if member.id == client.user.id and before.channel != after.channel:
-                call.observe_bot_movement(identity)
-
-        try:
-            async with asyncio.timeout(30):
-                await client.login(Path(identity.token_file).read_text().strip())
-            if client.user.id in claimed_bot_ids:
-                identity.error = "duplicate_bot_identity"
-                return
-            claimed_bot_ids.add(client.user.id)
-            await client.connect()
-        except Exception as error:
-            identity.error = f"identity_unavailable_{type(error).__name__}"
-            logging.warning(
-                "Discord identity %s unavailable: %s",
-                identity.name,
-                type(error).__name__,
-            )
-        finally:
-            await client.close()
-
     stop_requested = asyncio.Event()
     loop = asyncio.get_running_loop()
     for stop_signal in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(stop_signal, stop_requested.set)
     client_tasks = [
-        asyncio.create_task(run_identity(identity))
+        asyncio.create_task(
+            IdentityConnection(identity, call, listener_user_id, claimed_bot_ids).run()
+        )
         for identity in identities.identities
     ]
     try:

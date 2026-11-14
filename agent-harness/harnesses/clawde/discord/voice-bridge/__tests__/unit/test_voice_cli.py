@@ -5,6 +5,7 @@ import pytest
 from hypothesis import given, strategies as st
 
 import silver_voice_cli
+import voice_control
 
 
 @pytest.mark.parametrize("arguments", [[], ["--default"], ["work-peer"]])
@@ -32,7 +33,7 @@ def test_default_and_target_cannot_be_selected_together():
 
 def test_meeting_preparation_refuses_same_discord_listener_feedback(monkeypatch):
     monkeypatch.setattr(
-        silver_voice_cli, "request_running_bridge", lambda **request: {"joined": True}
+        voice_control, "request_running_bridge", lambda **request: {"joined": True}
     )
     runner = Mock()
     monkeypatch.setattr(silver_voice_cli.subprocess, "run", runner)
@@ -72,7 +73,7 @@ def test_missing_conductor_reports_an_error_without_starting_a_service(monkeypat
         silver_voice_cli, "request_once", Mock(side_effect=FileNotFoundError)
     )
     control = Mock()
-    monkeypatch.setattr(silver_voice_cli, "control_bridge_service", control)
+    monkeypatch.setattr(voice_control, "control_bridge_service", control)
     arguments = silver_voice_cli.parse_arguments(["agent"])
     assert arguments.handler(arguments) == {"error": "conductor_not_running"}
     control.assert_not_called()

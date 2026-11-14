@@ -95,8 +95,8 @@ let
         pkgs.v4l-utils
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/start.py} "$@"
+    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/meetings/start.py} "$@"
   '';
   stop = pkgs.writeShellScriptBin "avatar-stop" ''
     export PATH=${

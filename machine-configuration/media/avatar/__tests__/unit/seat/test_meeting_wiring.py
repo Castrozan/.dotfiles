@@ -74,7 +74,7 @@ def test_the_start_command_reaches_the_seat_modules_and_passes_its_arguments():
     start = wrapper(PROGRAMS, "start")
     assert "./scripts/conversation}" in start
     assert "./scripts/listening}" in start
-    assert '${./scripts/start.py} "$@"' in start
+    assert '${./scripts/meetings/start.py} "$@"' in start
 
 
 def test_the_listen_command_reaches_the_seat_module():

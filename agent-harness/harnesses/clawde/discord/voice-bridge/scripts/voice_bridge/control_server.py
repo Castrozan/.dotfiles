@@ -12,6 +12,13 @@ def encoded_line(message):
     return json.dumps(message, ensure_ascii=False).encode() + b"\n"
 
 
+async def read_request(reader):
+    request = json.loads(await asyncio.wait_for(reader.readline(), timeout=5))
+    if not isinstance(request, dict) or not isinstance(request.get("command"), str):
+        raise ValueError("invalid_request")
+    return request
+
+
 class ControlServer:
     def __init__(self, call, feed):
         self._call = call
@@ -31,11 +38,7 @@ class ControlServer:
         connection = asyncio.current_task()
         self._connections.add(connection)
         try:
-            request = json.loads(await asyncio.wait_for(reader.readline(), timeout=5))
-            if not isinstance(request, dict) or not isinstance(
-                request.get("command"), str
-            ):
-                raise ValueError("invalid_request")
+            request = await read_request(reader)
             if request["command"] == "follow":
                 await self._stream_transcript(request, writer)
             else:

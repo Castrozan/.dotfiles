@@ -1,118 +1,16 @@
 import argparse
 import json
-import os
-import socket
 import subprocess
 import sys
-import time
 
-BRIDGE_SERVICE = "silver-voice-bridge.service"
-CONTROL_SOCKET = os.environ.get(
-    "VOICE_BRIDGE_CONTROL_SOCKET",
-    os.path.join(
-        os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"),
-        "silver-voice",
-        "control.sock",
-    ),
+from voice_control import (
+    CONDUCTOR_SOCKET,
+    connected_control_socket,
+    request_once,
+    request_running_bridge,
+    send_request,
 )
-CONDUCTOR_SOCKET = os.environ.get(
-    "VOICE_CONDUCTOR_CONTROL_SOCKET",
-    os.path.join(os.path.dirname(CONTROL_SOCKET), "conductor.sock"),
-)
-JOIN_DEADLINE_SECONDS = 45
-JOIN_RETRY_SECONDS = 0.2
-
-
-def connected_control_socket(socket_path=CONTROL_SOCKET):
-    connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    connection.settimeout(180)
-    try:
-        connection.connect(socket_path)
-    except OSError:
-        connection.close()
-        raise
-    return connection
-
-
-def send_request(connection, **request):
-    connection.sendall(json.dumps(request).encode() + b"\n")
-
-
-def request_once(socket_path=CONTROL_SOCKET, **request):
-    with connected_control_socket(socket_path) as connection:
-        send_request(connection, **request)
-        with connection.makefile(encoding="utf-8") as replies:
-            reply = replies.readline()
-    if not reply:
-        return {"error": "bridge_closed_the_connection"}
-    return json.loads(reply)
-
-
-def request_running_bridge(**request):
-    try:
-        return request_once(**request)
-    except (FileNotFoundError, ConnectionRefusedError):
-        return {"error": "bridge_not_running"}
-
-
-def control_bridge_service(action):
-    subprocess.run(["systemctl", "--user", action, BRIDGE_SERVICE], check=True)
-
-
-def request_join(preferred=None, follow_listener=False):
-    deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
-    while True:
-        try:
-            result = request_once(
-                command="join", preferred=preferred, follow_listener=follow_listener
-            )
-            if result.get("error") != "no_eligible_available_bot_for_listener":
-                return result
-            state = request_once(command="status")
-            if (
-                any(identity["ready"] for identity in state["identities"])
-                or time.monotonic() >= deadline
-            ):
-                return result
-            time.sleep(JOIN_RETRY_SECONDS)
-        except (FileNotFoundError, ConnectionRefusedError):
-            if time.monotonic() >= deadline:
-                return {"error": "bridge_did_not_start"}
-            time.sleep(JOIN_RETRY_SECONDS)
-
-
-def join(arguments):
-    meeting = subprocess.run(
-        ["systemctl", "--user", "is-active", "avatar.target"],
-        capture_output=True,
-        text=True,
-        timeout=5,
-    )
-    if meeting.stdout.strip() in {"active", "activating", "reloading"}:
-        return {"error": "meeting_devices_active_leave_meeting_before_discord"}
-    control_bridge_service("start")
-    deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
-    while True:
-        try:
-            conversation = request_once(
-                socket_path=CONDUCTOR_SOCKET,
-                **(
-                    {"command": "agent", "target": arguments.agent, "default": False}
-                    if arguments.agent
-                    else {"command": "status"}
-                ),
-            )
-            break
-        except (FileNotFoundError, ConnectionRefusedError):
-            if time.monotonic() >= deadline:
-                return {"error": "conductor_did_not_start"}
-            time.sleep(JOIN_RETRY_SECONDS)
-    if "error" in conversation:
-        return conversation
-    result = request_join(
-        arguments.bot or arguments.agent or "primary", arguments.follow_listener
-    )
-    return {**result, "conversation": conversation}
+from voice_setup import join, meeting_start
 
 
 def leave(_arguments):
@@ -134,52 +32,6 @@ def presentation(arguments):
     if arguments.command != "catalog":
         request["name"] = arguments.name
     return request_running_bridge(**request)
-
-
-def meeting_start(_arguments):
-    state = request_running_bridge(command="status")
-    if "error" in state:
-        return state
-    if state["joined"]:
-        return {"error": "leave_discord_before_meeting_microphone_use"}
-    prepared = subprocess.run(
-        ["avatar-start", "--virtual-only"], capture_output=True, text=True, timeout=65
-    )
-    if prepared.returncode:
-        return {
-            "error": "virtual_meeting_preparation_failed",
-            "detail": prepared.stderr.strip(),
-        }
-    devices = json.loads(prepared.stdout)
-    character = state["speech"]["character"]
-    if character:
-        changed = subprocess.run(
-            ["avatar-command", "character", character],
-            capture_output=True,
-            text=True,
-            timeout=15,
-        )
-        if changed.returncode:
-            return {
-                **devices,
-                "error": "meeting_character_failed",
-                "detail": changed.stderr.strip(),
-                "runtime": "avatar.target remains active under avatar lifecycle ownership",
-            }
-        confirmed = subprocess.run(
-            ["avatar-command", "status"], capture_output=True, text=True, timeout=15
-        )
-        if (
-            confirmed.returncode
-            or json.loads(confirmed.stdout).get("currentCharacter") != character
-        ):
-            return {**devices, "error": "meeting_character_not_confirmed"}
-    return {
-        **devices,
-        "speech": state["speech"],
-        "speech_command": "avatar-command speak TEXT EMOTION mic VOICE MODEL",
-        "automatic_discord_receive": False,
-    }
 
 
 def agent(arguments):

@@ -1,6 +1,6 @@
 const { sendResponse } = require("../messaging/client-response-sender");
 
-async function handleGetStatusCommand(command, connection, context) {
+async function handleGetStatusCommand(_command, connection, context) {
   const { avatarState, clientRegistry, speechFloor } = context;
   const state = speechFloor.currentPhase();
 

@@ -6,6 +6,7 @@ import urllib.error
 import urllib.request
 
 import conversation_seat
+from meetings import virtual_meeting
 from conversation_seat import Seat
 
 MEETING_TARGET = "avatar.target"
@@ -54,7 +55,10 @@ def renderer_ready():
 
 def camera_ready():
     capture = subprocess.run(
-        ["v4l2-ctl", "-d", "/dev/video10", "--info"], capture_output=True, text=True
+        ["v4l2-ctl", "-d", "/dev/video10", "--info"],
+        capture_output=True,
+        text=True,
+        timeout=SYSTEMCTL_QUERY_TIMEOUT_SECONDS,
     )
     return capture.returncode == 0 and "Video Capture" in capture.stdout
 
@@ -73,7 +77,12 @@ def wait_until_ready(units, readiness_checks, timeout=45):
 
 
 def audio_ready():
-    result = subprocess.run(["avatar-audio", "status"], capture_output=True, text=True)
+    result = subprocess.run(
+        ["avatar-audio", "status"],
+        capture_output=True,
+        text=True,
+        timeout=SYSTEMCTL_QUERY_TIMEOUT_SECONDS,
+    )
     if result.returncode:
         return False
     return json.loads(result.stdout).get("running", False)
@@ -88,12 +97,20 @@ def bring_up(target, readiness_checks):
                 stdout=subprocess.DEVNULL,
                 timeout=AUDIO_REPAIR_TIMEOUT_SECONDS,
             )
-        subprocess.run(["systemctl", "--user", "start", target], check=True)
+        subprocess.run(
+            ["systemctl", "--user", "start", target],
+            check=True,
+            timeout=AUDIO_REPAIR_TIMEOUT_SECONDS,
+        )
         wait_until_ready(TARGET_UNITS[target], readiness_checks)
         if not audio_ready():
             raise RuntimeError("The avatar audio graph did not become ready")
     except BaseException:
-        subprocess.run(["systemctl", "--user", "stop", target], check=False)
+        subprocess.run(
+            ["systemctl", "--user", "stop", target],
+            check=False,
+            timeout=AUDIO_COMMAND_TIMEOUT_SECONDS,
+        )
         raise
 
 
@@ -130,24 +147,9 @@ def main(seat=Seat.ROOM, virtual_only=False):
             "avatar-listener.service",
             *TARGET_UNITS[MEETING_TARGET],
         ]
-        observed = subprocess.run(
-            ["systemctl", "--user", "is-active", *units],
-            capture_output=True,
-            text=True,
-            timeout=SYSTEMCTL_QUERY_TIMEOUT_SECONDS,
+        virtual_meeting.require_fresh_runtime(
+            units, audio_ready, SYSTEMCTL_QUERY_TIMEOUT_SECONDS
         )
-        if observed.returncode not in (0, 3) or not observed.stdout.strip():
-            raise RuntimeError("Avatar resource state could not be established")
-        if (
-            any(
-                state in {"active", "activating", "reloading"}
-                for state in observed.stdout.splitlines()
-            )
-            or audio_ready()
-        ):
-            raise RuntimeError(
-                "Existing avatar resources must be left untouched; virtual-only start refused"
-            )
         try:
             bring_up(MEETING_TARGET, (renderer_ready, camera_ready))
         except BaseException:
@@ -176,7 +178,12 @@ def main(seat=Seat.ROOM, virtual_only=False):
         open_call_channels()
         print("Avatar ready with her voice and the microphone at the remote seat")
         return
-    subprocess.run(["avatar-audio", "open"], check=True, stdout=subprocess.DEVNULL)
+    subprocess.run(
+        ["avatar-audio", "open"],
+        check=True,
+        stdout=subprocess.DEVNULL,
+        timeout=AUDIO_COMMAND_TIMEOUT_SECONDS,
+    )
     print(
         "Avatar ready with her voice and the default microphone open. Check levels with avatar-audio status. Switch video with avatar-command mode"
     )

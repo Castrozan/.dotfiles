@@ -7,7 +7,7 @@ import conversation_seat
 import listener_runtime
 import listener_session
 import pytest
-import start
+from meetings import start
 from conversation_seat import Seat
 
 

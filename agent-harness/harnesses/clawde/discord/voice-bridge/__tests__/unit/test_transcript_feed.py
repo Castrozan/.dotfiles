@@ -78,7 +78,7 @@ def test_shutdown_closes_an_idle_transcript_follower():
         reader, writer = await asyncio.open_connection(*server.sockets[0].getsockname())
         writer.write(b'{"command":"follow"}\n')
         await writer.drain()
-        for attempt in range(20):
+        for _attempt in range(20):
             if feed._subscribers:
                 break
             await asyncio.sleep(0.001)

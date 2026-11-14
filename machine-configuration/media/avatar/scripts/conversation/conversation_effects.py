@@ -8,7 +8,7 @@ import conversation_state
 import desktop_window
 import listen_cli
 import listener_session
-import start
+from meetings import start
 import user_units
 import utterances
 from conversation_seat import Seat

@@ -7,7 +7,7 @@ import conversation_seat
 import conversation_state
 import listener_session
 import speaking_floor
-import start
+from meetings import start
 from conversation_seat import Seat
 from listener_session import ListenerPurpose
 from remote_agent import AgentPane

@@ -17,8 +17,7 @@ class CharacterVoicedSpeechGenerator {
       outputId,
       voice || this.selected.cloudVoice,
       emotion,
-      this.selected.localVoice,
-      model,
+      { localVoice: this.selected.localVoice, model },
     );
   }
 }

@@ -1,16 +1,9 @@
 from control_server_node_runner import evaluate_node_json, requires_node
 
-CHARACTER_VOICED_GENERATOR = """
-const { CharacterVoicedSpeechGenerator } = require("./speech/character-voiced-speech-generator");
-const calls = [];
-const generator = new CharacterVoicedSpeechGenerator(
-  { generate: (...call) => { calls.push(call); return "spoken"; } },
-  [
-    { name: "first", cloudVoice: "firstCloud", localVoice: "pf_first" },
-    { name: "second", cloudVoice: "secondCloud", localVoice: "pm_second" },
-  ],
-);
-"""
+from character_voice_fixtures import (
+    CHARACTER_VOICED_GENERATOR,
+    CHARACTER_REQUEST_SESSION,
+)
 
 
 @requires_node
@@ -25,8 +18,8 @@ def test_speech_uses_the_first_character_until_another_is_selected():
         """
     )
     assert result == [
-        ["oi", "turn-1", "firstCloud", "happy", "pf_first", None],
-        ["oi", "turn-2", "secondCloud", "sad", "pm_second", None],
+        ["oi", "turn-1", "firstCloud", "happy", {"localVoice": "pf_first"}],
+        ["oi", "turn-2", "secondCloud", "sad", {"localVoice": "pm_second"}],
     ]
 
 
@@ -68,38 +61,11 @@ def test_the_cloud_fallback_keeps_the_character_local_voice():
           { generate: async () => ({ source: "piper" }) },
         );
         const result = generator
-          .generate("oi", "turn", "cloudVoice", "neutral", "pm_alex")
+          .generate("oi", "turn", "cloudVoice", "neutral", {localVoice: "pm_alex"})
           .then((speech) => ({ source: speech.source, voices }));
         """
     )
     assert result == {"source": "kokoro", "voices": ["pm_alex"]}
-
-
-CHARACTER_REQUEST_SESSION = """
-const { handleSetCharacterCommand } = require("./agent-commands/set-character-command-handler");
-const { AvatarStateStore } = require("./avatar-session/avatar-state-store");
-const sent = [];
-const forwarded = [];
-const avatarState = new AvatarStateStore();
-const connection = { sendJson: (value) => sent.push(value) };
-const rendererConnected = { value: true };
-const context = {
-  avatarState,
-  textToSpeechGenerator: generator,
-  clientRegistry: {
-    sendToRenderer: (value) => {
-      forwarded.push(value);
-      return rendererConnected.value;
-    },
-  },
-};
-const request = (name, id) =>
-  handleSetCharacterCommand({ name, id }, connection, context);
-const spokenVoice = () => {
-  generator.generate("oi", "turn", null, "neutral");
-  return calls[calls.length - 1][2];
-};
-"""
 
 
 @requires_node
@@ -175,67 +141,3 @@ def test_an_unknown_character_request_leaves_the_voice_alone():
         """
     )
     assert result == {"voice": "firstCloud", "forwarded": 1}
-
-
-@requires_node
-def test_character_voice_commits_only_after_renderer_success():
-    result = evaluate_node_json(
-        CHARACTER_VOICED_GENERATOR
-        + CHARACTER_REQUEST_SESSION
-        + """
-        const { routeClientMessage } = require("./avatar-session/client-connection-router");
-        Object.assign(context.clientRegistry, {
-          isSeat: () => false, isAgent: () => false, isRenderer: () => true,
-          sendToAgents: () => {}, connectionSummary: () => ({}),
-        });
-        context.speechFloor = { currentPhase: () => "idle" };
-        const result = (async () => {
-          request("second", "failed");
-          await routeClientMessage(JSON.stringify({type: "characterError", id: "failed"}), connection, context);
-          const afterError = spokenVoice();
-          request("second", "success");
-          await routeClientMessage(JSON.stringify({type: "characterChanged", name: "second", id: "success"}), connection, context);
-          const { handleGetStatusCommand } = require("./agent-commands/get-status-command-handler");
-          await handleGetStatusCommand({}, connection, context);
-          return {afterError, afterSuccess: spokenVoice(), character: sent.at(-1).currentCharacter};
-        })();
-        """
-    )
-    assert result == {
-        "afterError": "firstCloud",
-        "afterSuccess": "secondCloud",
-        "character": "second",
-    }
-
-
-@requires_node
-def test_selected_models_reach_existing_meeting_speech_without_unsupported_directions():
-    result = evaluate_node_json(
-        """
-        const requests = [];
-        const clientPath = require.resolve("./speech/media-speech-client");
-        require.cache[clientPath] = {exports: {runMediaSpeech: async args => {
-          requests.push(args); return {audio: {path: "/test.wav", duration_seconds: 1}, alignment: {status: "unavailable"}};
-        }}};
-        const { ElevenLabsSpeechGenerator } = require("./speech/elevenlabs-speech-generator");
-        const { ResilientSpeechGenerator } = require("./speech/resilient-speech-generator");
-        const { CharacterVoicedSpeechGenerator } = require("./speech/character-voiced-speech-generator");
-        const speech = new CharacterVoicedSpeechGenerator(
-          new ResilientSpeechGenerator(new ElevenLabsSpeechGenerator("default", "en-us"), {}, {}),
-          [{name: "first", cloudVoice: "voice", localVoice: "pf_first"}],
-        );
-        const result = (async () => {
-          for (const model of ["eleven_turbo_v2_5", "eleven_flash_v2_5", "eleven_multilingual_v2"])
-            await speech.generate("test", "turn", null, "neutral", model);
-          return requests.map(args => ({model: args[args.indexOf("--model") + 1], directions: args.includes("--directions"), voice: args[args.indexOf("--voice") + 1]}));
-        })();
-        """
-    )
-    assert result == [
-        {"model": model, "directions": False, "voice": "voice"}
-        for model in (
-            "eleven_turbo_v2_5",
-            "eleven_flash_v2_5",
-            "eleven_multilingual_v2",
-        )
-    ]

@@ -1,8 +1,18 @@
 import asyncio
 import fcntl
+import logging
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+from voice_permissions import (
+    channel_refusal,
+    guild_listener_channel,
+    identity_guild,
+    occupancy_refusal,
+)
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -13,41 +23,6 @@ class VoiceIdentity:
     preferred_agent: str | None = None
     error: str | None = None
     lease: object = None
-
-
-def identity_specifications(specifications, host, listener_user_id, guild_id):
-    if not 1 <= len(specifications) <= 8:
-        raise ValueError("voice_identity_count_out_of_bounds")
-    names = set()
-    token_files = set()
-    selected = []
-    for specification in specifications:
-        if specification["ownerHost"] != host:
-            continue
-        if (
-            int(specification["listenerUserId"]) != listener_user_id
-            or int(specification["guildId"]) != guild_id
-        ):
-            continue
-        if specification["name"] in names or specification["tokenFile"] in token_files:
-            continue
-        names.add(specification["name"])
-        token_files.add(specification["tokenFile"])
-        selected.append(specification)
-    return selected
-
-
-def channel_refusal(channel, member):
-    permissions = channel.permissions_for(member)
-    if not all((permissions.view_channel, permissions.connect, permissions.speak)):
-        return "missing_voice_permissions"
-    if getattr(channel, "type", None) is not None and str(channel.type) != "voice":
-        return "unsupported_voice_channel"
-    if member.voice and (member.voice.mute or member.voice.deaf):
-        return "bot_server_muted_or_deafened"
-    if channel.user_limit and len(channel.voice_states) >= channel.user_limit:
-        return "voice_channel_full"
-    return None
 
 
 class VoiceIdentityPool:
@@ -68,22 +43,45 @@ class VoiceIdentityPool:
                 yield identity, channel
 
     def eligibility(self, identity, listener_user_id, guild_id):
-        if identity.error or not identity.client.is_ready():
-            return None, identity.error or "identity_not_ready"
-        guild = identity.client.get_guild(guild_id)
-        if guild is None or guild.me is None:
-            return None, "bot_not_in_allowed_guild"
-        if guild.me.voice and guild.me.voice.channel is not None:
-            return (
-                None,
-                "owned_call"
-                if identity.lease is not None
-                else "bot_voice_connection_in_use",
+        guild, refusal = identity_guild(identity, guild_id)
+        if refusal:
+            return None, refusal
+        busy = occupancy_refusal(identity, guild.me)
+        if busy:
+            return None, busy
+        channel = guild_listener_channel(guild, listener_user_id)
+        if channel is None:
+            return None, "listener_not_in_allowed_voice_channel"
+        return channel, channel_refusal(channel, guild.me)
+
+    async def connect(self, listener_user_id, guild_id, preferred):
+        for identity, channel in self.candidates(listener_user_id, guild_id, preferred):
+            if not self.reserve(identity):
+                continue
+            connection = await self._connect_candidate(
+                identity, channel, listener_user_id
             )
-        for channel in guild.voice_channels:
-            if listener_user_id in channel.voice_states:
-                return channel, channel_refusal(channel, guild.me)
-        return None, "listener_not_in_allowed_voice_channel"
+            if connection is not None:
+                return identity, connection
+        return None
+
+    async def _connect_candidate(self, identity, channel, listener_user_id):
+        if (
+            self.eligibility(identity, listener_user_id, channel.guild.id)[1]
+            is not None
+        ):
+            self.release(identity)
+            return None
+        try:
+            return await channel.connect(timeout=20, reconnect=True)
+        except BaseException as error:
+            self.release(identity)
+            if not isinstance(error, Exception):
+                raise
+            logger.warning(
+                "voice identity %s join failed: %s", identity.name, type(error).__name__
+            )
+            return None
 
     def reserve(self, identity):
         self._lease_directory.mkdir(mode=0o700, parents=True, exist_ok=True)
