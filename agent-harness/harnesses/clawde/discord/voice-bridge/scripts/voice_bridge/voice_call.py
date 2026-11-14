@@ -15,9 +15,6 @@ MAXIMUM_UTTERANCE_SECONDS = 30
 logger = logging.getLogger(__name__)
 
 
-
-
-
 class VoiceCall:
     def __init__(
         self, identities, listener_user_id, answered_guild_id, audio_services, feed
