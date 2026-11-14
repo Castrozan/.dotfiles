@@ -95,6 +95,10 @@ as a display copy: it receives everything the renderer receives and its own even
 stays the one renderer that feeds the camera and names the character. Microphone audio queued during a network stall
 plays out late instead of being dropped.
 
+The voice reaches a Mac later than chise measures its loudness, so the seat page reports what its playback still holds
+plus each output's latency, and the control server holds the mouth back by that much for the Mac window and the Mac
+camera while chise's own renderer moves at once.
+
 `open --live` from a Mac names the agent that will receive the tasks as `--agent HOST:PANE`, built from the Mac's
 hostname and the caller's herdr pane. Chise reads that pane's Servant from `a2a list` on the Mac, gives it the floor,
 and sends each task there with `a2a ask` over ssh. With a remote seat the live voice hears `AvatarRemoteMicrophone`

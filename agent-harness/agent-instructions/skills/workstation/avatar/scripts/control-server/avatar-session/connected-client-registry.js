@@ -1,9 +1,60 @@
+const { DelayedVoiceLevels } = require("./delayed-voice-levels");
+
 class ConnectedClientRegistry {
-  constructor() {
+  constructor(schedule = setTimeout, now = Date.now) {
     this.agentConnections = new Set();
     this.rendererConnection = null;
     this.viewerConnections = new Set();
     this.stageConnection = null;
+    this.seatConnection = null;
+    this.voiceLevelsByDisplayCopy = {
+      viewer: new DelayedVoiceLevels(
+        (payload) => this.sendToViewers(payload),
+        schedule,
+        now,
+      ),
+      stage: new DelayedVoiceLevels(
+        (payload) => this.stageConnection?.sendJson(payload),
+        schedule,
+        now,
+      ),
+    };
+  }
+
+  registerSeat(connection) {
+    this.seatConnection = connection;
+    console.log("✅ Seat connected (voice delay)");
+  }
+
+  isSeat(connection) {
+    return this.seatConnection === connection;
+  }
+
+  followVoiceDelay(delaysByDisplayCopy) {
+    for (const [role, voiceLevels] of Object.entries(
+      this.voiceLevelsByDisplayCopy,
+    ))
+      voiceLevels.followVoiceDelay(delaysByDisplayCopy[role]);
+  }
+
+  forgetSeat() {
+    this.seatConnection = null;
+    for (const voiceLevels of Object.values(this.voiceLevelsByDisplayCopy))
+      voiceLevels.forgetVoiceDelay();
+    console.log("❌ Seat disconnected");
+  }
+
+  sendToViewers(payload) {
+    this.viewerConnections.forEach((connection) => {
+      connection.sendJson(payload);
+    });
+  }
+
+  sendVoiceLevel(level) {
+    const payload = { type: "audioLevel", level };
+    for (const voiceLevels of Object.values(this.voiceLevelsByDisplayCopy))
+      voiceLevels.send(payload);
+    return this.rendererConnection?.sendJson(payload) ?? false;
   }
 
   registerAgent(connection) {
@@ -32,13 +83,11 @@ class ConnectedClientRegistry {
   }
 
   forget(connection) {
-    if (this.isStage(connection)) {
-      this.stageConnection = null;
-      console.log("❌ Stage disconnected");
+    if (this.isSeat(connection)) {
+      this.forgetSeat();
       return;
     }
-    if (this.viewerConnections.delete(connection)) {
-      console.log("❌ Viewer disconnected");
+    if (this.forgetDisplayCopy(connection)) {
       return;
     }
     if (this.isAgent(connection)) {
@@ -50,6 +99,19 @@ class ConnectedClientRegistry {
       this.rendererConnection = null;
       console.log("❌ Renderer disconnected");
     }
+  }
+
+  forgetDisplayCopy(connection) {
+    if (this.isStage(connection)) {
+      this.stageConnection = null;
+      console.log("❌ Stage disconnected");
+      return true;
+    }
+    if (!this.viewerConnections.delete(connection)) {
+      return false;
+    }
+    console.log("❌ Viewer disconnected");
+    return true;
   }
 
   isAgent(connection) {
@@ -107,6 +169,7 @@ class ConnectedClientRegistry {
     this.displayCopies().forEach((connection) => {
       connection.close();
     });
+    this.seatConnection?.close();
     this.rendererConnection?.close();
   }
 

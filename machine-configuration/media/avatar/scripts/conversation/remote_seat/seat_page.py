@@ -45,6 +45,7 @@ def seat_page_files(page_directory):
         "/meeting-seat.js": (page_directory / "meeting-seat.js", JAVASCRIPT),
         "/seat-microphone.js": (page_directory / "seat-microphone.js", JAVASCRIPT),
         "/microphone-choice.js": (page_directory / "microphone-choice.js", JAVASCRIPT),
+        "/voice-delay.js": (page_directory / "voice-delay.js", JAVASCRIPT),
         "/seat-audio-worklets.js": (
             page_directory / "seat-audio-worklets.js",
             JAVASCRIPT,

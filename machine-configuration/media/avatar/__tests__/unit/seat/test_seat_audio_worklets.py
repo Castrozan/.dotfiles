@@ -117,3 +117,20 @@ def test_silence_is_dropped_while_the_voice_runs_behind():
         """,
     )
     assert result["played"] == list(range(1, 5281))
+
+
+def test_the_voice_reports_how_much_it_holds_ten_times_a_second():
+    result = run_worklet(
+        24000,
+        """
+        const voice = new registered["voice-playback"]();
+        voice.port.onmessage({ data: ramp(1, 7200).buffer });
+        render(voice, 60);
+        console.log(JSON.stringify({ reports: voice.port.posted }));
+        """,
+    )
+    held = [report["queuedSeconds"] for report in result["reports"]]
+    assert len(held) == 60 * RENDER_QUANTUM // 2400
+    played_before_first_report = 18 * RENDER_QUANTUM
+    assert held[0] == (7200 - played_before_first_report) / 24000
+    assert held == sorted(held, reverse=True)

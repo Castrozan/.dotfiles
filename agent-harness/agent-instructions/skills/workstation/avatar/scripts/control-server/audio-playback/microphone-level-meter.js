@@ -34,12 +34,12 @@ function startMicrophoneLevelMeter(clientRegistry, sourceName) {
     pending = Buffer.from(samples.subarray(alignedSize));
   });
   const interval = setInterval(() => {
-    clientRegistry.sendToRenderer({ type: "audioLevel", level });
+    clientRegistry.sendVoiceLevel(level);
     level = 0;
   }, 33);
   const silence = () => {
     clearInterval(interval);
-    clientRegistry.sendToRenderer({ type: "audioLevel", level: 0 });
+    clientRegistry.sendVoiceLevel(0);
   };
   recorder.on("error", (error) => {
     console.error(error.message);

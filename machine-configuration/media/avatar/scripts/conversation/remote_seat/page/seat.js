@@ -1,5 +1,6 @@
 import { joinMeeting } from "/meeting-seat.js";
 import { openMicrophone } from "/seat-microphone.js";
+import { reportVoiceDelay } from "/voice-delay.js";
 
 const MICROPHONE_RATE = 16000;
 const VOICE_RATE = 24000;
@@ -8,6 +9,7 @@ const state = document.getElementById("state");
 const noMeeting = {
   closed: new Promise(() => {}),
   setLevels() {},
+  outputsByDisplayCopy: {},
   leave() {},
 };
 
@@ -18,8 +20,9 @@ async function openAudioGraph(sampleRate) {
   return context;
 }
 
-function leaveSeat(microphone, graphs, meeting) {
+function leaveSeat(microphone, graphs, meeting, voiceDelay) {
   for (const track of microphone.getTracks()) track.stop();
+  voiceDelay.close();
   for (const graph of graphs) if (graph.state !== "closed") graph.close();
   meeting.leave();
   window.close();
@@ -34,7 +37,12 @@ async function takeSeat() {
   const meeting = new URLSearchParams(location.search).has("meeting")
     ? await joinMeeting({ microphone, playback, voice, openAudioGraph })
     : noMeeting;
-  const leave = () => leaveSeat(microphone, [capture, playback], meeting);
+  const voiceDelay = reportVoiceDelay(voice, {
+    viewer: playback,
+    ...meeting.outputsByDisplayCopy,
+  });
+  const leave = () =>
+    leaveSeat(microphone, [capture, playback], meeting, voiceDelay);
   const socket = new WebSocket(`ws://${location.host}/audio`);
   socket.binaryType = "arraybuffer";
   capture.createMediaStreamSource(microphone).connect(frames);
