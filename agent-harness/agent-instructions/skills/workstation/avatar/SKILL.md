@@ -126,4 +126,6 @@ to the user's ears without an output argument.
 
 There the camera and composite modes open that Mac's webcam, never chise's, and `avatar-audio mute` and `volume` act on
 what the call hears. A wake by name still opens a conversation during the meeting, and closing it leaves the meeting
-running. Not yet available on a Mac: `avatar-controls` and speaker enrolment from the Mac's microphone.
+running. `avatar-controls` opens there while the Mac holds the seat and offers that Mac's cameras, and `avatar-listen
+enroll` builds a voice from what its microphone or call carried. A call camera that dies during the meeting returns
+within ten seconds by itself.

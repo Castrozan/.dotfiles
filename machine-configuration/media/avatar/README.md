@@ -107,12 +107,21 @@ page that owns the camera, so the camera and composite modes open the Mac's webc
 | `avatar-start` | Runs `avatar-start --seat remote` on chise, which leaves chise's microphone closed, takes the seat with the meeting page and starts OBS with its virtual camera; any failure undoes the steps already taken |
 | `avatar-listen start\|read\|follow\|stop` | Forwards to chise; `start` adds `--seat remote` while this Mac holds the seat, so the call is `meeting` and the Mac's microphone is `human` |
 | `avatar-command speak TEXT [EMOTION]` | Plays into the call and to the user's ears: with no output given, the output is `remote` while a Mac holds the seat and `both` otherwise |
+| `avatar-listen enroll NAME --first N --last M` | Forwards to chise, which builds the voice from the sequences heard through this Mac's microphone or its call |
+| `avatar-controls` | Opens the controls window on this Mac through the seat tunnel; it needs the seat that `avatar-start` took |
 | `avatar-audio`, `avatar-stop` | `avatar-audio` forwards to chise; `avatar-stop` closes OBS and the seat, then stops the avatar |
 
+The controls window owns no camera. It asks the control server, which passes `listCameras`, `enableCamera` and
+`disableCamera` to the page that owns the camera, the stage inside OBS on a Mac and the renderer on chise, and returns
+that page's `cameraList` and `cameraResult`. The cameras offered are therefore the ones on the machine showing the call
+picture.
+
+The process that holds the seat's tunnel also keeps the call camera, so nothing else runs on the Mac. Every ten seconds
+it asks the seat whether a meeting is running: an OBS that ended during a meeting is started again, and a meeting that
+ended on chise, a closed tunnel or a seat that was left stops OBS.
+
 The seat page fails with the name of the missing device when `BlackHole 2ch` or `BlackHole 16ch` is not installed, and a
-seat that ends stops the transcription. Not yet available on a Mac: the camera and composite video modes with the user's
-webcam, `avatar-controls`, per-channel mute and volume through `avatar-audio`, and speaker enrolment from the Mac's
-microphone.
+seat that ends stops the transcription.
 
 ## Live voice
 
