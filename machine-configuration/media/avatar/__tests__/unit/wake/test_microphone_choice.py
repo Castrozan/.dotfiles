@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-CHOICE = Path(__file__).resolve().parents[3] / "scripts/wake/page/microphone-choice.js"
+CHOICE = Path(__file__).resolve().parents[3] / "scripts/conversation/remote_seat/page/microphone-choice.js"
 
 
 def input_device(device_id, label):
