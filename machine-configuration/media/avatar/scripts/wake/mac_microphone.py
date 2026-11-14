@@ -28,7 +28,7 @@ def microphone_page_files(wake_page, seat_audio_page):
         "/": (wake_page / "index.html", seat_page.HTML),
         "/wake-capture.js": (wake_page / "wake-capture.js", seat_page.JAVASCRIPT),
         "/microphone-choice.js": (
-            wake_page / "microphone-choice.js",
+            seat_audio_page / "microphone-choice.js",
             seat_page.JAVASCRIPT,
         ),
         "/seat-audio-worklets.js": (

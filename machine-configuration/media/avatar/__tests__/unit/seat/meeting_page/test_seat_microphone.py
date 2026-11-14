@@ -7,18 +7,21 @@ import pytest
 import seat_page
 from page_devices import BUILT_IN_INPUT, device
 
-SEAT_MICROPHONE = (
-    Path(__file__).resolve().parents[4]
-    / "scripts/conversation/remote_seat/page/seat-microphone.js"
-)
+SEAT_PAGE = Path(__file__).resolve().parents[4] / "scripts/conversation/remote_seat/page"
 EARBUDS = device("audioinput", "in-buds", "realme Buds Air7 (Bluetooth)")
-DEFAULT_EARBUDS = device("audioinput", "default", "Default - realme Buds Air7")
+DEFAULT_EARBUDS = device(
+    "audioinput", "default", "Default - realme Buds Air7 (Bluetooth)"
+)
+USB_HEADSET = device("audioinput", "in-usb", "Jabra Evolve (USB)")
+DEFAULT_USB_HEADSET = device("audioinput", "default", "Default - Jabra Evolve (USB)")
 DEFAULT_BUILT_IN = device(
     "audioinput", "default", "Default - MacBook Pro Microphone (Built-in)"
 )
 
 OPENING = r"""
-const [modulePath, devices, defaultDevice] = process.argv.slice(1);
+const [source, chooser, devices, defaultDevice] = process.argv.slice(1);
+const modulePath = "data:text/javascript," + encodeURIComponent(
+  source.replace('"/microphone-choice.js"', JSON.stringify(chooser)));
 const opened = [];
 const stopped = [];
 const stream = (deviceId) => {
@@ -48,7 +51,8 @@ def open_with(devices, default_device):
             "--input-type=module",
             "-e",
             OPENING,
-            str(SEAT_MICROPHONE),
+            (SEAT_PAGE / "seat-microphone.js").read_text(),
+            (SEAT_PAGE / "microphone-choice.js").as_uri(),
             json.dumps(devices),
             default_device,
         ],
@@ -86,9 +90,13 @@ def test_a_mac_without_a_built_in_microphone_keeps_its_default_input():
     assert len(opening["opened"]) == 1
 
 
-def test_the_seat_page_serves_its_microphone_module(tmp_path):
+def test_a_wired_headset_chosen_as_the_default_input_is_kept():
+    opening = open_with([DEFAULT_USB_HEADSET, USB_HEADSET, BUILT_IN_INPUT], "in-usb")
+    assert opening["microphone"] == "in-usb"
+    assert len(opening["opened"]) == 1
+
+
+@pytest.mark.parametrize("module", ["seat-microphone.js", "microphone-choice.js"])
+def test_the_seat_page_serves_its_microphone_modules(tmp_path, module):
     files = seat_page.seat_page_files(tmp_path)
-    assert files["/seat-microphone.js"] == (
-        tmp_path / "seat-microphone.js",
-        seat_page.JAVASCRIPT,
-    )
+    assert files[f"/{module}"] == (tmp_path / module, seat_page.JAVASCRIPT)
