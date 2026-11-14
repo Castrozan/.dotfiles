@@ -28,7 +28,10 @@ let
   ];
   linuxConfiguration = helpers.homeManagerTestConfiguration agentModules;
   darwinConfiguration = helpers.homeManagerTestConfigurationForDarwin agentModules;
-  python = pkgs.python312.withPackages (packages: [ packages.pytest ]);
+  python = pkgs.python312.withPackages (packages: [
+    packages.pytest
+    packages.hypothesis
+  ]);
   harnessTests = "${self}/agent-harness/harnesses/clawde/__tests__";
   clientTests = "${self}/agent-harness/agent-to-agent-communication/client/__tests__/unit";
 in
@@ -72,6 +75,7 @@ in
         PYTHONDONTWRITEBYTECODE = "1";
       }
       ''
+        export HYPOTHESIS_STORAGE_DIRECTORY="$TMPDIR/hypothesis"
         cd ${self}
         python -m pytest -q -p no:cacheprovider \
           ${harnessTests}/integration/test_harness_aware_submission.py \
