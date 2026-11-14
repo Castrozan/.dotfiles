@@ -89,6 +89,25 @@ def test_unavailable_reasons_match_actual_selection_rules(tmp_path):
     assert pool.status(42, 1)[0]["unavailable_reason"] == "identity_not_ready"
 
 
+def test_pool_closes_clients_before_canceling_receive_tasks(tmp_path):
+    import asyncio
+    from unittest.mock import AsyncMock
+
+    async def scenario():
+        identity, channel = make_identity("primary")
+        task = asyncio.create_task(asyncio.Event().wait())
+
+        async def close():
+            assert task.cancelling() == 0
+
+        identity.client.close = AsyncMock(side_effect=close)
+        await VoiceIdentityPool([identity], tmp_path).close([task])
+        identity.client.close.assert_awaited_once()
+        assert task.cancelled()
+
+    asyncio.run(scenario())
+
+
 def test_local_lease_is_by_bot_user_id_and_released_after_use(tmp_path):
     first = make_identity("first")[0]
     second = make_identity("other")[0]

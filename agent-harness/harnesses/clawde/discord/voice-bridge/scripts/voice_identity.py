@@ -1,3 +1,4 @@
+import asyncio
 import fcntl
 from dataclasses import dataclass
 from pathlib import Path
@@ -99,6 +100,12 @@ class VoiceIdentityPool:
         if identity.lease is not None:
             identity.lease.close()
             identity.lease = None
+
+    async def close(self, client_tasks):
+        await asyncio.gather(*(identity.client.close() for identity in self.identities))
+        for task in client_tasks:
+            task.cancel()
+        await asyncio.gather(*client_tasks, return_exceptions=True)
 
     def status(self, listener_user_id, guild_id):
         return [

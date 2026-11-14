@@ -139,6 +139,7 @@ in
         ];
         RuntimeDirectory = "silver-voice";
         RuntimeDirectoryMode = "0700";
+        TimeoutStopSec = "30s";
         Restart = "on-failure";
         RestartSec = "3s";
       };

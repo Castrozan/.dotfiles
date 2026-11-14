@@ -16,6 +16,7 @@ class ControlServer:
     def __init__(self, call, feed):
         self._call = call
         self._feed = feed
+        self._connections = set()
         self._command_handlers = {
             "join": self._join,
             "leave": self._leave,
@@ -27,6 +28,8 @@ class ControlServer:
         }
 
     async def serve_connection(self, reader, writer):
+        connection = asyncio.current_task()
+        self._connections.add(connection)
         try:
             request = json.loads(await asyncio.wait_for(reader.readline(), timeout=5))
             if not isinstance(request, dict) or not isinstance(
@@ -45,6 +48,13 @@ class ControlServer:
             await writer.drain()
         finally:
             writer.close()
+            self._connections.discard(connection)
+
+    async def close(self):
+        connections = tuple(self._connections)
+        for connection in connections:
+            connection.cancel()
+        await asyncio.gather(*connections, return_exceptions=True)
 
     async def _answer(self, request):
         handler = self._command_handlers.get(request["command"])

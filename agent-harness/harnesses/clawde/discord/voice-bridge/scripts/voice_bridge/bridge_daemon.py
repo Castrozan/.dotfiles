@@ -125,11 +125,10 @@ async def run_bridge():
         await stop_requested.wait()
     finally:
         server.close()
+        await control.close()
         await server.wait_closed()
         await call.leave()
-        for task in client_tasks:
-            task.cancel()
-        await asyncio.gather(*client_tasks, return_exceptions=True)
+        await identities.close(client_tasks)
 
 
 def main():
