@@ -8,6 +8,8 @@ import pytest
 
 from transcription import cloud_transcriber
 from transcription import transcriber
+from transcription.ordinary_words import folded
+from wake_phrase import spoken_name
 
 
 @pytest.fixture(autouse=True)
@@ -52,21 +54,29 @@ def keyterms_sent(urlopen):
     return re.findall(r'name="keyterms"\r\n\r\n(.*?)\r\n', data)
 
 
-def test_servant_names_follow_the_fixed_terms_without_repeats(monkeypatch, tmp_path):
+def test_the_called_names_follow_the_fixed_terms_without_repeats(monkeypatch, tmp_path):
     roster = tmp_path / "roster.txt"
     roster.write_text(
         "Medea | witch\nRobin Hood | archer\nMedea | other\n"
-        "Altria Pendragon (Lancer) | lancer\nHex | x\n"
+        "Altria Pendragon (Lancer) | lancer\nAltria Pendragon | saber\nHex | x\n"
     )
     monkeypatch.setenv("AVATAR_SERVANT_ROSTER", str(roster))
     urlopen = stub_scribe(monkeypatch, {"text": "Hex"})
     cloud_transcriber.transcribe(b"\x00\x00" * 1600, "pt")
     fixed = list(cloud_transcriber.RECOGNIZED_TERMS)
-    assert keyterms_sent(urlopen) == fixed + [
-        "Medea",
-        "Robin Hood",
-        "Altria Pendragon",
-    ]
+    assert keyterms_sent(urlopen) == fixed + ["Medea", "Robin", "Altria"]
+
+
+def test_a_servant_is_a_keyterm_by_the_name_the_wake_hears(monkeypatch, tmp_path):
+    roster = tmp_path / "roster.txt"
+    roster.write_text("Hassan-i-Sabbah | assassin\nSasaki Kojirou | samurai\n")
+    monkeypatch.setenv("AVATAR_SERVANT_ROSTER", str(roster))
+    terms = cloud_transcriber.recognized_terms()
+    assert terms[len(cloud_transcriber.RECOGNIZED_TERMS) :] == ("Hassan", "Sasaki")
+    assert {folded(term) for term in terms} >= {
+        spoken_name("Hassan-i-Sabbah"),
+        spoken_name("Sasaki Kojirou"),
+    }
 
 
 def test_the_least_familiar_names_are_kept_when_the_roster_is_long(
@@ -83,7 +93,7 @@ def test_the_least_familiar_names_are_kept_when_the_roster_is_long(
     monkeypatch.setenv("AVATAR_SERVANT_ROSTER", str(roster))
     terms = cloud_transcriber.recognized_terms()
     assert len(terms) == cloud_transcriber.KEYTERMS_BEFORE_MINIMUM_BILLING
-    assert "Robin Hood" in terms
+    assert "Robin" in terms
     assert "David" not in terms
 
 

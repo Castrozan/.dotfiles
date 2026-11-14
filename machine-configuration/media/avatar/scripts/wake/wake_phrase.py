@@ -1,13 +1,12 @@
 import dataclasses
-import re
 
 import name_hearing
 from transcription.ordinary_words import folded
+from transcription.spoken_names import WORD, called_name
 
 GREETINGS = frozenset(
     {"hey", "hei", "hi", "ok", "okay", "ei", "oi", "ola", "ai", "o", "e", "em"}
 )
-WORD = re.compile(r"[^\W_]+")
 MESSAGE_EDGE = " ,.;:!?-"
 WINDOW_SIZES = (1, 2, 3)
 
@@ -25,7 +24,7 @@ class WakeMatch:
 
 
 def spoken_name(servant):
-    return folded(WORD.findall(servant)[0])
+    return folded(called_name(servant))
 
 
 def sessions_by_spoken_name(sessions):

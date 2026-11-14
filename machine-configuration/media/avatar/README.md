@@ -258,10 +258,13 @@ Transcription posts each utterance to ElevenLabs [Scribe](https://elevenlabs.io/
 about one second each, through the key `media-speech` uses, which needs the Speech to Text permission. On room audio it
 beat Hex's Parakeet and Whisper and invented nothing in silence; Parakeet ignores a pinned language and Whisper invents
 "Obrigado." A failed request falls back to the running [Hex](https://github.com/anomalyco/hex) service's Parakeet v3.
-`RECOGNIZED_TERMS` in `cloud_transcriber.py` and the roster's Servant names are sent as
+`RECOGNIZED_TERMS` in `cloud_transcriber.py` and the first word of each roster Servant's name, the one the wake listens
+for, are sent as
 [keyterms](https://elevenlabs.io/docs/eleven-api/guides/how-to/speech-to-text/batch/keyterm-prompting), which add 20%
-to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs". More than 100 keyterms bills
-every request as at least 20 seconds, so the names least like ordinary words fill the slots left by the fixed terms.
+to the transcription cost and turned "X" and "Eleven Labs" into "Hex" and "ElevenLabs". The full name biases nothing
+toward the word people say: with "Hassan-i-Sabbah" as a keyterm, "Hey Hassan" came out as "Hey, what's up?". More than
+100 keyterms bills every request as at least 20 seconds, so the names least like ordinary words fill the slots left by
+the fixed terms.
 
 `avatar-listen start` transcribes what this computer plays as the `meeting` source and the default microphone as the
 `human` source into a private transcript under the user runtime directory, and refuses while a desktop conversation is
