@@ -16,7 +16,9 @@ Starting the avatar never takes over the screen: its output window opens on the 
 workspace and keeps rendering there. Only `avatar-controls` opens a visible window.
 
 A rebuild leaves a running avatar alone: every avatar unit asks Home Manager to keep its old version, so a conversation
-or meeting never drops when chise is rebuilt, and new code takes over the next time each service starts.
+or meeting never drops when chise is rebuilt. New code runs only once a unit starts again: the conversation's
+microphone, listener and live voice at the next conversation, and the audio, renderer, browser, camera, control server
+and seat at the next `avatar-stop` and `avatar-start`, which is how a deployed change is made live once nobody listens.
 
 ## Desktop conversation
 
