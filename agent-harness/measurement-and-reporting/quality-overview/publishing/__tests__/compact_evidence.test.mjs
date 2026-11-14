@@ -24,3 +24,18 @@ test("compact generated evidence without changing values or raw source bytes", a
   assert.ok(Buffer.byteLength(compact) < Buffer.byteLength(pretty));
   assert.equal(await readFile(join(site, "raw/source.json"), "utf8"), pretty);
 });
+
+test("compacts large evidence without changing its contents", async (context) => {
+  const site = await mkdtemp(join(tmpdir(), "compact-evidence-"));
+  context.after(() => rm(site, { recursive: true, force: true }));
+  await mkdir(join(site, "evidence"));
+  const path = join(site, "evidence", "coverage.json");
+  const value = { lines: Array.from({ length: 220000 }, (_, i) => ({ line: i })) };
+  const original = JSON.stringify(value, null, 2);
+  assert.ok(Buffer.byteLength(original) > 4_000_000);
+  await writeFile(path, original);
+  await compactEvidence(site);
+  const compact = await readFile(path, "utf8");
+  assert.ok(Buffer.byteLength(compact) < 4_000_000);
+  assert.deepEqual(JSON.parse(compact), value);
+});
