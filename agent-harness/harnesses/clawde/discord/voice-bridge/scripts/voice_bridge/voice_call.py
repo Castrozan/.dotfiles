@@ -6,7 +6,7 @@ from collections.abc import Callable
 from dataclasses import dataclass
 
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
-from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE, SpeechSynthesizer
+from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE, SpeechSelection
 from voice_bridge.voice_playback import play_audio_stream
 
 LISTEN_POLL_SECONDS = 0.05
@@ -31,7 +31,7 @@ def exit_for_supervisor_restart_on_crash(task):
 @dataclass(frozen=True)
 class CallAudioServices:
     ffmpeg: str
-    synthesizer: SpeechSynthesizer
+    synthesizer: SpeechSelection
     transcribe_audio: Callable[[bytes], str]
 
 
@@ -59,6 +59,7 @@ class VoiceCall:
             "channel": channel.name if channel else None,
             "guild": channel.guild.name if channel else None,
             "last_sequence": self._feed.last_sequence,
+            "speech": self._audio_services.synthesizer.status(),
             "listener_packets": self._receiver.listener_packet_count
             if self._receiver
             else 0,
@@ -176,10 +177,22 @@ class VoiceCall:
             ) as audio_stream:
                 synthesis_seconds = time.monotonic() - started
                 outcome = await self._play(audio_stream)
+                audio_stream.raise_if_failed()
             return {
                 "outcome": outcome,
                 "synthesis_seconds": round(synthesis_seconds, 3),
             }
+
+    def capabilities(self):
+        return self._audio_services.synthesizer.capabilities()
+
+    async def select_character(self, name):
+        async with self._speech_lock:
+            return self._audio_services.synthesizer.select_character(name)
+
+    async def select_model(self, model):
+        async with self._speech_lock:
+            return self._audio_services.synthesizer.select_model(model)
 
     async def _play(self, audio_stream):
         voice_client = self._voice_client

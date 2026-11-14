@@ -15,6 +15,9 @@ let
   pacePackage = inputs.herdr-pace.packages.${pkgs.stdenv.hostPlatform.system}.default;
   transcriberScripts = ../../../../../machine-configuration/media/avatar/scripts/listening;
   jessicaElevenLabsVoice = "cgSgspJ2msm6clMCkdW9";
+  characterVoices =
+    import ../../../../../machine-configuration/media/avatar/cast/character-voices.nix
+      { inherit pkgs; };
 
   silverVoice = pkgs.writeShellScriptBin "silver-voice" ''
     exec ${pkgs.python312}/bin/python3 ${scripts}/silver_voice_cli.py "$@"
@@ -87,6 +90,7 @@ in
           "VOICE_BRIDGE_ANSWERED_GUILD_ID=${bridgeSettings.answeredGuildId}"
           "VOICE_BRIDGE_TOKEN_FILE=%h/.secrets/${bridgeSettings.botTokenSecretName}"
           "VOICE_BRIDGE_CLOUD_VOICE=${jessicaElevenLabsVoice}"
+          "VOICE_BRIDGE_CHARACTER_CATALOG=${characterVoices}"
         ];
         RuntimeDirectory = "silver-voice";
         RuntimeDirectoryMode = "0700";

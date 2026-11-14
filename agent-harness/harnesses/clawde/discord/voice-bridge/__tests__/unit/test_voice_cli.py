@@ -30,6 +30,20 @@ def test_default_and_target_cannot_be_selected_together():
         silver_voice_cli.parse_arguments(["agent", "work-peer", "--default"])
 
 
+@pytest.mark.parametrize(
+    "arguments", [["catalog"], ["character", "Second"], ["model", "eleven_flash_v2_5"]]
+)
+def test_presentation_commands_use_the_existing_bridge(monkeypatch, arguments):
+    request = Mock(return_value={"ok": True})
+    monkeypatch.setattr(silver_voice_cli, "request_running_bridge", request)
+    parsed = silver_voice_cli.parse_arguments(arguments)
+    assert parsed.handler(parsed) == {"ok": True}
+    expected = {"command": arguments[0]}
+    if len(arguments) == 2:
+        expected["name"] = arguments[1]
+    request.assert_called_once_with(**expected)
+
+
 @given(st.text())
 def test_speech_payload_preserves_unicode_text(text):
     connection = Mock()

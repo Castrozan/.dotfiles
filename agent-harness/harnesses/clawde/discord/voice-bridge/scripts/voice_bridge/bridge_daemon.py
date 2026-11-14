@@ -1,5 +1,6 @@
 import asyncio
 import functools
+import json
 import logging
 import os
 import signal
@@ -8,7 +9,7 @@ from pathlib import Path
 import discord
 
 from voice_bridge.control_server import ControlServer
-from voice_bridge.speech_synthesis import SpeechSynthesizer
+from voice_bridge.speech_synthesis import SpeechSelection
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
 from voice_bridge.voice_call import CallAudioServices, VoiceCall
@@ -34,7 +35,12 @@ async def run_bridge():
         int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
         CallAudioServices(
             ffmpeg,
-            SpeechSynthesizer(environment["VOICE_BRIDGE_CLOUD_VOICE"]),
+            SpeechSelection(
+                json.loads(
+                    Path(environment["VOICE_BRIDGE_CHARACTER_CATALOG"]).read_text()
+                ),
+                environment["VOICE_BRIDGE_CLOUD_VOICE"],
+            ),
             functools.partial(transcribe_discord_audio, ffmpeg),
         ),
         feed,

@@ -89,6 +89,13 @@ def speak(arguments):
     )
 
 
+def presentation(arguments):
+    request = {"command": arguments.command}
+    if arguments.command != "catalog":
+        request["name"] = arguments.name
+    return request_running_bridge(**request)
+
+
 def agent(arguments):
     request = {"command": "status"}
     if arguments.target or arguments.default:
@@ -132,6 +139,15 @@ def parse_arguments(arguments=None):
     commands.add_parser("status", help="Report the call as JSON.").set_defaults(
         handler=status
     )
+    commands.add_parser(
+        "catalog", help="List shared avatar characters and speech models."
+    ).set_defaults(handler=presentation)
+    for command in ("character", "model"):
+        selection_parser = commands.add_parser(
+            command, help=f"Select the speech {command}; resets on restart."
+        )
+        selection_parser.add_argument("name")
+        selection_parser.set_defaults(handler=presentation)
     speak_parser = commands.add_parser(
         "speak", help="Say text in the call; returns when finished or interrupted."
     )

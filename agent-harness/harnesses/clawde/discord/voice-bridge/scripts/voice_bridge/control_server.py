@@ -21,6 +21,9 @@ class ControlServer:
             "leave": self._leave,
             "status": self._status,
             "speak": self._speak,
+            "catalog": self._catalog,
+            "character": self._character,
+            "model": self._model,
         }
 
     async def serve_connection(self, reader, writer):
@@ -57,6 +60,15 @@ class ControlServer:
 
     async def _speak(self, request):
         return await self._call.speak(request["text"], request["language"])
+
+    async def _catalog(self, _request):
+        return self._call.capabilities()
+
+    async def _character(self, request):
+        return await self._call.select_character(request["name"])
+
+    async def _model(self, request):
+        return await self._call.select_model(request["name"])
 
     async def _stream_transcript(self, request, writer):
         after_sequence = request.get("after")
