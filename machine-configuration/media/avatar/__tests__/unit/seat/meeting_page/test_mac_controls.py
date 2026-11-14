@@ -3,14 +3,16 @@ from unittest.mock import Mock
 
 import local_seat
 import local_window
+import meeting_camera
 import pytest
 import remote_meeting
 
 
-def run_controls(monkeypatch, attached):
+def run_controls(monkeypatch, attached, camera_running=True):
     opened = Mock()
     ended = Mock()
     monkeypatch.setattr(local_seat, "attached", lambda: attached)
+    monkeypatch.setattr(meeting_camera, "running", lambda: camera_running)
     monkeypatch.setattr(local_seat, "end_processes_matching", ended)
     monkeypatch.setattr(local_window.subprocess, "run", opened)
     monkeypatch.setattr(remote_meeting.sys, "argv", ["avatar-meeting", "controls"])
@@ -34,11 +36,16 @@ def test_opening_the_controls_keeps_an_open_avatar_window(monkeypatch):
     ended.assert_not_called()
 
 
-def test_the_controls_refuse_without_a_seat_on_this_mac(monkeypatch, capsys):
-    code, opened, ended = run_controls(monkeypatch, attached=False)
+@pytest.mark.parametrize(
+    ("attached", "camera_running"), [(False, True), (True, False), (False, False)]
+)
+def test_the_controls_refuse_unless_this_mac_shows_the_call_picture(
+    monkeypatch, capsys, attached, camera_running
+):
+    code, opened, ended = run_controls(monkeypatch, attached, camera_running)
     assert code == 1
     opened.assert_not_called()
-    assert "Start the avatar on this Mac" in capsys.readouterr().err
+    assert "Run avatar-start on this Mac" in capsys.readouterr().err
 
 
 def test_the_camera_choice_answers_do_not_end_another_agents_command():

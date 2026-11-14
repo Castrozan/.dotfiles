@@ -19,3 +19,27 @@ def test_the_camera_runs_when_a_process_matches_the_collection_flag(
         "--collection Avatar",
     ]
     assert search.call_args.kwargs["timeout"]
+
+
+@pytest.fixture
+def report(tmp_path, monkeypatch):
+    monkeypatch.setenv("HOME", str(tmp_path))
+    monkeypatch.setattr(meeting_camera.local_seat, "end_processes_matching", Mock())
+    report = tmp_path / ".local/share/avatar/virtual-camera-report"
+    report.parent.mkdir(parents=True)
+    return report
+
+
+@pytest.mark.parametrize(
+    ("reported", "expected"), [("active", True), ("inactive", False), (None, False)]
+)
+def test_the_camera_started_once_obs_reported_it_active(report, reported, expected):
+    if reported:
+        report.write_text(reported)
+    assert meeting_camera.started() is expected
+
+
+def test_a_stopped_camera_no_longer_counts_as_started(report):
+    report.write_text("active")
+    meeting_camera.stop()
+    assert not meeting_camera.started()

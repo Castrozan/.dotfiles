@@ -16,7 +16,10 @@ globalThis.WebSocket = class {
 };
 let active = false;
 const controls = new rendererModule.RendererControls({}, {
-  cameras: async () => [{ deviceId: "desk", label: "Desk camera" }],
+  cameras: async () => {
+    if (globalThis.devicesUnreadable) throw new Error("Devices are unreadable");
+    return [{ deviceId: "desk", label: "Desk camera" }];
+  },
   enableCamera: async (deviceId) => {
     if (deviceId === "gone") throw new Error("Requested device not found");
     active = true;
@@ -65,3 +68,8 @@ def test_a_camera_choice_answers_with_its_outcome(request_message, message):
         {"type": "cameraResult", "message": message, "id": "choice"}
     ]
 
+
+def test_cameras_that_cannot_be_listed_answer_with_the_reason():
+    assert answers_to(
+        ["(globalThis.devicesUnreadable = true, { type: 'listCameras', id: 'list' })"]
+    ) == [{"type": "cameraResult", "message": "Devices are unreadable", "id": "list"}]

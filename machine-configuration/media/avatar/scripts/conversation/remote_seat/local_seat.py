@@ -44,6 +44,7 @@ WINDOW_PROFILE = pathlib.Path.home() / ".local/share/avatar/window-browser"
 WINDOW_PROFILE_FLAG = f"--user-data-dir={WINDOW_PROFILE}"
 HOLDER_SCRIPT = "remote_seat/seat_holder.py"
 HOLDER_PATH = pathlib.Path(__file__).with_name("seat_holder.py")
+MEETING_PAGE_QUERY = "?meeting"
 TUNNEL_WAIT_SECONDS = 15
 LONGEST_SEAT_SECONDS = 12 * 60 * 60
 COMMAND_TIMEOUT_SECONDS = 30
@@ -152,7 +153,7 @@ def take(query=""):
     leave()
     try:
         subprocess.Popen(
-            [sys.executable, str(HOLDER_PATH)],
+            [sys.executable, str(HOLDER_PATH), query],
             start_new_session=True,
             stdin=subprocess.DEVNULL,
             stdout=subprocess.DEVNULL,
@@ -164,4 +165,3 @@ def take(query=""):
     except BaseException:
         leave()
         raise
-

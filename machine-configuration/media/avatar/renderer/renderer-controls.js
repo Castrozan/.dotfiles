@@ -164,13 +164,13 @@ export class RendererControls {
   }
 
   async reportCameras({ id }) {
-    this.socket.send(
-      JSON.stringify({
-        type: "cameraList",
-        cameras: await this.actions.cameras(),
-        id,
-      }),
-    );
+    let answer;
+    try {
+      answer = { type: "cameraList", cameras: await this.actions.cameras() };
+    } catch (error) {
+      answer = { type: "cameraResult", message: error.message };
+    }
+    this.socket.send(JSON.stringify({ ...answer, id }));
   }
 
   async chooseCamera({ id }, choose) {

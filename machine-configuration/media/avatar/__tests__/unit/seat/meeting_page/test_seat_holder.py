@@ -13,8 +13,9 @@ UNREACHABLE = None
 
 
 class Camera:
-    def __init__(self, running=False):
+    def __init__(self, running=False, started=False):
         self.is_running = running
+        self.has_started = started
         self.starts = 0
         self.stops = 0
         self.start_failure = None
@@ -22,32 +23,36 @@ class Camera:
     def running(self):
         return self.is_running
 
+    def started(self):
+        return self.has_started
+
     def start(self):
         self.starts += 1
+        self.has_started = False
         if self.start_failure:
             raise self.start_failure
-        self.is_running = True
+        self.is_running = self.has_started = True
 
     def stop(self):
         self.stops += 1
-        self.is_running = False
+        self.is_running = self.has_started = False
 
 
-def test_a_camera_that_vanished_during_a_meeting_is_started_again():
-    camera = Camera(running=True)
-    keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
-    camera.is_running = False
-    keeper.look(MEETING)
+def look_each(keeper, *seats):
+    for seat in seats:
+        keeper.look(seat)
+
+
+def test_a_started_camera_that_vanished_during_a_meeting_is_started_again():
+    camera = Camera(running=False, started=True)
+    seat_holder.CameraKeeper(camera).look(MEETING)
     assert camera.starts == 1
     assert camera.is_running
 
 
-def test_a_camera_this_seat_never_saw_running_is_not_started():
-    camera = Camera()
-    keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
-    keeper.look(MEETING)
+def test_a_camera_still_being_started_is_left_to_whoever_starts_it():
+    camera = Camera(running=False, started=False)
+    look_each(seat_holder.CameraKeeper(camera), MEETING, MEETING)
     assert camera.starts == 0
 
 
@@ -56,12 +61,11 @@ def test_a_camera_this_seat_never_saw_running_is_not_started():
     [RuntimeError("OBS did not start"), subprocess.TimeoutExpired("open", 1)],
 )
 def test_a_failed_start_is_reported_and_tried_again_on_the_next_look(failure, capsys):
-    camera = Camera(running=True)
+    camera = Camera(running=False, started=True)
     keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
-    camera.is_running = False
     camera.start_failure = failure
     keeper.look(MEETING)
+    assert not camera.has_started
     camera.start_failure = None
     keeper.look(MEETING)
     assert camera.starts == 2
@@ -69,44 +73,48 @@ def test_a_failed_start_is_reported_and_tried_again_on_the_next_look(failure, ca
     assert str(failure) in capsys.readouterr().err
 
 
-def test_a_meeting_that_ends_on_the_host_stops_the_camera_once():
-    camera = Camera(running=True)
+def test_a_meeting_that_stays_ended_on_the_host_stops_the_camera_once():
+    camera = Camera(running=True, started=True)
     keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
-    keeper.look(NO_MEETING)
-    keeper.look(NO_MEETING)
+    look_each(keeper, MEETING, *[NO_MEETING] * 6)
     assert camera.stops == 1
     assert not camera.is_running
 
 
-def test_a_seat_that_never_held_a_meeting_leaves_every_camera_alone():
-    camera = Camera(running=True)
+def test_a_meeting_that_blinks_keeps_its_camera():
+    camera = Camera(running=True, started=True)
     keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(NO_MEETING)
-    keeper.end_with_the_meeting()
+    look_each(keeper, MEETING, NO_MEETING, NO_MEETING, MEETING, NO_MEETING, NO_MEETING)
     assert camera.stops == 0
+    camera.is_running = False
+    keeper.look(MEETING)
+    assert camera.starts == 1
 
 
 def test_an_unreachable_seat_changes_nothing():
-    camera = Camera(running=True)
-    keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
-    camera.is_running = False
-    keeper.look(UNREACHABLE)
+    camera = Camera(running=False, started=True)
+    look_each(seat_holder.CameraKeeper(camera), *[UNREACHABLE] * 5)
     assert (camera.starts, camera.stops) == (0, 0)
 
 
-@given(st.lists(st.sampled_from([MEETING, NO_MEETING, UNREACHABLE]), max_size=30))
-def test_the_camera_never_runs_after_a_look_that_saw_no_meeting(looks):
-    camera = Camera(running=True)
+SEATS = st.sampled_from([MEETING, NO_MEETING, UNREACHABLE])
+
+
+@given(st.lists(SEATS, max_size=30), st.booleans(), st.booleans())
+def test_the_camera_follows_the_meeting_whatever_the_looks(looks, running, started):
+    camera = Camera(running, started)
     keeper = seat_holder.CameraKeeper(camera)
-    meeting_seen = False
+    missed = 0
     for seat in looks:
+        owed = camera.has_started or keeper.owed
         keeper.look(seat)
-        meeting_seen = meeting_seen or seat is MEETING
-        if seat is NO_MEETING and meeting_seen:
+        if seat is MEETING:
+            missed = 0
+            assert camera.is_running or not owed
+        if seat is NO_MEETING:
+            missed += 1
+        if missed >= seat_holder.LOOKS_WITHOUT_A_MEETING_BEFORE_IT_ENDED:
             assert not camera.is_running
-            meeting_seen = False
 
 
 class Tunnel:
@@ -153,11 +161,17 @@ def test_a_tunnel_that_ends_stops_the_camera_then_closes_the_browsers(seat):
     seat.close_browsers.assert_called_once_with()
 
 
+def test_a_seat_that_ends_before_its_first_look_still_stops_the_camera(seat):
+    seat.open_tunnel(0)
+    camera = Camera(running=True)
+    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
+    assert not camera.is_running
+
+
 def test_a_holder_asked_to_end_still_stops_the_camera_and_the_browsers(seat):
     seat.open_tunnel(5)
     camera = Camera(running=True)
     keeper = seat_holder.CameraKeeper(camera)
-    keeper.look(MEETING)
     seat.health.side_effect = lambda: seat_holder.end_on_request(15, None)
     with pytest.raises(SystemExit):
         seat_holder.hold_seat(keeper)

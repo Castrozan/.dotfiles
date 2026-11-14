@@ -146,6 +146,12 @@ def write_configuration():
 
 def stop():
     local_seat.end_processes_matching(COLLECTION_FLAG, OWNED_INSTANCE_END_SIGNAL)
+    camera_report_path().unlink(missing_ok=True)
+
+
+def started():
+    report = camera_report_path()
+    return report.exists() and report.read_text() == CAMERA_ACTIVE
 
 
 def running():
@@ -173,7 +179,6 @@ def start():
         raise RuntimeError(f"OBS Studio is not installed: {OBS_APPLICATION} is missing")
     write_configuration()
     stop()
-    camera_report_path().unlink(missing_ok=True)
     subprocess.run(
         LAUNCH_COMMAND, check=True, timeout=local_seat.COMMAND_TIMEOUT_SECONDS
     )
