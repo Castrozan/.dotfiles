@@ -72,7 +72,7 @@ silent for it until a card is answered or the report changes. Send it no status 
 notice wakes it.
 
 Message a sub-session only through `orchestrator`, whose notices queue until it is idle; never loop on `a2a send`,
-which refuses a busy peer. Name a session that times out twice running in your round. Restart the watch the moment its
+which interrupts a busy peer mid-turn. Name a session that times out twice running in your round. Restart the watch the moment its
 monitor expires, because a dead watch cannot fire.
 
 ### Deciding as Lucas

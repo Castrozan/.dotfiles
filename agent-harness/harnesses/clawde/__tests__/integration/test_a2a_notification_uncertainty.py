@@ -15,13 +15,15 @@ def publish(fleet, content="result"):
 
 def lose_acknowledgment(fleet, monkeypatch):
     session = fleet.registry.session_named("owned-peer")
-    original = session.backend.send_input_text
+    original = session.backend.send_input_text_when_idle
 
     def accepted_then_error(content):
         original(content)
         raise RuntimeError("synthetic acknowledgment failure after acceptance")
 
-    monkeypatch.setattr(session.backend, "send_input_text", accepted_then_error)
+    monkeypatch.setattr(
+        session.backend, "send_input_text_when_idle", accepted_then_error
+    )
     return session, original
 
 
@@ -48,7 +50,7 @@ def test_delivery_restart_and_rename_keep_uncertainty(
     message = publish(owned_fleet)
     session, original = lose_acknowledgment(owned_fleet, monkeypatch)
     observe_fleet()
-    monkeypatch.setattr(session.backend, "send_input_text", original)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", original)
     owned_fleet.target.status = "idle"
     restarted = type(session.notification_delivery)(
         session.notification_mailbox, session.coordinator
@@ -72,7 +74,7 @@ def test_explicit_ack_recovers_only_selected_message_without_sending(
     message = publish(owned_fleet)
     session, original = lose_acknowledgment(owned_fleet, monkeypatch)
     observe_fleet()
-    monkeypatch.setattr(session.backend, "send_input_text", original)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", original)
     distinct = publish(owned_fleet)
     before = list(owned_fleet.target.commands)
     for _ in range(2):
@@ -99,7 +101,7 @@ def test_distinct_notification_can_deliver_while_uncertain_one_is_quarantined(
     uncertain = publish(owned_fleet)
     session, original = lose_acknowledgment(owned_fleet, monkeypatch)
     observe_fleet()
-    monkeypatch.setattr(session.backend, "send_input_text", original)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", original)
     publish(owned_fleet, "different result")
     owned_fleet.target.status = "idle"
     observe_fleet()
@@ -162,18 +164,18 @@ def test_interrupted_delivery_cannot_replay_after_worker_restart(
 ):
     message = publish(owned_fleet)
     session = owned_fleet.registry.session_named("owned-peer")
-    original = session.backend.send_input_text
+    original = session.backend.send_input_text_when_idle
 
     def interrupted_after_acceptance(content):
         original(content)
         raise KeyboardInterrupt("synthetic worker interruption")
 
     monkeypatch.setattr(
-        session.backend, "send_input_text", interrupted_after_acceptance
+        session.backend, "send_input_text_when_idle", interrupted_after_acceptance
     )
     with pytest.raises(KeyboardInterrupt):
         observe_fleet()
-    monkeypatch.setattr(session.backend, "send_input_text", original)
+    monkeypatch.setattr(session.backend, "send_input_text_when_idle", original)
     owned_fleet.target.status = "idle"
     restarted = type(session.notification_delivery)(
         session.notification_mailbox, session.coordinator

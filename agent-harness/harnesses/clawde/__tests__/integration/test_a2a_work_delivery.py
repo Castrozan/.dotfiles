@@ -5,8 +5,10 @@ from concurrent.futures import ThreadPoolExecutor
 from a2a_test_client import request_json
 
 
-def test_work_dispatch_and_a_busy_target_keep_one_task(owned_fleet):
-    status, first = request_json(
+def test_work_is_dispatched_through_the_native_prompt_and_completes_with_the_turn(
+    owned_fleet,
+):
+    status, task = request_json(
         owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "Enter\nC-c"}
     )
     assert status == 201
@@ -28,17 +30,12 @@ def test_work_dispatch_and_a_busy_target_keep_one_task(owned_fleet):
     ]
     session = owned_fleet.registry.session_named("owned-peer")
     session.backend._last_activity_at_epoch_seconds = time.time() - 60
-    session.task_store.get_task(first["id"]).created_at_epoch_seconds -= 60
+    session.task_store.get_task(task["id"]).created_at_epoch_seconds -= 60
     session.coordinator.observe_once_and_apply_to_active_task()
-    second_status, second = request_json(
-        owned_fleet, "POST", "/agents/owned-peer/tasks/send", {"input": "second"}
-    )
-    assert second_status == 409
-    assert second["id"] == first["id"]
-    assert session.task_store.get_task(first["id"]).state == "working"
+    assert session.task_store.get_task(task["id"]).state == "working"
     owned_fleet.target.status = "idle"
     session.coordinator.observe_once_and_apply_to_active_task()
-    assert session.task_store.get_task(first["id"]).state == "completed"
+    assert session.task_store.get_task(task["id"]).state == "completed"
 
 
 def test_failed_native_prompt_preserves_partial_input_and_releases_the_task(
@@ -98,12 +95,11 @@ def test_pending_delivery_cannot_complete_during_an_observation(transport_packag
         auto_complete_idle_timeout_seconds=0,
     )
     with ThreadPoolExecutor(max_workers=1) as workers:
-        submission = workers.submit(coordinator.submit_new_task_if_idle, "work")
+        submission = workers.submit(coordinator.submit_new_task, "work")
         assert entered_delivery.wait(2)
         try:
             coordinator.observe_once_and_apply_to_active_task()
             assert coordinator.is_holding_an_unfinished_task()
-            assert coordinator.submit_new_task_if_idle("second")[1] is False
         finally:
             release_delivery.set()
-        assert submission.result(timeout=2)[0].state == "working"
+        assert submission.result(timeout=2).state == "working"

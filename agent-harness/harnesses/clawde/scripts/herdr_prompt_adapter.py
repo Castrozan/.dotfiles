@@ -6,6 +6,9 @@ from .backends.base import AgentBusyError, PromptNotSubmitted
 ANSI_STYLE_PATTERN = re.compile(r"\x1b\[([0-9;]*)m")
 PROMPT_PREFIXES = {"codex": "›", "claude": "❯", "opencode": ">"}
 DELIVERY_OBSERVATION_TIMEOUT_MILLISECONDS = 2000
+STATUS_DURING_A_TURN = "working"
+STATUSES_BETWEEN_TURNS = frozenset({"idle", "done"})
+STATUSES_THAT_TAKE_INPUT = STATUSES_BETWEEN_TURNS | {STATUS_DURING_A_TURN}
 
 
 def styled_characters(line: str) -> list[tuple[str, bool]]:
@@ -127,8 +130,16 @@ class HerdrPromptAdapter:
         self._pane_id = pane_id
 
     def submit(self, content: str) -> None:
+        self._submit_to_an_agent_in(STATUSES_THAT_TAKE_INPUT, content)
+
+    def submit_when_idle(self, content: str) -> None:
+        self._submit_to_an_agent_in(STATUSES_BETWEEN_TURNS, content)
+
+    def _submit_to_an_agent_in(
+        self, statuses_that_take_this_input: frozenset[str], content: str
+    ) -> None:
         try:
-            self._check_composer_before_input()
+            self._check_composer_before_input(statuses_that_take_this_input)
         except AgentBusyError:
             raise
         except Exception as error:
@@ -149,23 +160,27 @@ class HerdrPromptAdapter:
             ]
         )
 
-    def _check_composer_before_input(self) -> None:
-        harness = self._ready_harness()
+    def _check_composer_before_input(
+        self, statuses_that_take_this_input: frozenset[str]
+    ) -> None:
+        harness = self._ready_harness(statuses_that_take_this_input)
         if not composer_is_observably_empty(self._capture_composer(), harness):
             raise RuntimeError(
                 "composer_occupied_or_unrecognized; use notify for coordination"
             )
-        if self._ready_harness() != harness:
+        if self._ready_harness(statuses_that_take_this_input) != harness:
             raise RuntimeError("agent_changed_before_submission")
 
-    def _ready_harness(self) -> str | None:
+    def _ready_harness(
+        self, statuses_that_take_this_input: frozenset[str]
+    ) -> str | None:
         pane = herdr_pane_resolution.read_pane_information(self._pane_id)
         status = pane.get("agent_status")
-        if status == "working":
-            raise AgentBusyError("target_busy; use notify for coordination")
-        if status not in {"idle", "done"}:
-            raise RuntimeError("agent_blocked_or_not_ready")
-        return pane.get("agent")
+        if status in statuses_that_take_this_input:
+            return pane.get("agent")
+        if status == STATUS_DURING_A_TURN:
+            raise AgentBusyError("target_busy")
+        raise RuntimeError("agent_blocked_or_not_ready")
 
     def _capture_composer(self) -> str:
         return self._run(

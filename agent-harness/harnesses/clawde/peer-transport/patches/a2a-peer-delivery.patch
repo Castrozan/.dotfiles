@@ -1,114 +1,462 @@
+diff -ruN a/a2a_server/active_task_coordinator.py b/a2a_server/active_task_coordinator.py
+--- a/a2a_server/active_task_coordinator.py
++++ b/a2a_server/active_task_coordinator.py
+@@ -1,7 +1,7 @@
+ import threading
+ import time
+ 
+-from .backends.base import AgentBackend, BackendObservation
++from .backends.base import AgentBackend, AgentBusyError, BackendObservation, PromptNotSubmitted
+ from .task_store import Task, TaskStore
+ 
+ WORKING_TASK_IDLE_TIMEOUT_SECONDS_FOR_AUTO_COMPLETE = 30.0
+@@ -18,95 +18,152 @@
+         self._task_store = task_store
+         self._agent_backend = agent_backend
+         self._auto_complete_idle_timeout_seconds = auto_complete_idle_timeout_seconds
+-        self._active_task_id: str | None = None
+-        self._active_task_target_was_observed_busy = False
++        self._target_was_observed_busy_by_delivered_task_id: dict[str, bool] = {}
++        self._task_ids_awaiting_delivery: set[str] = set()
+         self._lock = threading.Lock()
++        self._delivery_lock = threading.Lock()
+ 
+     def is_holding_an_unfinished_task(self) -> bool:
+         with self._lock:
+-            if self._active_task_id is None:
+-                return False
+-            return not self._task_store.is_task_in_terminal_state(self._active_task_id)
++            return bool(
++                self._target_was_observed_busy_by_delivered_task_id
++                or self._task_ids_awaiting_delivery
++            )
+ 
+-    def submit_new_task_if_idle(self, input_text: str) -> tuple[Task, bool]:
++    def submit_new_task(self, input_text: str) -> Task:
++        new_task = self._task_store.create_task(input_text)
+         with self._lock:
+-            if (
+-                self._active_task_id is not None
+-                and not self._task_store.is_task_in_terminal_state(self._active_task_id)
+-            ):
+-                existing_task = self._task_store.get_task(self._active_task_id)
+-                return existing_task, False
+-            new_task = self._task_store.create_task(input_text)
+-            self._active_task_id = new_task.id
+-            self._active_task_target_was_observed_busy = False
+-            self._task_store.transition_task_state(new_task.id, "working")
+-        self._agent_backend.send_input_text(input_text)
+-        return new_task, True
++            self._task_ids_awaiting_delivery.add(new_task.id)
++        self._task_store.transition_task_state(new_task.id, "working")
++        try:
++            with self._delivery_lock:
++                self._deliver_after_collecting_output_of_earlier_tasks(new_task)
++        finally:
++            with self._lock:
++                self._task_ids_awaiting_delivery.discard(new_task.id)
++        return new_task
+ 
+-    def cancel_active_task_if_matches(self, task_id: str) -> Task | None:
++    def deliver_notification_if_idle(self, input_text: str) -> bool:
++        with self._delivery_lock:
++            if self._delivered_unfinished_task_ids():
++                return False
++            try:
++                self._agent_backend.send_input_text_when_idle(input_text)
++            except (AgentBusyError, PromptNotSubmitted):
++                return False
++            return True
++
++    def cancel_task(self, task_id: str) -> Task | None:
+         with self._lock:
+-            if self._active_task_id != task_id:
++            if task_id not in self._target_was_observed_busy_by_delivered_task_id:
+                 return self._task_store.get_task(task_id)
+-            if self._task_store.is_task_in_terminal_state(task_id):
+-                return self._task_store.get_task(task_id)
++            task_ids_sharing_the_interrupted_turn = list(
++                self._target_was_observed_busy_by_delivered_task_id
++            )
++            self._target_was_observed_busy_by_delivered_task_id.clear()
+         self._agent_backend.cancel_gracefully()
+-        return self._task_store.transition_task_state(task_id, "canceled")
++        for interrupted_task_id in task_ids_sharing_the_interrupted_turn:
++            self._task_store.transition_task_state(interrupted_task_id, "canceled")
++        return self._task_store.get_task(task_id)
+ 
+     def observe_once_and_apply_to_active_task(self) -> None:
+-        self._apply_observation_to_active_task_if_any(self._agent_backend.observe())
++        if not self._delivered_unfinished_task_ids():
++            return
++        self._apply_observation_to_delivered_tasks(self._agent_backend.observe())
+ 
+     def fail_active_task_because_the_target_vanished(self) -> None:
+-        with self._lock:
+-            active_task_id = self._active_task_id
+-        if active_task_id is None:
++        for task_id in self._forget_delivered_tasks(
++            self._delivered_unfinished_task_ids()
++        ):
++            self._task_store.mark_task_failed_with_error_message(
++                task_id, TARGET_VANISHED_ERROR_MESSAGE
++            )
++
++    def _deliver_after_collecting_output_of_earlier_tasks(self, new_task: Task) -> None:
++        self.observe_once_and_apply_to_active_task()
++        try:
++            self._agent_backend.send_input_text(new_task.input_text)
++        except Exception as delivery_failure:
++            self._task_store.mark_task_failed_with_error_message(
++                new_task.id, f"delivery failed: {delivery_failure}"
++            )
+             return
+-        if self._task_store.is_task_in_terminal_state(active_task_id):
+-            return
+-        self._task_store.mark_task_failed_with_error_message(
+-            active_task_id, TARGET_VANISHED_ERROR_MESSAGE
+-        )
++        with self._lock:
++            self._target_was_observed_busy_by_delivered_task_id[new_task.id] = False
+ 
+-    def _apply_observation_to_active_task_if_any(
++    def _delivered_unfinished_task_ids(self) -> list[str]:
++        with self._lock:
++            return list(self._target_was_observed_busy_by_delivered_task_id)
++
++    def _forget_delivered_tasks(self, task_ids: list[str]) -> list[str]:
++        with self._lock:
++            return [
++                task_id
++                for task_id in task_ids
++                if self._target_was_observed_busy_by_delivered_task_id.pop(
++                    task_id, None
++                )
++                is not None
++            ]
++
++    def _apply_observation_to_delivered_tasks(
+         self, observation: BackendObservation
+     ) -> None:
+-        with self._lock:
+-            active_task_id = self._active_task_id
+-        if active_task_id is None:
+-            return
+-        if self._task_store.is_task_in_terminal_state(active_task_id):
+-            return
+-        if observation.raw_output_since_last_call:
+-            self._task_store.append_task_output(
+-                active_task_id, observation.raw_output_since_last_call
+-            )
++        delivered_task_ids = self._delivered_unfinished_task_ids()
++        self._append_output_to_tasks(delivered_task_ids, observation)
+         if not observation.is_alive:
+-            self._task_store.mark_task_failed_with_error_message(
+-                active_task_id, TARGET_VANISHED_ERROR_MESSAGE
+-            )
++            self.fail_active_task_because_the_target_vanished()
+             return
+-        if self._reported_agent_status_says_the_turn_is_over(observation):
+-            self._complete_after_collecting_whatever_settled_last(active_task_id)
++        if observation.agent_is_busy is True:
++            self._remember_the_target_was_observed_busy(delivered_task_ids)
+             return
+-        idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
+-        if idle_for_seconds >= self._auto_complete_idle_timeout_seconds:
+-            self._complete_after_collecting_whatever_settled_last(active_task_id)
++        task_ids_whose_turn_ended = [
++            task_id
++            for task_id in delivered_task_ids
++            if self._the_turn_carrying_the_task_has_ended(task_id, observation)
++        ]
++        self._complete_after_collecting_whatever_settled_last(
++            task_ids_whose_turn_ended
++        )
+ 
++    def _remember_the_target_was_observed_busy(self, task_ids: list[str]) -> None:
++        with self._lock:
++            for task_id in task_ids:
++                if task_id in self._target_was_observed_busy_by_delivered_task_id:
++                    self._target_was_observed_busy_by_delivered_task_id[task_id] = True
++
++    def _the_turn_carrying_the_task_has_ended(
++        self, task_id: str, observation: BackendObservation
++    ) -> bool:
++        with self._lock:
++            target_was_observed_busy = (
++                self._target_was_observed_busy_by_delivered_task_id.get(task_id, False)
++            )
++        if observation.agent_is_busy is False and target_was_observed_busy:
++            return True
++        last_activity_at_epoch_seconds = max(
++            observation.last_activity_at_epoch_seconds,
++            self._task_store.get_task(task_id).created_at_epoch_seconds,
++        )
++        idle_for_seconds = time.time() - last_activity_at_epoch_seconds
++        return idle_for_seconds >= self._auto_complete_idle_timeout_seconds
++
+     def _complete_after_collecting_whatever_settled_last(
+-        self, active_task_id: str
++        self, task_ids: list[str]
+     ) -> None:
+-        final_observation = self._agent_backend.observe()
+-        if final_observation.raw_output_since_last_call:
++        completing_task_ids = self._forget_delivered_tasks(task_ids)
++        if not completing_task_ids:
++            return
++        self._append_output_to_tasks(completing_task_ids, self._agent_backend.observe())
++        for task_id in completing_task_ids:
++            self._task_store.transition_task_state(task_id, "completed")
++
++    def _append_output_to_tasks(
++        self, task_ids: list[str], observation: BackendObservation
++    ) -> None:
++        if not observation.raw_output_since_last_call:
++            return
++        for task_id in task_ids:
+             self._task_store.append_task_output(
+-                active_task_id, final_observation.raw_output_since_last_call
++                task_id, observation.raw_output_since_last_call
+             )
+-        self._task_store.transition_task_state(active_task_id, "completed")
+-
+-    def _reported_agent_status_says_the_turn_is_over(
+-        self, observation: BackendObservation
+-    ) -> bool:
+-        if observation.agent_is_busy is None:
+-            return False
+-        if observation.agent_is_busy:
+-            self._active_task_target_was_observed_busy = True
+-            return False
+-        return self._active_task_target_was_observed_busy
+diff -ruN a/a2a_server/backends/base.py b/a2a_server/backends/base.py
 --- a/a2a_server/backends/base.py
 +++ b/a2a_server/backends/base.py
-@@ -11,0 +12,8 @@
-+
-+
+@@ -11,12 +11,23 @@
+     agent_is_busy: bool | None = None
+ 
+ 
 +class AgentBusyError(RuntimeError):
 +    pass
 +
 +
 +class PromptNotSubmitted(RuntimeError):
 +    """Preflight stopped before any input-producing command was invoked."""
++
++
+ class AgentBackend(abc.ABC):
+     @abc.abstractmethod
+     def start(self) -> None: ...
+ 
+     @abc.abstractmethod
+     def send_input_text(self, text: str) -> None: ...
++
++    @abc.abstractmethod
++    def send_input_text_when_idle(self, text: str) -> None: ...
+ 
+     @abc.abstractmethod
+     def observe(self) -> BackendObservation: ...
+diff -ruN a/a2a_server/backends/herdr_backend.py b/a2a_server/backends/herdr_backend.py
 --- a/a2a_server/backends/herdr_backend.py
 +++ b/a2a_server/backends/herdr_backend.py
-@@ -6,0 +7 @@
+@@ -4,9 +4,9 @@
+ from . import herdr_pane_resolution
+ from .base import AgentBackend, BackendObservation
+ from .meaningful_line_tracking import MeaningfulLineTracker
 +from ..herdr_prompt_adapter import HerdrPromptAdapter
-@@ -9 +9,0 @@
+ 
+ PANE_CAPTURE_LINE_COUNT = 200
 -DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS = 0.25
-@@ -38,3 +38,4 @@
+ AGENT_STATUSES_THAT_MEAN_THE_TURN_IS_STILL_RUNNING = frozenset({"working", "blocked"})
+ AGENT_STATUSES_THAT_MEAN_THE_TURN_HAS_ENDED = frozenset({"idle", "done"})
+ 
+@@ -35,11 +35,13 @@
+         )
+ 
+     def send_input_text(self, text: str) -> None:
 -        herdr_pane_resolution.send_text_to_pane(self._pane_id, text)
 -        time.sleep(DELAY_BETWEEN_TYPING_INPUT_AND_PRESSING_ENTER_SECONDS)
 -        herdr_pane_resolution.send_key_to_pane(self._pane_id, "Enter")
+-        self._last_activity_at_epoch_seconds = time.time()
++        self._submit_from_a_fresh_baseline(HerdrPromptAdapter(self._pane_id).submit, text)
+ 
++    def send_input_text_when_idle(self, text: str) -> None:
++        self._submit_from_a_fresh_baseline(
++            HerdrPromptAdapter(self._pane_id).submit_when_idle, text
++        )
++
+     def observe(self) -> BackendObservation:
+         pane_information = herdr_pane_resolution.read_pane_information(self._pane_id)
+         if not pane_information:
+@@ -69,6 +71,13 @@
+ 
+     def stop(self) -> None:
+         self._meaningful_line_tracker.forget_everything_observed_so_far()
++
++    def _submit_from_a_fresh_baseline(self, submit, text: str) -> None:
 +        self._meaningful_line_tracker.adopt_capture_as_baseline(
 +            self._capture_agent_pane_text()
 +        )
-+        HerdrPromptAdapter(self._pane_id).submit(text)
---- a/a2a_server/active_task_coordinator.py
-+++ b/a2a_server/active_task_coordinator.py
-@@ -4 +4 @@
--from .backends.base import AgentBackend, BackendObservation
-+from .backends.base import AgentBackend, AgentBusyError, BackendObservation, PromptNotSubmitted
-@@ -22,0 +23 @@
-+        self._active_task_delivery_is_pending = False
-@@ -41,0 +43 @@
-+            self._active_task_delivery_is_pending = True
-@@ -43,2 +45,15 @@
--        self._agent_backend.send_input_text(input_text)
--        return new_task, True
-+        delivery_error_message = None
-+        delivery_was_accepted = True
-+        try:
-+            self._agent_backend.send_input_text(input_text)
-+        except Exception as delivery_failure:
-+            delivery_was_accepted = not isinstance(delivery_failure, AgentBusyError)
-+            delivery_error_message = f"delivery failed: {delivery_failure}"
-+        finally:
-+            with self._lock:
-+                if delivery_error_message is not None:
-+                    self._task_store.mark_task_failed_with_error_message(
-+                        new_task.id, delivery_error_message
-+                    )
-+                self._active_task_delivery_is_pending = False
-+        return new_task, delivery_was_accepted
-@@ -73,0 +89,2 @@
-+            if self._active_task_delivery_is_pending:
-+                return
-@@ -90 +107,8 @@
--        idle_for_seconds = time.time() - observation.last_activity_at_epoch_seconds
-+        if observation.agent_is_busy is True:
-+            return
-+        active_task = self._task_store.get_task(active_task_id)
-+        last_activity_at_epoch_seconds = max(
-+            observation.last_activity_at_epoch_seconds,
-+            active_task.created_at_epoch_seconds,
++        submit(text)
++        self._last_activity_at_epoch_seconds = time.time()
+ 
+     def _capture_agent_pane_text(self) -> str:
+         return herdr_pane_resolution.capture_pane_text(
+diff -ruN a/a2a_server/fleet/http_handler.py b/a2a_server/fleet/http_handler.py
+--- a/a2a_server/fleet/http_handler.py
++++ b/a2a_server/fleet/http_handler.py
+@@ -2,6 +2,7 @@
+ import json
+ from typing import Callable
+ 
++from ..peer_notification_mailbox import MAXIMUM_NOTIFICATION_REQUEST_BYTES
+ from .request_router import FleetRequestRouter, json_response
+ 
+ AGENT_PATH_PREFIX = "/agents/"
+@@ -29,6 +30,8 @@
+         peer_name, path_within_agent = agent_scoped_path
+         if path_within_agent == "/.well-known/agent.json":
+             return lambda: router.serve_agent_card(peer_name)
++        if path_within_agent == "/messages":
++            return lambda: router.read_notifications(peer_name)
+         if path_within_agent.startswith("/tasks/"):
+             task_id = path_within_agent[len("/tasks/") :]
+             return lambda: router.get_task(peer_name, task_id)
+@@ -42,6 +45,17 @@
+     if agent_scoped_path is None:
+         return not_found_response
+     peer_name, path_within_agent = agent_scoped_path
++    if path_within_agent == "/messages":
++        return lambda: router.submit_notification(peer_name, request_body_bytes)
++    if path_within_agent.startswith("/messages/") and path_within_agent.endswith(
++        "/ack"
++    ):
++        notification_identifier = path_within_agent[len("/messages/") : -len("/ack")]
++        if not notification_identifier or "/" in notification_identifier:
++            return not_found_response
++        return lambda: router.acknowledge_notification(
++            peer_name, notification_identifier
 +        )
-+        idle_for_seconds = time.time() - last_activity_at_epoch_seconds
---- a/a2a_server/fleet/session.py
-+++ b/a2a_server/fleet/session.py
-@@ -3,0 +4 @@
-+from ..peer_notification_mailbox import PeerNotificationMailbox
-@@ -15,0 +17 @@
-+        notification_mailbox: PeerNotificationMailbox,
-@@ -18,0 +21 @@
-+        self.notification_mailbox = notification_mailbox
+     if path_within_agent == "/tasks/send":
+         return lambda: router.submit_task(peer_name, request_body_bytes)
+     if path_within_agent.startswith("/tasks/") and path_within_agent.endswith(
+@@ -64,6 +78,31 @@
+             self._respond_with_router_result(route_get_request(router, self.path))
+ 
+         def do_POST(self) -> None:
++            agent_scoped_path = split_agent_scoped_path(self.path)
++            if agent_scoped_path is not None and agent_scoped_path[1].startswith(
++                "/messages"
++            ):
++                try:
++                    content_length = int(self.headers.get("Content-Length", "0"))
++                    if (
++                        content_length < 0
++                        or self.headers.get("Transfer-Encoding") is not None
++                    ):
++                        raise ValueError
++                except ValueError:
++                    self.close_connection = True
++                    self._respond_with_router_result(
++                        lambda: json_response(400, {"error": "invalid_content_length"})
++                    )
++                    return
++                if content_length > MAXIMUM_NOTIFICATION_REQUEST_BYTES:
++                    self.close_connection = True
++                    self._respond_with_router_result(
++                        lambda: json_response(
++                            413, {"error": "notification_request_too_large"}
++                        )
++                    )
++                    return
+             self._respond_with_router_result(
+                 route_post_request(router, self.path, self._read_request_body_bytes())
+             )
+diff -ruN a/a2a_server/fleet/observation_loop.py b/a2a_server/fleet/observation_loop.py
+--- a/a2a_server/fleet/observation_loop.py
++++ b/a2a_server/fleet/observation_loop.py
+@@ -34,6 +34,7 @@
+         for session in self._registry.every_session():
+             if session.is_holding_an_unfinished_task():
+                 session.coordinator.observe_once_and_apply_to_active_task()
++            session.notification_delivery.flush_once()
+ 
+     def _run_until_stopped(self) -> None:
+         while not self._should_stop.wait(self._observation_interval_seconds):
+diff -ruN a/a2a_server/fleet/registry.py b/a2a_server/fleet/registry.py
 --- a/a2a_server/fleet/registry.py
 +++ b/a2a_server/fleet/registry.py
-@@ -2,0 +3 @@
+@@ -1,5 +1,6 @@
+ import threading
+ 
 +from ..peer_notification_mailbox import PeerNotificationMailbox
-@@ -32,0 +34,4 @@
+ from .agent_metadata import FleetAgentMetadata
+ from .discovery import DiscoveredAgentPane
+ from .naming import unique_peer_names_by_pane_id
+@@ -30,10 +31,16 @@
+             return
+         peer_name_by_pane_id = unique_peer_names_by_pane_id(panes, tab_labels_by_tab_id)
+         pane_by_peer_name = {peer_name_by_pane_id[pane.pane_id]: pane for pane in panes}
 +        mailboxes_by_pane_id = {
 +            session.pane_id: session.notification_mailbox
 +            for session in self.every_session()
 +        }
-@@ -36 +41,3 @@
+         for session in self._sessions_no_longer_backed_by_a_pane(pane_by_peer_name):
+             self._retire_session(session)
+         for peer_name, pane in pane_by_peer_name.items():
 -            self._adopt_pane_if_not_already_attached(peer_name, pane)
 +            self._adopt_pane_if_not_already_attached(
 +                peer_name, pane, mailboxes_by_pane_id.get(pane.pane_id)
 +            )
-@@ -56 +63,4 @@
+ 
+     def _sessions_no_longer_backed_by_a_pane(
+         self, pane_by_peer_name: dict[str, DiscoveredAgentPane]
+@@ -53,7 +60,10 @@
+         session.stop()
+ 
+     def _adopt_pane_if_not_already_attached(
 -        self, peer_name: str, pane: DiscoveredAgentPane
 +        self,
 +        peer_name: str,
 +        pane: DiscoveredAgentPane,
 +        notification_mailbox: PeerNotificationMailbox | None,
-@@ -64,0 +75,2 @@
+     ) -> None:
+         with self._lock:
+             already_attached = self._sessions_by_peer_name.get(peer_name)
+@@ -62,8 +72,10 @@
+                 and already_attached.pane_id == pane.pane_id
+             ):
+                 return
 +        if notification_mailbox is None:
 +            notification_mailbox = PeerNotificationMailbox(pane.pane_id)
-@@ -66 +78 @@
+         adopted_session = AttachedAgentSession(
 -            peer_name, pane, self._metadata, self._daemon_base_url
 +            peer_name, pane, self._metadata, self._daemon_base_url, notification_mailbox
+         )
+         adopted_session.start()
+         with self._lock:
+diff -ruN a/a2a_server/fleet/request_router.py b/a2a_server/fleet/request_router.py
 --- a/a2a_server/fleet/request_router.py
 +++ b/a2a_server/fleet/request_router.py
-@@ -2,0 +3,4 @@
+@@ -1,5 +1,9 @@
+ import json
+ 
 +from ..peer_notification_mailbox import (
 +    MAXIMUM_NOTIFICATION_REQUEST_BYTES,
 +    PeerNotificationInput,
 +)
-@@ -55,0 +60,2 @@
-+        if was_accepted and task.state == "failed":
-+            return task_response(502, task)
-@@ -56,0 +63,58 @@
-+
+ from ..task_store import Task
+ from .registry import AttachedAgentRegistry
+ 
+@@ -52,9 +56,67 @@
+         )
+         if input_text is None:
+             return json_response(400, {"error": rejection_reason})
+-        task, was_accepted = session.coordinator.submit_new_task_if_idle(input_text)
+-        return task_response(201 if was_accepted else 409, task)
++        task = session.coordinator.submit_new_task(input_text)
++        return task_response(502 if task.state == "failed" else 201, task)
+ 
 +    def submit_notification(
 +        self, peer_name: str, request_body_bytes: bytes
 +    ) -> tuple[int, str, bytes]:
@@ -166,79 +514,59 @@
 +                "acknowledged": True,
 +            },
 +        )
-@@ -95,0 +160,2 @@
++
+     def get_task(self, peer_name: str, task_id: str) -> tuple[int, str, bytes]:
+         session = self._registry.session_named(peer_name)
+         if session is None:
+@@ -68,7 +130,7 @@
+         session = self._registry.session_named(peer_name)
+         if session is None:
+             return self._unknown_agent_response(peer_name)
+-        task = session.coordinator.cancel_active_task_if_matches(task_id)
++        task = session.coordinator.cancel_task(task_id)
+         if task is None:
+             return json_response(404, {"error": "task_not_found"})
+         return task_response(200, task)
+@@ -93,6 +155,8 @@
+             parsed_body = json.loads(request_body_bytes.decode("utf-8"))
+         except (json.JSONDecodeError, UnicodeDecodeError):
+             return None, "invalid_json"
 +        if not isinstance(parsed_body, dict):
 +            return None, "missing_input_field"
---- a/a2a_server/fleet/http_handler.py
-+++ b/a2a_server/fleet/http_handler.py
-@@ -4,0 +5 @@
-+from ..peer_notification_mailbox import MAXIMUM_NOTIFICATION_REQUEST_BYTES
-@@ -31,0 +33,2 @@
-+        if path_within_agent == "/messages":
-+            return lambda: router.read_notifications(peer_name)
-@@ -44,0 +48,11 @@
-+    if path_within_agent == "/messages":
-+        return lambda: router.submit_notification(peer_name, request_body_bytes)
-+    if path_within_agent.startswith("/messages/") and path_within_agent.endswith(
-+        "/ack"
-+    ):
-+        notification_identifier = path_within_agent[len("/messages/") : -len("/ack")]
-+        if not notification_identifier or "/" in notification_identifier:
-+            return not_found_response
-+        return lambda: router.acknowledge_notification(
-+            peer_name, notification_identifier
-+        )
-@@ -66,0 +81,25 @@
-+            agent_scoped_path = split_agent_scoped_path(self.path)
-+            if agent_scoped_path is not None and agent_scoped_path[1].startswith(
-+                "/messages"
-+            ):
-+                try:
-+                    content_length = int(self.headers.get("Content-Length", "0"))
-+                    if (
-+                        content_length < 0
-+                        or self.headers.get("Transfer-Encoding") is not None
-+                    ):
-+                        raise ValueError
-+                except ValueError:
-+                    self.close_connection = True
-+                    self._respond_with_router_result(
-+                        lambda: json_response(400, {"error": "invalid_content_length"})
-+                    )
-+                    return
-+                if content_length > MAXIMUM_NOTIFICATION_REQUEST_BYTES:
-+                    self.close_connection = True
-+                    self._respond_with_router_result(
-+                        lambda: json_response(
-+                            413, {"error": "notification_request_too_large"}
-+                        )
-+                    )
-+                    return
---- a/a2a_server/active_task_coordinator.py
-+++ b/a2a_server/active_task_coordinator.py
-@@ -59,0 +60,13 @@
-+
-+    def deliver_notification_if_idle(self, input_text: str) -> bool:
-+        with self._lock:
-+            if (
-+                self._active_task_id is not None
-+                and not self._task_store.is_task_in_terminal_state(self._active_task_id)
-+            ):
-+                return False
-+            try:
-+                self._agent_backend.send_input_text(input_text)
-+            except (AgentBusyError, PromptNotSubmitted):
-+                return False
-+            return True
+         input_text = parsed_body.get("input")
+         if not isinstance(input_text, str) or not input_text:
+             return None, "missing_input_field"
+diff -ruN a/a2a_server/fleet/session.py b/a2a_server/fleet/session.py
 --- a/a2a_server/fleet/session.py
 +++ b/a2a_server/fleet/session.py
-@@ -3,0 +4 @@
+@@ -1,6 +1,8 @@
+ from ..active_task_coordinator import ActiveTaskCoordinator
+ from ..agent_card import AgentCard, build_agent_card_from_environment
+ from ..backends.herdr_backend import HerdrAttachedAgentBackend
 +from ..peer_notification_delivery import PeerNotificationDelivery
-@@ -29,0 +31,3 @@
++from ..peer_notification_mailbox import PeerNotificationMailbox
+ from ..task_store import TaskStore
+ from .agent_metadata import FleetAgentMetadata
+ from .discovery import DiscoveredAgentPane
+@@ -13,9 +15,11 @@
+         pane: DiscoveredAgentPane,
+         metadata: FleetAgentMetadata,
+         daemon_base_url: str,
++        notification_mailbox: PeerNotificationMailbox,
+     ) -> None:
+         self.peer_name = peer_name
+         self.pane_id = pane.pane_id
++        self.notification_mailbox = notification_mailbox
+         self.harness = pane.harness
+         self.description = metadata.description_for(peer_name, pane.harness)
+         self.backend = HerdrAttachedAgentBackend(
+@@ -24,6 +28,9 @@
+         )
+         self.task_store = TaskStore()
+         self.coordinator = ActiveTaskCoordinator(self.task_store, self.backend)
 +        self.notification_delivery = PeerNotificationDelivery(
 +            notification_mailbox, self.coordinator
 +        )
---- a/a2a_server/fleet/observation_loop.py
-+++ b/a2a_server/fleet/observation_loop.py
-@@ -36,0 +37 @@
-+            session.notification_delivery.flush_once()
+         self.agent_card = self._build_agent_card(daemon_base_url)
+ 
+     def start(self) -> None:
