@@ -49,6 +49,9 @@ printing nothing on silence; 3) `avatar-talk close` when the user says goodbye o
 now", which hands the room back to the wake. When `follow` reports that the room turned to another session, the user
 is talking to that session: stop replying.
 
+Speak each turn as one short sentence in a single `ask` or `say`. Never loop over lines or chain several `say` or
+`speak` calls for one reply: the pieces come out stilted and disjointed.
+
 Talking over the avatar stops it by itself, so the reply still arrives. `avatar-talk hear` keeps waiting without
 speaking, and `avatar-talk say "TEXT" EMOTION` speaks without waiting. Leave the language unpinned, as the user chose:
 each line is detected on its own, so Portuguese, English and Japanese all work. A harness with a background output
