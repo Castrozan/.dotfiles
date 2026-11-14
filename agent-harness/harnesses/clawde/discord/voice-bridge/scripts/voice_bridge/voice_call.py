@@ -2,7 +2,6 @@ import asyncio
 import logging
 import time
 
-
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
 from voice_bridge.speech_synthesis import SPEECH_SAMPLE_RATE
 from voice_bridge.voice_playback import play_audio_stream

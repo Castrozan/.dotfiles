@@ -65,7 +65,8 @@ def make_call(tmp_path):
     channel.connect = AsyncMock(return_value=connection)
     module.ListenerVoiceReceiver = Mock(return_value=Mock(listener_packet_count=0))
     services = SimpleNamespace(
-        ffmpeg="ffmpeg", synthesizer=SpeechSelection([], "voice"),
+        ffmpeg="ffmpeg",
+        synthesizer=SpeechSelection([], "voice"),
         transcribe_audio=lambda audio: "test",
     )
     call = module.VoiceCall(
