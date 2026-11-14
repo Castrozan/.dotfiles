@@ -7,6 +7,8 @@ from voice_bridge.agent_conversations import (
     live_peer,
 )
 
+CONTROL_REQUEST_DEADLINE_SECONDS = 5
+
 
 class ConversationRouter:
     def __init__(self, default_conversation):
@@ -51,9 +53,13 @@ class ConversationRouter:
     async def serve_connection(self, reader, writer):
         try:
             try:
-                request = json.loads(await reader.readline())
+                request = json.loads(
+                    await asyncio.wait_for(
+                        reader.readline(), CONTROL_REQUEST_DEADLINE_SECONDS
+                    )
+                )
                 reply = await self.answer(request)
-            except (ValueError, UnicodeDecodeError):
+            except (ValueError, UnicodeDecodeError, TimeoutError):
                 reply = {"error": "invalid_request"}
             writer.write(json.dumps(reply).encode() + b"\n")
             await writer.drain()

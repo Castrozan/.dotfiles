@@ -140,11 +140,19 @@ class A2AConversation:
         ):
             raise ConversationTurnError("agent_identity_changed")
         endpoint = self._peer["endpoint"]
-        task = await peer_request(
-            submit_task_to_peer,
-            endpoint,
-            signed_input_text(prompt, "discord-voice", {}),
+        submission = asyncio.create_task(
+            peer_request(
+                submit_task_to_peer,
+                endpoint,
+                signed_input_text(prompt, "discord-voice", {}),
+            )
         )
+        try:
+            task = await asyncio.shield(submission)
+        except asyncio.CancelledError:
+            task = await submission
+            await peer_request(cancel_task_on_peer, endpoint, task["id"])
+            raise
         task_identifier = task["id"]
         try:
             async with asyncio.timeout(self._deadline_seconds):
@@ -158,8 +166,11 @@ class A2AConversation:
                 ) from cancellation_error
             if isinstance(error, asyncio.CancelledError):
                 raise
+            reason = (
+                "deadline_exceeded" if isinstance(error, TimeoutError) else str(error)
+            )
             raise ConversationTurnError(
-                f"a2a_task_{task_identifier}_{error}"
+                f"a2a_task_{task_identifier}_{reason}"
             ) from error
 
     async def _finished_reply(self, endpoint, task_identifier):
