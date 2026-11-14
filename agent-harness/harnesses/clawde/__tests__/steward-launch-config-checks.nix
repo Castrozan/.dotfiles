@@ -29,7 +29,7 @@ let
     "buildOneShotTurnCommandFor"
   ];
 
-  stewardHomeConfiguration = helpers.homeManagerTestConfiguration (
+  stewardHomeConfiguration = helpers.homeManagerTestConfigurationForLinuxHost "rin" (
     bothHarnessModules ++ [ ../agents/steward.nix ]
   );
 
@@ -134,40 +134,6 @@ in
         argument: pkgs.lib.hasPrefix "PYTHONPATH=" argument
       ) heartbeatDrivenLaunchConfig.heartbeat_driver_argv)
       "a rebuild regenerates this argv with the new generation's driver script while the supervisor that spawns it keeps the PYTHONPATH it launched with, so a driver relying on the inherited one dies on ModuleNotFoundError the moment a running agent restarts its session, and the watchdog then restart-loops the agent on a widening backoff until the whole supervisor is respawned";
-
-  clawde-the-steward-runs-only-on-codex =
-    mkEvalCheck "clawde-the-steward-runs-only-on-codex"
-      (
-        stewardLaunchConfig.declared_harness == "codex"
-        && stewardLaunchConfig.harness_fallback_chain == [ ]
-        && builtins.attrNames stewardHomeConfiguration.clawde.agents.steward.modelByHarness == [ "codex" ]
-        && pkgs.lib.hasInfix "command codex " stewardLaunchConfig.harness_launch_commands.codex
-      )
-      "the personal steward must use only Codex and must never fall back to a harness that can charge the work account";
-
-  clawde-the-steward-cannot-launch-another-harness =
-    mkEvalCheck "clawde-the-steward-cannot-launch-another-harness"
-      (builtins.all
-        (
-          harnessName:
-          builtins.all (
-            builderName:
-            let
-              builder = cfgWithBothHarnesses.clawde.harnesses.${harnessName}.${builderName};
-            in
-            builder == null
-            ||
-              builder ((launchArgumentsForEffort "high") // { name = "steward"; })
-              == "${pkgs.coreutils}/bin/false"
-          ) commandBuilders
-        )
-        (
-          builtins.filter (harnessName: harnessName != "codex") (
-            builtins.attrNames cfgWithBothHarnesses.clawde.harnesses
-          )
-        )
-      )
-      "manual switches and stale runtime overrides must fail before starting a non-Codex steward in every launch mode";
 
   clawde-every-steward-fallback-is-a-harness-it-can-actually-reach =
     mkEvalCheck "clawde-every-steward-fallback-is-a-harness-it-can-actually-reach"

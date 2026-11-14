@@ -1,5 +1,4 @@
 {
-  config,
   lib,
   hostname,
   inputs,
@@ -7,7 +6,6 @@
   ...
 }:
 let
-  configuredSteward = config.clawde.agents.steward or null;
   stewardPayloadRoot = inputs.clawde.stewardPayloadPath;
   forgeTools = import ./steward/forge-tools.nix { inherit inputs pkgs lib; };
 
@@ -58,19 +56,6 @@ in
     ./steward/cycle
   ];
 
-  assertions = [
-    {
-      assertion =
-        configuredSteward == null
-        || (
-          configuredSteward.harness == "codex"
-          && configuredSteward.harnessFallbackChain == [ ]
-          && builtins.attrNames configuredSteward.modelByHarness == [ "codex" ]
-        );
-      message = "The steward must run only on Codex, without fallback harnesses or non-Codex model overrides.";
-    }
-  ];
-
   home.packages = forgeTools.profilePackages;
   clawde.agentTypes.steward.packages = lib.mkForce forgeTools.packages;
 
@@ -91,10 +76,14 @@ in
 
   clawde.agents.steward = {
     type = "steward";
-    harness = "codex";
-    harnessFallbackChain = [ ];
+    harness = if hostname == "rin" then "codex" else "claude";
+    harnessFallbackChain = lib.optional (hostname != "rin") "codex" ++ [ "opencode" ];
     modelByHarness = {
       codex = "gpt-6.1-terra";
+      opencode = "opencode/ling-3.0-flash-fin-free";
+    }
+    // lib.optionalAttrs (hostname != "rin") {
+      claude = "sonnet";
     };
     reasoningEffort = "high";
     personality = effectivePersonality;

@@ -130,7 +130,14 @@ in
                           buildCommand arguments
                         );
                       in
-                      if arguments.name == "steward" && name != "codex" then
+                      if
+                        hostname == "rin"
+                        && arguments.name == "steward"
+                        && !(builtins.elem name [
+                          "codex"
+                          "opencode"
+                        ])
+                      then
                         "${pkgs.coreutils}/bin/false"
                       else if name == "claude" then
                         "${agentWorkspaceProfile.sessionEnvironmentAssignmentsOf arguments.agent}CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
