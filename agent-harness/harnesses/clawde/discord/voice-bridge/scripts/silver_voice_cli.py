@@ -148,6 +148,7 @@ def parse_arguments(arguments=None):
     agent_parser = commands.add_parser(
         "agent",
         help="Show or select the answering A2A conversation; selection resets on restart.",
+        description="Select a live A2A conversation with native completed-reply capture through Herdr Pace.",
     )
     agent_parser.set_defaults(handler=agent)
     selection = agent_parser.add_mutually_exclusive_group()

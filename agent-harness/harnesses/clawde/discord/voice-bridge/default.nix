@@ -3,6 +3,7 @@
   lib,
   pkgs,
   isNixOS,
+  inputs,
   ...
 }:
 let
@@ -11,6 +12,7 @@ let
   a2aClientScripts = ../../../../agent-to-agent-communication/client/scripts;
   a2aServants = ../../../../servants;
   a2aSessionDetection = ../../../../hooks/runtime/common;
+  pacePackage = inputs.herdr-pace.packages.${pkgs.stdenv.hostPlatform.system}.default;
   transcriberScripts = ../../../../../machine-configuration/media/avatar/scripts/listening;
   jessicaElevenLabsVoice = "cgSgspJ2msm6clMCkdW9";
 
@@ -105,9 +107,10 @@ in
         ExecStart = "${pkgs.python312}/bin/python3 -m voice_bridge.call_conductor";
         Environment = [
           "PATH=/run/wrappers/bin:${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
-          "PYTHONPATH=${scripts}:${a2aClientScripts}:${a2aServants}:${a2aSessionDetection}"
+          "PYTHONPATH=${scripts}:${a2aClientScripts}:${a2aServants}:${a2aSessionDetection}:${pacePackage}/${pkgs.python312.sitePackages}"
           "VOICE_BRIDGE_CONTROL_SOCKET=%t/silver-voice/control.sock"
           "VOICE_CONDUCTOR_CONTROL_SOCKET=%t/silver-voice/conductor.sock"
+          "VOICE_CONDUCTOR_HERDR_SOCKET=${config.xdg.configHome}/herdr/herdr.sock"
           "VOICE_CONDUCTOR_HERMES=${config.hermes.package}/bin/hermes"
         ]
         ++ lib.optional (

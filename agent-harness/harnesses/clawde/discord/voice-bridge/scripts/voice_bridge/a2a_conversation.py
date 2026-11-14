@@ -13,6 +13,7 @@ from a2a_cli.peer_transport import (
 )
 from a2a_cli.sender_identity import signed_input_text
 
+from voice_bridge.captured_reply import completed_reply
 from voice_bridge.conversation_turn import (
     TURN_DEADLINE_SECONDS,
     ConversationTurnError,
@@ -119,8 +120,5 @@ class A2AConversation:
             if task.get("state") in TERMINAL_TASK_STATES:
                 if task["state"] != "completed":
                     raise ConversationTurnError(f"task_{task['state']}")
-                output = task.get("output")
-                if not isinstance(output, str):
-                    raise ConversationTurnError("task_has_no_text_output")
-                return output
+                return await completed_reply(self._peer, task)
             await asyncio.sleep(POLL_INTERVAL_SECONDS)

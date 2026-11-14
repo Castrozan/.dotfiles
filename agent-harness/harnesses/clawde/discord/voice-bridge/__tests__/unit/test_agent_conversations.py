@@ -48,12 +48,17 @@ def peer(session="conversation-1"):
     }
 
 
-def test_a2a_uses_task_output_only_after_terminal_success(monkeypatch):
+def test_a2a_uses_native_completed_reply_instead_of_scraped_terminal_output(
+    monkeypatch,
+):
     selected = peer()
     monkeypatch.setattr(a2a_conversation, "live_peer", AsyncMock(return_value=selected))
     submit = AsyncMock(return_value={"id": "task-1"})
     read = AsyncMock(
-        side_effect=[{"state": "working"}, {"state": "completed", "output": "Hello."}]
+        side_effect=[
+            {"state": "working"},
+            {"state": "completed", "output": "⏺ obsolete⏺ corrected"},
+        ]
     )
     cancel = AsyncMock()
 
@@ -67,8 +72,13 @@ def test_a2a_uses_task_output_only_after_terminal_success(monkeypatch):
 
     monkeypatch.setattr(a2a_conversation, "peer_request", request)
     monkeypatch.setattr(a2a_conversation, "POLL_INTERVAL_SECONDS", 0)
+    capture = AsyncMock(return_value="Hello.")
+    monkeypatch.setattr(a2a_conversation, "completed_reply", capture)
     assert asyncio.run(A2AConversation(selected).reply_to("hello")) == "Hello."
     assert read.await_count == 2
+    capture.assert_awaited_once_with(
+        selected, {"state": "completed", "output": "⏺ obsolete⏺ corrected"}
+    )
     assert submit.call_args.args[1].endswith(" — discord-voice")
     cancel.assert_not_called()
 
