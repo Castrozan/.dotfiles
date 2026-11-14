@@ -27,7 +27,7 @@ def test_what_the_holder_reports_joins_the_seat_log_with_its_time(tmp_path, monk
     log.parent.mkdir(parents=True)
     log.write_text("an earlier seat\n")
     seat_holder.report_to_the_seat_log()
-    seat_holder.CameraKeeper(FailingCamera()).look({"meeting": True})
+    seat_holder.MeetingSeat(FailingCamera()).look({"meeting": True})
     seat_holder.sys.stderr.close()
     earlier, failure = log.read_text().splitlines()
     assert earlier == "an earlier seat"
@@ -37,16 +37,24 @@ def test_what_the_holder_reports_joins_the_seat_log_with_its_time(tmp_path, monk
 
 @pytest.mark.parametrize(
     ("arguments", "camera"),
-    [([], "NoCamera"), ([local_seat.MEETING_PAGE_QUERY], "meeting_camera")],
+    [([], "ConversationSeat"), ([local_seat.MEETING_PAGE_QUERY], "MeetingSeat")],
 )
-def test_the_holder_keeps_the_camera_its_arguments_name(monkeypatch, arguments, camera):
+def test_the_holder_keeps_the_seat_its_arguments_name(monkeypatch, arguments, camera):
     held = Mock()
     monkeypatch.setattr(seat_holder, "hold_seat", held)
     monkeypatch.setattr(seat_holder, "report_to_the_seat_log", Mock())
     monkeypatch.setattr(seat_holder.signal, "signal", Mock())
     seat_holder.main(arguments)
-    kept = held.call_args.args[0].camera
-    assert getattr(kept, "__name__", type(kept).__name__) == camera
+    assert type(held.call_args.args[0]).__name__ == camera
+
+
+def test_a_seat_log_that_cannot_be_opened_leaves_the_holder_reporting_as_before(
+    tmp_path, monkeypatch, capsys
+):
+    (tmp_path / ".local").write_text("not a directory")
+    monkeypatch.setenv("HOME", str(tmp_path))
+    seat_holder.report_to_the_seat_log()
+    assert "Not a directory" in capsys.readouterr().err
 
 
 class FailingCamera:
@@ -63,25 +71,22 @@ class FailingCamera:
         return None
 
 
-def look_each(keeper, *seats):
-    for seat in seats:
-        keeper.look(seat)
-
-
 MEETING = {"meeting": True}
 NO_MEETING = {"meeting": False}
 
 
-def test_a_seat_opened_for_a_conversation_keeps_no_camera(monkeypatch):
+def test_a_seat_opened_for_a_conversation_keeps_no_camera_and_outlives_meetings(
+    monkeypatch,
+):
     for step in ("start", "stop", "running", "started"):
         monkeypatch.setattr(
             seat_holder.meeting_camera, step, Mock(side_effect=AssertionError)
         )
-    keeper = seat_holder.CameraKeeper(seat_holder.camera_of_a_seat_opened_as(""))
-    look_each(keeper, MEETING, MEETING, *[NO_MEETING] * 4)
+    keeper = seat_holder.seat_opened_as("")
+    assert all(keeper.look(seat) for seat in [MEETING, *[NO_MEETING] * 10, None])
     keeper.end()
 
 
 def test_a_seat_opened_for_a_meeting_keeps_the_call_camera():
-    camera = seat_holder.camera_of_a_seat_opened_as(local_seat.MEETING_PAGE_QUERY)
-    assert camera is seat_holder.meeting_camera
+    keeper = seat_holder.seat_opened_as(local_seat.MEETING_PAGE_QUERY)
+    assert keeper.camera is seat_holder.meeting_camera

@@ -1,6 +1,7 @@
 import http.client
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import time
@@ -77,7 +78,7 @@ def meeting_held():
 
 def meeting_seat_kept_here():
     found = subprocess.run(
-        ["/usr/bin/pgrep", "-f", "--", f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}"],
+        ["/usr/bin/pgrep", "-f", "--", re.escape(f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}")],
         capture_output=True,
         check=False,
         timeout=COMMAND_TIMEOUT_SECONDS,

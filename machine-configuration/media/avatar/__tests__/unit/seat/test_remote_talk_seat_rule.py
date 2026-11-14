@@ -1,4 +1,6 @@
 import json
+import subprocess
+import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -124,10 +126,22 @@ def test_a_meeting_seat_kept_here_is_neither_retaken_nor_left_by_a_conversation(
     assert remote_talk.close_everywhere(["close"]) == 0
 
 
-def test_a_meeting_seat_is_found_by_the_holder_told_it_holds_a_meeting(monkeypatch):
+@pytest.mark.parametrize(("query", "kept"), [("?meeting", True), ("", False)])
+def test_a_meeting_seat_is_found_by_the_holder_told_it_holds_a_meeting(
+    monkeypatch, tmp_path, query, kept
+):
     monkeypatch.undo()
-    found = Mock(return_value=SimpleNamespace(returncode=0))
-    monkeypatch.setattr(local_seat.subprocess, "run", found)
-    assert local_seat.meeting_seat_kept_here()
-    pattern = found.call_args.args[0][-1]
-    assert pattern == f"{local_seat.HOLDER_SCRIPT} {local_seat.MEETING_PAGE_QUERY}"
+    holder_script = f"{tmp_path.name}/seat_holder.py"
+    monkeypatch.setattr(local_seat, "HOLDER_SCRIPT", holder_script)
+    waiting = "import time; print(flush=True); time.sleep(30)"
+    holder = subprocess.Popen(
+        [sys.executable, "-c", waiting, f"/{holder_script}", query],
+        stdout=subprocess.PIPE,
+    )
+    holder.stdout.readline()
+    try:
+        assert local_seat.meeting_seat_kept_here() == kept
+    finally:
+        holder.kill()
+        holder.wait()
+        holder.stdout.close()

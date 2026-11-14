@@ -49,7 +49,7 @@ def test_the_holder_looks_once_per_round_while_the_tunnel_stays_open(seat):
 def test_a_tunnel_that_ends_stops_the_camera_then_closes_the_browsers(seat):
     seat.open_tunnel(1)
     camera = Mock()
-    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
+    seat_holder.hold_seat(seat_holder.MeetingSeat(camera))
     camera.stop.assert_called_once_with()
     seat.close_browsers.assert_called_once_with()
 
@@ -57,14 +57,14 @@ def test_a_tunnel_that_ends_stops_the_camera_then_closes_the_browsers(seat):
 def test_a_seat_that_ends_before_its_first_look_still_stops_the_camera(seat):
     seat.open_tunnel(0)
     camera = Mock()
-    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
+    seat_holder.hold_seat(seat_holder.MeetingSeat(camera))
     camera.stop.assert_called_once_with()
 
 
 def test_a_holder_asked_to_end_still_stops_the_camera_and_the_browsers(seat):
     seat.open_tunnel(5)
     camera = Mock()
-    keeper = seat_holder.CameraKeeper(camera)
+    keeper = seat_holder.MeetingSeat(camera)
     seat.health.side_effect = lambda: seat_holder.end_on_request(15, None)
     with pytest.raises(SystemExit):
         seat_holder.hold_seat(keeper)
@@ -77,7 +77,17 @@ def test_a_camera_that_cannot_be_stopped_still_lets_the_browsers_close(seat):
     seat.open_tunnel(0)
     camera = Mock()
     camera.stop.side_effect = OSError("pkill is missing")
-    seat_holder.hold_seat(seat_holder.CameraKeeper(camera))
+    seat_holder.hold_seat(seat_holder.MeetingSeat(camera))
+    seat.close_browsers.assert_called_once_with()
+
+
+def test_a_meeting_that_ended_on_the_host_ends_the_holder_and_its_camera(seat):
+    seat.open_tunnel(20)
+    seat.health.return_value = {"meeting": False}
+    camera = Mock()
+    seat_holder.hold_seat(seat_holder.MeetingSeat(camera))
+    assert seat.health.call_count == seat_holder.LOOKS_WITHOUT_A_MEETING_BEFORE_IT_ENDED
+    camera.stop.assert_called_once_with()
     seat.close_browsers.assert_called_once_with()
 
 
