@@ -4,6 +4,8 @@ import subprocess
 
 from herdr_pane_client import belongs_to_a_subagent, running_inside_a_herdr_pane
 
+COLD_START_CAPTURE_DEADLINE_SECONDS = 4
+
 
 def _capture_payload(hook_input):
     capture_fields = (
@@ -24,7 +26,7 @@ def _run_capture(command, payload):
             text=True,
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
-            timeout=0.5,
+            timeout=COLD_START_CAPTURE_DEADLINE_SECONDS,
         )
     except (OSError, subprocess.TimeoutExpired):
         pass

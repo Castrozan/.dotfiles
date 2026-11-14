@@ -41,7 +41,7 @@ in
     beforeSubmitPrompt = [ (registration "UserPromptSubmit" 5) ];
     preToolUse = [ ((registration "PreToolUse" 10) // { matcher = ".*"; }) ];
     postToolUse = [ ((registration "PostToolUse" 15) // { matcher = "Skill|Edit|Write"; }) ];
-    stop = [ (registration "Stop" 5) ];
+    stop = [ (registration "Stop" 15) ];
     subagentStop = [ (registration "SubagentStop" 5) ];
     permissionRequest = [
       {

@@ -30,7 +30,7 @@ def test_capture_passes_only_completed_reply_fields(capture_calls):
     assert arguments[0] == ["/plugin/bin/herdr-pace", "capture"]
     assert "Ready." in options["input"]
     assert "tool_input" not in options["input"]
-    assert options["timeout"] == 0.5
+    assert options["timeout"] == capture.COLD_START_CAPTURE_DEADLINE_SECONDS
 
 
 def test_subagent_reply_is_not_captured(capture_calls):
@@ -64,8 +64,9 @@ def test_only_accepted_stop_replies_are_captured(monkeypatch, decision, captured
     monkeypatch.setattr(
         dispatcher,
         "run_handlers",
-        lambda payload, handlers, surface: calls.append(handlers)
-        or SimpleNamespace(decision=decision),
+        lambda payload, handlers, surface: (
+            calls.append(handlers) or SimpleNamespace(decision=decision)
+        ),
     )
     monkeypatch.setattr(dispatcher, "emit_stop_decision", lambda outcome: None)
     with pytest.raises(SystemExit):

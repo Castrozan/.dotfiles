@@ -22,7 +22,7 @@ def verify(path, surface):
     dispatchers["UserPromptSubmit"] = "user-prompt-submit-dispatcher.py"
     expected = set(timeouts)
     if surface == "claude":
-        timeouts |= {"PreToolUse": 10, "Stop": 5, "SubagentStop": 5}
+        timeouts |= {"PreToolUse": 10, "SubagentStop": 5}
         dispatchers["SubagentStop"] = "stop-dispatcher.py"
         expected |= {"SubagentStop", "PermissionRequest"}
     else:
