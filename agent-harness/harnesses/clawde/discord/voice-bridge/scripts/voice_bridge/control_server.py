@@ -28,7 +28,11 @@ class ControlServer:
 
     async def serve_connection(self, reader, writer):
         try:
-            request = json.loads(await reader.readline())
+            request = json.loads(await asyncio.wait_for(reader.readline(), timeout=5))
+            if not isinstance(request, dict) or not isinstance(
+                request.get("command"), str
+            ):
+                raise ValueError("invalid_request")
             if request["command"] == "follow":
                 await self._stream_transcript(request, writer)
             else:
@@ -36,6 +40,9 @@ class ControlServer:
                 await writer.drain()
         except (ConnectionError, asyncio.IncompleteReadError):
             logger.debug("control client went away")
+        except (ValueError, KeyError, TypeError, TimeoutError):
+            writer.write(encoded_line({"error": "invalid_request"}))
+            await writer.drain()
         finally:
             writer.close()
 
@@ -49,7 +56,10 @@ class ControlServer:
             return {"error": str(error)}
 
     async def _join(self, _request):
-        return await self._call.join()
+        return await self._call.join(
+            preferred=_request.get("preferred"),
+            follow=_request.get("follow_listener") is True,
+        )
 
     async def _leave(self, _request):
         await self._call.leave()
@@ -59,7 +69,9 @@ class ControlServer:
         return self._call.status()
 
     async def _speak(self, request):
-        return await self._call.speak(request["text"], request["language"])
+        return await self._call.speak(
+            request["text"], request["language"], request.get("generation")
+        )
 
     async def _catalog(self, _request):
         return self._call.capabilities()

@@ -3,6 +3,7 @@
   lib,
   pkgs,
   isNixOS,
+  hostname,
   inputs,
   ...
 }:
@@ -19,6 +20,31 @@ let
     import ../../../../../machine-configuration/media/avatar/cast/character-voices.nix
       { inherit pkgs; };
 
+  identitySpecifications = pkgs.writeText "discord-voice-identities.json" (
+    builtins.toJSON (
+      [
+        {
+          name = "primary";
+          tokenFile = "${config.home.homeDirectory}/.secrets/${bridgeSettings.botTokenSecretName}";
+          ownerHost = hostname;
+          listenerUserId = bridgeSettings.listenerDiscordUserId;
+          guildId = bridgeSettings.answeredGuildId;
+          preferredAgent = bridgeSettings.conversationProfile;
+        }
+      ]
+      ++ lib.mapAttrsToList (name: identity: {
+        inherit name;
+        tokenFile = "${config.home.homeDirectory}/.secrets/${identity.botTokenSecretName}";
+        inherit (identity)
+          ownerHost
+          listenerUserId
+          guildId
+          preferredAgent
+          ;
+      }) config.clawdeDiscordVoiceIdentities
+    )
+  );
+
   silverVoice = pkgs.writeShellScriptBin "silver-voice" ''
     exec ${pkgs.python312}/bin/python3 ${scripts}/silver_voice_cli.py "$@"
   '';
@@ -27,6 +53,24 @@ let
   '';
 in
 {
+  options.clawdeDiscordVoiceIdentities = lib.mkOption {
+    type = lib.types.attrsOf (
+      lib.types.submodule {
+        options = {
+          botTokenSecretName = lib.mkOption { type = lib.types.str; };
+          ownerHost = lib.mkOption { type = lib.types.str; };
+          listenerUserId = lib.mkOption { type = lib.types.str; };
+          guildId = lib.mkOption { type = lib.types.str; };
+          preferredAgent = lib.mkOption {
+            type = lib.types.nullOr lib.types.str;
+            default = null;
+          };
+        };
+      }
+    );
+    default = { };
+    description = "Explicit bot voice grants, fenced to one owning host, listener and guild.";
+  };
   options.clawdeDiscordVoiceBridge = lib.mkOption {
     type = lib.types.nullOr (
       lib.types.submodule {
@@ -88,7 +132,8 @@ in
           "VOICE_BRIDGE_CONTROL_SOCKET=%t/silver-voice/control.sock"
           "VOICE_BRIDGE_LISTENER_USER_ID=${bridgeSettings.listenerDiscordUserId}"
           "VOICE_BRIDGE_ANSWERED_GUILD_ID=${bridgeSettings.answeredGuildId}"
-          "VOICE_BRIDGE_TOKEN_FILE=%h/.secrets/${bridgeSettings.botTokenSecretName}"
+          "VOICE_BRIDGE_IDENTITIES=${identitySpecifications}"
+          "VOICE_BRIDGE_HOST=${hostname}"
           "VOICE_BRIDGE_CLOUD_VOICE=${jessicaElevenLabsVoice}"
           "VOICE_BRIDGE_CHARACTER_CATALOG=${characterVoices}"
         ];

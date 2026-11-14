@@ -59,20 +59,52 @@ def control_bridge_service(action):
     subprocess.run(["systemctl", "--user", action, BRIDGE_SERVICE], check=True)
 
 
-def request_join():
+def request_join(preferred=None, follow_listener=False):
     deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
     while True:
         try:
-            return request_once(command="join")
+            result = request_once(
+                command="join", preferred=preferred, follow_listener=follow_listener
+            )
+            if result.get("error") != "no_eligible_available_bot_for_listener":
+                return result
+            state = request_once(command="status")
+            if (
+                any(identity["ready"] for identity in state["identities"])
+                or time.monotonic() >= deadline
+            ):
+                return result
+            time.sleep(JOIN_RETRY_SECONDS)
         except (FileNotFoundError, ConnectionRefusedError):
             if time.monotonic() >= deadline:
                 return {"error": "bridge_did_not_start"}
             time.sleep(JOIN_RETRY_SECONDS)
 
 
-def join(_arguments):
+def join(arguments):
     control_bridge_service("start")
-    return request_join()
+    deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
+    while True:
+        try:
+            conversation = request_once(
+                socket_path=CONDUCTOR_SOCKET,
+                **(
+                    {"command": "agent", "target": arguments.agent, "default": False}
+                    if arguments.agent
+                    else {"command": "status"}
+                ),
+            )
+            break
+        except (FileNotFoundError, ConnectionRefusedError):
+            if time.monotonic() >= deadline:
+                return {"error": "conductor_did_not_start"}
+            time.sleep(JOIN_RETRY_SECONDS)
+    if "error" in conversation:
+        return conversation
+    result = request_join(
+        arguments.bot or arguments.agent or "primary", arguments.follow_listener
+    )
+    return {**result, "conversation": conversation}
 
 
 def leave(_arguments):
@@ -130,11 +162,26 @@ def parse_arguments(arguments=None):
         description="Carry an authorized listener's speech and agent replies through Discord voice.",
     )
     commands = parser.add_subparsers(dest="command", required=True)
+    join_parser = commands.add_parser(
+        "join",
+        aliases=["join-me"],
+        help="Join using an available authorized bot and the configured or explicit answering agent.",
+    )
+    join_parser.set_defaults(handler=join)
+    join_parser.add_argument(
+        "--bot", help="Preferred configured bot; never replaces an owned active call."
+    )
+    join_parser.add_argument(
+        "--agent",
+        help="Answering live A2A peer; otherwise the current configured responder is reported.",
+    )
+    join_parser.add_argument(
+        "--follow-listener",
+        action="store_true",
+        help="Explicitly follow the listener between allowed voice channels until leave.",
+    )
     commands.add_parser(
-        "join", help="Join the voice channel the listener is in."
-    ).set_defaults(handler=join)
-    commands.add_parser(
-        "leave", help="Leave the call; the bridge keeps watching for the next one."
+        "leave", help="Leave the call and disable automatic following."
     ).set_defaults(handler=leave)
     commands.add_parser("status", help="Report the call as JSON.").set_defaults(
         handler=status

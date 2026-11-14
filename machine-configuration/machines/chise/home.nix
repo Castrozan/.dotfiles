@@ -21,6 +21,7 @@ in
     ../../audio/audio-home-manager.nix
     ../../../agent-harness/harnesses/claude-code
     ../../../agent-harness/harnesses/clawde
+    ../../../agent-harness/harnesses/clawde/discord/voice-bridge/chise-home-manager.nix
     ../../../agent-harness/harnesses/codex
     ../../desktop/desktop-environments/gnome/gnome-home-manager.nix
     ../../home-automation/home-assistant/home-assistant-home-manager.nix

@@ -15,6 +15,7 @@ from voice_bridge.speech_synthesis import SpeechSelection
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
 from voice_bridge.voice_call import VoiceCall
+from voice_identity import VoiceIdentity, VoiceIdentityPool, identity_specifications
 
 
 @dataclass(frozen=True)
@@ -33,13 +34,30 @@ def discord_client():
 
 async def run_bridge():
     environment = os.environ
-    client = discord_client()
     feed = TranscriptFeed()
     ffmpeg = environment["VOICE_BRIDGE_FFMPEG"]
     control_socket = Path(environment["VOICE_BRIDGE_CONTROL_SOCKET"])
     listener_user_id = int(environment["VOICE_BRIDGE_LISTENER_USER_ID"])
+    specifications = identity_specifications(
+        json.loads(Path(environment["VOICE_BRIDGE_IDENTITIES"]).read_text()),
+        environment["VOICE_BRIDGE_HOST"],
+        listener_user_id,
+        int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
+    )
+    identities = VoiceIdentityPool(
+        [
+            VoiceIdentity(
+                specification["name"],
+                discord_client(),
+                specification["tokenFile"],
+                specification.get("preferredAgent"),
+            )
+            for specification in specifications
+        ],
+        control_socket.parent.parent / "discord-voice-identities",
+    )
     call = VoiceCall(
-        client,
+        identities,
         listener_user_id,
         int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
         CallAudioServices(
@@ -55,37 +73,63 @@ async def run_bridge():
         feed,
     )
 
-    @client.event
-    async def on_ready():
-        await call.follow_listener()
+    control = ControlServer(call, feed)
+    server = await asyncio.start_unix_server(
+        control.serve_connection, path=control_socket
+    )
+    control_socket.chmod(0o600)
 
-    @client.event
-    async def on_voice_state_update(member, before, after):
-        if member.id == listener_user_id and before.channel != after.channel:
+    claimed_bot_ids = set()
+
+    async def run_identity(identity):
+        client = identity.client
+
+        @client.event
+        async def on_ready():
             await call.follow_listener()
 
-    control = ControlServer(call, feed)
+        @client.event
+        async def on_voice_state_update(member, before, after):
+            if member.id == listener_user_id and before.channel != after.channel:
+                await call.follow_listener()
+            if member.id == client.user.id and before.channel != after.channel:
+                call.observe_bot_movement(identity)
 
-    async def serve_when_ready(reader, writer):
-        await client.wait_until_ready()
-        await control.serve_connection(reader, writer)
+        try:
+            async with asyncio.timeout(30):
+                await client.login(Path(identity.token_file).read_text().strip())
+            if client.user.id in claimed_bot_ids:
+                identity.error = "duplicate_bot_identity"
+                return
+            claimed_bot_ids.add(client.user.id)
+            await client.connect()
+        except Exception as error:
+            identity.error = f"identity_unavailable_{type(error).__name__}"
+            logging.warning(
+                "Discord identity %s unavailable: %s",
+                identity.name,
+                type(error).__name__,
+            )
+        finally:
+            await client.close()
 
-    await client.login(Path(environment["VOICE_BRIDGE_TOKEN_FILE"]).read_text().strip())
-    server = await asyncio.start_unix_server(serve_when_ready, path=control_socket)
     stop_requested = asyncio.Event()
     loop = asyncio.get_running_loop()
     for stop_signal in (signal.SIGTERM, signal.SIGINT):
         loop.add_signal_handler(stop_signal, stop_requested.set)
-    client_task = asyncio.create_task(client.connect())
-    stop_task = asyncio.create_task(stop_requested.wait())
-    finished, _pending = await asyncio.wait(
-        {client_task, stop_task}, return_when=asyncio.FIRST_COMPLETED
-    )
-    server.close()
-    await call.leave()
-    await client.close()
-    if client_task in finished:
-        client_task.result()
+    client_tasks = [
+        asyncio.create_task(run_identity(identity))
+        for identity in identities.identities
+    ]
+    try:
+        await stop_requested.wait()
+    finally:
+        server.close()
+        await server.wait_closed()
+        await call.leave()
+        for task in client_tasks:
+            task.cancel()
+        await asyncio.gather(*client_tasks, return_exceptions=True)
 
 
 def main():

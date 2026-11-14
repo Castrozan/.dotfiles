@@ -9,6 +9,7 @@ from voice_bridge.call_conductor import (
     answer_spoken_lines,
     reply_worth_speaking,
     spoken_turn_prompt,
+    drained_spoken_lines,
 )
 from voice_bridge.conversation_turn import ConversationTurnError
 from voice_bridge.hermes_conversation import final_reply_from_turn_events
@@ -18,10 +19,11 @@ def conversation_outcome(queued_lines, reply_to):
     async def scenario():
         pending_lines = asyncio.Queue()
         for line in queued_lines:
-            pending_lines.put_nowait(line)
+            pending_lines.put_nowait({"text": line, "generation": "current"})
         spoken = []
 
-        async def speak(text):
+        async def speak(text, generation):
+            assert generation == "current"
             spoken.append(text)
 
         answering = asyncio.create_task(
@@ -89,3 +91,12 @@ def test_an_empty_reply_is_not_spoken():
 
 def test_the_prompt_tells_silver_how_to_stay_silent():
     assert STAY_SILENT_REPLY in spoken_turn_prompt(["oi"])
+
+
+def test_pending_lines_from_prior_call_are_not_combined_with_new_call():
+    pending = asyncio.Queue()
+    current = {"text": "new call", "generation": "new"}
+    pending.put_nowait(current)
+    assert drained_spoken_lines({"text": "old call", "generation": "old"}, pending) == [
+        current
+    ]

@@ -50,16 +50,21 @@ class BridgeControl:
         await writer.drain()
         try:
             while line := await reader.readline():
-                text = json.loads(line).get("text")
-                if text:
-                    yield text
+                utterance = json.loads(line)
+                if utterance.get("text") and utterance.get("generation"):
+                    yield utterance
         finally:
             writer.close()
             await writer.wait_closed()
 
-    async def speak(self, text):
+    async def speak(self, text, generation):
         reader, writer = await self._connected()
-        request = {"command": "speak", "text": text, "language": SPEECH_LANGUAGE}
+        request = {
+            "command": "speak",
+            "text": text,
+            "language": SPEECH_LANGUAGE,
+            "generation": generation,
+        }
         try:
             writer.write(json.dumps(request).encode() + b"\n")
             await writer.drain()
@@ -75,7 +80,8 @@ def drained_spoken_lines(first_line, pending_lines):
     spoken_lines = [first_line]
     while not pending_lines.empty():
         spoken_lines.append(pending_lines.get_nowait())
-    return spoken_lines
+    generation = spoken_lines[-1]["generation"]
+    return [line for line in spoken_lines if line["generation"] == generation]
 
 
 async def collect_spoken_lines(transcript_lines, pending_lines):
@@ -87,12 +93,14 @@ async def answer_spoken_lines(pending_lines, reply_to, speak):
     while True:
         spoken_lines = drained_spoken_lines(await pending_lines.get(), pending_lines)
         try:
-            reply = await reply_to(spoken_turn_prompt(spoken_lines))
+            reply = await reply_to(
+                spoken_turn_prompt([line["text"] for line in spoken_lines])
+            )
         except ConversationTurnError as error:
             logger.warning("agent turn failed: %s", error)
             reply = FAILED_TURN_APOLOGY
         if reply_worth_speaking(reply):
-            await speak(reply)
+            await speak(reply, spoken_lines[-1]["generation"])
 
 
 async def conduct_call():
