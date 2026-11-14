@@ -62,18 +62,27 @@ class VoiceIdentityPool:
                 identity.name,
             ),
         ):
-            if identity.error or not identity.client.is_ready():
-                continue
-            guild = identity.client.get_guild(guild_id)
-            if guild is None or guild.me is None:
-                continue
-            if guild.me.voice and guild.me.voice.channel is not None:
-                continue
-            for channel in guild.voice_channels:
-                if listener_user_id not in channel.voice_states:
-                    continue
-                if channel_refusal(channel, guild.me) is None:
-                    yield identity, channel
+            channel, refusal = self.eligibility(identity, listener_user_id, guild_id)
+            if refusal is None:
+                yield identity, channel
+
+    def eligibility(self, identity, listener_user_id, guild_id):
+        if identity.error or not identity.client.is_ready():
+            return None, identity.error or "identity_not_ready"
+        guild = identity.client.get_guild(guild_id)
+        if guild is None or guild.me is None:
+            return None, "bot_not_in_allowed_guild"
+        if guild.me.voice and guild.me.voice.channel is not None:
+            return (
+                None,
+                "owned_call"
+                if identity.lease is not None
+                else "bot_voice_connection_in_use",
+            )
+        for channel in guild.voice_channels:
+            if listener_user_id in channel.voice_states:
+                return channel, channel_refusal(channel, guild.me)
+        return None, "listener_not_in_allowed_voice_channel"
 
     def reserve(self, identity):
         self._lease_directory.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -91,7 +100,7 @@ class VoiceIdentityPool:
             identity.lease.close()
             identity.lease = None
 
-    def status(self):
+    def status(self, listener_user_id, guild_id):
         return [
             {
                 "name": identity.name,
@@ -101,6 +110,9 @@ class VoiceIdentityPool:
                 "ready": identity.client.is_ready() and identity.error is None,
                 "error": identity.error,
                 "owned": identity.lease is not None,
+                "unavailable_reason": self.eligibility(
+                    identity, listener_user_id, guild_id
+                )[1],
             }
             for identity in self.identities
         ]

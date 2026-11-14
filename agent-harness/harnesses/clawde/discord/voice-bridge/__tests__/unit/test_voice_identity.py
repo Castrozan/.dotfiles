@@ -76,6 +76,19 @@ def test_failed_offline_busy_and_denied_identities_are_not_candidates(tmp_path):
     assert [identity.name for identity, _ in pool.candidates(42, 1)] == ["available"]
 
 
+def test_unavailable_reasons_match_actual_selection_rules(tmp_path):
+    identity, channel = make_identity("primary", allowed=False)
+    pool = VoiceIdentityPool([identity], tmp_path)
+    assert pool.status(42, 1)[0]["unavailable_reason"] == "missing_voice_permissions"
+    assert pool.status(42, 2)[0]["unavailable_reason"] == "bot_not_in_allowed_guild"
+    assert (
+        pool.status(99, 1)[0]["unavailable_reason"]
+        == "listener_not_in_allowed_voice_channel"
+    )
+    identity.client.is_ready.return_value = False
+    assert pool.status(42, 1)[0]["unavailable_reason"] == "identity_not_ready"
+
+
 def test_local_lease_is_by_bot_user_id_and_released_after_use(tmp_path):
     first = make_identity("first")[0]
     second = make_identity("other")[0]

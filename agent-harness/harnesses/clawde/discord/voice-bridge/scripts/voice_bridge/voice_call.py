@@ -49,7 +49,9 @@ class VoiceCall:
             "generation": self._generation,
             "following": self._following,
             "bot": self._identity.name if self._identity else None,
-            "identities": self._identities.status(),
+            "identities": self._identities.status(
+                self._listener_user_id, self._answered_guild_id
+            ),
             "channel_id": str(channel.id) if channel else None,
             "guild_id": str(channel.guild.id) if channel else None,
             "channel": channel.name if channel else None,
