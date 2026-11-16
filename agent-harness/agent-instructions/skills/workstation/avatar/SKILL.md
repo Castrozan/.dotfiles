@@ -82,7 +82,9 @@ earbuds. Otherwise it sits in chise's room, like every conversation opened on ch
 printed `seat` says which one you got: with `room` from a Mac, the user hears you only beside chise.
 
 Saying a greeting and your Servant name near a Mac wakes your session there too and seats the conversation at that
-Mac. Naming another Servant mid-conversation moves the room wherever the conversation sits.
+Mac. Naming another Servant mid-conversation moves the room wherever the conversation sits. The wake runs on chise
+and on each Mac at all times, comes back by itself when it ends, and `avatar-stop` leaves it running: never start one
+by hand, and stop it only when the user asks.
 
 `show` and `hide` from a Mac holding the seat open and close the avatar window on that Mac. `open --live` works from a
 Mac too: its tasks reach your session there, and the seat rule above decides where the voice is heard.
