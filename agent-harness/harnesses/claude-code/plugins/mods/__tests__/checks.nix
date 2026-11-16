@@ -1,4 +1,5 @@
 {
+  pkgs,
   lib,
   mkEvalCheck,
   helpers,
@@ -15,6 +16,9 @@ let
   interactiveLauncher = builtins.readFile "${cfg.claude.package}/bin/claude";
 
   retirementActivation = cfg.home.activation.removeRetiredClaudeMarketplaces;
+
+  hostInteractiveSessionModsDirectory =
+    (import ../. { inherit pkgs; }).interactiveSessionModsDirectory;
 in
 {
   claude-dotfiles-is-the-only-enabled-plugin =
@@ -30,6 +34,13 @@ in
     mkEvalCheck "claude-interactive-launcher-loads-the-mods-directory"
       (lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfg.claude.interactiveSessionModsDirectory}" interactiveLauncher)
       "the interactive mods have no marketplace, so the launcher flag is the only thing that loads them into a keyboard session";
+
+  claude-cache-tax-writes-no-transcript-messages =
+    pkgs.runCommandLocal "claude-cache-tax-writes-no-transcript-messages" { }
+      ''
+        ! grep -n '$.ui.log(' ${hostInteractiveSessionModsDirectory}/cache-tax/hooks/register.ts
+        touch "$out"
+      '';
 
   claude-interactive-settings-enable-no-plugin =
     mkEvalCheck "claude-interactive-settings-enable-no-plugin"

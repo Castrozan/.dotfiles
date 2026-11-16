@@ -10,5 +10,7 @@ pkgs.applyPatches {
   patches = [
     ./patches/delta-plugin-without-status-band.patch
     ./patches/delta-prompt-runs-when-recording-unready.patch
+    ./patches/delta-held-store-lock-never-drops-prompts.patch
+    ./patches/delta-runs-in-background-only.patch
   ];
 }

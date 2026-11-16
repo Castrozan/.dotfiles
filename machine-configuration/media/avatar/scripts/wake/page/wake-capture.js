@@ -1,33 +1,11 @@
-import { chooseMicrophone } from "/microphone-choice.js";
+import { openMicrophone } from "/seat-microphone.js";
 
 const MICROPHONE_RATE = 16000;
 const WORKLETS = "/seat-audio-worklets.js";
 const state = document.getElementById("state");
 
-function requestMicrophone(deviceId) {
-  return navigator.mediaDevices.getUserMedia({
-    audio: {
-      channelCount: 1,
-      echoCancellation: true,
-      noiseSuppression: true,
-      autoGainControl: true,
-      ...(deviceId && { deviceId: { exact: deviceId } }),
-    },
-  });
-}
-
 function stopTracks(stream) {
   for (const track of stream.getTracks()) track.stop();
-}
-
-async function openMicrophone() {
-  const defaultMicrophone = await requestMicrophone();
-  const chosen = chooseMicrophone(
-    await navigator.mediaDevices.enumerateDevices(),
-  );
-  if (chosen === null) return defaultMicrophone;
-  stopTracks(defaultMicrophone);
-  return requestMicrophone(chosen);
 }
 
 async function openAudioGraph() {
@@ -38,7 +16,7 @@ async function openAudioGraph() {
 }
 
 async function captureForTheWake() {
-  const microphone = await openMicrophone();
+  const microphone = await openMicrophone(navigator.mediaDevices);
   const capture = await openAudioGraph();
   const frames = new AudioWorkletNode(capture, "microphone-frames");
   const socket = new WebSocket(`ws://${location.host}/audio`);

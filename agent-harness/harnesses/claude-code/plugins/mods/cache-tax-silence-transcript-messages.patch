@@ -1,0 +1,23 @@
+--- a/hooks/register.ts	2026-11-16 12:11:52
++++ b/hooks/register.ts	2026-11-16 12:11:52
+@@ -238,7 +238,6 @@
+   await $.store.delete(deadlineKey(s))
+   await $.store.delete(everyKey(s))
+   if (forgetAlways) await $.store.delete(KEY_ALWAYS)
+-  if (why) $.ui.log(`keepwarm stopped: ${why}. The cache is no longer held; /keepwarm starts it again.`)
+   updateStatus($, s, await $.clock.now())
+ }
+ 
+@@ -612,10 +611,10 @@
+         const price = priceOf(s.lastModel, prev || s.ctx)
+         const usd = s.stepWrites?.priced ? s.stepWrites.usd : price ? write * price[1] / 1e6 : null
+         s.misses.push({ at: now, tokens: write, usd })
+-        $.ui.log(`cold write of ${fmtTok(write)} tokens paid (${fmtUsd(usd)}).` + await holdOpenedAfterColdWrite($, s, now, offs))
++        await holdOpenedAfterColdWrite($, s, now, offs)
+       }
+     } else if (s.coldWritePending && e.isAborted && sentRequest) {
+-      $.ui.log('cold write sent, size not reported.' + await holdOpenedAfterColdWrite($, s, now, offs))
++      await holdOpenedAfterColdWrite($, s, now, offs)
+     }
+     s.coldWritePending = false
+     s.stepWrites = null

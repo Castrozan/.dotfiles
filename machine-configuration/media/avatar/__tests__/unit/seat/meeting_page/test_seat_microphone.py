@@ -7,7 +7,9 @@ import pytest
 import seat_page
 from page_devices import BUILT_IN_INPUT, device
 
-SEAT_PAGE = Path(__file__).resolve().parents[4] / "scripts/conversation/remote_seat/page"
+SEAT_PAGE = (
+    Path(__file__).resolve().parents[4] / "scripts/conversation/remote_seat/page"
+)
 EARBUDS = device("audioinput", "in-buds", "realme Buds Air7 (Bluetooth)")
 DEFAULT_EARBUDS = device(
     "audioinput", "default", "Default - realme Buds Air7 (Bluetooth)"
@@ -69,12 +71,13 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_earbuds_as_the_default_input_give_way_to_the_built_in_microphone():
+def test_earbuds_as_the_default_input_are_never_opened():
     opening = open_with([DEFAULT_EARBUDS, EARBUDS, BUILT_IN_INPUT], "in-buds")
     assert opening["microphone"] == "in-1"
-    assert opening["stopped"] == ["in-buds"]
-    assert opening["opened"][-1]["deviceId"] == {"exact": "in-1"}
-    assert opening["opened"][-1]["echoCancellation"] is True
+    assert opening["stopped"] == []
+    [request] = opening["opened"]
+    assert request["deviceId"] == {"exact": "in-1"}
+    assert request["echoCancellation"] is True
 
 
 def test_the_built_in_microphone_already_open_is_kept_without_reopening():
