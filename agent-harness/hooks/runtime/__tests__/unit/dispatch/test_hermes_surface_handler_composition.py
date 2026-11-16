@@ -20,6 +20,7 @@ HANDLERS_REQUIRED_ON_THE_HERMES_SURFACE = {
         "prohibited_command_guard_handler",
         "prohibited_words_guard_handler",
         "worktree_location_guard_handler",
+        "merge_request_assignee_guard_handler",
         "agent_instruction_file_authoring_router_handler",
         "documentation_authoring_router_handler",
         "directory_entry_guard_handler",

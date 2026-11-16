@@ -30,6 +30,7 @@ ALWAYS_ON_PRE_TOOL_USE_HANDLER_MODULES = {
 
 BASH_MATCHED_PRE_TOOL_USE_HANDLER_MODULES = {
     "background_bash_anti_pattern_validator_handler",
+    "merge_request_assignee_guard_handler",
     "workspace_directory_injector_handler",
     "worktree_location_guard_handler",
 }
@@ -134,7 +135,7 @@ def test_the_bash_matched_pre_tool_use_handlers_avoid_pathlib():
         & MODULES_TOO_EXPENSIVE_FOR_A_SYS_PATH_BOOTSTRAP
     }
     assert not offenders, (
-        "Bash is the tool an agent drives all day and these three load on every "
+        "Bash is the tool an agent drives all day and these handlers load on every "
         "one of its calls, so a pathlib bootstrap here bills urllib.parse, "
         "ipaddress and math to each shell command; moving them to os.path took a "
         f"Bash invocation from 80 modules to 69: {offenders}"

@@ -17,6 +17,8 @@ flags. Load provider-specific plugins only for a repository on that provider; ta
 and required checks from the consuming workspace. GitHub calls a proposal a pull request; GitLab calls it a merge
 request.
 
+Open every proposal with an assignee; the `merge_request_assignee_guard` hook owns the rule and its denial has the fix.
+
 ### Review conversations
 
 Reply within the existing review discussion and verify the complete published text. Preserve the workspace's approval

@@ -43,6 +43,10 @@ PRE_TOOL_USE_HANDLERS = [
         handler_module_name="worktree_location_guard_handler", tool_matcher="Bash"
     ),
     HookHandler(
+        handler_module_name="merge_request_assignee_guard_handler",
+        tool_matcher="Bash",
+    ),
+    HookHandler(
         handler_module_name="workspace_directory_injector_handler",
         tool_matcher="Bash",
         surfaces=(CLAUDE_SURFACE,),

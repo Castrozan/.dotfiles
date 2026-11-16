@@ -34,6 +34,7 @@ HANDLERS_REQUIRED_ON_THE_CODEX_SURFACE = {
         "documentation_authoring_router_handler",
         "directory_entry_guard_handler",
         "worktree_location_guard_handler",
+        "merge_request_assignee_guard_handler",
     },
     "POST_TOOL_USE_HANDLERS": {
         "record_codex_skill_read_handler",
@@ -70,6 +71,7 @@ HANDLERS_REQUIRED_ON_THE_OPENCODE_SURFACE = {
         "documentation_authoring_router_handler",
         "directory_entry_guard_handler",
         "worktree_location_guard_handler",
+        "merge_request_assignee_guard_handler",
         "blocked_skill_invocation_guard_handler",
         "url_to_skill_router_handler",
         "subagent_budget_guard_handler",
