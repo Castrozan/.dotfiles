@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-COMMAND_SEPARATOR_CHARACTERS = frozenset(";\n|&")
-SUBSHELL_CHARACTERS = frozenset("()")
 COMMAND_SUBSTITUTION_OPENER = "$("
 BACKTICK = "`"
 SHELL_KEYWORDS_BEFORE_A_COMMAND = frozenset(
@@ -44,6 +42,11 @@ class _SimpleCommandBuilder:
         self.words = []
 
 
+def _offset_after_plain_character(command_text, offset, builder):
+    builder.extend_word(command_text[offset])
+    return offset + 1
+
+
 def _offset_after_escape(command_text, offset, builder):
     escaped_character = command_text[offset + 1 : offset + 2]
     if escaped_character != "\n":
@@ -59,88 +62,99 @@ def _offset_after_single_quoted(command_text, offset, builder):
     return closing_offset + 1
 
 
-def _offset_after_double_quoted(command_text, offset, builder, simple_commands):
+def _offset_after_double_quoted(command_text, offset, builder):
     builder.extend_word("")
-    while offset < len(command_text):
-        character = command_text[offset]
-        if character == '"':
-            return offset + 1
-        if character == "\\":
-            builder.extend_word(command_text[offset + 1 : offset + 2])
-            offset += 2
-        elif command_text.startswith(COMMAND_SUBSTITUTION_OPENER, offset):
-            offset = _offset_after_commands(
-                command_text, offset + 2, ")", simple_commands
-            )
-        elif character == BACKTICK:
-            offset = _offset_after_commands(
-                command_text, offset + 1, BACKTICK, simple_commands
-            )
-        else:
-            builder.extend_word(character)
-            offset += 1
-    return offset
+    offset += 1
+    while offset < len(command_text) and command_text[offset] != '"':
+        scan_lexeme = DOUBLE_QUOTED_LEXEME_SCANNERS_BY_CHARACTER.get(
+            command_text[offset], _offset_after_plain_character
+        )
+        offset = scan_lexeme(command_text, offset, builder)
+    return offset + 1
 
 
-def _offset_of_line_end(command_text, offset):
+def _offset_after_backtick_substitution(command_text, offset, builder):
+    builder.extend_word("")
+    return _offset_after_commands(
+        command_text, offset + 1, BACKTICK, builder.simple_commands
+    )
+
+
+def _offset_after_dollar(command_text, offset, builder):
+    if not command_text.startswith(COMMAND_SUBSTITUTION_OPENER, offset):
+        return _offset_after_plain_character(command_text, offset, builder)
+    builder.extend_word("")
+    return _offset_after_commands(
+        command_text, offset + 2, ")", builder.simple_commands
+    )
+
+
+def _offset_after_comment_marker(command_text, offset, builder):
+    if builder.word_is_open:
+        return _offset_after_plain_character(command_text, offset, builder)
     line_end = command_text.find("\n", offset)
     return len(command_text) if line_end == -1 else line_end
 
 
-def _ampersand_belongs_to_a_redirection(command_text, offset):
-    return command_text[offset] == "&" and ">" in (
-        command_text[max(offset - 1, 0) : offset],
-        command_text[offset + 1 : offset + 2],
+def _offset_after_subshell(command_text, offset, builder):
+    builder.close_command()
+    return _offset_after_commands(
+        command_text, offset + 1, ")", builder.simple_commands
     )
 
 
-def _offset_after_lexeme(command_text, offset, builder, simple_commands):
-    character = command_text[offset]
-    if character == "\\":
-        return _offset_after_escape(command_text, offset, builder)
-    if character == "'":
-        return _offset_after_single_quoted(command_text, offset, builder)
-    if character == '"':
-        return _offset_after_double_quoted(
-            command_text, offset + 1, builder, simple_commands
-        )
-    if command_text.startswith(COMMAND_SUBSTITUTION_OPENER, offset):
-        builder.extend_word("")
-        return _offset_after_commands(command_text, offset + 2, ")", simple_commands)
-    if character == BACKTICK:
-        builder.extend_word("")
-        return _offset_after_commands(
-            command_text, offset + 1, BACKTICK, simple_commands
-        )
-    if character == "#" and not builder.word_is_open:
-        return _offset_of_line_end(command_text, offset)
-    if character in SUBSHELL_CHARACTERS:
-        builder.close_command()
-        if character == "(":
-            return _offset_after_commands(
-                command_text, offset + 1, ")", simple_commands
-            )
-        return offset + 1
-    if (
-        character in COMMAND_SEPARATOR_CHARACTERS
-        and not _ampersand_belongs_to_a_redirection(command_text, offset)
-    ):
-        builder.close_command()
-        return offset + 1
-    if character.isspace():
-        builder.close_word()
-        return offset + 1
-    builder.extend_word(character)
+def _offset_after_command_separator(_command_text, offset, builder):
+    builder.close_command()
     return offset + 1
+
+
+def _offset_after_ampersand(command_text, offset, builder):
+    belongs_to_a_redirection = ">" in (
+        command_text[max(offset - 1, 0) : offset],
+        command_text[offset + 1 : offset + 2],
+    )
+    if belongs_to_a_redirection:
+        return _offset_after_plain_character(command_text, offset, builder)
+    return _offset_after_command_separator(command_text, offset, builder)
+
+
+def _offset_after_word_separator(_command_text, offset, builder):
+    builder.close_word()
+    return offset + 1
+
+
+DOUBLE_QUOTED_LEXEME_SCANNERS_BY_CHARACTER = {
+    "\\": _offset_after_escape,
+    "$": _offset_after_dollar,
+    BACKTICK: _offset_after_backtick_substitution,
+}
+
+LEXEME_SCANNERS_BY_CHARACTER = {
+    **DOUBLE_QUOTED_LEXEME_SCANNERS_BY_CHARACTER,
+    "'": _offset_after_single_quoted,
+    '"': _offset_after_double_quoted,
+    "#": _offset_after_comment_marker,
+    "(": _offset_after_subshell,
+    ")": _offset_after_command_separator,
+    ";": _offset_after_command_separator,
+    "\n": _offset_after_command_separator,
+    "|": _offset_after_command_separator,
+    "&": _offset_after_ampersand,
+    **dict.fromkeys(" \t\r\f\v", _offset_after_word_separator),
+}
 
 
 def _offset_after_commands(command_text, offset, closing_character, simple_commands):
     builder = _SimpleCommandBuilder(simple_commands)
     while offset < len(command_text):
-        if command_text[offset] == closing_character:
+        character = command_text[offset]
+        if character == closing_character:
             builder.close_command()
             return offset + 1
-        offset = _offset_after_lexeme(command_text, offset, builder, simple_commands)
+        scan_lexeme = LEXEME_SCANNERS_BY_CHARACTER.get(
+            character, _offset_after_plain_character
+        )
+        offset = scan_lexeme(command_text, offset, builder)
     builder.close_command()
     return offset
 
@@ -156,6 +170,10 @@ def _is_variable_assignment(word):
     return bool(assignment_separator) and assigned_name.isidentifier()
 
 
+def _precedes_the_command(word):
+    return _is_variable_assignment(word) or word in SHELL_KEYWORDS_BEFORE_A_COMMAND
+
+
 def _words_after_wrapper_options(words):
     option_count = 0
     while option_count < len(words) and words[option_count].startswith("-"):
@@ -167,10 +185,7 @@ def words_after_command_wrappers(words):
     remaining_words = list(words)
     while remaining_words:
         leading_word = remaining_words[0]
-        if (
-            _is_variable_assignment(leading_word)
-            or leading_word in SHELL_KEYWORDS_BEFORE_A_COMMAND
-        ):
+        if _precedes_the_command(leading_word):
             remaining_words = remaining_words[1:]
             continue
         operand_count = OPERAND_COUNT_BY_COMMAND_WRAPPER.get(

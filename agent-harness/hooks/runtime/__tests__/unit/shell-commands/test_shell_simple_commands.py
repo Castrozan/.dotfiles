@@ -48,7 +48,7 @@ words_after_command_wrappers = shell_simple_commands.words_after_command_wrapper
             ],
         ),
         ("echo `date` $(pwd)", [["date"], ["pwd"], ["echo", "", ""]]),
-        ("(cd /tmp && ls)", [["cd", "/tmp"], ["ls"]]),
+        ("(cd /repo && ls)", [["cd", "/repo"], ["ls"]]),
         ('echo "(not a subshell)"', [["echo", "(not a subshell)"]]),
         ("echo 'unterminated", [["echo", "unterminated"]]),
     ],

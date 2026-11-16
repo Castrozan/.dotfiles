@@ -4,7 +4,8 @@ import re
 
 CREATING_SUBCOMMANDS = frozenset({"create", "new"})
 HELP_FLAGS = frozenset({"--help", "-h"})
-REQUEST_METHOD_FLAGS = frozenset({"-X", "--method", "--request"})
+SHORT_REQUEST_METHOD_FLAG = "-X"
+REQUEST_METHOD_FLAGS = frozenset({SHORT_REQUEST_METHOD_FLAG, "--method", "--request"})
 QUERY_STRING_BODY_FLAGS = frozenset({"-G", "--get"})
 REQUEST_BODY_FLAGS = frozenset(
     "-f --raw-field -F --field --form --input -d --data --data-raw --data-binary "
@@ -26,7 +27,7 @@ def _runs_creating_subcommand(arguments, resource):
         return False
     return any(
         argument == resource and following_argument in CREATING_SUBCOMMANDS
-        for argument, following_argument in zip(arguments, arguments[1:])
+        for argument, following_argument in zip(arguments, arguments[1:], strict=False)
     )
 
 
@@ -39,21 +40,41 @@ def _carries_assignee_flag(arguments, _whole_command_text):
     )
 
 
+def _flag_values(arguments, flags):
+    following_arguments = [*arguments[1:], ""]
+    for argument, following_argument in zip(
+        arguments, following_arguments, strict=True
+    ):
+        flag, joining_separator, joined_value = argument.partition("=")
+        if flag in flags:
+            yield joined_value if joining_separator else following_argument
+
+
+def _methods_joined_to_the_short_flag(arguments):
+    return [
+        argument[len(SHORT_REQUEST_METHOD_FLAG) :]
+        for argument in arguments
+        if argument.startswith(SHORT_REQUEST_METHOD_FLAG)
+        and argument != SHORT_REQUEST_METHOD_FLAG
+    ]
+
+
+def _sends_a_body(arguments):
+    return any(
+        argument.partition("=")[0] in REQUEST_BODY_FLAGS for argument in arguments
+    )
+
+
 def _request_method(arguments):
     if QUERY_STRING_BODY_FLAGS.intersection(arguments):
         return "GET"
-    for argument_index, argument in enumerate(arguments):
-        flag, joining_separator, joined_value = argument.partition("=")
-        if flag in REQUEST_METHOD_FLAGS:
-            following_arguments = arguments[argument_index + 1 : argument_index + 2]
-            separate_value = following_arguments[0] if following_arguments else ""
-            return (joined_value if joining_separator else separate_value).upper()
-        if argument.startswith("-X") and len(argument) > 2:
-            return argument[2:].upper()
-    sends_a_body = any(
-        argument.partition("=")[0] in REQUEST_BODY_FLAGS for argument in arguments
-    )
-    return "POST" if sends_a_body else "GET"
+    explicit_methods = [
+        *_flag_values(arguments, REQUEST_METHOD_FLAGS),
+        *_methods_joined_to_the_short_flag(arguments),
+    ]
+    if explicit_methods:
+        return explicit_methods[0].upper()
+    return "POST" if _sends_a_body(arguments) else "GET"
 
 
 def _request_paths(arguments):

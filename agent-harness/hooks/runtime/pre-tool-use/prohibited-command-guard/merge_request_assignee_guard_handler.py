@@ -20,16 +20,6 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
         sys.path.insert(0, _shared_module_candidate_directory)
 
 from hook_dispatch import HandlerResult  # noqa: E402
-from merge_request_creation_forms import (  # noqa: E402
-    creation_form_missing_an_assignee,
-)
-from shell_data_heredoc_bodies import (  # noqa: E402
-    shell_text_outside_data_heredoc_bodies,
-)
-from shell_simple_commands import (  # noqa: E402
-    simple_commands_in,
-    words_after_command_wrappers,
-)
 
 WITHOUT_ASSIGNEE_OVERRIDE_SENTINEL = "MERGE_REQUEST_WITHOUT_ASSIGNEE_SANCTIONED=1"
 MERGE_REQUEST_ASSIGNEE_REFERENCE_FILE_PATH = "~/.claude/hooks/merge-request-assignee.md"
@@ -46,6 +36,13 @@ def build_denial_reason(creation_form) -> str:
 
 
 def _creation_form_missing_an_assignee_in(command):
+    from merge_request_creation_forms import creation_form_missing_an_assignee
+    from shell_data_heredoc_bodies import shell_text_outside_data_heredoc_bodies
+    from shell_simple_commands import (
+        simple_commands_in,
+        words_after_command_wrappers,
+    )
+
     shell_text = shell_text_outside_data_heredoc_bodies(command)
     for simple_command_words in simple_commands_in(shell_text):
         creation_form = creation_form_missing_an_assignee(
@@ -56,13 +53,22 @@ def _creation_form_missing_an_assignee_in(command):
     return None
 
 
-def handle(hook_input):
+def _bash_command_of(hook_input):
     if hook_input.get("tool_name", "") != "Bash":
-        return None
-    command = (hook_input.get("tool_input", {}) or {}).get("command", "") or ""
-    if not CREATION_VOCABULARY_PATTERN.search(command):
-        return None
-    if WITHOUT_ASSIGNEE_OVERRIDE_SENTINEL in command:
+        return ""
+    return (hook_input.get("tool_input", {}) or {}).get("command", "") or ""
+
+
+def _may_open_an_unassigned_request(command):
+    return (
+        bool(CREATION_VOCABULARY_PATTERN.search(command))
+        and WITHOUT_ASSIGNEE_OVERRIDE_SENTINEL not in command
+    )
+
+
+def handle(hook_input):
+    command = _bash_command_of(hook_input)
+    if not _may_open_an_unassigned_request(command):
         return None
     creation_form = _creation_form_missing_an_assignee_in(command)
     if creation_form is None:

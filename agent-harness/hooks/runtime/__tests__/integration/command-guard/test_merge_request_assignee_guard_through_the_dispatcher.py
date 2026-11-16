@@ -10,7 +10,7 @@ def dispatched_permission_decision(command):
     payload = {
         "session_id": "merge-request-assignee-guard",
         "transcript_path": "/dev/null",
-        "cwd": "/tmp",
+        "cwd": "/repo/project",
         "hook_event_name": "PreToolUse",
         "tool_name": "Bash",
         "tool_input": {"command": command},
