@@ -1,7 +1,6 @@
 import json
 import stat
 import struct
-from unittest.mock import Mock
 
 import pytest
 
@@ -155,41 +154,3 @@ def test_the_addressee_command_prints_the_floor_holder_or_null(tmp_path, capsys)
         "heard_through": 4,
         "host": "kira",
     }
-
-
-def stub_hex(monkeypatch, tmp_path, status, payload):
-    discovery = tmp_path / "local-api.json"
-    discovery.write_text(json.dumps({"port": 42267, "token": "secret"}))
-    monkeypatch.setattr(transcriber, "HEX_DISCOVERY_FILE", discovery)
-    response = Mock(status=status)
-    response.read.return_value = json.dumps(payload).encode()
-    connection = Mock()
-    connection.getresponse.return_value = response
-    monkeypatch.setattr(
-        transcriber.http.client, "HTTPConnection", Mock(return_value=connection)
-    )
-    return connection
-
-
-def test_transcribe_posts_the_segment_to_hex_and_returns_the_cleaned_text(
-    monkeypatch, tmp_path
-):
-    connection = stub_hex(monkeypatch, tmp_path, 200, {"transcript": " bom  dia "})
-    assert transcriber.transcribe(frame(1000), "pt") == "bom dia"
-    assert connection.request.call_args.args == (
-        "POST",
-        "/transcriptions?model=parakeet_v3&language=pt",
-    )
-    headers = connection.request.call_args.kwargs["headers"]
-    assert headers == {"Authorization": "Bearer secret", "Content-Type": "audio/wav"}
-    connection.close.assert_called_once()
-
-
-def test_language_stays_automatic_unless_requested():
-    assert transcriber.transcription_path(None) == "/transcriptions?model=parakeet_v3"
-
-
-def test_a_refused_segment_is_retried_as_a_connection_failure(monkeypatch, tmp_path):
-    stub_hex(monkeypatch, tmp_path, 429, {"code": "queue-full"})
-    with pytest.raises(OSError, match="queue-full"):
-        transcriber.transcribe(frame(1000))

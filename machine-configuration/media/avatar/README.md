@@ -24,8 +24,9 @@ and seat at the next `avatar-stop` and `avatar-start`, which is how a deployed c
 
 `avatar-doctor` runs on every machine and checks each link the voice depends on, naming the broken one. On the avatar
 host it checks Hex, the wake listener and a transcription round trip. On a Mac it first reaches the host, relays the
-host's own findings, then checks the wake agent and its microphone page. It exits non-zero when any link is broken,
-and `--json` prints the findings for another program. The host is named once, in `home-manager/avatar-topology.nix`.
+host's own findings, then checks the wake agent, its microphone page and this Mac's own transcription. It exits non-zero
+when any link is broken, and `--json` prints the findings for another program. The host is named once, in
+`home-manager/avatar-topology.nix`.
 
 ## Desktop conversation
 
@@ -179,16 +180,17 @@ with the service stopped, `avatar-wake --dry-run` reports matches without delive
 
 On a Mac the same listener runs as the `com.dotfiles.avatar-wake` launchd agent, logging to
 `~/Library/Logs/avatar-wake.log`. It is a rebuild-safe launch agent: a rebuild never unloads it, and when the wake code
-changes the rebuild restarts it in place with `launchctl kickstart -k`, because a reload once left it unloaded overnight.
-A rebuild that finds it unloaded loads it again.
-Its machine effects swapped in `mac_wake_boundaries.py`. `mac_microphone.py` serves a capture page on `127.0.0.1:8771`,
-opens it in headless Chrome on the profile `~/.local/share/avatar/wake-browser` and writes the page's frames to stdout in
-place of `parec`. The page opens the default input, or the built-in microphone when the default is Bluetooth, which
-would otherwise force call-quality sound on everything the Mac plays. Each utterance goes to `avatar-transcribe` on
-chise over ssh. A wake opens the conversation with `avatar-talk open --seat remote`, then `ssh chise avatar-claim-floor
---agent HOST:PANE` gives the woken session the floor. While the Mac holds the seat, its wake reads that conversation's
-transcript from chise with `avatar-listen read` instead of the microphone, so a session on the Mac named
-mid-conversation gets the floor as one on chise does.
+changes the rebuild restarts it in place with `launchctl kickstart -k`, because a reload once left it unloaded
+overnight. A rebuild that finds it unloaded loads it again. Its machine effects swapped in `mac_wake_boundaries.py`.
+`mac_microphone.py` serves a capture page on `127.0.0.1:8771`, opens it in headless Chrome on the profile
+`~/.local/share/avatar/wake-browser` and writes the page's frames to stdout in place of `parec`. The page opens the
+default input, or the built-in microphone when the default is Bluetooth, which would otherwise force call-quality sound
+on everything the Mac plays. Each utterance is transcribed by Hex on the Mac itself, with Parakeet v3 when that Mac has
+it and otherwise a model Hex has installed, so the wake hears whether or not the avatar host is reachable. A wake opens
+the conversation with `avatar-talk open --seat remote`, then `ssh chise avatar-claim-floor --agent HOST:PANE` gives the
+woken session the floor. While the Mac holds the seat, its wake reads that conversation's transcript from chise with
+`avatar-listen read` instead of the microphone, so a session on the Mac named mid-conversation gets the floor as one on
+chise does.
 
 During a conversation the wake reads that conversation's transcript instead of the microphone. Naming another live
 Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the
