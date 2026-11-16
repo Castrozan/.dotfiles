@@ -19,6 +19,10 @@ class IngestionRefusedError(RuntimeError):
     pass
 
 
+class IngestionTransportError(IngestionRefusedError):
+    pass
+
+
 def build_ingestion_event(topic, schema_version, payload, producer_label, event_source):
     ingestion_event = {
         "topic": topic,
@@ -92,8 +96,9 @@ def send_ingest_request(request, subject):
     try:
         status_code, response_body = read_ingest_response(request)
     except (OSError, UnicodeError) as transport_failure:
-        raise IngestionRefusedError(
-            f"the ingest request could not finish for the {subject}"
+        raise IngestionTransportError(
+            f"the ingest request could not finish for the {subject}: "
+            f"{type(transport_failure).__name__}: {transport_failure}"
         ) from transport_failure
 
     if status_code != ACCEPTED_INGEST_STATUS_CODE:

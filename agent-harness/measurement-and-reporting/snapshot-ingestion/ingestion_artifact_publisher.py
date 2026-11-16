@@ -1,17 +1,33 @@
+import sys
+import time
 import urllib.parse
 
 
 from ingestion_snapshot_publisher import (
     IngestionRefusedError,
+    IngestionTransportError,
     create_authenticated_ingestion_request,
     read_ingest_connection,
     send_ingest_request,
 )
 
+ARTIFACT_PUT_ATTEMPT_DELAYS_SECONDS = (0, 2, 8)
+
 
 def build_artifact_endpoint_url(ingest_base_url, object_key):
     encoded_object_key = urllib.parse.quote(object_key, safe="")
     return f"{ingest_base_url.rstrip('/')}/artifacts/{encoded_object_key}"
+
+
+def send_idempotent_artifact_put(request, subject):
+    for attempt_delay_seconds in ARTIFACT_PUT_ATTEMPT_DELAYS_SECONDS[:-1]:
+        time.sleep(attempt_delay_seconds)
+        try:
+            return send_ingest_request(request, subject)
+        except IngestionTransportError as transport_failure:
+            print(transport_failure, file=sys.stderr)
+    time.sleep(ARTIFACT_PUT_ATTEMPT_DELAYS_SECONDS[-1])
+    return send_ingest_request(request, subject)
 
 
 def put_artifact(
@@ -25,7 +41,7 @@ def put_artifact(
         body_bytes,
         "PUT",
     )
-    acknowledgement = send_ingest_request(request, subject)
+    acknowledgement = send_idempotent_artifact_put(request, subject)
     echoed = (acknowledgement.get("objectKey"), acknowledgement.get("byteLength"))
     if echoed != (object_key, len(body_bytes)):
         raise IngestionRefusedError(
