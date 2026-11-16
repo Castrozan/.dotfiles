@@ -3,11 +3,15 @@ let
   inherit (pkgs) lib;
 
   interactiveSessionModSources = {
-    cache-tax = pkgs.fetchFromGitHub {
-      owner = "Castrozan";
-      repo = "cache-tax";
-      rev = "2e3796e2964f8d9c0afd647f767d46243d5a11c2";
-      hash = "sha256-f713CgpvxI2SQLCRWt65q+e69dSCongxQJRSweAjTQ0=";
+    cache-tax = pkgs.applyPatches {
+      name = "cache-tax-without-transcript-messages";
+      src = pkgs.fetchFromGitHub {
+        owner = "Castrozan";
+        repo = "cache-tax";
+        rev = "2e3796e2964f8d9c0afd647f767d46243d5a11c2";
+        hash = "sha256-f713CgpvxI2SQLCRWt65q+e69dSCongxQJRSweAjTQ0=";
+      };
+      patches = [ ./cache-tax-silence-transcript-messages.patch ];
     };
     crayon = pkgs.fetchFromGitHub {
       owner = "Castrozan";
