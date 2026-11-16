@@ -55,7 +55,10 @@ let
   '';
   doctor = import ./home-manager/avatar-doctor-package.nix {
     inherit pkgs lib;
-    commands = [ talk ];
+    commands = [
+      talk
+      programs.transcribe
+    ];
     arguments = "--seat-of ${topology.host}";
   };
   wakeLog = "${config.home.homeDirectory}/Library/Logs/avatar-wake.log";
@@ -79,6 +82,7 @@ lib.mkMerge [
       talk
       wake
       doctor
+      programs.transcribe
       forwardCommandToHost
       (forwardToHost "avatar-audio")
       (remoteMeeting "start" "avatar-start")

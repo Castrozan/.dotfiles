@@ -98,12 +98,13 @@ def wake_microphone_hears(run, serves):
 def seat_findings(run, serves, host):
     reach = host_reachable(run, host)
     if not reach.healthy:
-        return [reach, wake_agent_loaded(run)]
+        return [reach, wake_agent_loaded(run), transcriber_answers(run)]
     return [
         reach,
         *findings_reported_by(run, host),
         wake_agent_loaded(run),
         wake_microphone_hears(run, serves),
+        transcriber_answers(run),
     ]
 
 

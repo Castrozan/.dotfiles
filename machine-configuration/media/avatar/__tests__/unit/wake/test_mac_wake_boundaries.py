@@ -1,4 +1,3 @@
-import subprocess
 import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
@@ -42,30 +41,13 @@ def test_other_systems_keep_the_pulseaudio_capture_and_local_effects(monkeypatch
     assert boundaries.open_conversation is wake_boundaries.conversation_opened
 
 
-def test_transcription_streams_the_pcm_to_the_avatar_host(monkeypatch, on_a_mac):
-    runner = ran(monkeypatch, stdout="  hey Voyager, check the build \n".encode())
-    assert on_a_mac.transcribe(b"pcm") == "hey Voyager, check the build"
-    assert runner.call_args.args[0] == [
-        "ssh",
-        "-o",
-        "BatchMode=yes",
-        "-o",
-        "ConnectTimeout=5",
-        "chise",
-        "avatar-transcribe",
-    ]
-    assert runner.call_args.kwargs["input"] == b"pcm"
-    assert runner.call_args.kwargs["timeout"] > 0
+def test_a_mac_transcribes_with_its_own_hex_like_every_other_machine(on_a_mac):
+    assert on_a_mac.transcribe is transcriber.transcribe
 
 
-def test_a_failed_transcription_is_a_subprocess_error_the_wake_drops(
-    monkeypatch, on_a_mac
-):
-    monkeypatch.setattr(
-        mac_wake_boundaries.subprocess,
-        "run",
-        Mock(side_effect=subprocess.CalledProcessError(255, "ssh")),
-    )
+def test_a_failed_transcription_is_dropped_and_the_wake_keeps_listening(on_a_mac):
+    on_a_mac.transcribe = Mock(side_effect=ConnectionError("Hex refused the segment"))
+    on_a_mac.pause = Mock()
     reported = Mock()
     on_a_mac.report = reported
     wake_listener.WakeListener(on_a_mac, dry_run=False).hear(b"pcm")

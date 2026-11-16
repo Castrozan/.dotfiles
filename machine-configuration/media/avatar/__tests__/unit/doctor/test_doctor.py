@@ -96,7 +96,7 @@ def test_a_silent_wake_page_is_healthy_only_while_a_conversation_listens(
         },
         serves=False,
     )
-    assert findings[-1] == Finding("wake microphone", healthy, detail)
+    assert Finding("wake microphone", healthy, detail) in findings
 
 
 def test_a_command_that_never_returns_becomes_a_finding_not_a_crash():
@@ -117,3 +117,14 @@ def test_text_output_marks_each_finding_and_json_round_trips():
         "healthy": False,
         "detail": "broken",
     }
+
+
+def test_a_seat_checks_its_own_transcription_even_when_the_host_is_gone():
+    refusal = answer(1, stderr=b"ConnectionError: Hex refused\n")
+    machine = Machine(
+        {"hub true": answer(255, stderr=b"no route\n"), "avatar-transcribe": refusal}
+    )
+    findings = doctor.seat_findings(machine.run, lambda port: True, "hub")
+    assert findings[-1] == Finding(
+        "transcription", False, "ConnectionError: Hex refused"
+    )
