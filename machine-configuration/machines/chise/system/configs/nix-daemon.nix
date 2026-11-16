@@ -72,18 +72,7 @@
       automatic = true;
       dates = [ "weekly" ];
     };
-
-    gc = {
-      automatic = lib.mkDefault true;
-      dates = lib.mkDefault "weekly";
-      # Prune system generations by count before collecting store garbage.
-      options = lib.mkDefault "";
-    };
   };
-
-  systemd.services.nix-gc.preStart = ''
-    ${config.nix.package}/bin/nix-env --profile /nix/var/nix/profiles/system --delete-generations +5
-  '';
 
   systemd.services.nix-daemon.serviceConfig.Nice = 19;
 }

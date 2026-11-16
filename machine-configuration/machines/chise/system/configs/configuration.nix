@@ -13,6 +13,7 @@
     ./libinput-quirks.nix
     ./keyboard-backlight.nix
     ./nix-daemon.nix
+    ../../../../operating-system/storage-maintenance/nix-store/free-space-garbage-collection-nixos.nix
     ./memory-pressure.nix
     ./cpu-thermal.nix
     ../scripts
