@@ -24,7 +24,7 @@ def main():
         "model": "gpt-6.1-sol",
     }
     assert configuration["agent"] == {"reasoning_effort": "xhigh"}
-    assert configuration["display"] == {"busy_input_mode": "queue"}
+    assert configuration["display"] == {"busy_input_mode": "steer"}
     assert configuration["onboarding"] == {"seen": {"busy_input_prompt": True}}
     assert configuration["auth"] == {"adopt_external_logins": False}
     assert configuration["approvals"] == {"mode": "off"}

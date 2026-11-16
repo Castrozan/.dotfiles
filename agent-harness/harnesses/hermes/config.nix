@@ -12,7 +12,7 @@ pkgs.writeText "hermes-config.yaml" ''
   agent:
     reasoning_effort: xhigh
   display:
-    busy_input_mode: queue
+    busy_input_mode: steer
   onboarding:
     seen:
       busy_input_prompt: true
