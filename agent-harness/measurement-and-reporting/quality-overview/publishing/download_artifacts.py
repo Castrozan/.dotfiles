@@ -5,6 +5,7 @@ from pathlib import Path, PurePosixPath
 import re
 import stat
 import subprocess
+import time
 from tempfile import TemporaryDirectory
 from zipfile import BadZipFile, ZipFile
 
@@ -16,6 +17,7 @@ MAXIMUM_ARCHIVE_BYTES = 67108864
 MAXIMUM_EXTRACTED_BYTES = 268435456
 MAXIMUM_ENTRIES = 10000
 UNSAFE_ARCHIVE_ENTRY_MESSAGE = "Artifact contains an unsafe or duplicate path"
+ARCHIVE_FETCH_ATTEMPT_DELAYS_SECONDS = (0, 2, 8)
 
 
 def _archive_content_exceeds_limits(entries):
@@ -61,6 +63,35 @@ def extract_archive(archive, destination, expected_digest):
         bundle.extractall(destination)
 
 
+def fetch_artifact_archive_once(identifier, archive):
+    with archive.open("wb") as output:
+        subprocess.run(
+            [
+                "gh",
+                "api",
+                "--method",
+                "GET",
+                "--",
+                f"repos/{REPOSITORY}/actions/artifacts/{identifier}/zip",
+            ],
+            stdout=output,
+            stderr=subprocess.PIPE,
+            timeout=60,
+            check=True,
+        )
+
+
+def fetch_artifact_archive(identifier, archive):
+    for attempt_delay_seconds in ARCHIVE_FETCH_ATTEMPT_DELAYS_SECONDS[:-1]:
+        time.sleep(attempt_delay_seconds)
+        try:
+            return fetch_artifact_archive_once(identifier, archive)
+        except subprocess.SubprocessError:
+            continue
+    time.sleep(ARCHIVE_FETCH_ATTEMPT_DELAYS_SECONDS[-1])
+    return fetch_artifact_archive_once(identifier, archive)
+
+
 def download_artifact(selection, destination):
     identifier = selection["id"]
     if type(identifier) is not int or identifier < 1:
@@ -72,21 +103,7 @@ def download_artifact(selection, destination):
     ) as temporary:
         root = Path(temporary)
         archive = root / "artifact.zip"
-        with archive.open("wb") as output:
-            subprocess.run(
-                [
-                    "gh",
-                    "api",
-                    "--method",
-                    "GET",
-                    "--",
-                    f"repos/{REPOSITORY}/actions/artifacts/{identifier}/zip",
-                ],
-                stdout=output,
-                stderr=subprocess.PIPE,
-                timeout=60,
-                check=True,
-            )
+        fetch_artifact_archive(identifier, archive)
         extracted = root / "extracted"
         extract_archive(archive, extracted, selection["digest"])
         if destination.exists():

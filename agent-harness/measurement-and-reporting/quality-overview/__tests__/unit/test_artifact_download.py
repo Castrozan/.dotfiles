@@ -114,3 +114,43 @@ def test_one_failed_download_preserves_other_evidence_and_records_failure(
     assert context["artifacts"]["bats-junit"]["id"] is None
     assert "TimeoutExpired" in context["artifacts"]["bats-junit"]["reason"]
     assert (tmp_path / "python-junit/report.xml").read_text() == "kept"
+
+
+def test_a_transient_archive_fetch_failure_is_retried_from_an_empty_file(
+    tmp_path, monkeypatch
+):
+    archive = tmp_path / "source.zip"
+    digest = archive_at(archive, [("bats/coverage.json", b"{}")])
+    calls = []
+
+    def flaky_github_download(command, **arguments):
+        calls.append(command)
+        if len(calls) == 1:
+            arguments["stdout"].write(b"partial")
+            raise subprocess.CalledProcessError(1, command)
+        arguments["stdout"].write(archive.read_bytes())
+
+    monkeypatch.setattr(DOWNLOAD.subprocess, "run", flaky_github_download)
+    monkeypatch.setattr(DOWNLOAD.time, "sleep", lambda seconds: None)
+    destination = tmp_path / "coverage-report"
+    DOWNLOAD.download_artifact({"id": 789, "digest": digest}, destination)
+    assert len(calls) == 2
+    assert (destination / "bats/coverage.json").read_bytes() == b"{}"
+
+
+def test_a_persistent_archive_fetch_failure_stops_after_the_bounded_attempts(
+    tmp_path, monkeypatch
+):
+    calls = []
+
+    def failing_github_download(command, **arguments):
+        calls.append(command)
+        raise subprocess.TimeoutExpired("gh", 60)
+
+    monkeypatch.setattr(DOWNLOAD.subprocess, "run", failing_github_download)
+    monkeypatch.setattr(DOWNLOAD.time, "sleep", lambda seconds: None)
+    with pytest.raises(subprocess.TimeoutExpired):
+        DOWNLOAD.download_artifact(
+            {"id": 789, "digest": "sha256:" + "0" * 64}, tmp_path / "coverage"
+        )
+    assert len(calls) == len(DOWNLOAD.ARCHIVE_FETCH_ATTEMPT_DELAYS_SECONDS)
