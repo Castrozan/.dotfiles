@@ -17,7 +17,8 @@ let
 
   retirementActivation = cfg.home.activation.removeRetiredClaudeMarketplaces;
 
-  hostInteractiveSessionModsDirectory = (import ../. { inherit pkgs; }).interactiveSessionModsDirectory;
+  hostInteractiveSessionModsDirectory =
+    (import ../. { inherit pkgs; }).interactiveSessionModsDirectory;
 in
 {
   claude-dotfiles-is-the-only-enabled-plugin =
