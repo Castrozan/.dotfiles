@@ -30,6 +30,10 @@ in
     };
   };
 
+  systemd.user.services.hex.Service.Environment = [
+    "GGML_VK_ALLOW_SYSMEM_FALLBACK=1"
+  ];
+
   systemd.user.services.hex-dictation-notifier = {
     Unit = {
       Description = "Desktop notifications for Hex dictation";
