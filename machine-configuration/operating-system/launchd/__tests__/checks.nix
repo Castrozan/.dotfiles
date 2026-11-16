@@ -125,6 +125,14 @@ in
       )
       "an agent restarts on a new package only when it asks to, after Home Manager loads agents, and checks the new package's runtime root";
 
+  domain-operating-system-rebuild-safe-launch-agent-reaches-the-system-launchctl =
+    helpers.mkEvalCheck "domain-operating-system-rebuild-safe-launch-agent-reaches-the-system-launchctl"
+      (
+        lib.hasInfix "PATH=\"$PATH:/bin\" run " testPreservation.data
+        && lib.hasInfix "PATH=\"$PATH:/bin\" run " testRestart.data
+      )
+      "activation runs with a path that lacks the system launchctl, so both steps must add its directory";
+
   domain-operating-system-rebuild-safe-launch-agent-restarts-in-place-on-new-package =
     pkgs.runCommandLocal
       "check-domain-operating-system-rebuild-safe-launch-agent-restarts-in-place-on-new-package"

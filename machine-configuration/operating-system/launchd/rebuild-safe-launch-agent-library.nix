@@ -4,6 +4,7 @@
   pkgs,
 }:
 let
+  systemLaunchctlDirectory = "/bin";
   preserveRunningLaunchAgent = pkgs.writeShellApplication {
     name = "preserve-running-launch-agent";
     runtimeInputs = [
@@ -62,7 +63,7 @@ in
         activation."preserveRunningLaunchAgent-${name}" =
           lib.hm.dag.entryBetween [ "setupLaunchAgents" ] [ "writeBoundary" ]
             ''
-              run ${preserveRunningLaunchAgent}/bin/preserve-running-launch-agent \
+              PATH="$PATH:${systemLaunchctlDirectory}" run ${preserveRunningLaunchAgent}/bin/preserve-running-launch-agent \
                 ${lib.escapeShellArg label} \
                 "$newGenPath/LaunchAgents/${label}.plist" \
                 ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"} \
@@ -70,7 +71,7 @@ in
             '';
         activation."restartLaunchAgentOnNewPackage-${name}" = lib.mkIf restartWhenPackageChanges (
           lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
-            run ${restartLaunchAgentOnNewPackage}/bin/restart-launch-agent-on-new-package \
+            PATH="$PATH:${systemLaunchctlDirectory}" run ${restartLaunchAgentOnNewPackage}/bin/restart-launch-agent-on-new-package \
               ${lib.escapeShellArg label} \
               ${lib.escapeShellArg "${runtimeRootDirectory}/${packageStoreDirectoryName}"} \
               ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"}
