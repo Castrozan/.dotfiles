@@ -8,6 +8,11 @@
 }:
 let
   programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
+  rebuildSafeLaunchAgentLib =
+    import ../../operating-system/launchd/rebuild-safe-launch-agent-library.nix
+      {
+        inherit config lib pkgs;
+      };
   forwardToChise =
     command:
     pkgs.writeShellScriptBin command ''
@@ -45,27 +50,32 @@ let
     exec ${websocketPython}/bin/python3 ${./scripts/wake}/wake_listener.py "$@"
   '';
   wakeLog = "${config.home.homeDirectory}/Library/Logs/avatar-wake.log";
-in
-{
-  home.packages = [
-    talk
-    wake
-    forwardCommandToChise
-    (forwardToChise "avatar-audio")
-    (remoteMeeting "start" "avatar-start")
-    (remoteMeeting "stop" "avatar-stop")
-    (remoteMeeting "controls" "avatar-controls")
-    (remoteMeeting "listen" "avatar-listen")
-  ];
-
-  launchd.agents.avatar-wake = {
-    enable = true;
-    config = {
-      ProgramArguments = [ "${wake}/bin/avatar-wake" ];
+  wakeLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
+    name = "avatar-wake";
+    label = "com.dotfiles.avatar-wake";
+    package = wake;
+    executableName = "avatar-wake";
+    restartWhenPackageChanges = true;
+    serviceConfig = {
       KeepAlive = true;
       RunAtLoad = true;
       StandardOutPath = wakeLog;
       StandardErrorPath = wakeLog;
     };
   };
-}
+in
+lib.mkMerge [
+  {
+    home.packages = [
+      talk
+      wake
+      forwardCommandToChise
+      (forwardToChise "avatar-audio")
+      (remoteMeeting "start" "avatar-start")
+      (remoteMeeting "stop" "avatar-stop")
+      (remoteMeeting "controls" "avatar-controls")
+      (remoteMeeting "listen" "avatar-listen")
+    ];
+  }
+  wakeLaunchAgent
+]

@@ -14,6 +14,11 @@ let
     ];
     text = builtins.readFile ./scripts/preserve-running-launch-agent.sh;
   };
+  restartLaunchAgentOnNewPackage = pkgs.writeShellApplication {
+    name = "restart-launch-agent-on-new-package";
+    runtimeInputs = [ pkgs.coreutils ];
+    text = builtins.readFile ./scripts/restart-launch-agent-on-new-package.sh;
+  };
 in
 {
   mkRebuildSafeLaunchAgent =
@@ -24,6 +29,7 @@ in
       executableName,
       programArguments ? [ ],
       serviceConfig,
+      restartWhenPackageChanges ? false,
     }:
     assert lib.assertMsg (
       !(serviceConfig ? Label) && !(serviceConfig ? Program) && !(serviceConfig ? ProgramArguments)
@@ -62,6 +68,13 @@ in
                 ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"} \
                 ${lib.escapeShellArg runtimeRootDirectory}
             '';
+        activation."restartLaunchAgentOnNewPackage-${name}" = lib.mkIf restartWhenPackageChanges (
+          lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
+            run ${restartLaunchAgentOnNewPackage}/bin/restart-launch-agent-on-new-package \
+              ${lib.escapeShellArg label} \
+              ${lib.escapeShellArg "${runtimeRootDirectory}/${packageStoreDirectoryName}"}
+          ''
+        );
       };
 
       launchd.agents.${name} = {
