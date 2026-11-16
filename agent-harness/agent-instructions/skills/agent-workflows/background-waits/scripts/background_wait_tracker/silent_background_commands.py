@@ -28,8 +28,19 @@ def proven_silence_of(run):
         return None
     if _first_notification_precedes_any_stop(run):
         silence_end, outcome = run.first_notified_at, NOTIFIED_LATE
-    elif run.stopped_by_agent_at or run.last_seen_running_at:
-        silence_end, outcome = max(
+    else:
+        proof = _latest_running_proof(run)
+        if proof is None:
+            return None
+        silence_end, outcome = proof
+    return ProvenSilence(
+        seconds=(silence_end - run.launched_at).total_seconds(), outcome=outcome
+    )
+
+
+def _latest_running_proof(run):
+    if run.stopped_by_agent_at or run.last_seen_running_at:
+        return max(
             (proof_time, proof_outcome)
             for proof_time, proof_outcome in (
                 (run.stopped_by_agent_at, STOPPED_BY_AGENT),
@@ -37,11 +48,7 @@ def proven_silence_of(run):
             )
             if proof_time
         )
-    else:
-        return None
-    return ProvenSilence(
-        seconds=(silence_end - run.launched_at).total_seconds(), outcome=outcome
-    )
+    return None
 
 
 def _output_bytes_still_on_disk(output_file_path):

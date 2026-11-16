@@ -134,25 +134,29 @@ def command_list(arguments):
         print(json.dumps(listed_records, ensure_ascii=False, indent=1))
         return 0
     for judged_record in listed_records:
-        verdict = (
-            "denied:" + ",".join(judged_record["denied_now_by"])
-            if judged_record["denied_now_by"]
-            else f"allowed:{judged_record['wait_shape']}"
-        )
-        one_line_command = " ".join(judged_record["command"].split())
-        print(
-            "\t".join(
-                (
-                    judged_record["id"],
-                    f"{judged_record['silent_minutes']}m",
-                    judged_record["outcome"],
-                    judged_record["tool_name"],
-                    "dismissed" if judged_record["dismissed_reason"] else verdict,
-                    one_line_command[:LISTED_COMMAND_CHARACTERS],
-                )
+        print_listed_record(judged_record)
+    return 0
+
+
+def print_listed_record(judged_record):
+    verdict = (
+        "denied:" + ",".join(judged_record["denied_now_by"])
+        if judged_record["denied_now_by"]
+        else f"allowed:{judged_record['wait_shape']}"
+    )
+    one_line_command = " ".join(judged_record["command"].split())
+    print(
+        "\t".join(
+            (
+                judged_record["id"],
+                f"{judged_record['silent_minutes']}m",
+                judged_record["outcome"],
+                judged_record["tool_name"],
+                "dismissed" if judged_record["dismissed_reason"] else verdict,
+                one_line_command[:LISTED_COMMAND_CHARACTERS],
             )
         )
-    return 0
+    )
 
 
 def command_show(arguments):

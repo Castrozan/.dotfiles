@@ -66,7 +66,7 @@ forever.
 - Wrong: `until orchestrator report show <peer> | grep -q done; do sleep 45; done`
 - Right: put a liveness probe in the exit condition and say why the loop ended:
 
-```
+```bash
 n=0
 until orchestrator report show <peer> | grep -q done \
   || ! herdr pane get <pane> >/dev/null 2>&1 || [ $n -ge 80 ]; do
