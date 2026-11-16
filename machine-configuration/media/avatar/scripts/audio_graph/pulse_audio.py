@@ -4,7 +4,7 @@ import subprocess
 
 def run(*arguments):
     completed = subprocess.run(
-        ["pactl", *arguments], capture_output=True, text=True, check=True
+        ["pactl", *arguments], capture_output=True, text=True, check=True, timeout=10
     )
     return completed.stdout.strip()
 

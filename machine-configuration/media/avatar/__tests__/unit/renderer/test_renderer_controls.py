@@ -1,3 +1,4 @@
+import functools
 import json
 import shutil
 import subprocess
@@ -8,7 +9,10 @@ import pytest
 from renderer_module_runner import run_renderer_module
 
 
-SOURCE = Path(__file__).resolve().parents[2] / "renderer/renderer-controls.js"
+SOURCE = Path(__file__).resolve().parents[3] / "renderer/renderer-controls.js"
+run_node = functools.partial(
+    subprocess.run, capture_output=True, text=True, check=True, timeout=60
+)
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")
@@ -44,9 +48,7 @@ def test_renderer_controls_preserve_audio_state_consent_and_request_identity():
       console.log(JSON.stringify({ state, chosen, levels: window.avatarStatus.levelMessages, socket: controls.socket.sent }));
     })().catch(error => { console.error(error); process.exitCode = 1; });
     """
-    completed = subprocess.run(
-        ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
-    )
+    completed = run_node(["node", "-e", program, str(SOURCE)])
     result = json.loads(completed.stdout)
     assert result["state"]["mouthTarget"] == pytest.approx(0.8)
     assert result["state"]["idleMode"] == "floating"
@@ -80,9 +82,7 @@ def follow_level(current, target, delta):
       console.log(followLevel({current}, {target}, {delta}));
     }})();
     """
-    completed = subprocess.run(
-        ["node", "-e", program, str(SOURCE)], capture_output=True, text=True, check=True
-    )
+    completed = run_node(["node", "-e", program, str(SOURCE)])
     return float(completed.stdout)
 
 

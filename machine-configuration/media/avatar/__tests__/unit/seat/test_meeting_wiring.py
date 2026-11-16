@@ -53,7 +53,7 @@ def test_a_seat_that_ends_stops_the_conversation_and_the_listener():
 
 def test_a_mac_gets_the_same_four_commands_as_chise():
     packages = MAC_COMMANDS[MAC_COMMANDS.index("home.packages") :]
-    assert 'forwardToChise "avatar-audio"' in packages
+    assert 'forwardToHost "avatar-audio"' in packages
     for verb, command in [
         ("start", "avatar-start"),
         ("stop", "avatar-stop"),
@@ -94,3 +94,19 @@ def test_stopping_the_avatar_releases_the_seat():
 def test_the_wake_on_chise_comes_back_whenever_it_ends():
     chise_wake = (AVATAR / "avatar-wake-home-manager.nix").read_text()
     assert 'Restart = "always";' in chise_wake
+
+
+def test_the_avatar_host_is_named_once_and_every_mac_command_reads_it():
+    topology = (AVATAR / "home-manager/avatar-topology.nix").read_text()
+    assert re.findall(r'host = "([a-z]+)";', topology) == ["chise"]
+    assert "chise" not in MAC_COMMANDS
+    assert MAC_COMMANDS.count("export AVATAR_HOST=${topology.host}") == 3
+
+
+def test_every_machine_gets_the_doctor():
+    assert "import ./home-manager/avatar-doctor-package.nix" in MAC_COMMANDS
+    assert 'arguments = "--seat-of ${topology.host}";' in MAC_COMMANDS
+    host = (AVATAR / "home-manager/avatar-doctor-home-manager.nix").read_text()
+    assert "./home-manager/avatar-doctor-home-manager.nix" in UNITS
+    assert "import ./avatar-doctor-package.nix" in host
+    assert 'arguments = "";' in host

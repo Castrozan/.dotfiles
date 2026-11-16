@@ -8,28 +8,31 @@
 }:
 let
   programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
+  topology = import ./home-manager/avatar-topology.nix;
   rebuildSafeLaunchAgentLib =
     import ../../operating-system/launchd/rebuild-safe-launch-agent-library.nix
       {
         inherit config lib pkgs;
       };
-  forwardToChise =
+  forwardToHost =
     command:
     pkgs.writeShellScriptBin command ''
-      exec ssh chise ${command} "$(printf '%q ' "$@")"
+      exec ssh ${topology.host} ${command} "$(printf '%q ' "$@")"
     '';
-  forwardCommandToChise = pkgs.writeShellScriptBin "avatar-command" ''
+  forwardCommandToHost = pkgs.writeShellScriptBin "avatar-command" ''
     if [ "''${1:-}" = speak ] && [ -n "''${HERDR_PANE_ID:-}" ]; then
-      ssh -n chise avatar-claim-floor --speaker "$(printf '%q' "${hostname}:$HERDR_PANE_ID")" || exit 1
+      ssh -n ${topology.host} avatar-claim-floor --speaker "$(printf '%q' "${hostname}:$HERDR_PANE_ID")" || exit 1
     fi
-    exec ssh chise avatar-command "$(printf '%q ' "$@")"
+    exec ssh ${topology.host} avatar-command "$(printf '%q ' "$@")"
   '';
   remoteMeeting =
     verb: command:
     pkgs.writeShellScriptBin command ''
+      export AVATAR_HOST=${topology.host}
       exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_meeting.py ${verb} "$@"
     '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
+    export AVATAR_HOST=${topology.host}
     export AVATAR_AGENT_HOST=${hostname}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_talk.py "$@"
   '';
@@ -42,6 +45,7 @@ let
         talk
       ]
     }:$PATH
+    export AVATAR_HOST=${topology.host}
     export AVATAR_AGENT_HOST=${hostname}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
@@ -49,6 +53,11 @@ let
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/conversation/remote_seat}:${./scripts/wake}:${programs.a2aLibrary}
     exec ${websocketPython}/bin/python3 ${./scripts/wake}/wake_listener.py "$@"
   '';
+  doctor = import ./home-manager/avatar-doctor-package.nix {
+    inherit pkgs lib;
+    commands = [ talk ];
+    arguments = "--seat-of ${topology.host}";
+  };
   wakeLog = "${config.home.homeDirectory}/Library/Logs/avatar-wake.log";
   wakeLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
     name = "avatar-wake";
@@ -69,8 +78,9 @@ lib.mkMerge [
     home.packages = [
       talk
       wake
-      forwardCommandToChise
-      (forwardToChise "avatar-audio")
+      doctor
+      forwardCommandToHost
+      (forwardToHost "avatar-audio")
       (remoteMeeting "start" "avatar-start")
       (remoteMeeting "stop" "avatar-stop")
       (remoteMeeting "controls" "avatar-controls")

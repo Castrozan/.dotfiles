@@ -59,8 +59,8 @@ let
   );
   audio = pkgs.writeShellScriptBin "avatar-audio" ''
     export PATH=${lib.makeBinPath [ pkgs.pulseaudio ]}:$PATH
-    export PYTHONPATH=${./scripts}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/audio_cli.py} "$@"
+    export PYTHONPATH=${./scripts/audio_graph}
+    exec ${pkgs.python312}/bin/python3 ${./scripts/audio_graph/audio_cli.py} "$@"
   '';
   serve = pkgs.writeShellScript "avatar-renderer" ''
     export AVATAR_RENDERER_ROOT=${renderer}
@@ -95,7 +95,7 @@ let
         pkgs.v4l-utils
       ]
     }:$PATH
-    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
+    export PYTHONPATH=${./scripts}:${./scripts/audio_graph}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}
     exec ${pkgs.python312}/bin/python3 ${./scripts/meetings/start.py} "$@"
   '';
   stop = pkgs.writeShellScriptBin "avatar-stop" ''
@@ -151,7 +151,7 @@ let
       ]
     }:$PATH
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
-    export PYTHONPATH=${./scripts}:${./scripts/listening}
+    export PYTHONPATH=${./scripts/audio_graph}:${./scripts/listening}
     exec ${websocketPython}/bin/python3 ${./scripts/conversation/remote_seat}/seat_bridge.py
   '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
@@ -168,7 +168,7 @@ let
       ]
     }:$PATH
     export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
-    export PYTHONPATH=${./scripts}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
+    export PYTHONPATH=${./scripts}:${./scripts/audio_graph}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"
   '';
 in
