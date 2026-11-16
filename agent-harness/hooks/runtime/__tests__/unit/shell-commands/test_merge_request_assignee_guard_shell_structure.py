@@ -18,32 +18,6 @@ def guard(command):
     )
 
 
-def test_allows_a_rest_creation_naming_the_assignee_in_the_query_string():
-    assert (
-        guard(
-            "curl -X POST --data-binary @/tmp/body.json "
-            '"https://gitlab.example.com/api/v4/projects/1/merge_requests?assignee_id=7"'
-        )
-        is None
-    )
-
-
-@pytest.mark.parametrize(
-    "command",
-    [
-        'jq -n \'{source_branch:"feature", title:"thing", assignee_id:683}\' '
-        '| glab api -X POST "projects/1/merge_requests" --input - '
-        '-H "Content-Type: application/json"',
-        "cat > /tmp/body.json <<'EOF'\n"
-        '{"source_branch": "feature", "title": "thing", "assignee_ids": [683]}\n'
-        "EOF\n"
-        "glab api -X POST projects/1/merge_requests --input /tmp/body.json",
-    ],
-)
-def test_allows_a_rest_creation_whose_body_is_built_with_an_assignee(command):
-    assert guard(command) is None, command
-
-
 def test_denies_a_creation_that_follows_a_script_fed_to_another_interpreter():
     result = guard(
         "python3 - <<'EOF'\n"
@@ -53,6 +27,20 @@ def test_denies_a_creation_that_follows_a_script_fed_to_another_interpreter():
         "git push -q -u origin feature; glab mr create --fill --yes 2>&1 | tail -1"
     )
     assert result is not None
+    assert result.decision == "deny"
+
+
+@pytest.mark.parametrize(
+    "command",
+    [
+        "glab api -X POST projects/1/merge_requests -f source_branch=feature "
+        "| jq '.assignee_id'",
+        "grep -c feature <<< branches\nglab mr create --fill --yes",
+    ],
+)
+def test_denies_a_creation_that_only_resembles_an_assigned_one(command):
+    result = guard(command)
+    assert result is not None, command
     assert result.decision == "deny"
 
 

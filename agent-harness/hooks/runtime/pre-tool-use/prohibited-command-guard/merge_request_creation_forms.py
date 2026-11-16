@@ -13,7 +13,7 @@ REQUEST_BODY_FLAGS = frozenset(
 MERGE_REQUEST_COLLECTION_PATH_PATTERN = re.compile(
     r"(?:^|/)projects/[^/\s]+/merge_requests/?$"
 )
-REST_ASSIGNEE_FIELD = "assignee_id"
+REST_ASSIGNEE_FIELD_PATTERN = re.compile(r"assignee_ids?(?:\[\])?[\"']?\s*[:=]")
 REST_CLIENT_COMMAND_NAMES = frozenset({"glab", "curl"})
 
 
@@ -56,17 +56,24 @@ def _request_method(arguments):
     return "POST" if sends_a_body else "GET"
 
 
+def _request_paths(arguments):
+    for argument in arguments:
+        request_path = argument.partition("?")[0]
+        if "=" not in request_path:
+            yield request_path
+
+
 def _posts_to_merge_request_collection(arguments):
     if _request_method(arguments) != "POST":
         return False
     return any(
-        MERGE_REQUEST_COLLECTION_PATH_PATTERN.search(argument.partition("?")[0])
-        for argument in arguments
+        MERGE_REQUEST_COLLECTION_PATH_PATTERN.search(request_path)
+        for request_path in _request_paths(arguments)
     )
 
 
 def _request_body_names_assignee(_arguments, whole_command_text):
-    return REST_ASSIGNEE_FIELD in whole_command_text
+    return bool(REST_ASSIGNEE_FIELD_PATTERN.search(whole_command_text))
 
 
 def _glab_creates_merge_request(invocation_words):

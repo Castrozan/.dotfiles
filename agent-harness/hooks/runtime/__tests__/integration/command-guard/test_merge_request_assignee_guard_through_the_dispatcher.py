@@ -46,7 +46,7 @@ def test_the_dispatcher_denies_a_creation_with_no_assignee(command, remedy):
         "glab mr create --fill --yes --assignee @me",
         "gh pr create --fill --assignee @me",
         "glab api -X POST projects/1/merge_requests -f source_branch=feature "
-        "-f assignee_id=683",
+        "-f assignee_id=42",
         "git push -u origin feature -o merge_request.create",
         "glab mr list",
     ],
