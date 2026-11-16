@@ -170,8 +170,11 @@ a name, so the prompt marks the speaker as not verified. It starts with the grap
 again whenever it ends, and `avatar-stop` leaves it running. `systemctl --user stop avatar-wake` turns it off;
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
 
-On a Mac the same listener runs as the `avatar-wake` launchd agent, logging to `~/Library/Logs/avatar-wake.log`, with its
-machine effects swapped in `mac_wake_boundaries.py`. `mac_microphone.py` serves a capture page on `127.0.0.1:8771`,
+On a Mac the same listener runs as the `com.dotfiles.avatar-wake` launchd agent, logging to
+`~/Library/Logs/avatar-wake.log`. It is a rebuild-safe launch agent: a rebuild never unloads it, and when the wake code
+changes the rebuild restarts it in place with `launchctl kickstart -k`, because a reload once left it unloaded overnight.
+A rebuild that finds it unloaded loads it again.
+Its machine effects swapped in `mac_wake_boundaries.py`. `mac_microphone.py` serves a capture page on `127.0.0.1:8771`,
 opens it in headless Chrome on the profile `~/.local/share/avatar/wake-browser` and writes the page's frames to stdout in
 place of `parec`. The page opens the default input, or the built-in microphone when the default is Bluetooth, which
 would otherwise force call-quality sound on everything the Mac plays. Each utterance goes to `avatar-transcribe` on
