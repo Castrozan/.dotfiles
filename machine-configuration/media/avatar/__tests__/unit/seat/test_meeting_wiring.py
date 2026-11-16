@@ -89,3 +89,8 @@ def test_the_seat_outlives_a_conversation_so_a_meeting_keeps_it():
 def test_stopping_the_avatar_releases_the_seat():
     stop = (AVATAR / "scripts/avatar-stop").read_text()
     assert "avatar-remote-seat.service" in stop
+
+
+def test_the_wake_on_chise_comes_back_whenever_it_ends():
+    chise_wake = (AVATAR / "avatar-wake-home-manager.nix").read_text()
+    assert 'Restart = "always";' in chise_wake

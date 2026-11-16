@@ -166,7 +166,8 @@ it while an avatar conversation runs, because that conversation's own listener t
 transcribed locally by Hex's Parakeet, and nothing is stored. One that starts with a greeting and a live Servant's first
 name or nickname, such as "hey Voyager, check the build", is delivered to that session's pane with `herdr agent prompt`, which lands
 even mid-turn, and the avatar conversation then opens, so the reply continues on ElevenLabs. Anyone in the room can say
-a name, so the prompt marks the speaker as not verified. `systemctl --user stop avatar-wake` turns it off;
+a name, so the prompt marks the speaker as not verified. It starts with the graphical session, systemd starts it
+again whenever it ends, and `avatar-stop` leaves it running. `systemctl --user stop avatar-wake` turns it off;
 with the service stopped, `avatar-wake --dry-run` reports matches without delivering them.
 
 On a Mac the same listener runs as the `avatar-wake` launchd agent, logging to `~/Library/Logs/avatar-wake.log`, with its

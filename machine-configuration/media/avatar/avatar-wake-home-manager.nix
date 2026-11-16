@@ -39,7 +39,7 @@ in
       };
       Service = {
         ExecStart = "${wake}/bin/avatar-wake";
-        Restart = "on-failure";
+        Restart = "always";
         RestartSec = 5;
       };
       Install.WantedBy = [ "graphical-session.target" ];
