@@ -2,6 +2,7 @@ import argparse
 import re
 import shutil
 import subprocess
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -158,4 +159,5 @@ def run(arguments: argparse.Namespace) -> None:
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(line_buffering=True)
     run(parse_arguments())
