@@ -103,8 +103,13 @@ def test_prunes_generations_before_collecting_and_records_free_space(tmp_path):
         call(
             ["nix-env", "--profile", "/p/system", "--delete-generations", "+5"],
             check=True,
+            timeout=collection.PRUNE_TIMEOUT_SECONDS,
         ),
-        call(["nix-store", "--gc", "--max-freed", str(50 * GIBIBYTE)], check=True),
+        call(
+            ["nix-store", "--gc", "--max-freed", str(50 * GIBIBYTE)],
+            check=True,
+            timeout=collection.COLLECTION_TIMEOUT_SECONDS,
+        ),
     ]
     assert state_file.read_text() == f"{70 * GIBIBYTE}\n"
 
@@ -123,6 +128,7 @@ def test_dry_run_neither_deletes_nor_collects(tmp_path):
                 "--dry-run",
             ],
             check=True,
+            timeout=collection.PRUNE_TIMEOUT_SECONDS,
         )
     ]
     assert not state_file.exists()

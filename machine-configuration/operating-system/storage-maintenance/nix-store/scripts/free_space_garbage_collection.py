@@ -9,6 +9,8 @@ from pathlib import Path
 GIBIBYTE = 1024**3
 GENERATION_LINK_PATTERN = re.compile(r"^(?P<profile>.+)-(?P<generation>\d+)-link$")
 FUTILE_REPEAT_MARGIN_BYTES = GIBIBYTE
+PRUNE_TIMEOUT_SECONDS = 600
+COLLECTION_TIMEOUT_SECONDS = 4 * 3600
 
 
 @dataclass(frozen=True)
@@ -48,19 +50,26 @@ def decide(
     )
 
 
+def profiles_in_directory(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    names = {entry.name for entry in directory.iterdir() if entry.is_symlink()}
+    matches = (GENERATION_LINK_PATTERN.match(name) for name in sorted(names))
+    return [
+        directory / match["profile"]
+        for match in matches
+        if match and match["profile"] in names
+    ]
+
+
 def discover_profiles(profile_directories: list[Path]) -> list[Path]:
-    profiles = []
-    for directory in profile_directories:
-        if not directory.is_dir():
-            continue
-        names = {entry.name for entry in directory.iterdir() if entry.is_symlink()}
-        for name in sorted(names):
-            match = GENERATION_LINK_PATTERN.match(name)
-            if match and match["profile"] in names:
-                candidate = directory / match["profile"]
-                if candidate not in profiles:
-                    profiles.append(candidate)
-    return profiles
+    return list(
+        dict.fromkeys(
+            profile
+            for directory in profile_directories
+            for profile in profiles_in_directory(directory)
+        )
+    )
 
 
 def profile_directories(home_root: Path) -> list[Path]:
@@ -103,11 +112,15 @@ def prune_generations(profile: Path, kept_generations: int, dry_run: bool) -> No
     ]
     if dry_run:
         command.append("--dry-run")
-    subprocess.run(command, check=True)
+    subprocess.run(command, check=True, timeout=PRUNE_TIMEOUT_SECONDS)
 
 
 def collect_store_garbage(bytes_to_free: int) -> None:
-    subprocess.run(["nix-store", "--gc", "--max-freed", str(bytes_to_free)], check=True)
+    subprocess.run(
+        ["nix-store", "--gc", "--max-freed", str(bytes_to_free)],
+        check=True,
+        timeout=COLLECTION_TIMEOUT_SECONDS,
+    )
 
 
 def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
@@ -124,6 +137,31 @@ def parse_arguments(argv: list[str] | None = None) -> argparse.Namespace:
     return parser.parse_args(argv)
 
 
+def forget_previous_collection_once_recovered(
+    arguments: argparse.Namespace, free_bytes: int
+) -> None:
+    if free_bytes >= arguments.minimum_free_bytes and not arguments.dry_run:
+        arguments.state_file.unlink(missing_ok=True)
+
+
+def prune_every_profile(arguments: argparse.Namespace) -> None:
+    for profile in discover_profiles(profile_directories(arguments.home_root)):
+        print(
+            f"pruning {profile} to the newest {arguments.kept_generations} generations"
+        )
+        prune_generations(profile, arguments.kept_generations, arguments.dry_run)
+
+
+def collect_and_record_free_space(
+    arguments: argparse.Namespace, bytes_to_free: int
+) -> None:
+    collect_store_garbage(bytes_to_free)
+    free_bytes_after = shutil.disk_usage(arguments.store_path).free
+    print(f"free after collection {free_bytes_after / GIBIBYTE:.1f} GiB")
+    arguments.state_file.parent.mkdir(parents=True, exist_ok=True)
+    arguments.state_file.write_text(f"{free_bytes_after}\n")
+
+
 def run(arguments: argparse.Namespace) -> None:
     thresholds = Thresholds(arguments.minimum_free_bytes, arguments.target_free_bytes)
     free_bytes = shutil.disk_usage(arguments.store_path).free
@@ -134,28 +172,16 @@ def run(arguments: argparse.Namespace) -> None:
         f"free {free_bytes / GIBIBYTE:.1f} GiB, minimum {thresholds.minimum_free_bytes / GIBIBYTE:.1f} GiB, "
         f"target {thresholds.target_free_bytes / GIBIBYTE:.1f} GiB: {decision.reason}"
     )
-    if free_bytes >= thresholds.minimum_free_bytes and not arguments.dry_run:
-        arguments.state_file.unlink(missing_ok=True)
+    forget_previous_collection_once_recovered(arguments, free_bytes)
     if not decision.collect:
         return
-
-    for profile in discover_profiles(profile_directories(arguments.home_root)):
-        print(
-            f"pruning {profile} to the newest {arguments.kept_generations} generations"
-        )
-        prune_generations(profile, arguments.kept_generations, arguments.dry_run)
-
+    prune_every_profile(arguments)
     if arguments.dry_run:
         print(
             f"dry run: would collect up to {decision.bytes_to_free / GIBIBYTE:.1f} GiB of store garbage"
         )
         return
-
-    collect_store_garbage(decision.bytes_to_free)
-    free_bytes_after = shutil.disk_usage(arguments.store_path).free
-    print(f"free after collection {free_bytes_after / GIBIBYTE:.1f} GiB")
-    arguments.state_file.parent.mkdir(parents=True, exist_ok=True)
-    arguments.state_file.write_text(f"{free_bytes_after}\n")
+    collect_and_record_free_space(arguments, decision.bytes_to_free)
 
 
 if __name__ == "__main__":
