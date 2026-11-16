@@ -118,9 +118,10 @@ in
       (
         !(testConfiguration.home.activation ? "restartLaunchAgentOnNewPackage-example")
         && builtins.elem "setupLaunchAgents" testRestart.after
-        && lib.hasInfix (builtins.unsafeDiscardStringContext "/rebuild-safe-launch-agents/example/${builtins.baseNameOf (toString pkgs.hello)}") (
-          builtins.unsafeDiscardStringContext testRestart.data
-        )
+        &&
+          builtins.match ".*/rebuild-safe-launch-agents/example/[0-9a-z]{32}-hello-[^/[:space:]]+( .*)?" (
+            builtins.replaceStrings [ "\n" ] [ " " ] (builtins.unsafeDiscardStringContext testRestart.data)
+          ) != null
       )
       "an agent restarts on a new package only when it asks to, after Home Manager loads agents, and checks the new package's runtime root";
 
