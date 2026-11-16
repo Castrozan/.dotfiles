@@ -1,11 +1,39 @@
 import asyncio
+import re
 import socket
+from pathlib import Path
 
 import mac_microphone
 import pytest
+import seat_page
 from websockets.exceptions import ConnectionClosed, InvalidStatus
 
 FRAMES = [b"\x01\x02" * 320, b"\x03\x04" * 320, b"\x05\x06" * 320]
+AVATAR_SCRIPTS = Path(__file__).resolve().parents[3] / "scripts"
+WAKE_PAGE = AVATAR_SCRIPTS / "wake/page"
+SEAT_PAGE = AVATAR_SCRIPTS / "conversation/remote_seat/page"
+MODULE_IMPORT = re.compile(r'from "(/[^"]+)"')
+
+
+def imported_modules(served_files):
+    return {
+        imported
+        for source, content_type in served_files.values()
+        if content_type == seat_page.JAVASCRIPT
+        for imported in MODULE_IMPORT.findall(source.read_text())
+    }
+
+
+@pytest.mark.parametrize(
+    "served_files",
+    [
+        mac_microphone.microphone_page_files(WAKE_PAGE, SEAT_PAGE),
+        seat_page.seat_page_files(SEAT_PAGE),
+    ],
+    ids=["wake page", "seat page"],
+)
+def test_every_module_a_page_imports_is_served_beside_it(served_files):
+    assert imported_modules(served_files) <= set(served_files)
 
 
 def test_every_binary_frame_the_page_sends_reaches_the_output_in_order(microphone):
@@ -62,6 +90,7 @@ def test_a_page_from_another_origin_cannot_open_the_socket(microphone, origin):
 def test_the_capture_page_and_the_shared_worklets_are_served(microphone):
     async def scenario():
         assert await microphone.fetch("/") == (200, b"<p>wake</p>")
+        assert await microphone.fetch("/seat-microphone.js") == (200, b"opener")
         assert await microphone.fetch("/microphone-choice.js") == (200, b"choice")
         assert await microphone.fetch("/seat-audio-worklets.js") == (200, b"worklets")
         assert await microphone.fetch("/seat.js") == (404, b"")

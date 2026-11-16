@@ -189,6 +189,7 @@ def microphone(tmp_path, monkeypatch):
     seat_page.mkdir()
     (wake_page / "index.html").write_text("<p>wake</p>")
     (wake_page / "wake-capture.js").write_text("wake")
+    (seat_page / "seat-microphone.js").write_text("opener")
     (seat_page / "microphone-choice.js").write_text("choice")
     (seat_page / "seat-audio-worklets.js").write_text("worklets")
     return MicrophoneUnderTest(
