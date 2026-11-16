@@ -133,19 +133,21 @@ in
         export LAUNCHCTL_INVOCATIONS=$PWD/launchctl-invocations
         export PATH=${recordingLaunchctl}/bin:${pkgs.coreutils}/bin:${pkgs.gnugrep}/bin
         touch "$LAUNCHCTL_INVOCATIONS"
-        ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/new-package
+        ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/new-package agents/com.dotfiles.example.plist
         grep -qxF "kickstart -k gui/$(id -u)/com.dotfiles.example" "$LAUNCHCTL_INVOCATIONS"
         if grep -qE '^(bootout|bootstrap)' "$LAUNCHCTL_INVOCATIONS"; then exit 1; fi
 
         : >"$LAUNCHCTL_INVOCATIONS"
         mkdir roots
         ln -s /nonexistent roots/new-package
-        ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/new-package
+        ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/new-package agents/com.dotfiles.example.plist
         if grep -q kickstart "$LAUNCHCTL_INVOCATIONS"; then exit 1; fi
 
         : >"$LAUNCHCTL_INVOCATIONS"
-        AGENT_UNLOADED=1 ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/other-package
+        AGENT_UNLOADED=1 ${pkgs.bash}/bin/bash ${restartScript} com.dotfiles.example roots/new-package agents/com.dotfiles.example.plist
         if grep -q kickstart "$LAUNCHCTL_INVOCATIONS"; then exit 1; fi
+        grep -qxF "enable gui/$(id -u)/com.dotfiles.example" "$LAUNCHCTL_INVOCATIONS"
+        grep -qxF "bootstrap gui/$(id -u) agents/com.dotfiles.example.plist" "$LAUNCHCTL_INVOCATIONS"
         touch $out
       '';
 }

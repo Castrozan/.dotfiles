@@ -72,7 +72,8 @@ in
           lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
             run ${restartLaunchAgentOnNewPackage}/bin/restart-launch-agent-on-new-package \
               ${lib.escapeShellArg label} \
-              ${lib.escapeShellArg "${runtimeRootDirectory}/${packageStoreDirectoryName}"}
+              ${lib.escapeShellArg "${runtimeRootDirectory}/${packageStoreDirectoryName}"} \
+              ${lib.escapeShellArg "${config.home.homeDirectory}/Library/LaunchAgents/${label}.plist"}
           ''
         );
       };

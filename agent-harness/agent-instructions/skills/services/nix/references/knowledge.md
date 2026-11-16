@@ -98,7 +98,8 @@ neither disabled nor erroring: it simply stops running, with no log line, no fai
 an agent's output looks stale right after a rebuild, list it in launchctl before debugging its own logic. Re-registering
 it needs an enable before the bootstrap, because a bare bootstrap on a disabled label fails with an opaque IO error.
 Agents built with `mkRebuildSafeLaunchAgent` keep their plist stable so a rebuild never reloads them, and
-`restartWhenPackageChanges` restarts one in place on new code; the rest drift silently.
+`restartWhenPackageChanges` restarts one in place on new code and loads it again when a rebuild finds it absent; the
+rest drift silently.
 
 ### The neovim config is live from the working tree
 
