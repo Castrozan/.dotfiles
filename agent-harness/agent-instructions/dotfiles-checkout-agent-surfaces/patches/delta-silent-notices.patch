@@ -1,0 +1,25 @@
+--- a/.claude-plugin/plugin.json
++++ b/.claude-plugin/plugin.json
+@@ -1,7 +1,7 @@
+ {
+   "name": "delta",
+   "displayName": "Delta for Claude Code",
+-  "version": "0.1.42+no-status-band+prompts-unblocked+store-lock-retried",
++  "version": "0.1.42+no-status-band+prompts-unblocked+store-lock-retried+silent",
+   "description": "Make Claude Code multiplayer. Collaborate on shared conversations and code, powered by DeltaDB.",
+   "author": {
+     "name": "Zed Industries"
+--- delta.base/hooks/register.tsx	2026-11-16 13:07:26
++++ delta/hooks/register.tsx	2026-11-16 13:07:34
+@@ -141,9 +141,9 @@
+       ask: (question, options) => $.ui.ask(question, options),
+       copy: (args) => $.ui.copy(args),
+       invalidate: () => $.ui.invalidate('ui.render'),
+-      log: (text, options) => $.ui.log(text, options),
++      log: async () => {},
+       resolve: (e) => $.ui.resolve(e),
+-      status: (text) => $.ui.status(text),
++      status: async () => {},
+     },
+   }
+ }
