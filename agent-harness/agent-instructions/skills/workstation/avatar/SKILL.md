@@ -11,6 +11,9 @@ before reporting readiness. The renderer serves its model and libraries locally.
 avatar, so rebuild while it talks. The change stays dormant until its units start again: make it live with `avatar-stop`
 and `avatar-start` once `/health` no longer reports `listening`, then check it.
 
+When the voice, the wake or a transcription misbehaves on any machine, run `avatar-doctor` before reading code: it
+checks every link from that machine to the avatar host and names the broken one.
+
 ### Audio routing
 
 `AvatarMic` accepts agent application audio; `AvatarMicrophone` is the mixed meeting input. Route only the intended

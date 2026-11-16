@@ -21,13 +21,13 @@ CONTROLS_NEED_A_MEETING = (
 USAGE = "Usage: avatar-start | avatar-stop | avatar-controls | avatar-listen ARGS"
 
 
-def chise_command(program, arguments):
+def host_command(program, arguments):
     return ["ssh", local_seat.AVATAR_HOST, shlex.join([program, *arguments])]
 
 
 def start():
     started = subprocess.run(
-        chise_command("avatar-start", ["--seat", REMOTE_SEAT]),
+        host_command("avatar-start", ["--seat", REMOTE_SEAT]),
         timeout=START_TIMEOUT_SECONDS,
     )
     if started.returncode:
@@ -49,7 +49,7 @@ def stop():
     local_seat.leave()
     meeting_camera.stop()
     return subprocess.run(
-        chise_command("avatar-stop", []), timeout=STOP_TIMEOUT_SECONDS
+        host_command("avatar-stop", []), timeout=STOP_TIMEOUT_SECONDS
     ).returncode
 
 
@@ -69,7 +69,7 @@ def listen_arguments(arguments):
 
 def listen(arguments):
     return subprocess.run(
-        chise_command("avatar-listen", listen_arguments(arguments)),
+        host_command("avatar-listen", listen_arguments(arguments)),
         timeout=local_seat.LONGEST_SEAT_SECONDS,
     ).returncode
 

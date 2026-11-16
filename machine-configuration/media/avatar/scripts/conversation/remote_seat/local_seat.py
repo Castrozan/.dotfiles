@@ -1,12 +1,13 @@
 import http.client
 import json
+import os
 import pathlib
 import re
 import subprocess
 import sys
 import time
 
-AVATAR_HOST = "chise"
+AVATAR_HOST = os.environ["AVATAR_HOST"]
 SEAT_PORT = 8769
 WINDOW_PORT = 8770
 RENDERER_PORT = 3000

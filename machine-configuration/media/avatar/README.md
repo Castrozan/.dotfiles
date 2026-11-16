@@ -20,6 +20,13 @@ or meeting never drops when chise is rebuilt. New code runs only once a unit sta
 microphone, listener and live voice at the next conversation, and the audio, renderer, browser, camera, control server
 and seat at the next `avatar-stop` and `avatar-start`, which is how a deployed change is made live once nobody listens.
 
+## Health
+
+`avatar-doctor` runs on every machine and checks each link the voice depends on, naming the broken one. On the avatar
+host it checks Hex, the wake listener and a transcription round trip. On a Mac it first reaches the host, relays the
+host's own findings, then checks the wake agent and its microphone page. It exits non-zero when any link is broken,
+and `--json` prints the findings for another program. The host is named once, in `home-manager/avatar-topology.nix`.
+
 ## Desktop conversation
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual

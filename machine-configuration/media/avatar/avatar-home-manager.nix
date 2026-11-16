@@ -32,6 +32,7 @@ in
     ./avatar-wake-home-manager.nix
     ./home-manager/avatar-remote-seat-home-manager.nix
     ./home-manager/avatar-rebuild-home-manager.nix
+    ./home-manager/avatar-doctor-home-manager.nix
   ];
   config = lib.mkIf isNixOS {
     home.packages = with programs; [

@@ -15,7 +15,7 @@ import utterances
 from conversation_state import ConversationPhase
 from talk_runner import run_talk
 
-AVATAR_DIRECTORY = Path(__file__).resolve().parents[2]
+AVATAR_DIRECTORY = Path(__file__).resolve().parents[3]
 requires_node = pytest.mark.skipif(
     shutil.which("node") is None, reason="node is unavailable"
 )
@@ -41,7 +41,11 @@ def test_renderer_controls_answer_character_requests_with_their_identity():
     """
     source = AVATAR_DIRECTORY / "renderer/renderer-controls.js"
     completed = subprocess.run(
-        ["node", "-e", program, str(source)], capture_output=True, text=True, check=True
+        ["node", "-e", program, str(source)],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=60,
     )
     assert json.loads(completed.stdout) == [
         {"type": "characterChanged", "name": "vita", "id": "known"},
@@ -66,7 +70,11 @@ def test_renderer_announces_its_character_on_every_connection():
     """
     source = AVATAR_DIRECTORY / "renderer/renderer-controls.js"
     completed = subprocess.run(
-        ["node", "-e", program, str(source)], capture_output=True, text=True, check=True
+        ["node", "-e", program, str(source)],
+        capture_output=True,
+        text=True,
+        check=True,
+        timeout=60,
     )
     assert json.loads(completed.stdout) == [
         {"type": "identify", "role": "renderer"},

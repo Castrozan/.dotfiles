@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 spec = importlib.util.spec_from_file_location(
-    "avatar_audio", Path(__file__).resolve().parents[3] / "scripts/audio.py"
+    "avatar_audio", Path(__file__).resolve().parents[3] / "scripts/audio_graph/audio.py"
 )
 audio = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(audio)
