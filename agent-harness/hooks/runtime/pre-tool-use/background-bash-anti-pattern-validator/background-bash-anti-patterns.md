@@ -55,6 +55,54 @@ A typo'd literal filters to nothing silently; a derived one fails loudly.
 Starting the service is fine. Asking a background task to wait on one is not:
 the restarted daemon keeps the group alive past the command's own success.
 
+## peer-wait-without-liveness-exit
+
+Applies to backgrounded Bash and to Monitor. A loop that reads a peer agent's
+state (`orchestrator report show`, `herdr agent read`, `herdr pane read`,
+`a2a status`, `a2a inbox`) must also leave when the peer is gone. A closed pane
+freezes everything the loop reads, so the loop sits silent until its cap, or
+forever.
+
+- Wrong: `until orchestrator report show <peer> | grep -q done; do sleep 45; done`
+- Right: put a liveness probe in the exit condition and say why the loop ended:
+
+```
+n=0
+until orchestrator report show <peer> | grep -q done \
+  || ! herdr pane get <pane> >/dev/null 2>&1 || [ $n -ge 80 ]; do
+  sleep 45; n=$((n+1))
+done
+herdr pane get <pane> >/dev/null 2>&1 || echo "PEER-GONE: pane <pane> closed"
+orchestrator report show <peer>
+```
+
+Probes that count, inside the loop: `herdr pane get`, `herdr pane list`,
+`herdr pane process-info`, `herdr agent get`, `herdr agent list`, `a2a list`,
+`kill -0`, `pgrep`, `ps -p`. A probe that runs only after the loop is not an
+exit.
+
+## peer-event-stream-outside-monitor
+
+- Wrong: `orchestrator watch --workspace <id>` with `run_in_background: true`
+- Right: the same command under the Monitor tool.
+
+Backgrounded Bash notifies once, when the command exits, and this stream never
+exits. Monitor delivers each line as an event.
+
+## Allowed background waits
+
+A backgrounded command that waits is allowed only in one of these shapes:
+
+- A native blocking wait: `herdr agent wait <pane> --until done --timeout <ms>`,
+  a CI watcher, `wait <pid>`.
+- `peer-event-stream-under-monitor`: `orchestrator watch` under Monitor.
+- `peer-poll-with-liveness-exit`: the loop above.
+- `condition-poll`: a sleep-paced loop over a process, file, CI run or
+  endpoint, with no peer read in it.
+
+One-shot jobs that do not loop (a build, a test run, a server) are not waits
+and stay allowed.
+
 ## foreground-wait-on-ci
 
 - Wrong: `gh run watch <id>`, `gh pr checks <n> --watch`

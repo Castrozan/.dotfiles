@@ -57,6 +57,28 @@ KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "pytest agent-harness/hooks/runtime/__tests__/unit/shell-commands/test_shell_heredoc_body.py > /tmp/out.txt 2>&1",
     "agent-session exit --print-target > /tmp/status.txt 2>&1",
     "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
+    "herdr agent wait w4E:p6 --until done --until blocked --timeout 3600000",
+    "until ! pgrep -f darwin-rebuild >/dev/null; do sleep 15; done; echo rebuild-exited",
+    "until grep -q 'REBUILD-EXIT=' /tmp/rebuild.log 2>/dev/null; do sleep 5; done; "
+    "tail -3 /tmp/rebuild.log",
+    "for attempt in $(seq 1 45); do "
+    "verdict=$(gh run view 30957498339 --json conclusion --jq .conclusion); "
+    '[ -n "$verdict" ] && break; sleep 20; done; echo "verdict: $verdict"',
+    "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
+    "until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); "
+    '[ "$cur" != "$first" ]; } || ! herdr pane get w4E:p6 >/dev/null 2>&1 '
+    "|| [ $n -ge 240 ]; do sleep 45; n=$((n+1)); done; "
+    'herdr pane get w4E:p6 >/dev/null 2>&1 || echo "PEER-GONE: pane w4E:p6 closed"; '
+    "orchestrator report show Reviewer-w4E-p6",
+)
+
+KNOWN_GOOD_MONITOR_COMMANDS = (
+    "orchestrator watch --workspace w4E --pane w4E:p6 --timeout-minutes 10",
+    "tail -f /var/log/app.log | grep --line-buffered ERROR",
+    "until herdr agent read w4E:p6 --source visible 2>/dev/null "
+    "| python3 -u -c 'import sys; sys.exit(0 if \"REVIEW-DONE\" in sys.stdin.read() else 1)' "
+    "|| ! herdr pane get w4E:p6 >/dev/null 2>&1; do sleep 5; done; "
+    "if herdr pane get w4E:p6 >/dev/null 2>&1; then echo MARKER-SEEN; else echo PEER-GONE; fi",
 )
 
 KNOWN_GOOD_FILE_WRITES = (
@@ -79,6 +101,11 @@ def known_good_tool_calls():
                 "tool_name": "Bash",
                 "tool_input": {"command": command, "run_in_background": True},
             },
+        )
+    for command in KNOWN_GOOD_MONITOR_COMMANDS:
+        yield (
+            f"Monitor: {command.splitlines()[0]}",
+            {"tool_name": "Monitor", "tool_input": {"command": command}},
         )
     for file_path in KNOWN_GOOD_FILE_WRITES:
         yield (

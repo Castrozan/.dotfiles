@@ -14,6 +14,10 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
+from background_wait_shape_classifier import (  # noqa: E402
+    build_unlisted_background_wait_deny_reason,
+    find_unlisted_background_wait_rules,
+)
 from hook_dispatch import HandlerResult  # noqa: E402
 from shell_read_only_inspection_command import (  # noqa: E402
     command_text_outside_inert_heredoc_bodies,
@@ -45,9 +49,17 @@ def build_deny_reason_message(
     triggered_streaming_rules,
     triggered_hang_rules,
     triggered_busy_wait_rules,
+    triggered_unlisted_background_wait_rules,
     streamed_execution_context_label,
 ):
     sentences = []
+    if triggered_unlisted_background_wait_rules:
+        sentences.append(
+            build_unlisted_background_wait_deny_reason(
+                triggered_unlisted_background_wait_rules,
+                streamed_execution_context_label,
+            )
+        )
     if triggered_busy_wait_rules:
         busy_wait_rules_list_text = ", ".join(triggered_busy_wait_rules)
         sentences.append(
@@ -92,8 +104,14 @@ def _handler_result_for_command(tool_name, command_string):
     triggered_busy_wait_rules = find_busy_wait_anti_patterns_in_command(
         executed_command_text
     )
+    triggered_unlisted_background_wait_rules = find_unlisted_background_wait_rules(
+        executed_command_text, tool_name
+    )
     if not (
-        triggered_streaming_rules or triggered_hang_rules or triggered_busy_wait_rules
+        triggered_streaming_rules
+        or triggered_hang_rules
+        or triggered_busy_wait_rules
+        or triggered_unlisted_background_wait_rules
     ):
         return None
 
@@ -103,6 +121,7 @@ def _handler_result_for_command(tool_name, command_string):
             triggered_streaming_rules,
             triggered_hang_rules,
             triggered_busy_wait_rules,
+            triggered_unlisted_background_wait_rules,
             streamed_execution_context_label_for_tool(tool_name),
         ),
     )

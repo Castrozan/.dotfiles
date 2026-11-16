@@ -39,6 +39,9 @@ from shell_read_only_inspection_command import (  # noqa: E402
     command_text_the_shell_executes,
 )
 
+BASH_TOOL_NAME = "Bash"
+BACKGROUNDED_BASH_CONTEXT_LABEL = "The backgrounded Bash command"
+
 BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH = (
     "~/.claude/hooks/background-bash-anti-patterns.md"
 )
@@ -151,11 +154,30 @@ def _background_command_result(executed_command_text):
     if command_starts_a_lingering_daemon_or_service(executed_command_text):
         deny_reason = build_lingering_daemon_deny_reason()
         return HandlerResult(decision="deny", reason=deny_reason)
-    return None
+    return _unlisted_background_wait_result(executed_command_text)
+
+
+def _unlisted_background_wait_result(executed_command_text):
+    from background_wait_shape_classifier import (
+        build_unlisted_background_wait_deny_reason,
+        find_unlisted_background_wait_rules,
+    )
+
+    triggered_rule_names = find_unlisted_background_wait_rules(
+        executed_command_text, BASH_TOOL_NAME
+    )
+    if not triggered_rule_names:
+        return None
+    return HandlerResult(
+        decision="deny",
+        reason=build_unlisted_background_wait_deny_reason(
+            triggered_rule_names, BACKGROUNDED_BASH_CONTEXT_LABEL
+        ),
+    )
 
 
 def handle(hook_input):
-    if hook_input.get("tool_name") != "Bash":
+    if hook_input.get("tool_name") != BASH_TOOL_NAME:
         return None
 
     tool_input = hook_input.get("tool_input", {})
