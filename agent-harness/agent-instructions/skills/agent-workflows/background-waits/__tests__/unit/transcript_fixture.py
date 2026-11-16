@@ -2,7 +2,6 @@ import json
 from datetime import datetime, timedelta, timezone
 
 LAUNCH_TIME = datetime(2026, 11, 16, 14, 22, 15, tzinfo=timezone.utc)
-PROCESS_SESSION_ID = "process-session-1"
 
 INCIDENT_COMMAND = (
     "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
@@ -24,7 +23,6 @@ def launch_record(tool_use_id, command, tool_name="Bash", minutes_after_launch=0
     return {
         "type": "assistant",
         "timestamp": _timestamp(minutes_after_launch),
-        "session_id": PROCESS_SESSION_ID,
         "message": {
             "content": [
                 {
@@ -42,7 +40,6 @@ def started_record(tool_use_id, task_id):
     return {
         "type": "user",
         "timestamp": _timestamp(0),
-        "session_id": PROCESS_SESSION_ID,
         "message": {
             "content": [
                 {
@@ -64,7 +61,6 @@ def denied_record(tool_use_id, reason):
     return {
         "type": "user",
         "timestamp": _timestamp(0),
-        "session_id": PROCESS_SESSION_ID,
         "message": {
             "content": [
                 {
@@ -108,7 +104,6 @@ def task_stop_record(task_id, minutes_after_launch):
     return {
         "type": "assistant",
         "timestamp": _timestamp(minutes_after_launch),
-        "session_id": PROCESS_SESSION_ID,
         "message": {
             "content": [
                 {
@@ -126,7 +121,6 @@ def still_running_record(task_id, minutes_after_launch):
     return {
         "type": "attachment",
         "timestamp": _timestamp(minutes_after_launch),
-        "session_id": PROCESS_SESSION_ID,
         "attachment": {"type": "task_status", "taskId": task_id, "status": "running"},
     }
 

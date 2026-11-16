@@ -14,10 +14,19 @@ class ProvenSilence:
     outcome: str
 
 
+def _first_notification_precedes_any_stop(run):
+    if not run.first_notified_at:
+        return False
+    return (
+        run.stopped_by_agent_at is None
+        or run.first_notified_at < run.stopped_by_agent_at
+    )
+
+
 def proven_silence_of(run):
     if run.denied_reason or run.task_id is None:
         return None
-    if run.first_notified_at:
+    if _first_notification_precedes_any_stop(run):
         silence_end, outcome = run.first_notified_at, NOTIFIED_LATE
     elif run.stopped_by_agent_at or run.last_seen_running_at:
         silence_end, outcome = max(

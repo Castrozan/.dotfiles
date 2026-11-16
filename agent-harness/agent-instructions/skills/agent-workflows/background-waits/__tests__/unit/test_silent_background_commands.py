@@ -96,6 +96,23 @@ def test_a_wait_is_recorded_only_when_its_first_notification_comes_late(
     ] == expected_outcomes
 
 
+def test_a_notification_that_follows_the_agent_stop_does_not_hide_the_stop(tmp_path):
+    transcript_path = write_transcript(
+        tmp_path / "session.jsonl",
+        [
+            launch_record("toolu_stopped", INCIDENT_COMMAND),
+            started_record("toolu_stopped", "task1"),
+            task_stop_record("task1", minutes_after_launch=170),
+            completion_notification_record("toolu_stopped", "task1", 171),
+        ],
+    )
+
+    (record,) = silent_records_in(transcript_path)
+
+    assert record["outcome"] == STOPPED_BY_AGENT
+    assert record["silent_minutes"] == 170
+
+
 def test_a_monitor_event_counts_as_the_first_notification(tmp_path):
     transcript_path = write_transcript(
         tmp_path / "session.jsonl",

@@ -8,7 +8,7 @@ from datetime import datetime
 API_REQUEST_BLOB_RECORD_PREFIX = b'{"type":"api-request-blob"'
 BACKGROUND_TASK_ID_IN_RESULT_TEXT = re.compile(r"with ID: ([A-Za-z0-9_-]+)")
 OUTPUT_FILE_IN_RESULT_TEXT = re.compile(r"written to: (\S+?\.output)")
-NOTIFICATION_FIELD = re.compile(r"<(task-id|tool-use-id|status)>(.*?)</\1>", re.DOTALL)
+NOTIFICATION_FIELD = re.compile(r"<(task-id|tool-use-id)>(.*?)</\1>", re.DOTALL)
 
 
 @dataclass
@@ -17,15 +17,12 @@ class BackgroundCommandRun:
     tool_name: str
     command: str
     launched_at: datetime
-    process_session_id: str
     task_id: str | None = None
     output_file_path: str | None = None
     denied_reason: str | None = None
     first_notified_at: datetime | None = None
-    final_status: str | None = None
     last_seen_running_at: datetime | None = None
     stopped_by_agent_at: datetime | None = None
-    process_session_last_active_at: datetime | None = None
 
 
 def timestamp_of(record):
@@ -56,7 +53,6 @@ def _launch_from_tool_use(tool_use, record):
         tool_name=tool_name,
         command=tool_input["command"],
         launched_at=launched_at,
-        process_session_id=record.get("session_id") or record.get("sessionId") or "",
     )
 
 
@@ -75,14 +71,10 @@ class TranscriptBackgroundRunCollector:
     def __init__(self):
         self.runs_by_tool_use_id = {}
         self.runs_by_task_id = {}
-        self.last_active_at_by_process_session_id = {}
 
     def collect(self, record):
         record_type = record.get("type")
         recorded_at = timestamp_of(record)
-        process_session_id = record.get("session_id")
-        if process_session_id and recorded_at:
-            self.last_active_at_by_process_session_id[process_session_id] = recorded_at
         if record_type == "assistant":
             self._collect_tool_uses(record, recorded_at)
         elif record_type == "user":
@@ -148,8 +140,6 @@ class TranscriptBackgroundRunCollector:
             return
         if not run.first_notified_at:
             run.first_notified_at = recorded_at
-        if fields.get("status"):
-            run.final_status = fields["status"]
 
     def _collect_task_status(self, record, recorded_at):
         attachment = record.get("attachment") or {}
@@ -161,11 +151,7 @@ class TranscriptBackgroundRunCollector:
         ):
             run.last_seen_running_at = recorded_at
 
-    def finished_runs(self):
-        for run in self.runs_by_tool_use_id.values():
-            run.process_session_last_active_at = (
-                self.last_active_at_by_process_session_id.get(run.process_session_id)
-            )
+    def collected_runs(self):
         return list(self.runs_by_tool_use_id.values())
 
 
@@ -181,4 +167,4 @@ def background_command_runs_in_transcript(transcript_path):
                 continue
             if isinstance(record, dict):
                 collector.collect(record)
-    return collector.finished_runs()
+    return collector.collected_runs()
