@@ -16,7 +16,12 @@ PANES = st.text(
 )
 ROOMS = st.sampled_from(["kira", "chise"])
 OFFSETS_WITHIN_THE_WINDOW = st.lists(
-    st.tuples(ROOMS, st.floats(0, wake_claim.CLAIM_SECONDS, exclude_max=True)),
+    st.tuples(
+        ROOMS,
+        st.integers(0, wake_claim.CLAIM_SECONDS * 1000 - 1).map(
+            lambda milliseconds: milliseconds / 1000
+        ),
+    ),
     min_size=1,
     max_size=8,
 )
