@@ -2,6 +2,19 @@ KNOWN_SILENT_BACKGROUND_WAITS = (
     {
         "tool_name": "Bash",
         "denied_by": "peer-wait-without-liveness-exit",
+        "silent_minutes": 170,
+        "command": (
+            "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); "
+            "n=0; until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null "
+            '| head -1); [ "$cur" != "$first" ] && echo "$cur" '
+            '| grep -qE "· (done|blocked) · "; } || [ $n -ge 240 ]; '
+            "do sleep 45; n=$((n+1)); done; "
+            "orchestrator report show Reviewer-w4E-p6 2>/dev/null | sed -n 1,20p"
+        ),
+    },
+    {
+        "tool_name": "Bash",
+        "denied_by": "peer-wait-without-liveness-exit",
         "silent_minutes": 37,
         "command": (
             "until herdr agent read w3A:p12P --source visible --lines 40 "
