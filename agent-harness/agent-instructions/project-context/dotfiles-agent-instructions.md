@@ -120,7 +120,7 @@ and a confirmed finding belongs in a follow-up commit rather than an amend a pee
 
 A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a build,
 a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
-operational instruction, or when correctness depends on several files changing together.
+operational instruction. So is one whose correctness depends on several files changing together.
 
 Skip the review only when every hunk is demonstrably non-semantic. That means a formatting or prose correction that
 alters no command, path, identifier, factual claim, policy or behavior. Review the whole change when substantive and
