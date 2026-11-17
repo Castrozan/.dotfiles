@@ -11,7 +11,7 @@ import pytest
 
 from voice_provider.provider_commands import mono_clip_from_wav
 
-CLI = Path(__file__).resolve().parents[2] / "scripts/silver_voice_cli.py"
+CLI = Path(__file__).resolve().parents[3] / "scripts/silver_voice_cli.py"
 SUBPROCESS_TIMEOUT_SECONDS = 20
 
 
