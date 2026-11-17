@@ -9,6 +9,7 @@ from review_command_runner import ReviewTargetError
 
 CURRENT_REPOSITORY = ForgeRepository("gitlab.example", "group/current")
 LINKED_REPOSITORY = ForgeRepository("gitlab.example", "group/linked")
+OTHER_LINKED_REPOSITORY = ForgeRepository("gitlab.example", "group/other-linked")
 MERGE_REQUEST = ChangeRequest(
     title="Title",
     description="",
@@ -74,20 +75,38 @@ def test_request_link_looks_up_the_linked_repository_not_the_current_one(git_dou
 def test_empty_target_reviews_the_detected_request_instead_of_the_branch(
     git_doubles,
 ):
-    detected_request = RequestLink(LINKED_REPOSITORY, "7")
+    detected_requests = [
+        RequestLink(LINKED_REPOSITORY, "7"),
+        RequestLink(OTHER_LINKED_REPOSITORY, "8"),
+    ]
     with patch(
         "review_target.view_change_request", return_value=MERGE_REQUEST
     ) as view_change_request:
-        resolved = review_target.resolve_review_target(" ", detected_request)
+        resolved = review_target.resolve_review_target(" ", detected_requests)
     view_change_request.assert_called_once_with(LINKED_REPOSITORY, "7")
     assert resolved.selector == "!7"
 
 
-def test_typed_target_wins_over_the_detected_request(git_doubles):
+def test_typed_number_of_a_later_detected_request_reviews_its_repository(git_doubles):
+    detected_requests = [
+        RequestLink(LINKED_REPOSITORY, "43"),
+        RequestLink(OTHER_LINKED_REPOSITORY, "530"),
+    ]
     with patch(
         "review_target.view_change_request", return_value=MERGE_REQUEST
     ) as view_change_request:
-        review_target.resolve_review_target("12", RequestLink(LINKED_REPOSITORY, "7"))
+        review_target.resolve_review_target("530", detected_requests)
+    view_change_request.assert_called_once_with(OTHER_LINKED_REPOSITORY, "530")
+    git_doubles.assert_called_once_with(OTHER_LINKED_REPOSITORY)
+
+
+def test_typed_number_no_detected_request_carries_stays_in_the_current_repository(
+    git_doubles,
+):
+    with patch(
+        "review_target.view_change_request", return_value=MERGE_REQUEST
+    ) as view_change_request:
+        review_target.resolve_review_target("12", [RequestLink(LINKED_REPOSITORY, "7")])
     view_change_request.assert_called_once_with(CURRENT_REPOSITORY, "12")
 
 

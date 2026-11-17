@@ -130,14 +130,14 @@ def agent_reply_texts(pane: dict) -> list[str]:
     return screen_texts(pane["pane_id"])
 
 
-def latest_request_link_in_active_agent() -> RequestLink | None:
+def latest_request_links_in_active_agent() -> list[RequestLink]:
     try:
         pane = active_pane()
         reply_texts = agent_reply_texts(pane) if pane else []
     except (OSError, ValueError, KeyError, TypeError, sqlite3.Error):
-        return None
+        return []
     for reply_text in reversed(reply_texts):
         request_links = find_request_links(reply_text)
         if request_links:
-            return request_links[0]
-    return None
+            return request_links
+    return []

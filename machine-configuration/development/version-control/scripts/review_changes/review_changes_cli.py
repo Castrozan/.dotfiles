@@ -2,7 +2,7 @@ import signal
 import sys
 from pathlib import Path
 
-from agent_replies import latest_request_link_in_active_agent
+from agent_replies import latest_request_links_in_active_agent
 from forge_review import review_on_forge
 from request_links import RequestLink, origin_repository
 from review_command_runner import ReviewTargetError, run_command
@@ -23,14 +23,26 @@ def route_terminating_signals_through_cleanup() -> None:
         signal.signal(terminating_signal, exit_through_cleanup)
 
 
-def prompt_for_target(detected_request: RequestLink | None) -> str:
+def list_other_detected_requests(detected_requests: list[RequestLink]) -> None:
+    other_references = [
+        detected_request.reference for detected_request in detected_requests[1:]
+    ]
+    if not other_references:
+        return
+    print(f"Also named by the agent, pick by number: {', '.join(other_references)}")
+
+
+def prompt_for_target(detected_requests: list[RequestLink]) -> str:
     current_branch = run_command(["git", "branch", "--show-current"]).stdout.strip()
     current_repository = origin_repository(Path.cwd())
     repository_hint = (
         f" in {current_repository.project_path}" if current_repository else ""
     )
-    default_target = detected_request.reference if detected_request else current_branch
+    default_target = (
+        detected_requests[0].reference if detected_requests else current_branch
+    )
     default_hint = f" [{default_target}]" if default_target else ""
+    list_other_detected_requests(detected_requests)
     return input(f"MR/PR number, link or branch{repository_hint}{default_hint}: ")
 
 
@@ -39,10 +51,10 @@ def review(arguments: list[str]) -> None:
         web_url, source_branch = arguments[1:3]
         review_on_forge(web_url, source_branch)
         return
-    detected_request = None if arguments else latest_request_link_in_active_agent()
-    raw_target = arguments[0] if arguments else prompt_for_target(detected_request)
+    detected_requests = [] if arguments else latest_request_links_in_active_agent()
+    raw_target = arguments[0] if arguments else prompt_for_target(detected_requests)
     print("Fetching the review...", flush=True)
-    review_in_lazygit(resolve_review_target(raw_target, detected_request))
+    review_in_lazygit(resolve_review_target(raw_target, detected_requests))
 
 
 def main(arguments: list[str]) -> int:

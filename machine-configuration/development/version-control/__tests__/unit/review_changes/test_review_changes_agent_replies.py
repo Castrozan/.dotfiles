@@ -11,6 +11,10 @@ FIRST_LINK = "https://gitlab.example/group/project/-/merge_requests/1"
 LATEST_LINK = "https://github.com/owner/repo/pull/2"
 
 
+def detected_references(detected_requests):
+    return [detected_request.reference for detected_request in detected_requests]
+
+
 def write_lines(path, entries):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("".join(json.dumps(entry) + "\n" for entry in entries))
@@ -70,8 +74,11 @@ def test_claude_reply_with_a_link_is_found_in_the_transcript_named_after_the_cwd
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("claude", "session-1")
     ):
-        detected_request = agent_replies.latest_request_link_in_active_agent()
-    assert detected_request.reference == "owner/repo#2"
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
+    assert detected_references(detected_requests) == [
+        "owner/repo#2",
+        "group/project!1",
+    ]
 
 
 def test_claude_reply_with_string_content_is_found(tmp_path, monkeypatch, herdr_pane):
@@ -89,8 +96,8 @@ def test_claude_reply_with_string_content_is_found(tmp_path, monkeypatch, herdr_
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("claude", "session-1")
     ):
-        detected_request = agent_replies.latest_request_link_in_active_agent()
-    assert detected_request.reference == "group/project!1"
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
+    assert detected_references(detected_requests) == ["group/project!1"]
 
 
 def test_codex_reply_is_found_in_its_rollout(tmp_path, monkeypatch, herdr_pane):
@@ -102,8 +109,8 @@ def test_codex_reply_is_found_in_its_rollout(tmp_path, monkeypatch, herdr_pane):
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("codex", "thread-7")
     ):
-        detected_request = agent_replies.latest_request_link_in_active_agent()
-    assert detected_request.reference == "group/project!1"
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
+    assert detected_references(detected_requests) == ["group/project!1"]
 
 
 def test_opencode_reply_is_found_in_its_database(tmp_path, monkeypatch, herdr_pane):
@@ -138,8 +145,8 @@ def test_opencode_reply_is_found_in_its_database(tmp_path, monkeypatch, herdr_pa
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("opencode", "ses_1")
     ):
-        detected_request = agent_replies.latest_request_link_in_active_agent()
-    assert detected_request.reference == "group/project!1"
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
+    assert detected_references(detected_requests) == ["group/project!1"]
 
 
 def test_agent_without_a_readable_transcript_falls_back_to_the_screen(
@@ -151,15 +158,15 @@ def test_agent_without_a_readable_transcript_falls_back_to_the_screen(
         "agent_replies.run_command",
         side_effect=[herdr_pane("claude", "missing"), screen],
     ) as run_command:
-        detected_request = agent_replies.latest_request_link_in_active_agent()
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
     assert run_command.call_args.args[0][:4] == ["herdr", "pane", "read", "w1:p2"]
-    assert detected_request.reference == "owner/repo#2"
+    assert detected_references(detected_requests) == ["owner/repo#2"]
 
 
 def test_nothing_is_detected_outside_herdr(monkeypatch):
     monkeypatch.delenv("HERDR_ACTIVE_PANE_ID", raising=False)
     with patch("agent_replies.run_command") as run_command:
-        assert agent_replies.latest_request_link_in_active_agent() is None
+        assert agent_replies.latest_request_links_in_active_agent() == []
     run_command.assert_not_called()
 
 
@@ -174,5 +181,5 @@ def test_a_torn_transcript_line_does_not_hide_earlier_replies(
     with patch(
         "agent_replies.run_command", return_value=herdr_pane("claude", "session-1")
     ):
-        detected_request = agent_replies.latest_request_link_in_active_agent()
-    assert detected_request.reference == "group/project!1"
+        detected_requests = agent_replies.latest_request_links_in_active_agent()
+    assert detected_references(detected_requests) == ["group/project!1"]

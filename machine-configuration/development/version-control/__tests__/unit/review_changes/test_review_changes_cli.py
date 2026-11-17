@@ -53,16 +53,65 @@ def prompt_doubles(monkeypatch):
 
 
 def test_prompt_names_the_repository_a_bare_number_resolves_in(prompt_doubles):
-    review_changes_cli.prompt_for_target(None)
+    review_changes_cli.prompt_for_target([])
     assert prompt_doubles == ["MR/PR number, link or branch in group/project [main]: "]
 
 
-def test_prompt_offers_the_request_detected_in_the_agent_reply(prompt_doubles):
+def test_prompt_offers_the_request_detected_in_the_agent_reply(prompt_doubles, capsys):
     detected_request = RequestLink(ForgeRepository("gitlab.example", "team/app"), "9")
-    review_changes_cli.prompt_for_target(detected_request)
+    review_changes_cli.prompt_for_target([detected_request])
+    assert capsys.readouterr().out == ""
     assert prompt_doubles == [
         "MR/PR number, link or branch in group/project [team/app!9]: "
     ]
+
+
+def test_prompt_lists_the_other_requests_a_number_can_pick(prompt_doubles, capsys):
+    review_changes_cli.prompt_for_target(
+        [
+            RequestLink(ForgeRepository("gitlab.example", "team/app"), "9"),
+            RequestLink(ForgeRepository("gitlab.example", "team/site"), "43"),
+            RequestLink(ForgeRepository("github.com", "owner/host"), "530"),
+        ]
+    )
+    assert capsys.readouterr().out == (
+        "Also named by the agent, pick by number: team/site!43, owner/host#530\n"
+    )
+    assert prompt_doubles == [
+        "MR/PR number, link or branch in group/project [team/app!9]: "
+    ]
+
+
+def test_typed_target_is_resolved_among_the_detected_requests(prompt_doubles):
+    detected_requests = [
+        RequestLink(ForgeRepository("gitlab.example", "team/site"), "43"),
+        RequestLink(ForgeRepository("gitlab.example", "team/host"), "530"),
+    ]
+    with (
+        patch(
+            "review_changes_cli.latest_request_links_in_active_agent",
+            return_value=detected_requests,
+        ),
+        patch("builtins.input", return_value="530"),
+        patch("review_changes_cli.resolve_review_target") as resolve_review_target,
+        patch("review_changes_cli.review_in_lazygit") as review_in_lazygit,
+    ):
+        review_changes_cli.review([])
+    resolve_review_target.assert_called_once_with("530", detected_requests)
+    review_in_lazygit.assert_called_once_with(resolve_review_target.return_value)
+
+
+def test_command_line_target_skips_agent_reply_detection():
+    with (
+        patch(
+            "review_changes_cli.latest_request_links_in_active_agent"
+        ) as latest_request_links_in_active_agent,
+        patch("review_changes_cli.resolve_review_target") as resolve_review_target,
+        patch("review_changes_cli.review_in_lazygit"),
+    ):
+        review_changes_cli.review(["530"])
+    latest_request_links_in_active_agent.assert_not_called()
+    resolve_review_target.assert_called_once_with("530", [])
 
 
 def test_prompt_outside_a_repository_names_no_repository(monkeypatch):
@@ -72,5 +121,5 @@ def test_prompt_outside_a_repository_names_no_repository(monkeypatch):
         review_changes_cli, "origin_repository", lambda _directory: None
     )
     with patch("review_changes_cli.run_command", return_value=MagicMock(stdout="")):
-        review_changes_cli.prompt_for_target(None)
+        review_changes_cli.prompt_for_target([])
     assert prompts == ["MR/PR number, link or branch: "]

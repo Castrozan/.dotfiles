@@ -1,4 +1,5 @@
 import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -64,14 +65,29 @@ def current_repository() -> ForgeRepository:
     return repository
 
 
-def parse_request_target(selector: str) -> RequestLink | None:
+def detected_request_numbered(
+    request_number: str, detected_requests: Sequence[RequestLink]
+) -> RequestLink | None:
+    for detected_request in detected_requests:
+        if detected_request.number == request_number:
+            return detected_request
+    return None
+
+
+def parse_request_target(
+    selector: str, detected_requests: Sequence[RequestLink]
+) -> RequestLink | None:
     request_link = parse_request_link(selector)
     if request_link:
         return request_link
     request_number_match = REQUEST_NUMBER_PATTERN.match(selector)
     if not request_number_match:
         return None
-    return RequestLink(current_repository(), request_number_match.group(1))
+    request_number = request_number_match.group(1)
+    detected_request = detected_request_numbered(request_number, detected_requests)
+    if detected_request:
+        return detected_request
+    return RequestLink(current_repository(), request_number)
 
 
 def find_change_request_for_branch(branch: str) -> ChangeRequest | None:
@@ -121,12 +137,12 @@ def review_target_of_branch(branch: str) -> ReviewTarget:
 
 
 def resolve_review_target(
-    raw_target: str, default_request: RequestLink | None = None
+    raw_target: str, detected_requests: Sequence[RequestLink] = ()
 ) -> ReviewTarget:
-    if default_request and not raw_target.strip():
-        return review_target_of_request(default_request)
+    if detected_requests and not raw_target.strip():
+        return review_target_of_request(detected_requests[0])
     selector = resolve_selector(raw_target)
-    request_link = parse_request_target(selector)
+    request_link = parse_request_target(selector, detected_requests)
     if request_link:
         return review_target_of_request(request_link)
     return review_target_of_branch(selector)
