@@ -23,15 +23,13 @@ live at `references/knowledge.md` beneath each skill.
 
 ### Stewardship
 
-This repo is kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents
-module and built from the clawde flake input where its behavior lives. The steward keeps idle machines current. Its
-cycle waits rather than rebase a checkout under active work, so the session doing that work consolidates its own
-history.
+An autonomous per-machine steward agent keeps this repo synced, green, and pushed; it is declared in the clawde-agents
+module and built from the clawde flake input where its behavior lives. It keeps idle machines current and waits rather
+than rebase a checkout under active work, so the session doing that work consolidates its own history.
 
 Committing straight on the shared checkout's `main` is the usual path. When `main` is ahead of, behind, or diverged from
 `origin/main`, rebase your commits onto it and resolve conflicts yourself, submodule gitlinks included. Re-run the
-checks your change requires and push fast-forward only; never leave this to the steward or report it as pending on the
-human.
+checks your change requires and push fast-forward only; never leave this to the steward or pending on the human.
 
 Rebase in the shared checkout when its tree is clean, otherwise in your own worktree or a detached checkout. Never
 autostash, reset, or force-push there: each moves a peer's uncommitted or unpushed work. Once pushed, fast-forward the
@@ -75,9 +73,8 @@ every other key collision, so an MCP dropped from its nix source disappears from
 
 On chise only, the live system is not built straight from this repo. A machine-local entrypoint flake at
 `~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top.
-`rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise
-but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it
-undeclared or re-adding it here.
+`rebuild` builds that entrypoint, so a service, unit, secret, or option live on chise but absent here is most likely
+owned by that overlay: check `~/zanoni-system` before declaring it undeclared or re-adding it here.
 
 That entrypoint is its own standalone private git repo with its own origin, no CI and no peer stewards. It is not this
 repo and not a submodule of it. The chise steward keeps it reconciled with its origin fast-forward-only, so commit a
@@ -89,12 +86,12 @@ other hosts build directly from this repo.
 
 ### Scripts
 
-Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native
-tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via
-Nix - no uv, no venv, no pip. Only scripts under 10 lines of actual logic may live inline in `.nix` files via
-`pkgs.writeShellScript`, `pkgs.writeText`, or similar builders. Anything longer goes to a dedicated file under the
-module's `scripts/` directory and is referenced by path. Long inline scripts are unreadable, unformattable, untestable,
-and escape from nix string interpolation rules destroys quoting. When in doubt, extract.
+Python 3.12 is the default language for scripts. Use bash only for a thin wrapper gluing shell-native tools (tmux
+send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via Nix - no uv,
+no venv, no pip. Only scripts under 10 lines of actual logic may live inline in `.nix` files via
+`pkgs.writeShellScript`, `pkgs.writeText`, or similar builders; anything longer goes to a file under the module's `scripts/` directory,
+referenced by path. Long inline scripts are unreadable, unformattable, untestable, and nix string interpolation escapes
+destroy quoting. When in doubt, extract.
 
 ### Performance
 
@@ -122,9 +119,8 @@ instead. Commit first: this checkout is shared, so a review of the working tree 
 and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.
 
 A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a build,
-a deployment, or a dependency. The same holds for a wrong edit to an interface, a test, security, a secret, what this
-public repository exposes, or an operational instruction. A change is also substantive when correctness depends on
-several files changing together.
+a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
+operational instruction, or when correctness depends on several files changing together.
 
 Skip the review only when every hunk is demonstrably non-semantic. That means a formatting or prose correction that
 alters no command, path, identifier, factual claim, policy or behavior. Review the whole change when substantive and
@@ -135,10 +131,9 @@ and skipping review does not waive verification required by [testing](#testing).
 
 Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
 a fixed call ceiling with no per-item model calls outside the breadth exception of the `agent-harness` workflows
-reference. Author further dotfiles workflows as Archon YAML definitions under `agent-harness/workflows/definitions/`,
-or under the owning skill's `workflow/` directory, rather than ad-hoc subagent fan-out. Register each one and its
-matching `dotfiles-*` command in `agent-harness/workflows/workflows-home-manager.nix`; that command runs the workflow
-through Archon on the calling harness.
+reference. Author further dotfiles workflows as Archon YAML under `agent-harness/workflows/definitions/` or the owning
+skill's `workflow/` directory, not ad-hoc subagent fan-out. Register each with its `dotfiles-*` command in
+`agent-harness/workflows/workflows-home-manager.nix`; that command runs it through Archon on the calling harness.
 
 ### Workflow
 
@@ -164,13 +159,11 @@ an edit you cannot find here is usually sitting in another checkout rather than 
 ### Applying clawde agent changes
 
 A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a
-per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies config changes in place, no
-respawn needed.
+per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies it in place, no respawn.
 
-The exception is a change to the agent-wrapper code itself. The running wrapper keeps executing the code it launched
-with, so wrapper-code changes stay dormant until the window is fully respawned. A respawn is a reboot, or killing the
-window so the supervisor recreates it from the new spec. Never assume rebuilt wrapper code is live on the running agents
-\- check the live process and respawn if it still runs the old code.
+The exception is agent-wrapper code: the running wrapper keeps executing the code it launched with, so wrapper changes
+stay dormant until the window is fully respawned, by a reboot or by killing the window so the supervisor recreates it
+from the new spec. Never assume rebuilt wrapper code is live; check the live process and respawn if it runs old code.
 
 Every other fleet trap that leaves no trace in the source - resume identity, supervisor reconciliation, channel gating,
 the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read it before
@@ -186,9 +179,8 @@ Use `dotfiles-evals check` for the strict verdict, which also fails on instructi
 expired evidence. Passing `check --gravado` does not prove current model behavior.
 
 Do not proactively run `dotfiles-evals baseline --rodar` after instruction edits: the full model suite is slow and
-routing evals flake, so re-recording can commit transient failures. Measure through an existing authorized model route
-only for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement;
-ordinary CI does not require one.
+routing evals flake, so re-recording can commit transient failures. Ordinary CI needs none; measure through an existing
+authorized model route only on explicit request, a diagnosed quality regression, or a deliberate instruction fix.
 
 ### Herdr server restart
 
