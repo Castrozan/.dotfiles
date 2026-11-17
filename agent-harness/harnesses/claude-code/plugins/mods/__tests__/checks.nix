@@ -42,6 +42,14 @@ in
         touch "$out"
       '';
 
+  claude-crayon-leaves-first-fullscreen-draw-to-engine =
+    pkgs.runCommandLocal "claude-crayon-leaves-first-fullscreen-draw-to-engine" { }
+      ''
+        ! grep -n "{ component: 'AssistantMessage' }, async" ${hostInteractiveSessionModsDirectory}/crayon/hooks/register.tsx
+        grep -n 'props: { onScreen: \[null, { of: ' ${hostInteractiveSessionModsDirectory}/crayon/hooks/register.tsx
+        touch "$out"
+      '';
+
   claude-interactive-settings-enable-no-plugin =
     mkEvalCheck "claude-interactive-settings-enable-no-plugin"
       (

@@ -1,0 +1,188 @@
+--- a/hooks/register.tsx
++++ b/hooks/register.tsx
+@@ -1,5 +1,5 @@
+ import { atom, read, update } from 'claude-code'
+-import type { EngineInterface, Register, RenderElement } from 'claude-code'
++import type { EngineInterface, Frozen, MatchedEvent, Register, RenderElement } from 'claude-code'
+ 
+ import type { CrayonPrefs } from '../types'
+ import { type Block, parseBlocks, restoreLines, stripStreamed } from './parse'
+@@ -73,6 +73,26 @@
+   return { t, p: paletteFor(p.theme, isLight), isLight, width: Math.max(20, columns ?? 80), listDepth: 0, isQuoted: false }
+ }
+ 
++type ReplyRender = Frozen<MatchedEvent<'ui.render', { component: 'AssistantMessage' }>>
++
++async function replyTree($: EngineInterface, e: ReplyRender): Promise<RenderElement | undefined> {
++  if (e.props.text.length > MAX_TEXT) return undefined
++  const ctx = await contextFor($, $.ui.resolve(e), e.viewport?.columns)
++  if (ctx === undefined) return undefined
++  const text = restoreLines(e.props.text, await read($, written))
++  const { Box, Text } = ctx.t
++  return (
++    <Box flexDirection="row" marginTop={1}>
++      <Box width={2} flexShrink={0}>
++        <Text color={ctx.p.dot}>{e.props.isFirstOfReply ? '⏺' : ' '}</Text>
++      </Box>
++      <Box flexDirection="column" flexGrow={1} flexShrink={1}>
++        {blocks(parse(text), { ...ctx, width: ctx.width - 2 })}
++      </Box>
++    </Box>
++  )
++}
++
+ export const register: Register = on => {
+   on('session.start', async ($, e, next) => {
+     await hydrate($)
+@@ -164,25 +184,29 @@
+     return { ...result, displayContent: text }
+   })
+ 
+-  on('ui.render', { component: 'AssistantMessage' }, async ($, e, next) => {
+-    if (e.props.text.length > MAX_TEXT) return next(e)
+-    const ctx = await contextFor($, $.ui.resolve(e), e.viewport?.columns)
+-    if (ctx === undefined) return next(e)
+-    const text = restoreLines(e.props.text, await read($, written))
+-    const { Box, Text } = ctx.t
+-    const tree: RenderElement = (
+-      <Box flexDirection="row" marginTop={1}>
+-        <Box width={2} flexShrink={0}>
+-          <Text color={ctx.p.dot}>{e.props.isFirstOfReply ? '⏺' : ' '}</Text>
+-        </Box>
+-        <Box flexDirection="column" flexGrow={1} flexShrink={1}>
+-          {blocks(parse(text), { ...ctx, width: ctx.width - 2 })}
+-        </Box>
+-      </Box>
+-    )
+-    return tree
+-  })
++  on(
++    'ui.render',
++    {
++      component: 'AssistantMessage',
++      surface: 'terminal',
++      viewport: { isFullscreen: true },
++      props: { onScreen: [null, { of: /^\d+$/ }] },
++    },
++    async ($, e, next) => (await replyTree($, e)) ?? next(e),
++  )
+ 
++  on(
++    'ui.render',
++    { component: 'AssistantMessage', surface: 'terminal', viewport: { isFullscreen: false } },
++    async ($, e, next) => (await replyTree($, e)) ?? next(e),
++  )
++
++  on(
++    'ui.render',
++    { component: 'AssistantMessage', surface: ['desktop', 'vscode', 'mobile'] },
++    async ($, e, next) => (await replyTree($, e)) ?? next(e),
++  )
++
+   on('ui.render', { component: 'CommandOutput', props: { command: 'crayon' } }, async ($, e, next) => {
+     if (e.props.isErrored) return next(e)
+     const ctx = (await contextFor($, $.ui.resolve(e), e.viewport?.columns)) ?? {
+--- a/tests/crayon.test.ts
++++ b/tests/crayon.test.ts
+@@ -10,6 +10,9 @@
+ 
+ const reply = (text: string) => ({ text, isFirstOfReply: true })
+ 
++const MAIN_SCREEN = { columns: 100, rows: 40, isFullscreen: false }
++const FULLSCREEN = { columns: 100, rows: 40, isFullscreen: true }
++
+ describe('parse', () => {
+   test('markdown emphasis and code', async () => {
+     const nodes = parseInlines('a **bold** and *it* with `x*y` and snake_case_name')
+@@ -92,7 +95,7 @@
+         surface,
+         component: 'AssistantMessage',
+         props: reply(DEMO),
+-        viewport: { columns: 100, rows: 40 },
++        viewport: MAIN_SCREEN,
+       })
+       expect(await ui.find({ type: 'Text', text: 'Ink Text props' })).toBeDefined()
+       expect(await ui.find({ type: 'Code' })).toBeDefined()
+@@ -101,10 +104,28 @@
+   })
+ 
+   test('a reply keeps the blank row Claude Code draws above it', async $ => {
+-    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('done') })
++    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('done'), viewport: MAIN_SCREEN })
+     const row = await ui.find({ type: 'Box' })
+     expect(row?.props.marginTop).toBe(1)
+     await ui.unmount()
++  })
++
++  test('a fullscreen reply is left to Claude Code until it has been drawn once', async $ => {
++    const marginOf = async (onScreen?: { first: number; last: number; of: number } | null) => {
++      const ui = await $.ui.mount({
++        plugin: 'crayon',
++        surface: 'terminal',
++        component: 'AssistantMessage',
++        props: onScreen === undefined ? reply('done') : { ...reply('done'), onScreen },
++        viewport: FULLSCREEN,
++      })
++      const row = await ui.find({ type: 'Box' })
++      await ui.unmount()
++      return row?.props.marginTop
++    }
++    expect(await marginOf()).toBeUndefined()
++    expect(await marginOf({ first: 0, last: 0, of: 1 })).toBe(1)
++    expect(await marginOf(null)).toBe(1)
+   })
+ 
+   test('tag colors land on Text props', async $ => {
+@@ -113,6 +134,7 @@
+       surface: 'terminal',
+       component: 'AssistantMessage',
+       props: reply('<t color="#ff8800" bold>orange</t> and <ok>fine</ok>'),
++      viewport: MAIN_SCREEN,
+     })
+     const orange = await ui.find({ type: 'Text', text: /^orange$/ })
+     expect(orange?.props).toMatchObject({ color: '#ff8800', bold: true })
+@@ -135,7 +157,7 @@
+       '<panel>\nunclosed',
+     ].join('\n\n')
+     for (const surface of SURFACES) {
+-      const ui = await $.ui.mount({ plugin: 'crayon', surface, component: 'AssistantMessage', props: reply(nasty) })
++      const ui = await $.ui.mount({ plugin: 'crayon', surface, component: 'AssistantMessage', props: reply(nasty), viewport: MAIN_SCREEN })
+       await ui.drawn()
+       await ui.unmount()
+     }
+@@ -157,7 +179,7 @@
+     mock.store(on, { prefs: { isEnabled: true, isTeaching: true, theme: 'synthwave', background: 'dark' } })
+     on('classic.SessionStart', () => ({}))
+     const h3Color = async () => {
+-      const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('### Clouds') })
++      const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('### Clouds'), viewport: MAIN_SCREEN })
+       const color = (await ui.find({ type: 'Text', text: /^Clouds$/ }))?.props.color
+       await ui.unmount()
+       return color
+@@ -175,7 +197,7 @@
+       return { value: e.value }
+     })
+     const h3Color = async () => {
+-      const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('### Clouds') })
++      const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('### Clouds'), viewport: MAIN_SCREEN })
+       const color = (await ui.find({ type: 'Text', text: /^Clouds$/ }))?.props.color
+       await ui.unmount()
+       return color
+@@ -198,7 +220,7 @@
+ 
+   /** The color of the first Text whose text is `text`, drawn under `theme`. */
+   const colorUnder = async ($: Engine, text: RegExp, markup: string) => {
+-    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply(markup) })
++    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply(markup), viewport: MAIN_SCREEN })
+     const color = (await ui.find({ type: 'Text', text }))?.props.color
+     await ui.unmount()
+     return color
+@@ -210,7 +232,7 @@
+     await $.classic.SessionStart({ source: 'clear' })
+     expect(await colorUnder($, /^api$/, 'the <c1>api</c1> and <ok>fine</ok>')).toBe(THEMES.ocean!.series[0])
+     expect(await colorUnder($, /^fine$/, 'the <c1>api</c1> and <ok>fine</ok>')).toBe(THEMES.ocean!.ok)
+-    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('a <badge c3>v2</badge>') })
++    const ui = await $.ui.mount({ plugin: 'crayon', surface: 'terminal', component: 'AssistantMessage', props: reply('a <badge c3>v2</badge>'), viewport: MAIN_SCREEN })
+     expect((await ui.find({ type: 'Text', text: /^ v2 $/ }))?.props.backgroundColor).toBe(THEMES.ocean!.series[2])
+     await ui.unmount()
+   })

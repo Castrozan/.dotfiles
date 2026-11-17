@@ -13,11 +13,15 @@ let
       };
       patches = [ ./cache-tax-silence-transcript-messages.patch ];
     };
-    crayon = pkgs.fetchFromGitHub {
-      owner = "Castrozan";
-      repo = "cc-crayon";
-      rev = "a8ceb447b4a88fe0b55497f29856623479ba95fa";
-      hash = "sha256-uG5Ar0onbU5cjVkNRcuTQjE8/b/g2B6TCztwyyuN3HI=";
+    crayon = pkgs.applyPatches {
+      name = "crayon-without-fullscreen-reply-gap";
+      src = pkgs.fetchFromGitHub {
+        owner = "Castrozan";
+        repo = "cc-crayon";
+        rev = "a8ceb447b4a88fe0b55497f29856623479ba95fa";
+        hash = "sha256-uG5Ar0onbU5cjVkNRcuTQjE8/b/g2B6TCztwyyuN3HI=";
+      };
+      patches = [ ./crayon-leave-first-fullscreen-draw-to-engine.patch ];
     };
     image-view = pkgs.fetchFromGitHub {
       owner = "jarrodwatts";
