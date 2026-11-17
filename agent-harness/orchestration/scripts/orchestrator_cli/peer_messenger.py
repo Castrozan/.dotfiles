@@ -63,16 +63,20 @@ def sender_name(explicit_sender: str | None) -> str:
     )
 
 
+def peer_names(agent: dict) -> set[str]:
+    return {
+        str(agent.get(field) or "").casefold()
+        for field in ("name", "servant", "paneId")
+    }
+
+
 def peer_pane(target: str) -> str | None:
     try:
         directory = json.loads(run_a2a("list", "--json"))
     except ValueError as failure:
         raise PeerMessageFailure(f"a2a list: {failure}") from failure
     for agent in directory.values():
-        servant = agent.get("servant") or ""
-        if target in (agent.get("name"), agent.get("paneId")) or (
-            target.casefold() == servant.casefold()
-        ):
+        if target.casefold() in peer_names(agent):
             return agent.get("paneId")
     return None
 
