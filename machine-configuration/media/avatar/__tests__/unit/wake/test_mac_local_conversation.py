@@ -50,3 +50,12 @@ def test_with_no_conversation_here_the_room_is_handed_over_at_the_host(
     runner = ran(monkeypatch, json.dumps(None))
     a_mac_with_records.hand_to(HOLDER)
     assert "avatar-claim-floor" in runner.call_args.args[0][-1]
+
+
+def test_quiet_is_measured_only_for_a_conversation_this_mac_holds(
+    a_mac_with_records, conversation_here, tmp_path
+):
+    assert a_mac_with_records.quiet_seconds() == 0.0
+    conversation_here.listening = True
+    (tmp_path / "listener.json").write_text("{}")
+    assert a_mac_with_records.quiet_seconds() >= 0.0

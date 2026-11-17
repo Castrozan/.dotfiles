@@ -2,6 +2,7 @@ import argparse
 import subprocess
 import time
 
+import quiet_conversation
 import speech_segmenter
 from conversation_addressee import Addressee
 from wake_boundaries import for_this_machine
@@ -157,6 +158,7 @@ def follow_conversation(wake):
             time.sleep(TRANSCRIPT_POLL_SECONDS)
         if not wake.boundaries.conversation_listening():
             return
+        quiet_conversation.close_when_quiet(wake.boundaries, wake.dry_run)
 
 
 def run(wake):

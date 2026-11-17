@@ -5,6 +5,7 @@ import sys
 import conversation_addressee
 import conversation_seat
 import conversation_state
+import listener_session
 import utterances
 from conversation_state import ConversationPhase
 
@@ -27,6 +28,7 @@ def speech_command(arguments, directory):
 
 
 def say(arguments, directory):
+    listener_session.mark_spoken(directory)
     sys.exit(
         subprocess.run(
             speech_command(arguments, directory), timeout=SPEECH_TIMEOUT_SECONDS
@@ -54,6 +56,7 @@ def hear(arguments, directory):
 
 def ask(arguments, directory):
     with utterances.exclusive_consumer(directory):
+        listener_session.mark_spoken(directory)
         subprocess.run(
             speech_command(arguments, directory),
             check=True,

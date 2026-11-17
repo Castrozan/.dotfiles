@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import sys
+import time
 
 import conversation_addressee
 import launchd_units
@@ -11,6 +12,7 @@ import listener_runtime
 from listener_runtime import LISTENER_SERVICE, LIVE_SERVICE
 
 CONFIGURATION_FILE = "listener.json"
+SPOKEN_FILE = "spoken"
 SYSTEMCTL_TIMEOUT_SECONDS = 120
 
 
@@ -56,6 +58,7 @@ def begin_listening(directory, purpose, sources, **settings):
     (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
     (directory / listener.HEARD_FILE).unlink(missing_ok=True)
     conversation_addressee.forget(directory)
+    (directory / SPOKEN_FILE).unlink(missing_ok=True)
     configuration = directory / CONFIGURATION_FILE
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:
@@ -88,3 +91,14 @@ def live_purpose(directory):
         return None
     configured = configured_purpose(directory)
     return ListenerPurpose(configured) if configured in ListenerPurpose else None
+
+
+def mark_spoken(directory):
+    directory.mkdir(mode=0o700, parents=True, exist_ok=True)
+    (directory / SPOKEN_FILE).touch(mode=0o600)
+
+
+def quiet_seconds(directory):
+    marks = [directory / CONFIGURATION_FILE, directory / SPOKEN_FILE]
+    changed = [mark.stat().st_mtime for mark in marks if mark.exists()]
+    return time.time() - max(changed) if changed else 0.0

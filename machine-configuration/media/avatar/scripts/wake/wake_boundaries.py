@@ -41,6 +41,15 @@ def conversation_opened():
     )
 
 
+def conversation_closed():
+    subprocess.run(
+        ["avatar-talk", "close"],
+        stdout=subprocess.DEVNULL,
+        check=False,
+        timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+
+
 def transcript_entries():
     return transcript_log.read_since(
         listener_runtime.runtime_directory() / "transcript.jsonl", 0
@@ -85,6 +94,10 @@ class Boundaries:
     hand_to: object = lambda addressee: room_holder.give_the_room_to(
         listener_runtime.runtime_directory(), addressee
     )
+    quiet_seconds: object = lambda: listener_session.quiet_seconds(
+        listener_runtime.runtime_directory()
+    )
+    close_conversation: object = conversation_closed
     report: object = lambda line: print(line, file=sys.stderr, flush=True)
     now: object = time.monotonic
     pause: object = time.sleep
