@@ -29,8 +29,9 @@ cycle waits rather than rebase a checkout under active work, so the session doin
 history.
 
 Committing straight on the shared checkout's `main` is the usual path. When `main` is ahead of, behind, or diverged from
-`origin/main`, rebase your commits onto it and resolve conflicts yourself, submodule gitlinks included. Re-run the checks
-your change requires and push fast-forward only; never leave this to the steward or report it as pending on the human.
+`origin/main`, rebase your commits onto it and resolve conflicts yourself, submodule gitlinks included. Re-run the
+checks your change requires and push fast-forward only; never leave this to the steward or report it as pending on the
+human.
 
 Rebase in the shared checkout when its tree is clean, otherwise in your own worktree or a detached checkout. Never
 autostash, reset, or force-push there: each moves a peer's uncommitted or unpushed work. Once pushed, fast-forward the
