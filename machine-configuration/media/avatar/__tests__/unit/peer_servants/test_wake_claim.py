@@ -1,3 +1,4 @@
+import json
 import sys
 from concurrent.futures import ThreadPoolExecutor
 
@@ -90,10 +91,10 @@ def test_panes_that_look_alike_once_sanitized_keep_separate_claims(tmp_path):
     assert wake_claim.claim(tmp_path, "..", "chise", START)
 
 
-def test_a_claim_file_holds_the_room_name(tmp_path):
+def test_a_claim_file_holds_the_room_and_the_exact_claim_time(tmp_path):
     wake_claim.claim(tmp_path, "w1:p1", "kira", START)
     (path,) = (tmp_path / "wake-claims").iterdir()
-    assert path.read_text() == "kira"
+    assert json.loads(path.read_text()) == {"room": "kira", "claimed_at": START}
 
 
 def test_simultaneous_claimants_leave_exactly_one_winning_room(tmp_path):

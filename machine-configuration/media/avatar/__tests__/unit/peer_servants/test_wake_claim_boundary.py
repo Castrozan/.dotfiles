@@ -39,7 +39,8 @@ def test_a_local_session_claims_directly_with_this_machines_room(
 ):
     monkeypatch.setattr(listener_runtime, "runtime_directory", lambda: tmp_path)
     assert wake_boundaries.claim_wake(LOCAL_MEDEA)
-    assert wake_claim.claim_path(tmp_path, "w1:p1").read_text() == "chise"
+    recorded = wake_claim.claim_path(tmp_path, "w1:p1").read_text()
+    assert wake_claim.recorded_claim(recorded)[0] == "chise"
     assert not ran.called and not slept.called
 
 

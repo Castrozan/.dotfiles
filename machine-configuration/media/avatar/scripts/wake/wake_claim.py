@@ -1,5 +1,5 @@
 import fcntl
-import os
+import json
 import sys
 import time
 import urllib.parse
@@ -15,7 +15,16 @@ def claim_path(directory, pane):
     return directory / CLAIMS_DIRECTORY / f"pane-{urllib.parse.quote(pane, safe='')}"
 
 
-def held_by_another_room(holder, room, claimed_at, now):
+def recorded_claim(text):
+    try:
+        record = json.loads(text)
+    except ValueError:
+        return None, 0.0
+    return record.get("room"), float(record.get("claimed_at", 0.0))
+
+
+def held_by_another_room(text, room, now):
+    holder, claimed_at = recorded_claim(text)
     return bool(holder) and holder != room and now - claimed_at < CLAIM_SECONDS
 
 
@@ -25,13 +34,11 @@ def claim(directory, pane, room, now):
     with path.open("a+") as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
         handle.seek(0)
-        holder = handle.read()
-        if held_by_another_room(holder, room, os.fstat(handle.fileno()).st_mtime, now):
+        if held_by_another_room(handle.read(), room, now):
             return False
         handle.truncate(0)
-        handle.write(room)
+        handle.write(json.dumps({"room": room, "claimed_at": now}))
         handle.flush()
-        os.utime(handle.fileno(), (now, now))
         return True
 
 
