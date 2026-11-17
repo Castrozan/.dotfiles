@@ -23,13 +23,15 @@ live at `references/knowledge.md` beneath each skill.
 
 ### Stewardship
 
-An autonomous per-machine steward agent keeps this repo synced, green, and pushed; it is declared in the clawde-agents
-module and built from the clawde flake input where its behavior lives. It keeps idle machines current and waits rather
-than rebase a checkout under active work, so the session doing that work consolidates its own history.
+This repo is kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents
+module and built from the clawde flake input where its behavior lives. The steward keeps idle machines current. Its
+cycle waits rather than rebase a checkout under active work, so the session doing that work consolidates its own
+history.
 
 Committing straight on the shared checkout's `main` is the usual path. When `main` is ahead of, behind, or diverged from
 `origin/main`, rebase your commits onto it and resolve conflicts yourself, submodule gitlinks included. Re-run the
-checks your change requires and push fast-forward only; never leave this to the steward or pending on the human.
+checks your change requires and push fast-forward only; never leave this to the steward or report it as pending on the
+human.
 
 Rebase in the shared checkout when its tree is clean, otherwise in your own worktree or a detached checkout. Never
 autostash, reset, or force-push there: each moves a peer's uncommitted or unpushed work. Once pushed, fast-forward the
@@ -55,9 +57,7 @@ never mutating a machine by hand.
 ### Nvim keymaps
 
 Before suggesting, adding, or restoring any Neovim keybind, read and follow
-`machine-configuration/editors/neovim/KEYMAPS_POLICY.md`: native Vim built-ins first, LazyVim conventions second, custom
-maps only as a documented last resort, never shadowing a native key. Keep that file current whenever a binding is added
-or removed on purpose; bindings it lists as removed stay removed unless the owner names one explicitly.
+`machine-configuration/editors/neovim/KEYMAPS_POLICY.md`; it owns the keybind rules and its own upkeep.
 
 ### Codex managed settings ownership
 
@@ -73,8 +73,9 @@ every other key collision, so an MCP dropped from its nix source disappears from
 
 On chise only, the live system is not built straight from this repo. A machine-local entrypoint flake at
 `~/zanoni-system` (outside this tree) imports the public chise config from here and layers a private overlay on top.
-`rebuild` builds that entrypoint, so a service, unit, secret, or option live on chise but absent here is most likely
-owned by that overlay: check `~/zanoni-system` before declaring it undeclared or re-adding it here.
+`rebuild` builds that entrypoint, not this repo directly. So a service, unit, secret, or option that is live on chise
+but absent from this repo is most likely owned by that overlay, not missing: check `~/zanoni-system` before declaring it
+undeclared or re-adding it here.
 
 That entrypoint is its own standalone private git repo with its own origin, no CI and no peer stewards. It is not this
 repo and not a submodule of it. The chise steward keeps it reconciled with its origin fast-forward-only, so commit a
@@ -104,10 +105,6 @@ prefer incremental updates over whole-state recomputation.
 Use the smallest checks that verify the change; a formatting-only edit needs none. Build or evaluate Nix only via
 `rebuild`; CI covers what it skips. Require CI only for affected integrations or platforms local checks cannot verify.
 
-Reach for `repository/verification/run.sh` only to reproduce a job CI turned red, or to iterate on a test you are
-writing. The same goes for a whole pytest tier directory (`*/__tests__/unit`, `*/__tests__/integration`), bare `pytest`,
-`pytest agents` and `pytest .`: run the specific test file needed to verify the change.
-
 Test every Neovim change live in a new Herdr pane; automated and headless checks do not replace this manual test.
 
 ### Change review scope
@@ -119,8 +116,9 @@ instead. Commit first: this checkout is shared, so a review of the working tree 
 and a confirmed finding belongs in a follow-up commit rather than an amend a peer may already have built on.
 
 A change is substantive when a wrong edit would survive formatting and still change machine or agent behavior, a build,
-a deployment, a dependency, an interface, a test, security, a secret, what this public repository exposes, or an
-operational instruction. So is one whose correctness depends on several files changing together.
+a deployment, or a dependency. The same holds for a wrong edit to an interface, a test, security, a secret, what this
+public repository exposes, or an operational instruction. A change is also substantive when correctness depends on
+several files changing together.
 
 Skip the review only when every hunk is demonstrably non-semantic. That means a formatting or prose correction that
 alters no command, path, identifier, factual claim, policy or behavior. Review the whole change when substantive and
@@ -129,11 +127,11 @@ and skipping review does not waive verification required by [testing](#testing).
 
 ### Workflows
 
-Treat a workflow's model calls as delegation that consumes the task's agent budget, and keep every dotfiles workflow at
-a fixed call ceiling with no per-item model calls outside the breadth exception of the `agent-harness` workflows
-reference. Author further dotfiles workflows as Archon YAML under `agent-harness/workflows/definitions/` or the owning
-skill's `workflow/` directory, not ad-hoc subagent fan-out. Register each with its `dotfiles-*` command in
-`agent-harness/workflows/workflows-home-manager.nix`; that command runs it through Archon on the calling harness.
+Keep every dotfiles workflow inside the call budget of the `agent-harness` workflows reference. Author further dotfiles
+workflows as Archon YAML definitions under `agent-harness/workflows/definitions/`, or under the owning skill's
+`workflow/` directory, rather than ad-hoc subagent fan-out. Register each one and its matching `dotfiles-*` command in
+`agent-harness/workflows/workflows-home-manager.nix`; that command runs the workflow through Archon on the calling
+harness.
 
 ### Workflow
 
@@ -158,29 +156,23 @@ an edit you cannot find here is usually sitting in another checkout rather than 
 
 ### Applying clawde agent changes
 
-A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a
-per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies it in place, no respawn.
-
-The exception is agent-wrapper code: a running wrapper keeps the code it launched with until its window is fully
-respawned, by a reboot or by killing the window so the supervisor recreates it from the new spec. Never assume rebuilt
-wrapper code is live; check the live process and respawn if it runs old code.
-
-Every other fleet trap that leaves no trace in the source - resume identity, supervisor reconciliation, channel gating,
-the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read it before
-touching any agent, supervisor or heartbeat behavior.
+Every fleet trap that leaves no trace in the source - wrapper code dormant until a full respawn, resume identity,
+supervisor reconciliation, channel gating, the steward loop, the shared server cgroup - is in
+`agent-harness/harnesses/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
 
 ### Agent instructions
 
 Required CI runs `agent-evals check --gravado` on `agent-harness/quality/evaluations/baseline.json` without model
 credentials, enforcing quality floors and per-case regression; stale or missing evidence stays explicitly unmeasured.
-`dotfiles-evals` is `agent-evals` with this repository's config. Use `dotfiles-evals check` for the strict verdict,
-which also fails on instructions changed after measurement and on expired evidence. Passing `check --gravado` does not
-prove current model behavior.
+`dotfiles-evals` is `agent-evals` with this repository's config.
+
+Use `dotfiles-evals check` for the strict verdict, which also fails on instructions changed after measurement and on
+expired evidence. Passing `check --gravado` does not prove current model behavior.
 
 Do not proactively run `dotfiles-evals baseline --rodar` after instruction edits: the full model suite is slow and
-routing evals flake, so re-recording can commit transient failures. Ordinary CI requires no measurement. Measure via an
-existing authorized model route only on explicit request, a diagnosed quality regression, or a deliberate instruction
-improvement.
+routing evals flake, so re-recording can commit transient failures. Measure through an existing authorized model route
+only for an explicitly requested measurement, a diagnosed quality regression or a deliberate instruction improvement;
+ordinary CI does not require one.
 
 ### Herdr server restart
 
