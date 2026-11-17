@@ -192,5 +192,6 @@ in
     stop
     talk
     transcribe
+    unclaimedCommand
     ;
 }

@@ -7,7 +7,7 @@
 }:
 let
   scripts = ../scripts;
-  controlServer = ../../../../agent-harness/agent-instructions/skills/workstation/avatar/scripts/control-server;
+  characters = import ../cast/characters.nix { inherit pkgs; };
   speech = import ../../media-generation/speech-package.nix { inherit pkgs; };
   conversationPython = pkgs.python312.withPackages (
     packages: with packages; [
@@ -29,18 +29,35 @@ let
     export AVATAR_AGENT_HOST=${hostname}
     export AVATAR_SEAT_PAGE=${scripts}/conversation/remote_seat/page
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
-    export AVATAR_CHARACTER_VOICES=${import ../cast/character-voices.nix { inherit pkgs; }}
-    export AVATAR_EMOTION_DELIVERY=${controlServer}/speech/emotion-delivery.json
     export AVATAR_TURN_MODEL=${import ./avatar-turn-model.nix { inherit pkgs; }}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_SERVANT_ROSTER=${../../../../agent-harness/servants/roster.txt}
     export PYTHONPATH=${modules}
   '';
+  seatPlay = pkgs.writeShellScriptBin "avatar-seat-play" ''
+    ${environment}
+    exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_seat_play.py "$@"
+  '';
 in
 {
   inherit modules;
+  command = programs.unclaimedCommand;
+  controlServer = pkgs.writeShellScriptBin "avatar-control-server" ''
+    export PATH=${
+      lib.makeBinPath [
+        speech
+        seatPlay
+      ]
+    }:$PATH
+    export AVATAR_CLOUD_VOICE=${(builtins.head characters).cloudVoice}
+    export AVATAR_CHARACTER_VOICES=${import ../cast/character-voices.nix { inherit pkgs; }}
+    exec ${pkgs.nodejs_22}/bin/node ${programs.control}/server.js
+  '';
+  renderer = pkgs.writeShellScriptBin "avatar-renderer-server" ''
+    exec ${programs.serve}
+  '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
-    export PATH=${lib.makeBinPath [ speech ]}:$PATH
+    export PATH=${lib.makeBinPath [ programs.unclaimedCommand ]}:$PATH
     ${environment}
     exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_talk.py "$@"
   '';

@@ -36,6 +36,10 @@ const {
 
 const RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 
+const {
+  playThroughTheMacSeat,
+} = require("./audio-playback/mac-seat-player");
+
 const CONFIG = {
   WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765", 10),
   HTTP_PORT: parseInt(process.env.AVATAR_HTTP_PORT || "8766", 10),
@@ -153,6 +157,10 @@ async function main() {
     textToSpeechGenerator,
     speechFloor: new SpeechFloor(new AgentChannelGate()),
     speakerSinkName: CONFIG.SPEAKER_SINK,
+    playSpeech:
+      process.platform === "darwin"
+        ? playThroughTheMacSeat((level) => clientRegistry.sendVoiceLevel(level))
+        : undefined,
   };
 
   const httpServer = startAudioFileHttpServer(context);

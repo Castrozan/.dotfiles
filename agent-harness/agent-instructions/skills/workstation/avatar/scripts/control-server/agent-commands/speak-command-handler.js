@@ -41,6 +41,14 @@ function controlPlaybacks(playbacks) {
   };
 }
 
+function playToRequestedSinks(audioPath, output, context) {
+  return controlPlaybacks(
+    resolveRequestedSinks(output, context.speakerSinkName).map((sinkName) =>
+      playAudioFileToSink(audioPath, sinkName),
+    ),
+  );
+}
+
 function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, model, id } = command;
   const { clientRegistry, textToSpeechGenerator } = context;
@@ -57,11 +65,8 @@ function performSpeech(command, context, delivery) {
       return { finished: Promise.resolve(), stop: () => {} };
     }
     announceSpeechToRenderer(clientRegistry, command, speech);
-    const playbacks = resolveRequestedSinks(
-      output,
-      context.speakerSinkName,
-    ).map((sinkName) => playAudioFileToSink(speech.audioPath, sinkName));
-    return controlPlaybacks(playbacks);
+    const play = context.playSpeech ?? playToRequestedSinks;
+    return play(speech.audioPath, output, context);
   };
 }
 

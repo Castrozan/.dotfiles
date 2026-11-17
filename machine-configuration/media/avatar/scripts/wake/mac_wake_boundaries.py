@@ -10,6 +10,7 @@ import conversation_addressee
 import listener_runtime
 import listener_session
 import local_seat
+import room_holder
 import transcript_log
 import utterances
 from conversation_addressee import Addressee
@@ -175,7 +176,7 @@ def mac_boundaries():
         ),
         "hand_to": here_or_at_the_host(
             listening_here,
-            lambda addressee: conversation_addressee.hand_to(directory, addressee),
+            lambda addressee: room_holder.give_the_room_to(directory, addressee),
             floor_handed_to,
         ),
     }

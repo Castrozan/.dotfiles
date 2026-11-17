@@ -11,7 +11,7 @@ import listener_runtime
 import listener_session
 import local_seat
 import mac_seat_client
-import mac_speech
+import mac_stage
 import remote_talk
 import utterances
 import voice_turns
@@ -24,7 +24,6 @@ MICROPHONE = "the microphone of this Mac"
 SEAT = "room"
 ATTACH_WAIT_SECONDS = 25
 POLL_SECONDS = 0.25
-WINDOW_VERBS = ("show", "hide")
 HOST_OPTIONS = ("--live", "--seat")
 PRIVATE_RECORDS = (
     "transcript.jsonl",
@@ -37,14 +36,12 @@ SEAT_DID_NOT_ATTACH = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
     "may use the microphone"
 )
-VOICE_ONLY = "This Mac converses by voice alone; --character applies at the avatar host"
 NOT_HERE = "This Mac cannot do that in its own conversation"
 
 
 def belongs_to_the_host(arguments):
     return (
         any(option in arguments for option in HOST_OPTIONS)
-        or arguments[:1] in ([verb] for verb in WINDOW_VERBS)
         or local_seat.conversation_listening()
     )
 
@@ -80,16 +77,17 @@ def end_conversation(directory):
     mac_seat_client.hush()
     listener_session.stop_listening()
     mac_seat_client.close_browser()
+    mac_stage.strike()
     for record in PRIVATE_RECORDS:
         (directory / record).unlink(missing_ok=True)
     conversation_addressee.forget(directory)
 
 
 def open_conversation(arguments, directory):
-    if arguments.character:
-        print(VOICE_ONLY, file=sys.stderr)
     leave_a_seat_the_host_stopped_using()
     try:
+        mac_stage.set_up()
+        mac_stage.show_character(arguments.character)
         listener_session.begin_listening(
             directory,
             ListenerPurpose.CONVERSATION,
@@ -114,13 +112,8 @@ def speak(arguments, directory):
     if not conversation_addressee.addresses(directory, pane):
         raise RuntimeError(ROOM_HELD_ELSEWHERE)
     listener_session.mark_spoken(directory)
-    holder = conversation_addressee.current(directory)
-    voice = arguments.voice or mac_speech.voice_of(holder.servant if holder else None)
-    recording = mac_speech.synthesized(arguments.text, arguments.emotion, voice)
-    if mac_seat_client.attached():
-        mac_seat_client.play(mac_speech.samples_of(recording))
-    else:
-        mac_speech.play_without_a_seat(recording)
+    with mac_stage.standing():
+        mac_stage.speak(arguments.text, arguments.emotion, arguments.voice)
 
 
 def ask(arguments, directory):
@@ -146,8 +139,17 @@ ACTIONS = {
     ConversationAction.FOLLOW: voice_turns.follow,
     ConversationAction.SAY: speak,
     ConversationAction.REPORT: status,
+    ConversationAction.SHOW: lambda arguments, directory: mac_stage.show_window(),
+    ConversationAction.HIDE: lambda arguments, directory: mac_stage.hide_window(),
     ConversationAction.REFUSE_CLOSED: refuse_closed,
 }
+
+
+def make_room_for_the_host(arguments):
+    directory = listener_runtime.runtime_directory()
+    opening = arguments[:1] == ["open"]
+    if opening and conversation_state.observe(directory) is ConversationPhase.OPEN:
+        end_conversation(directory)
 
 
 def carry_out_here(arguments):
@@ -162,6 +164,7 @@ def carry_out_here(arguments):
 
 def carry_out(arguments):
     if belongs_to_the_host(arguments):
+        make_room_for_the_host(arguments)
         return remote_talk.carry_out(
             remote_talk.with_the_agent_that_receives_live_tasks(arguments)
         )

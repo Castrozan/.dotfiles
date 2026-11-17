@@ -8,6 +8,8 @@ CONVERSATION_AGENT = "com.dotfiles.avatar-conversation"
 AGENT_BY_UNIT = {
     "avatar-conversation.target": CONVERSATION_AGENT,
     "avatar-listener.service": CONVERSATION_AGENT,
+    "avatar-control-server.service": "com.dotfiles.avatar-control",
+    "avatar-renderer.service": "com.dotfiles.avatar-renderer",
 }
 RUNNING = re.compile(r"^\tstate = running$", re.MULTILINE)
 COMMAND_TIMEOUT_SECONDS = 30

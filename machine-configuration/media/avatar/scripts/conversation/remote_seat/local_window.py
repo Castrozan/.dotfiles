@@ -13,12 +13,12 @@ def show_controls():
     open_window("controls.html")
 
 
-def show():
+def show(port=local_seat.WINDOW_PORT):
     hide()
-    open_window("?viewer")
+    open_window("?viewer", port)
 
 
-def open_window(page):
+def open_window(page, port=local_seat.WINDOW_PORT):
     subprocess.run(
         [
             "/usr/bin/open",
@@ -27,7 +27,7 @@ def open_window(page):
             local_seat.BROWSER,
             "--args",
             local_seat.WINDOW_PROFILE_FLAG,
-            f"--app=http://localhost:{local_seat.WINDOW_PORT}/{page}",
+            f"--app=http://localhost:{port}/{page}",
             f"--window-size={WINDOW_SIZE}",
             "--no-first-run",
             "--no-default-browser-check",

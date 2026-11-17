@@ -19,12 +19,6 @@ let
     pkgs.writeShellScriptBin command ''
       exec ssh ${topology.host} ${command} "$(printf '%q ' "$@")"
     '';
-  forwardCommandToHost = pkgs.writeShellScriptBin "avatar-command" ''
-    if [ "''${1:-}" = speak ] && [ -n "''${HERDR_PANE_ID:-}" ]; then
-      ssh -n ${topology.host} avatar-claim-floor --speaker "$(printf '%q' "${hostname}:$HERDR_PANE_ID")" || exit 1
-    fi
-    exec ssh ${topology.host} avatar-command "$(printf '%q ' "$@")"
-  '';
   remoteMeeting =
     verb: command:
     pkgs.writeShellScriptBin command ''
@@ -47,12 +41,14 @@ let
       lib.makeBinPath [
         programs.a2a
         programs.herdr
+        conversation.command
         talk
       ]
     }:$PATH
     export AVATAR_HOST=${topology.host}
     export AVATAR_AGENT_HOST=${hostname}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
+    export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
     export PYTHONPATH=${conversation.modules}:${programs.a2aLibrary}
@@ -67,18 +63,18 @@ let
     arguments = "--seat-of ${topology.host}";
   };
   conversationLog = "${config.home.homeDirectory}/Library/Logs/avatar-conversation.log";
-  conversationLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
-    name = "avatar-conversation";
-    label = "com.dotfiles.avatar-conversation";
-    package = conversation.listener;
-    executableName = "avatar-conversation-listener";
-    serviceConfig = {
-      KeepAlive = false;
-      RunAtLoad = false;
-      StandardOutPath = conversationLog;
-      StandardErrorPath = conversationLog;
+  onDemandAgent =
+    name: package: executableName:
+    rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
+      inherit name package executableName;
+      label = "com.dotfiles.${name}";
+      serviceConfig = {
+        KeepAlive = false;
+        RunAtLoad = false;
+        StandardOutPath = conversationLog;
+        StandardErrorPath = conversationLog;
+      };
     };
-  };
   wakeLog = "${config.home.homeDirectory}/Library/Logs/avatar-wake.log";
   wakeLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
     name = "avatar-wake";
@@ -101,7 +97,7 @@ lib.mkMerge [
       wake
       doctor
       programs.transcribe
-      forwardCommandToHost
+      conversation.command
       (forwardToHost "avatar-audio")
       (remoteMeeting "start" "avatar-start")
       (remoteMeeting "stop" "avatar-stop")
@@ -110,5 +106,7 @@ lib.mkMerge [
     ];
   }
   wakeLaunchAgent
-  conversationLaunchAgent
+  (onDemandAgent "avatar-conversation" conversation.listener "avatar-conversation-listener")
+  (onDemandAgent "avatar-control" conversation.controlServer "avatar-control-server")
+  (onDemandAgent "avatar-renderer" conversation.renderer "avatar-renderer-server")
 ]

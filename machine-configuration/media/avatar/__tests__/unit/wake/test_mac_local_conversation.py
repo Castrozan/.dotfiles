@@ -34,6 +34,10 @@ def test_a_conversation_on_this_mac_is_read_and_handed_over_without_the_host(
 ):
     conversation_here.listening = True
     runner = ran(monkeypatch, "")
+    shown = []
+    monkeypatch.setattr(
+        mac_wake_boundaries.room_holder.servant_character, "show_for", shown.append
+    )
     transcript_log.append(tmp_path / "transcript.jsonl", "human", "Hey Sasaki", None)
     a_mac_with_records.hand_to(HOLDER)
     assert [entry["text"] for entry in a_mac_with_records.transcript_entries()] == [
@@ -41,6 +45,7 @@ def test_a_conversation_on_this_mac_is_read_and_handed_over_without_the_host(
     ]
     assert a_mac_with_records.addressee() == HOLDER
     assert conversation_addressee.current(tmp_path) == HOLDER
+    assert shown == ["Sasaki Kojirou"]
     assert not runner.called
 
 
