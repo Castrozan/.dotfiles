@@ -28,11 +28,13 @@ module and built from the clawde flake input where its behavior lives. The stewa
 cycle waits rather than rebase a checkout under active work, so the session doing that work consolidates its own
 history.
 
-When `main` is ahead of, behind, or diverged from `origin/main`, rebase your commits onto it and resolve conflicts
-yourself, submodule gitlinks included. Re-run the checks your change requires and push fast-forward only; never leave
-this to the steward or report it as pending on the human. Rebase in your own worktree or a detached checkout, or in the
-shared checkout only when its tree is clean. Never autostash, reset, or force-push there: each moves a peer's
-uncommitted or unpushed work. Once pushed, fast-forward the shared checkout's `main` if it is behind.
+Committing straight on the shared checkout's `main` is the usual path. When `main` is ahead of, behind, or diverged from
+`origin/main`, rebase your commits onto it and resolve conflicts yourself, submodule gitlinks included. Re-run the checks
+your change requires and push fast-forward only; never leave this to the steward or report it as pending on the human.
+
+Rebase in the shared checkout when its tree is clean, otherwise in your own worktree or a detached checkout. Never
+autostash, reset, or force-push there: each moves a peer's uncommitted or unpushed work. Once pushed, fast-forward the
+shared checkout's `main` if it is behind.
 
 Treat CI failures on `main` during active WIP as expected. Check ongoing work and its context before escalating; do not
 alert or initiate unsolicited repairs solely because `main` is red while that work is in progress. Existing validation
