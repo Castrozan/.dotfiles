@@ -1,3 +1,4 @@
+import contextlib
 import asyncio
 import queue
 import threading
@@ -100,5 +101,6 @@ async def microphone_chunks(rate, device):
         while chunk := await capture.stdout.readexactly(chunk_bytes):
             yield resampler.resample(chunk)
     finally:
-        capture.terminate()
+        with contextlib.suppress(ProcessLookupError):
+            capture.terminate()
         await capture.wait()
