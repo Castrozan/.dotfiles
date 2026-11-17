@@ -10,7 +10,7 @@ WORKFLOW = ROOT / ".github/workflows/publish-quality-overview.yml"
 
 
 def workflow_steps():
-    document = yaml.load(WORKFLOW.read_text(), Loader=yaml.BaseLoader)
+    document = yaml.safe_load(WORKFLOW.read_text())
     return document["jobs"]["overview"]["steps"]
 
 
