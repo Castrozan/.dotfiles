@@ -87,6 +87,17 @@ conversation open, `say` raises the control server for that one sentence. `show`
 Meetings and the live voice stay with the avatar host, reached with `--seat` and `--live`; opening one of those ends the
 conversation the Mac holds, because both use port 8765.
 
+## Discord calls
+
+A Discord call is a conversation with the `discord` seat: the bridge on chise carries the call's audio to the same
+listener, floor and voices as the room, so a Servant answers in its own character voice. Joining the `silver` voice
+channel starts a call with Silver, who answers only there. To talk to another agent, join any voice channel and ask it
+to join you: it runs `avatar-talk open --seat discord`, and the bot enters your channel once and stays there.
+
+Naming a Servant in the call gives it the floor, as in the room; when it is dismissed, the floor returns to Silver in the
+`silver` channel. Leaving the channel ends the call, deletes its transcript and sends the bot out. No agent joins a
+channel by itself or follows you between channels. The people in the call are told ElevenLabs transcribes them.
+
 ## Remote seat
 
 A conversation has a seat: the machine whose microphone and speakers it uses. The `room` seat is chise. The `remote`
