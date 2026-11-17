@@ -156,9 +156,9 @@ an edit you cannot find here is usually sitting in another checkout rather than 
 
 ### Applying clawde agent changes
 
-Every fleet trap that leaves no trace in the source - wrapper code dormant until a full respawn, resume identity,
-supervisor reconciliation, channel gating, the steward loop, the shared server cgroup - is in
-`agent-harness/harnesses/clawde/knowledge.md`; read it before touching any agent, supervisor or heartbeat behavior.
+Every fleet trap that leaves no trace in the source - wrapper respawn, resume identity, supervisor reconciliation,
+channel gating, the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read
+it before touching any agent, supervisor or heartbeat behavior.
 
 ### Agent instructions
 
