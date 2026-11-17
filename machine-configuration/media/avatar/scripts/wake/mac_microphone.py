@@ -1,4 +1,5 @@
 import asyncio
+import logging
 import os
 import pathlib
 import signal
@@ -11,7 +12,13 @@ from websockets.asyncio.server import serve
 
 HOST = "127.0.0.1"
 PORT = 8771
-ALLOWED_ORIGINS = [f"http://localhost:{PORT}", f"http://{HOST}:{PORT}"]
+
+
+def allowed_origins(port):
+    return [f"http://localhost:{port}", f"http://{HOST}:{port}"]
+
+
+ALLOWED_ORIGINS = allowed_origins(PORT)
 AUDIO_PATH = "/audio"
 PAGE_TAKEN_CODE = 1013
 ATTACH_SECONDS = 30
@@ -52,6 +59,7 @@ class MicrophoneRelay:
         self.output = output
         self.attached = asyncio.Event()
         self.detached = asyncio.Event()
+        self.page_socket = None
         self.page = SeatPage(page_files, self.attached.is_set)
 
     def answer_request(self, connection, request):
@@ -64,27 +72,35 @@ class MicrophoneRelay:
             await websocket.close(PAGE_TAKEN_CODE, "Another page holds the microphone")
             return
         self.attached.set()
+        self.page_socket = websocket
         try:
             async for frame in websocket:
                 if isinstance(frame, bytes):
                     self.output.write(frame)
                     self.output.flush()
         finally:
+            self.page_socket = None
             self.detached.set()
 
 
-async def relay_microphone(page_files, output, open_page):
-    relay = MicrophoneRelay(page_files, output)
+async def serve_until_the_page_leaves(relay, carry, port, open_page, **limits):
+    logging.getLogger("websockets.server").addFilter(seat_page.sent_a_request)
     async with serve(
-        relay.carry_audio,
+        carry,
         HOST,
-        PORT,
-        origins=ALLOWED_ORIGINS,
+        port,
+        origins=allowed_origins(port),
         process_request=relay.answer_request,
+        **limits,
     ):
         open_page()
         await asyncio.wait_for(relay.attached.wait(), ATTACH_SECONDS)
         await relay.detached.wait()
+
+
+async def relay_microphone(page_files, output, open_page):
+    relay = MicrophoneRelay(page_files, output)
+    await serve_until_the_page_leaves(relay, relay.carry_audio, PORT, open_page)
 
 
 def end_on_terminate(signal_number, frame):

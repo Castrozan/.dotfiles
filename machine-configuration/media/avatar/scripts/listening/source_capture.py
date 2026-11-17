@@ -69,7 +69,9 @@ class SourceSpeech:
 
 def capture_source(source, device, listening):
     while not listening.stopping.is_set():
-        capture = subprocess.Popen(capture_command(device), stdout=subprocess.PIPE)
+        capture = subprocess.Popen(
+            listening.capture_command(device), stdout=subprocess.PIPE
+        )
         speech = SourceSpeech(source, listening)
         while not listening.stopping.is_set() and (
             frame := capture.stdout.read(FRAME_BYTES)

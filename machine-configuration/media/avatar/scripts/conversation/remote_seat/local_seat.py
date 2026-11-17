@@ -54,8 +54,8 @@ ATTACH_WAIT_SECONDS = 20
 POLL_SECONDS = 0.25
 
 
-def health():
-    connection = http.client.HTTPConnection("127.0.0.1", SEAT_PORT, timeout=1)
+def health(port=SEAT_PORT):
+    connection = http.client.HTTPConnection("127.0.0.1", port, timeout=1)
     try:
         connection.request("GET", "/health")
         return json.loads(connection.getresponse().read())
@@ -79,7 +79,12 @@ def meeting_held():
 
 def meeting_seat_kept_here():
     found = subprocess.run(
-        ["/usr/bin/pgrep", "-f", "--", re.escape(f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}")],
+        [
+            "/usr/bin/pgrep",
+            "-f",
+            "--",
+            re.escape(f"{HOLDER_SCRIPT} {MEETING_PAGE_QUERY}"),
+        ],
         capture_output=True,
         check=False,
         timeout=COMMAND_TIMEOUT_SECONDS,

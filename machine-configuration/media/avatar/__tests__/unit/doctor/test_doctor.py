@@ -72,11 +72,12 @@ def test_an_unreachable_host_is_the_finding_and_nothing_is_asked_of_it():
     assert not any("avatar-doctor" in command for command in machine.commands)
 
 
-def test_an_unloaded_wake_agent_is_reported():
+def test_unloaded_mac_agents_are_reported():
     findings = seat(
         {"avatar-doctor": answer(stdout=HOST_REPORT), "launchctl": answer(113)}
     )
     assert Finding("wake agent", False, "not loaded") in findings
+    assert Finding("conversation agent", False, "not loaded") in findings
 
 
 @pytest.mark.parametrize(

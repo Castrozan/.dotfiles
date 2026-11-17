@@ -6,8 +6,12 @@ import subprocess
 import sys
 import time
 
+import conversation_addressee
+import listener_runtime
+import listener_session
 import local_seat
-import remote_talk
+import transcript_log
+import utterances
 from conversation_addressee import Addressee
 from listener_session import ListenerPurpose
 
@@ -34,7 +38,7 @@ def capture_command():
 def conversation_opened_here():
     return (
         subprocess.run(
-            ["avatar-talk", "open", "--seat", remote_talk.REMOTE_SEAT],
+            ["avatar-talk", "open"],
             stdout=subprocess.DEVNULL,
             timeout=OPEN_TIMEOUT_SECONDS,
         ).returncode
@@ -124,13 +128,49 @@ def addressee_on_this_host():
     return addressee
 
 
+def conversation_listening():
+    return listener_runtime.listening() or local_seat.conversation_listening()
+
+
+def here_or_at_the_host(listening_here, here, at_the_host):
+    def chosen(*arguments):
+        return (here if listening_here() else at_the_host)(*arguments)
+
+    return chosen
+
+
+def transcript_here():
+    return transcript_log.read_since(
+        listener_runtime.runtime_directory() / "transcript.jsonl", 0
+    )
+
+
 def mac_boundaries():
+    directory = listener_runtime.runtime_directory()
+    listening_here = listener_runtime.listening
+    lately_listening_here = utterances.ThrottledCheck(
+        listening_here, CONVERSATION_READ_REUSE_SECONDS
+    ).passes
     return {
         "capture_command": capture_command,
-        "conversation_listening": local_seat.conversation_listening,
+        "conversation_listening": conversation_listening,
         "open_conversation": conversation_opened_here,
-        "transcript_entries": ConversationTranscript().read,
-        "listening_purpose": listening_purpose,
-        "addressee": addressee_on_this_host,
-        "hand_to": floor_handed_to,
+        "transcript_entries": here_or_at_the_host(
+            lately_listening_here, transcript_here, ConversationTranscript().read
+        ),
+        "listening_purpose": here_or_at_the_host(
+            listening_here,
+            lambda: listener_session.live_purpose(directory),
+            listening_purpose,
+        ),
+        "addressee": here_or_at_the_host(
+            listening_here,
+            lambda: conversation_addressee.current(directory),
+            addressee_on_this_host,
+        ),
+        "hand_to": here_or_at_the_host(
+            listening_here,
+            lambda addressee: conversation_addressee.hand_to(directory, addressee),
+            floor_handed_to,
+        ),
     }

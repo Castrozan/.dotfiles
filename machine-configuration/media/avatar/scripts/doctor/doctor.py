@@ -10,6 +10,7 @@ COMMAND_SECONDS = 15
 SILENCE = bytes(16000)
 HOST_UNITS = ["hex.service", "avatar-wake.service"]
 WAKE_AGENT = "com.dotfiles.avatar-wake"
+CONVERSATION_AGENT = "com.dotfiles.avatar-conversation"
 WAKE_PAGE_PORT = 8771
 REACH = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5"]
 UNREACHABLE = (OSError, subprocess.SubprocessError, ValueError)
@@ -77,10 +78,17 @@ def findings_reported_by(run, host):
     ]
 
 
-def wake_agent_loaded(run):
-    target = f"gui/{os.getuid()}/{WAKE_AGENT}"
+def agent_loaded(run, name, label):
+    target = f"gui/{os.getuid()}/{label}"
     loaded = run(["launchctl", "print", target]).returncode == 0
-    return Finding("wake agent", loaded, "loaded" if loaded else "not loaded")
+    return Finding(name, loaded, "loaded" if loaded else "not loaded")
+
+
+def mac_agents_loaded(run):
+    return [
+        agent_loaded(run, "wake agent", WAKE_AGENT),
+        agent_loaded(run, "conversation agent", CONVERSATION_AGENT),
+    ]
 
 
 def conversation_open(run):
@@ -98,11 +106,11 @@ def wake_microphone_hears(run, serves):
 def seat_findings(run, serves, host):
     reach = host_reachable(run, host)
     if not reach.healthy:
-        return [reach, wake_agent_loaded(run), transcriber_answers(run)]
+        return [reach, *mac_agents_loaded(run), transcriber_answers(run)]
     return [
         reach,
         *findings_reported_by(run, host),
-        wake_agent_loaded(run),
+        *mac_agents_loaded(run),
         wake_microphone_hears(run, serves),
         transcriber_answers(run),
     ]

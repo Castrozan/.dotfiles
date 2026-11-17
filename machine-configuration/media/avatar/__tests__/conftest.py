@@ -12,6 +12,7 @@ sys.path.insert(0, str(scripts / "listening"))
 sys.path.insert(0, str(scripts / "echo"))
 sys.path.insert(0, str(scripts / "conversation"))
 sys.path.insert(0, str(scripts / "conversation" / "remote_seat"))
+sys.path.insert(0, str(scripts / "conversation" / "mac_conversation"))
 sys.path.insert(0, str(scripts / "wake"))
 sys.path.insert(0, str(scripts / "live"))
 sys.path.insert(0, str(scripts / "doctor"))
@@ -20,6 +21,11 @@ agent_harness = Path(__file__).resolve().parents[4] / "agent-harness"
 sys.path.append(str(agent_harness / "agent-to-agent-communication/client/scripts"))
 sys.path.append(str(agent_harness / "servants"))
 sys.path.append(str(agent_harness / "hooks/runtime/common"))
+
+
+@pytest.fixture(autouse=True)
+def on_the_avatar_host_system(monkeypatch):
+    monkeypatch.setattr(sys, "platform", "linux")
 
 
 @pytest.fixture(autouse=True)

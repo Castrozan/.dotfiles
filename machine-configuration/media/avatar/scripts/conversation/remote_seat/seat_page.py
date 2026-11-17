@@ -5,6 +5,7 @@ import sys
 import urllib.parse
 
 from websockets.datastructures import Headers
+from websockets.exceptions import InvalidMessage
 from websockets.http11 import Response
 
 HEALTH_PATH = "/health"
@@ -20,6 +21,10 @@ class PageRequest:
     headers: object
     path: str
     query: str
+
+
+def sent_a_request(record):
+    return not (record.exc_info and isinstance(record.exc_info[1], InvalidMessage))
 
 
 def body_response(body, content_type):
