@@ -62,6 +62,28 @@ def test_an_explicit_room_seat_is_forwarded_unchanged(
     seat_here.assert_not_called()
 
 
+@pytest.mark.parametrize("user_here", [True, False])
+def test_the_discord_seat_is_forwarded_plainly_and_never_takes_a_local_seat(
+    monkeypatch, seat_here, user_here
+):
+    monkeypatch.setattr(remote_talk, "user_is_here", lambda: user_here)
+    monkeypatch.setattr(
+        local_seat,
+        "meeting_seat_kept_here",
+        Mock(side_effect=AssertionError("meeting tunnel consulted")),
+    )
+    runner = chise_answers(monkeypatch, seat="discord")
+    assert run_main(monkeypatch, "open", "--seat", "discord") == 0
+    runner.assert_called_once()
+    assert runner.call_args.args[0] == [
+        *remote_agent.REACH_HOST,
+        "chise",
+        "avatar-talk open --seat discord",
+    ]
+    seat_here.assert_not_called()
+    assert remote_talk.opens_here(["open", "--seat", "discord"]) is False
+
+
 @pytest.mark.parametrize(
     ("arguments", "user_here", "here"),
     [

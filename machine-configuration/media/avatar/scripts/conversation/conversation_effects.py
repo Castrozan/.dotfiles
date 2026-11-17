@@ -3,6 +3,7 @@ import subprocess
 import sys
 
 import conversation_report
+import discord_call
 import conversation_seat
 import conversation_state
 import desktop_window
@@ -11,6 +12,7 @@ import listener_session
 from meetings import start
 import user_units
 import utterances
+import voice_turns
 from conversation_seat import Seat
 from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
@@ -20,6 +22,7 @@ LIVE_OWNS_THE_TURNS = (
     "over a2a: end your turn to receive them, or run avatar-talk close"
 )
 COMMAND_TIMEOUT_SECONDS = 120
+TRANSCRIPTION_NOTICE = "This call is transcribed by ElevenLabs."
 
 
 class WindowPresence(enum.StrEnum):
@@ -28,6 +31,8 @@ class WindowPresence(enum.StrEnum):
 
 
 def seat_microphone_ready(seat):
+    if seat is Seat.DISCORD:
+        return True
     return conversation_seat.MICROPHONE_BY_SEAT[seat] in listen_cli.existing_sources()
 
 
@@ -53,7 +58,7 @@ def show_chosen_character(arguments):
 
 
 def open_conversation(arguments, directory):
-    seat = Seat(arguments.seat)
+    seat = conversation_seat.requested(arguments)
     try:
         start.bring_up(
             conversation_state.CONVERSATION_TARGET,
@@ -69,10 +74,25 @@ def open_conversation(arguments, directory):
             barge_in=True,
             seat=seat,
         )
+        announce_transcription(seat, directory)
     except BaseException:
+        if seat is Seat.DISCORD:
+            discord_call.leave()
         close_conversation(arguments, directory)
         raise
     status(arguments, directory)
+
+
+def announce_transcription(seat, directory):
+    if seat is Seat.DISCORD:
+        voice_turns.speak_on_seat(directory, TRANSCRIPTION_NOTICE, seat)
+
+
+def refuse_seat_change(arguments, directory):
+    raise RuntimeError(
+        f"A {conversation_seat.configured(directory)} conversation is open; "
+        f"run avatar-talk close before opening the {arguments.seat} seat"
+    )
 
 
 def refuse_live(arguments, directory):
@@ -93,12 +113,15 @@ def refuse_closed(arguments, directory):
 
 
 def close_conversation(arguments, directory):
+    seat = conversation_seat.current(directory)
     subprocess.run(
         ["avatar-command", "stop-speaking"],
         capture_output=True,
         check=False,
         timeout=COMMAND_TIMEOUT_SECONDS,
     )
+    if seat is Seat.DISCORD:
+        discord_call.leave()
     subprocess.run(
         ["systemctl", "--user", "stop", conversation_state.CONVERSATION_TARGET],
         check=True,

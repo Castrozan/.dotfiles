@@ -3,6 +3,7 @@
   lib,
   inputs,
   hostname ? null,
+  userProfilePath ? "",
 }:
 let
   herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -121,7 +122,7 @@ let
         command
         pkgs.pulseaudio
       ]
-    }:$PATH
+    }:$PATH${userProfilePath}
     export AVATAR_SPEAKER_MODEL=${speakerModel}
     export AVATAR_TURN_MODEL=${turnModel}
     export AVATAR_ORDINARY_WORDS=${ordinaryWords}
@@ -164,7 +165,7 @@ let
         pkgs.pulseaudio
         pkgs.systemd
       ]
-    }:$PATH
+    }:$PATH${userProfilePath}
     ${lib.optionalString (hostname != null) "export AVATAR_AGENT_HOST=${hostname}"}
     export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
     export PYTHONPATH=${./scripts}:${./scripts/audio_graph}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}

@@ -2,6 +2,7 @@ import subprocess
 import sys
 
 import conversation_effects
+import conversation_seat
 import conversation_state
 import listener_runtime
 import live_opening
@@ -10,6 +11,21 @@ import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
 from talk_arguments import parse_arguments
+
+
+def decision_for(arguments, directory):
+    command = (
+        ConversationCommand.OPEN_LIVE
+        if getattr(arguments, "live", False)
+        else ConversationCommand(arguments.action)
+    )
+    requested_seat = getattr(arguments, "seat", None)
+    return conversation_state.decide(
+        conversation_state.observe(directory),
+        command,
+        requested_seat,
+        conversation_seat.configured(directory) if requested_seat else None,
+    )
 
 
 def main():
@@ -33,18 +49,11 @@ def main():
         ConversationAction.REFUSE_CLOSED: conversation_effects.refuse_closed,
         ConversationAction.REFUSE_MEETING: conversation_effects.refuse_meeting,
         ConversationAction.REFUSE_LIVE: conversation_effects.refuse_live,
+        ConversationAction.REFUSE_SEAT_CHANGE: conversation_effects.refuse_seat_change,
     }
     try:
         directory = listener_runtime.runtime_directory()
-        command = (
-            ConversationCommand.OPEN_LIVE
-            if getattr(arguments, "live", False)
-            else ConversationCommand(arguments.action)
-        )
-        decision = conversation_state.decide(
-            conversation_state.observe(directory), command
-        )
-        actions[decision](arguments, directory)
+        actions[decision_for(arguments, directory)](arguments, directory)
     except (
         utterances.ConversationClosed,
         subprocess.SubprocessError,

@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -10,17 +11,12 @@ let
   programs = import ./avatar-programs.nix {
     inherit pkgs lib inputs;
     inherit hostname;
+    userProfilePath = ":${config.home.profileDirectory}/bin";
   };
   characters = import ./cast/characters.nix { inherit pkgs; };
   characterVoices = import ./cast/character-voices.nix { inherit pkgs; };
   transcriptionModel = import ./home-manager/avatar-transcription-model.nix { inherit pkgs; };
-  tools = lib.makeBinPath [
-    programs.audio
-    (import ../media-generation/speech-package.nix { inherit pkgs; })
-    pkgs.ffmpeg
-    pkgs.piper-tts
-    pkgs.pulseaudio
-  ];
+  tools = import ./home-manager/avatar-control-server-tools.nix { inherit pkgs lib programs; };
   serviceUnit = {
     PartOf = [ "avatar.target" ];
     After = [ "avatar-audio.service" ];
@@ -88,7 +84,7 @@ in
           Service = {
             ExecStart = "${pkgs.nodejs_22}/bin/node ${programs.control}/server.js";
             Environment = [
-              "PATH=${tools}"
+              "PATH=${tools}:${config.home.profileDirectory}/bin"
               "AVATAR_CLOUD_VOICE=${(builtins.head characters).cloudVoice}"
               "AVATAR_CHARACTER_VOICES=${characterVoices}"
               "AVATAR_TTS_VOICE=pt_BR-faber-medium"

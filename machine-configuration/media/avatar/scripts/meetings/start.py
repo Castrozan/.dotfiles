@@ -116,7 +116,7 @@ def bring_up(target, readiness_checks):
 
 def parse_arguments(arguments=None):
     parser = argparse.ArgumentParser(prog="avatar-start")
-    parser.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
+    parser.add_argument("--seat", **conversation_seat.MEETING_SEAT_OPTIONS)
     parser.add_argument(
         "--virtual-only",
         action="store_true",

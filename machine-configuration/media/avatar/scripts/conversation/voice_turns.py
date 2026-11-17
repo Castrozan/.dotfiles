@@ -1,6 +1,7 @@
 import os
 import subprocess
 import sys
+from types import SimpleNamespace
 
 import conversation_addressee
 import conversation_seat
@@ -15,16 +16,31 @@ SPEECH_TIMEOUT_SECONDS = 310
 VOICE_TAG = "[voice]"
 
 
-def speech_command(arguments, directory):
+def speech_command_on_seat(arguments, seat):
     voice = [arguments.voice] if arguments.voice else []
     return [
         "avatar-command",
         "speak",
         arguments.text,
         arguments.emotion,
-        conversation_seat.SPEECH_OUTPUT_BY_SEAT[conversation_seat.current(directory)],
+        conversation_seat.SPEECH_OUTPUT_BY_SEAT[seat],
         *voice,
     ]
+
+
+def speech_command(arguments, directory):
+    return speech_command_on_seat(arguments, conversation_seat.current(directory))
+
+
+def speak_on_seat(directory, text, seat):
+    listener_session.mark_spoken(directory)
+    subprocess.run(
+        speech_command_on_seat(
+            SimpleNamespace(text=text, emotion="neutral", voice=None), seat
+        ),
+        check=True,
+        timeout=SPEECH_TIMEOUT_SECONDS,
+    )
 
 
 def say(arguments, directory):

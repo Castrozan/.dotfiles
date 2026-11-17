@@ -16,6 +16,9 @@ LIVE_NEEDS_A_PANE = (
     "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
     "the room's tasks to that agent"
 )
+LIVE_HAS_NO_DISCORD_SEAT = (
+    "The live voice has no Discord seat; open a conversation instead"
+)
 LIVE_NEEDS_A_SERVANT = (
     "The live voice could not give the floor to this pane: only a session with a Servant "
     "name can hold it and receive the room's tasks"
@@ -46,7 +49,9 @@ def open_live_conversation(arguments, directory):
     agent = receiving_agent(arguments)
     if not agent.pane:
         raise RuntimeError(LIVE_NEEDS_A_PANE)
-    seat = Seat(arguments.seat)
+    seat = conversation_seat.requested(arguments)
+    if seat is Seat.DISCORD:
+        raise RuntimeError(LIVE_HAS_NO_DISCORD_SEAT)
     try:
         start.bring_up(
             conversation_state.CONVERSATION_TARGET,

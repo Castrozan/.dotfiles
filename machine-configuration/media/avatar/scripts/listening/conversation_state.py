@@ -47,6 +47,7 @@ class ConversationAction(enum.StrEnum):
     REFUSE_MEETING = "refuse-meeting"
     REFUSE_CONVERSATION = "refuse-conversation"
     REFUSE_LIVE = "refuse-live"
+    REFUSE_SEAT_CHANGE = "refuse-seat-change"
 
 
 PHASE_BY_TARGET_AND_PURPOSE = {
@@ -132,5 +133,9 @@ def observe(directory):
     )
 
 
-def decide(phase, command):
-    return TRANSITIONS[phase][command]
+def decide(phase, command, requested_seat=None, open_seat=None):
+    action = TRANSITIONS[phase][command]
+    changes_seat = requested_seat is not None and requested_seat != open_seat
+    if action is ConversationAction.KEEP_OPEN and changes_seat:
+        return ConversationAction.REFUSE_SEAT_CHANGE
+    return action

@@ -155,7 +155,7 @@ def parse_arguments():
     begin = commands.add_parser("start")
     begin.add_argument("--microphone")
     begin.add_argument("--language")
-    begin.add_argument("--seat", choices=list(Seat), type=Seat, default=Seat.ROOM)
+    begin.add_argument("--seat", **conversation_seat.MEETING_SEAT_OPTIONS)
     commands.add_parser("stop")
     commands.add_parser("status")
     commands.add_parser("addressee")
