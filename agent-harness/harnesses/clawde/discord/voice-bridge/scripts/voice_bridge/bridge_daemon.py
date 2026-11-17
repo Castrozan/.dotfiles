@@ -17,6 +17,7 @@ from voice_bridge.transcript_feed import TranscriptFeed
 from voice_connection import IdentityConnection
 from voice_identity import VoiceIdentity, VoiceIdentityPool
 from voice_permissions import identity_specifications
+from silver_channel import SilverChannel
 from voice_provider.capture_broadcast import CaptureBroadcast
 from voice_provider.clip_voice_call import ClipVoiceCall
 from voice_provider.listener_audio_tap import ListenerAudioTap
@@ -43,11 +44,12 @@ async def run_bridge():
     ffmpeg = environment["VOICE_BRIDGE_FFMPEG"]
     control_socket = Path(environment["VOICE_BRIDGE_CONTROL_SOCKET"])
     listener_user_id = int(environment["VOICE_BRIDGE_LISTENER_USER_ID"])
+    guild_id = int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"])
     specifications = identity_specifications(
         json.loads(Path(environment["VOICE_BRIDGE_IDENTITIES"]).read_text()),
         environment["VOICE_BRIDGE_HOST"],
         listener_user_id,
-        int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
+        guild_id,
     )
     identities = VoiceIdentityPool(
         [
@@ -61,11 +63,12 @@ async def run_bridge():
         ],
         control_socket.parent.parent / "discord-voice-identities",
     )
+    silver_channel_name = environment["VOICE_BRIDGE_SILVER_CHANNEL_NAME"]
     listener_audio = ListenerAudioTap()
     call = ClipVoiceCall(
         identities,
         listener_user_id,
-        int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
+        guild_id,
         CallAudioServices(
             ffmpeg,
             SpeechSelection(
@@ -78,7 +81,9 @@ async def run_bridge():
             listener_audio,
         ),
         feed,
+        avatar_channel_name=silver_channel_name,
     )
+    silver_channel = SilverChannel(guild_id, silver_channel_name)
 
     control = ControlServer(call, feed, CaptureBroadcast(listener_audio))
     server = await asyncio.start_unix_server(
@@ -94,7 +99,9 @@ async def run_bridge():
         loop.add_signal_handler(stop_signal, stop_requested.set)
     client_tasks = [
         asyncio.create_task(
-            IdentityConnection(identity, call, listener_user_id, claimed_bot_ids).run()
+            IdentityConnection(
+                identity, call, listener_user_id, claimed_bot_ids, silver_channel
+            ).run()
         )
         for identity in identities.identities
     ]

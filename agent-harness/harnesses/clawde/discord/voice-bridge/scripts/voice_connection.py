@@ -4,11 +4,14 @@ from pathlib import Path
 
 
 class IdentityConnection:
-    def __init__(self, identity, call, listener_user_id, claimed_bot_ids):
+    def __init__(
+        self, identity, call, listener_user_id, claimed_bot_ids, silver_channel
+    ):
         self.identity = identity
         self.call = call
         self.listener_user_id = listener_user_id
         self.claimed_bot_ids = claimed_bot_ids
+        self.silver_channel = silver_channel
 
     async def on_ready(self):
         await self.call.follow_listener()
@@ -18,6 +21,7 @@ class IdentityConnection:
             return
         if member.id == self.listener_user_id:
             await self.call.follow_listener()
+            await self.silver_channel.listener_moved_to(after.channel)
         if member.id == self.identity.client.user.id:
             self.call.observe_bot_movement(self.identity)
 

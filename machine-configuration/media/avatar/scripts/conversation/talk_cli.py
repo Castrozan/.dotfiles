@@ -37,7 +37,7 @@ def main():
         ConversationAction.BRING_UP: conversation_effects.open_conversation,
         ConversationAction.BRING_UP_LIVE: live_opening.open_live_conversation,
         ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
-        ConversationAction.TEAR_DOWN: conversation_effects.close_conversation,
+        ConversationAction.TEAR_DOWN: conversation_effects.close_or_return_the_floor,
         ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,
         ConversationAction.ASK: voice_turns.ask,
         ConversationAction.HEAR: voice_turns.hear,

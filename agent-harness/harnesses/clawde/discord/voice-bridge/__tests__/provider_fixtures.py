@@ -40,7 +40,7 @@ class FakePlayback:
         await self._stopped.wait()
 
 
-def make_clip_call(tmp_path):
+def make_clip_call(tmp_path, **options):
     call_module, call, _identity, channel, connection = make_call(tmp_path)
     receiver = SimpleNamespace(
         listener_packet_count=0,
@@ -61,7 +61,12 @@ def make_clip_call(tmp_path):
         {"voice_bridge.voice_call": call_module},
     )
     clip_call = clip_module.ClipVoiceCall(
-        call._membership.identities, 42, 1, call._audio_services, call._feed
+        call._membership.identities,
+        42,
+        1,
+        call._audio_services,
+        call._feed,
+        **options,
     )
     return call_module, clip_call, playback, connection
 

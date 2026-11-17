@@ -1,14 +1,17 @@
 import enum
+import os
 import subprocess
 import sys
 
 import conversation_report
+import default_holder
 import discord_call
 import conversation_seat
 import conversation_state
 import desktop_window
 import listen_cli
 import listener_session
+import remote_agent
 from meetings import start
 import user_units
 import utterances
@@ -73,6 +76,7 @@ def open_conversation(arguments, directory):
             language=arguments.language,
             barge_in=True,
             seat=seat,
+            **default_holder.listener_settings(arguments),
         )
         announce_transcription(seat, directory)
     except BaseException:
@@ -110,6 +114,17 @@ def refuse_meeting(arguments, directory):
 
 def refuse_closed(arguments, directory):
     raise utterances.ConversationClosed(utterances.CLOSED_MESSAGE)
+
+
+def close_or_return_the_floor(arguments, directory):
+    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
+    open_now = conversation_state.observe(directory) is ConversationPhase.OPEN
+    holder = default_holder.floor_returns_to(directory, pane) if open_now else None
+    if holder is None:
+        close_conversation(arguments, directory)
+        return
+    default_holder.take_the_floor(directory, holder)
+    conversation_report.print_floor_returned(holder.servant)
 
 
 def close_conversation(arguments, directory):

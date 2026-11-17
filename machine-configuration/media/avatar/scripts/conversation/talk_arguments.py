@@ -13,6 +13,7 @@ def parse_arguments(arguments=None):
     opening.add_argument("--language")
     opening.add_argument("--character")
     opening.add_argument("--live", action="store_true")
+    opening.add_argument("--holder", metavar="HERMES_PROFILE")
     opening.add_argument("--seat", choices=list(Seat), type=Seat)
     opening.add_argument("--agent", type=remote_agent.parse, metavar="HOST:PANE")
     speaking = commands.add_parser("say")

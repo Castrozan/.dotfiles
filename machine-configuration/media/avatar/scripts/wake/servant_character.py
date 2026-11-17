@@ -25,8 +25,7 @@ def character_for(servant):
     return listed_characters().get(servant)
 
 
-def show_for(servant):
-    character = character_for(servant)
+def show(character):
     if character is None:
         return
     try:
@@ -38,3 +37,7 @@ def show_for(servant):
         )
     except (OSError, subprocess.SubprocessError):
         return
+
+
+def show_for(servant):
+    show(character_for(servant))

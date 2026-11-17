@@ -6,6 +6,7 @@ import os
 
 ADDRESSEE_FILE = "addressee.json"
 LOCK_FILE = ".addressee.lock"
+HERMES_PANE_PREFIX = "hermes:"
 
 
 @dataclasses.dataclass(frozen=True)
@@ -14,6 +15,14 @@ class Addressee:
     servant: str
     heard_through: int
     host: str | None = None
+
+
+def hermes_pane(profile):
+    return f"{HERMES_PANE_PREFIX}{profile}"
+
+
+def holds_without_a_pane(addressee):
+    return addressee.pane.startswith(HERMES_PANE_PREFIX)
 
 
 @contextlib.contextmanager

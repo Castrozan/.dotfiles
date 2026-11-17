@@ -20,7 +20,11 @@ def first_claim(pane, sessions, holder):
 
 
 def holder_has_a_live_session(holder, sessions):
-    return bool(holder) and any(session.pane == holder.pane for session in sessions)
+    if not holder:
+        return False
+    return conversation_addressee.holds_without_a_pane(holder) or any(
+        session.pane == holder.pane for session in sessions
+    )
 
 
 def claim_among_live_sessions(directory, pane, holder, sessions):

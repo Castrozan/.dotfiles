@@ -53,6 +53,8 @@ let
   '';
 in
 {
+  imports = [ ./silver-voice-holder.nix ];
+
   options.clawdeDiscordVoiceIdentities = lib.mkOption {
     type = lib.types.attrsOf (
       lib.types.submodule {
@@ -86,6 +88,11 @@ in
           answeredGuildId = lib.mkOption {
             type = lib.types.str;
             description = "The Discord server whose voice channels the bridge joins when the listener enters one.";
+          };
+          silverChannelName = lib.mkOption {
+            type = lib.types.str;
+            default = "silver";
+            description = "Voice channel of the answered server where the listener asks for Silver by name; the bridge starts the avatar voice holder only when the listener enters it.";
           };
           conversationProfile = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
@@ -129,7 +136,9 @@ in
           "PYTHONPATH=${scripts}:${transcriberScripts}"
           "VOICE_BRIDGE_FFMPEG=${pkgs.ffmpeg}/bin/ffmpeg"
           "VOICE_BRIDGE_OPUS_LIBRARY=${pkgs.libopus}/lib/libopus.so"
+          "PATH=${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
           "VOICE_BRIDGE_CONTROL_SOCKET=%t/silver-voice/control.sock"
+          "VOICE_BRIDGE_SILVER_CHANNEL_NAME=${bridgeSettings.silverChannelName}"
           "VOICE_BRIDGE_LISTENER_USER_ID=${bridgeSettings.listenerDiscordUserId}"
           "VOICE_BRIDGE_ANSWERED_GUILD_ID=${bridgeSettings.answeredGuildId}"
           "VOICE_BRIDGE_IDENTITIES=${identitySpecifications}"

@@ -15,3 +15,7 @@ def print_status(directory, *, is_open, live, seat):
 
 def print_closed():
     print(json.dumps({"open": False}))
+
+
+def print_floor_returned(servant):
+    print(json.dumps({"open": True, "floor_returned_to": servant}))
