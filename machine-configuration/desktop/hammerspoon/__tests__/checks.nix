@@ -45,6 +45,14 @@ in
       )
       "The Darwin Codex notification driver calls summonWezTermToCurrentWorkspace through hs -c, so Hammerspoon must deploy its implementation and expose that exact global function";
 
+  domain-desktop-hammerspoon-stuck-mouse-button-advisor-is-deployed-and-started =
+    mkEvalCheck "domain-desktop-hammerspoon-stuck-mouse-button-advisor-is-deployed-and-started"
+      (
+        builtins.hasAttr ".hammerspoon/stuck_mouse_button_advisor.lua" hammerspoonConfiguration.home.file
+        && lib.hasInfix "require(\"stuck_mouse_button_advisor\").start()" hammerspoonInitContent
+      )
+      "A lost mouse button release makes macOS treat every pointer move as a drag, so the menu bar never reveals on hover; Hammerspoon must deploy and start the advisor that tells you to replug the monitor";
+
   domain-desktop-hammerspoon-command-j-reveals-menu-bar =
     mkEvalCheck "domain-desktop-hammerspoon-command-j-reveals-menu-bar" commandJRevealsMenuBar
       "Cmd+J must invoke the shared pointer-free menu bar reveal capability with the same auto-hide behavior as workspace and window switching";

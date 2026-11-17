@@ -91,6 +91,8 @@ require("smart_home_media_key_control").start()
 
 require("prevent_window_minimize").start()
 
+require("stuck_mouse_button_advisor").start()
+
 -- Summon is triggered from karabiner (Cmd+B / Cmd+C) rather than an hs.hotkey,
 -- because karabiner remaps Ctrl+C to Cmd+C: a global Cmd+C hotkey here would also
 -- catch the remapped Ctrl+C and steal copy. Karabiner matches Cmd+C before that

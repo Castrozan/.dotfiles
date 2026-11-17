@@ -56,6 +56,7 @@
       ".hammerspoon/prevent_window_minimize.lua".source = ./prevent_window_minimize.lua;
       ".hammerspoon/karabiner_application_focus_variables.lua".source =
         ./input/karabiner_application_focus_variables.lua;
+      ".hammerspoon/stuck_mouse_button_advisor.lua".source = ./input/stuck_mouse_button_advisor.lua;
       ".hammerspoon/smart_home_media_key_control.lua".text =
         builtins.replaceStrings
           [ "@USER_BIN_PATH@" ]
