@@ -23,6 +23,7 @@ let
     "${scripts}/conversation/remote_seat"
     "${scripts}/conversation/mac_conversation"
     "${scripts}/wake"
+    "${scripts}/wake/mac"
   ];
   environment = ''
     export AVATAR_HOST=${host}

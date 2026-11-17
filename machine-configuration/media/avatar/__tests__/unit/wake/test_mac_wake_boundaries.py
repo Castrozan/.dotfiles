@@ -30,7 +30,7 @@ def ran(monkeypatch, stdout=b"", returncode=0):
 def test_a_mac_captures_through_the_microphone_page_relay(on_a_mac):
     command = on_a_mac.capture_command()
     assert command[0] == sys.executable
-    assert command[1].endswith("scripts/wake/mac_microphone.py")
+    assert command[1].endswith("scripts/wake/mac/mac_microphone.py")
 
 
 def test_other_systems_keep_the_pulseaudio_capture_and_local_effects(monkeypatch):

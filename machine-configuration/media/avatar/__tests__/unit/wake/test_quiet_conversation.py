@@ -66,8 +66,8 @@ def test_the_wake_checks_for_quiet_each_time_it_finds_the_conversation_open(
     following = boundaries(LONG_QUIET)
     following.conversation_listening = listening
     following.transcript_entries = Mock(return_value=[])
-    monkeypatch.setattr(wake_listener, "ARM_CHECK_SECONDS", 0)
-    wake_listener.follow_conversation(wake_listener.WakeListener(following, False))
+    monkeypatch.setattr(quiet_conversation, "ARM_CHECK_SECONDS", 0)
+    quiet_conversation.follow_conversation(wake_listener.WakeListener(following, False))
     following.close_conversation.assert_called_once_with()
 
 
@@ -75,6 +75,6 @@ def test_a_dry_run_closes_nothing(monkeypatch):
     following = boundaries(LONG_QUIET)
     following.conversation_listening = Mock(side_effect=[True, False])
     following.transcript_entries = Mock(return_value=[])
-    monkeypatch.setattr(wake_listener, "ARM_CHECK_SECONDS", 0)
-    wake_listener.follow_conversation(wake_listener.WakeListener(following, True))
+    monkeypatch.setattr(quiet_conversation, "ARM_CHECK_SECONDS", 0)
+    quiet_conversation.follow_conversation(wake_listener.WakeListener(following, True))
     assert not following.close_conversation.called

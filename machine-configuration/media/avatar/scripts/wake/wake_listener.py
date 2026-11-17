@@ -3,17 +3,16 @@ import subprocess
 import time
 
 import peer_sessions
-import quiet_conversation
 import room_holder
 import speech_segmenter
+import wake_claim
+from quiet_conversation import ARM_CHECK_SECONDS, follow_conversation
 from servant_panes import live_sessions
 from wake_boundaries import for_this_machine
 from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
 from wake_prompts import SETTINGS, spoken_prompt
 
-ARM_CHECK_SECONDS = 5
 FLEET_REFRESH_SECONDS = 60
-TRANSCRIPT_POLL_SECONDS = 0.2
 TRANSCRIBER_ATTEMPTS = 5
 TRANSCRIBER_RETRY_SECONDS = 0.4
 TRANSCRIBER_UNAVAILABLE = (OSError, subprocess.SubprocessError)
@@ -78,12 +77,20 @@ class WakeListener:
             self.boundaries.notify_at_idle(session.pane, text, session.host)
         return True
 
+    def holds_the_room(self, session):
+        if self.dry_run or self.boundaries.claim_wake(session):
+            return True
+        self.boundaries.report(f"left {session.servant} to another room")
+        return False
+
     def answer(self, segment):
         heard = self.transcribed(segment)
         if not heard:
             return
         match = self.addressed(heard)
-        if match is None or not self.deliver(match, purpose=None):
+        if match is None or not self.holds_the_room(match.session):
+            return
+        if not self.deliver(match, purpose=None):
             return
         self.boundaries.open_conversation()
         self.boundaries.hand_to(room_holder.addressee_of(match.session, 0))
@@ -153,18 +160,6 @@ def microphone_frames(capture):
         yield frame
 
 
-def follow_conversation(wake):
-    wake.start_reading_conversation()
-    while True:
-        check_at = time.monotonic() + ARM_CHECK_SECONDS
-        while time.monotonic() < check_at:
-            wake.read_conversation()
-            time.sleep(TRANSCRIPT_POLL_SECONDS)
-        if not wake.boundaries.conversation_listening():
-            return
-        quiet_conversation.close_when_quiet(wake.boundaries, wake.dry_run)
-
-
 def run(wake):
     while True:
         if wake.boundaries.conversation_listening():
@@ -188,7 +183,11 @@ def main():
     parser = argparse.ArgumentParser(prog="avatar-wake")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--sessions", action="store_true")
+    parser.add_argument("--claim")
+    parser.add_argument("--room")
     arguments = parser.parse_args()
+    if arguments.claim:
+        raise SystemExit(wake_claim.exit_status(arguments.claim, arguments.room))
     if arguments.sessions:
         print(peer_sessions.listing_of(live_sessions()))
         return

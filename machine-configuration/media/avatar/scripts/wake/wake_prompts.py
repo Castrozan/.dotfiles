@@ -46,10 +46,14 @@ REMOTE_SETTINGS = {
 }
 
 
+def room_name():
+    return os.environ[ROOM_HOST_VARIABLE]
+
+
 def setting_for(purpose, session):
     if session is None or session.host is None:
         return SETTINGS[purpose]
-    room = os.environ[ROOM_HOST_VARIABLE]
+    room = room_name()
     reach = f"AVATAR_ROOM={room}"
     return REMOTE_SETTINGS[purpose].format(room=room, reach=reach)
 

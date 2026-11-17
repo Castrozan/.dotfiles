@@ -14,12 +14,16 @@ import room_holder
 import speech_segmenter
 from transcription import transcriber
 import transcript_log
+import wake_claim
+import wake_prompts
 from servant_panes import live_sessions
 
 MICROPHONE = "@DEFAULT_SOURCE@"
 VOICE_SENDER = "voice"
 COMMAND_TIMEOUT_SECONDS = 120
 PEER_HOSTS_VARIABLE = "AVATAR_PEER_HOSTS"
+PEER_HEAD_START_SECONDS = 1.0
+PEER_CLAIM_TIMEOUT_SECONDS = 20
 
 
 def capture_command():
@@ -82,6 +86,33 @@ def notify_at_idle(pane, text, host=None):
     )
 
 
+def claimed_at_the_servant_machine(session, room):
+    try:
+        return (
+            subprocess.run(
+                remote_agent.on_host(
+                    session.host,
+                    ["avatar-wake", "--claim", session.pane, "--room", room],
+                ),
+                capture_output=True,
+                timeout=PEER_CLAIM_TIMEOUT_SECONDS,
+            ).returncode
+            == 0
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return False
+
+
+def claim_wake(session):
+    room = wake_prompts.room_name()
+    if not session.host:
+        return wake_claim.claim(
+            listener_runtime.runtime_directory(), session.pane, room, time.time()
+        )
+    time.sleep(PEER_HEAD_START_SECONDS)
+    return claimed_at_the_servant_machine(session, room)
+
+
 @functools.cache
 def peers_of_this_machine():
     return peer_sessions.PeerSessions(
@@ -102,6 +133,7 @@ class Boundaries:
     conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
     open_conversation: object = conversation_opened
+    claim_wake: object = claim_wake
     prompt_now: object = prompt_now
     notify_at_idle: object = notify_at_idle
     transcript_entries: object = transcript_entries
