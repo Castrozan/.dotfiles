@@ -122,6 +122,12 @@ TRANSITIONS = {
 }
 
 
+def command_of(arguments):
+    if getattr(arguments, "live", False):
+        return ConversationCommand.OPEN_LIVE
+    return ConversationCommand(arguments.action)
+
+
 def phase_of(target_active, live_purpose):
     return PHASE_BY_TARGET_AND_PURPOSE[(target_active, live_purpose)]
 

@@ -12,6 +12,7 @@ const {
 } = require("./stop-speaking-command-handler");
 const { handleGetStatusCommand } = require("./get-status-command-handler");
 const { handlePerformCommand } = require("./perform-command-handler");
+const { handleVoiceLevelCommand } = require("./voice-level-command-handler");
 
 const {
   handleSetVideoModeCommand,
@@ -24,6 +25,8 @@ const {
   handleCameraChoiceCommand,
 } = require("./camera-choice-command-handler");
 
+const UNLOGGED_COMMAND_TYPES = ["voiceLevel"];
+
 const COMMAND_HANDLERS_BY_TYPE = {
   speak: handleSpeakCommand,
   stopSpeaking: handleStopSpeakingCommand,
@@ -34,6 +37,7 @@ const COMMAND_HANDLERS_BY_TYPE = {
   setPresented: handleSetPresentedCommand,
   getStatus: handleGetStatusCommand,
   perform: handlePerformCommand,
+  voiceLevel: handleVoiceLevelCommand,
   ...Object.fromEntries(
     CAMERA_CHOICE_COMMANDS.map((type) => [type, handleCameraChoiceCommand]),
   ),
@@ -42,7 +46,9 @@ const COMMAND_HANDLERS_BY_TYPE = {
 async function routeAgentCommand(rawMessage, connection, context) {
   try {
     const command = JSON.parse(rawMessage);
-    console.log(`📥 Agent command: ${command.type}`);
+    if (!UNLOGGED_COMMAND_TYPES.includes(command.type)) {
+      console.log(`📥 Agent command: ${command.type}`);
+    }
 
     const handler = Object.hasOwn(COMMAND_HANDLERS_BY_TYPE, command.type)
       ? COMMAND_HANDLERS_BY_TYPE[command.type]

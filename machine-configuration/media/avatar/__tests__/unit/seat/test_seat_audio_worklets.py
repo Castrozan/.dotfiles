@@ -134,3 +134,24 @@ def test_the_voice_reports_how_much_it_holds_ten_times_a_second():
     played_before_first_report = 18 * RENDER_QUANTUM
     assert held[0] == (7200 - played_before_first_report) / 24000
     assert held == sorted(held, reverse=True)
+
+
+def test_a_clear_message_empties_the_voice_at_once_and_it_cushions_again():
+    result = run_worklet(
+        24000,
+        """
+        const voice = new registered["voice-playback"]();
+        voice.port.onmessage({ data: ramp(1, 4800).buffer });
+        render(voice, 10);
+        voice.port.onmessage({ data: "clear" });
+        const silent = render(voice, 10);
+        voice.port.onmessage({ data: ramp(9001, 480).buffer });
+        const cushioning = render(voice, 4);
+        voice.port.onmessage({ data: ramp(9481, 2400).buffer });
+        const resumed = render(voice, 30).filter((sample) => sample);
+        console.log(JSON.stringify({ silent, cushioning, resumed: resumed.slice(0, 3) }));
+        """,
+    )
+    assert set(result["silent"]) == {0}
+    assert set(result["cushioning"]) == {0}
+    assert result["resumed"] == [9001, 9002, 9003]

@@ -1,5 +1,6 @@
 import contextlib
 import http.client
+import json
 import pathlib
 import sys
 
@@ -9,12 +10,18 @@ HOST = "127.0.0.1"
 PORT = 8772
 SPEECH_PATH = "/speech"
 HUSH_PATH = "/hush"
+STREAM_PATH = "/stream"
 ORIGIN = f"http://{HOST}:{PORT}"
 SEAT_PROGRAM = pathlib.Path(__file__).with_name("mac_seat.py")
 PROFILE = pathlib.Path.home() / ".local/share/avatar/conversation-browser"
 PROFILE_FLAG = f"--user-data-dir={PROFILE}"
 HUSH_TIMEOUT_SECONDS = 1
 SPEECH_OPEN_TIMEOUT_SECONDS = 5
+STREAM_ATTACH_WAIT_SECONDS = 30
+NO_PAGE_MESSAGE = (
+    f"The seat page did not attach; check that {local_seat.BROWSER} "
+    "may use the microphone"
+)
 
 
 def capture_command(device):
@@ -44,6 +51,41 @@ def play(pcm):
         seat.send(pcm)
         for _ in seat:
             pass
+
+
+def open_stream_connection(rate):
+    from websockets.sync.client import connect
+
+    local_seat.wait_until(attached, STREAM_ATTACH_WAIT_SECONDS, NO_PAGE_MESSAGE)
+    connection = connect(
+        f"ws://{HOST}:{PORT}{STREAM_PATH}",
+        origin=ORIGIN,
+        open_timeout=SPEECH_OPEN_TIMEOUT_SECONDS,
+    )
+    connection.send(json.dumps({"sampleRate": rate}))
+    return connection
+
+
+class SeatStream:
+    def __init__(self, rate, open_connection=open_stream_connection):
+        self.rate = rate
+        self.open_connection = open_connection
+        self.connection = None
+
+    def open(self):
+        if self.connection is None:
+            self.connection = self.open_connection(self.rate)
+
+    def send(self, pcm):
+        self.open()
+        self.connection.send(pcm)
+
+    def clear(self):
+        hush()
+
+    def close(self):
+        if self.connection is not None:
+            self.connection.close()
 
 
 def close_browser():

@@ -3,6 +3,7 @@ const CUSHION_SECONDS = 0.12;
 const MAXIMUM_SECONDS = 0.6;
 const QUEUE_REPORT_SECONDS = 0.1;
 const FULL_SCALE = 32767;
+const CLEAR_MESSAGE = "clear";
 
 function isSilent(chunk) {
   return chunk.every((sample) => sample === 0);
@@ -40,7 +41,17 @@ class VoicePlayback extends AudioWorkletProcessor {
     this.buffering = true;
     this.reportSamples = Math.round(sampleRate * QUEUE_REPORT_SECONDS);
     this.samplesSinceReport = 0;
-    this.port.onmessage = (event) => this.enqueue(new Int16Array(event.data));
+    this.port.onmessage = (event) => this.receive(event.data);
+  }
+
+  receive(message) {
+    if (message === CLEAR_MESSAGE) this.clear();
+    else this.enqueue(new Int16Array(message));
+  }
+
+  clear() {
+    this.queued = 0;
+    this.buffering = true;
   }
 
   enqueue(chunk) {

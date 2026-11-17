@@ -110,6 +110,7 @@ lib.mkMerge [
   }
   wakeLaunchAgent
   (onDemandAgent "avatar-conversation" conversation.listener "avatar-conversation-listener")
+  (onDemandAgent "avatar-live" conversation.live "avatar-live")
   (onDemandAgent "avatar-control" conversation.controlServer "avatar-control-server")
   (onDemandAgent "avatar-renderer" conversation.renderer "avatar-renderer-server")
 ]

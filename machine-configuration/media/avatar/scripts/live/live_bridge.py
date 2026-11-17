@@ -13,7 +13,7 @@ from gpt_live import GptLive
 from live_events import AssistantSaid, Audio, Failed, TaskRequested, Usage, UserSaid
 from live_voice import voice_of_the_room_holder
 from conversation_seat import Seat
-from room_audio import DEFAULT_SINK, LIP_SYNC_SINK, Speaker, microphone_chunks
+from room_boundary import DEFAULT_SINK, LIP_SYNC_SINK, Speaker, microphone_chunks
 from spoken_turns import Party, TurnAssembler
 from voice_session import RoomVoice
 

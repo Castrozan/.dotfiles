@@ -51,8 +51,8 @@ def this_mac(monkeypatch, tmp_path):
     return mac
 
 
-@pytest.mark.parametrize("arguments", [["open", "--live"], ["open", "--seat", "room"]])
-def test_what_only_the_avatar_host_offers_goes_to_the_host(this_mac, arguments):
+def test_what_only_the_avatar_host_offers_goes_to_the_host(this_mac):
+    arguments = ["open", "--seat", "room"]
     this_mac.phase = ConversationPhase.CLOSED
     assert mac_talk.carry_out(arguments) == 7
     this_mac.host.assert_called_once_with(arguments)

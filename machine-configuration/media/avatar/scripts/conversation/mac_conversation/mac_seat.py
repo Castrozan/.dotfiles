@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import pathlib
 import signal
@@ -16,6 +17,8 @@ CHUNK_BYTES = int(VOICE_RATE * CHUNK_SECONDS) * 2
 LEAD_SECONDS = 0.1
 PAGE_CUSHION_SECONDS = 0.15
 LONGEST_SPEECH_BYTES = VOICE_RATE * 2 * 600
+UNSUPPORTED_DATA_CODE = 1003
+HUSH_MESSAGE = "hush"
 NO_PAGE_MESSAGE = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
     "may use the microphone"
@@ -26,21 +29,49 @@ class MacSeat(MicrophoneRelay):
     def __init__(self, page_files, output):
         super().__init__(page_files, output)
         self.hushed = asyncio.Event()
+        self.page_notices = set()
 
     def answer_request(self, connection, request):
         path = request.path.partition("?")[0]
-        if path == mac_seat_client.SPEECH_PATH:
+        if path in (mac_seat_client.SPEECH_PATH, mac_seat_client.STREAM_PATH):
             return None
         if path == mac_seat_client.HUSH_PATH:
-            self.hushed.set()
+            self.hush()
             return seat_page.body_response(b"", "text/plain")
         return super().answer_request(connection, request)
 
-    async def carry(self, websocket):
-        if websocket.request.path == mac_seat_client.SPEECH_PATH:
-            await self.carry_speech(websocket)
+    def hush(self):
+        self.hushed.set()
+        if self.page_socket is None:
             return
-        await self.carry_audio(websocket)
+        notice = asyncio.get_running_loop().create_task(
+            self.page_socket.send(HUSH_MESSAGE)
+        )
+        self.page_notices.add(notice)
+        notice.add_done_callback(self.page_notices.discard)
+
+    async def carry(self, websocket):
+        carriers = {
+            mac_seat_client.SPEECH_PATH: self.carry_speech,
+            mac_seat_client.STREAM_PATH: self.carry_stream,
+        }
+        await carriers.get(websocket.request.path, self.carry_audio)(websocket)
+
+    async def accepts_stream(self, websocket):
+        try:
+            rate = json.loads(await websocket.recv()).get("sampleRate")
+        except (ValueError, AttributeError):
+            rate = None
+        if rate != VOICE_RATE:
+            await websocket.close(UNSUPPORTED_DATA_CODE, "The seat plays 24 kHz audio")
+        return rate == VOICE_RATE
+
+    async def carry_stream(self, websocket):
+        if not await self.accepts_stream(websocket):
+            return
+        async for pcm in websocket:
+            if isinstance(pcm, bytes) and self.page_socket is not None:
+                await self.page_socket.send(pcm[: len(pcm) - len(pcm) % 2])
 
     async def carry_speech(self, websocket):
         self.hushed.set()

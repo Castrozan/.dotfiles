@@ -7,6 +7,7 @@ import conversation_report
 import conversation_state
 import listener_runtime
 import listener_session
+import live_opening
 import local_seat
 import mac_seat_client
 import mac_stage
@@ -15,7 +16,7 @@ import remote_talk
 import room_reach
 import utterances
 import voice_turns
-from conversation_state import ConversationAction, ConversationCommand
+from conversation_state import ConversationAction
 from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
 from talk_arguments import parse_arguments
@@ -23,7 +24,7 @@ from talk_arguments import parse_arguments
 MICROPHONE = "the microphone of this Mac"
 SEAT = "room"
 ATTACH_WAIT_SECONDS = 25
-HOST_OPTIONS = ("--live", "--seat")
+HOST_OPTIONS = ("--seat",)
 ROOM_HELD_ELSEWHERE = "Another session holds the room; it speaks until the room turns"
 SEAT_DID_NOT_ATTACH = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
@@ -47,9 +48,13 @@ def leave_a_seat_the_host_stopped_using():
 
 
 def status(arguments, directory):
-    is_open = conversation_state.observe(directory) is ConversationPhase.OPEN
+    phase = conversation_state.observe(directory)
+    is_open = phase in (ConversationPhase.OPEN, ConversationPhase.LIVE)
     conversation_report.print_status(
-        directory, is_open=is_open, live=False, seat=SEAT if is_open else None
+        directory,
+        is_open=is_open,
+        live=phase is ConversationPhase.LIVE,
+        seat=SEAT if is_open else None,
     )
 
 
@@ -92,6 +97,22 @@ def close_conversation(arguments, directory):
     conversation_report.print_closed()
 
 
+def bring_up_the_live_stage(seat):
+    leave_a_seat_the_host_stopped_using()
+    mac_stage.set_up()
+
+
+MAC_LIVE_STAGE = live_opening.LiveStage(
+    bring_up=bring_up_the_live_stage,
+    wait_until_seated=wait_until_the_seat_attaches,
+    close=lambda arguments, directory: end_conversation(directory),
+)
+
+
+def open_live_conversation(arguments, directory):
+    live_opening.open_live_conversation(arguments, directory, MAC_LIVE_STAGE)
+
+
 def speak(arguments, directory):
     pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
     if not conversation_addressee.addresses(directory, pane):
@@ -117,6 +138,7 @@ def refuse_here(arguments, directory):
 
 ACTIONS = {
     ConversationAction.BRING_UP: open_conversation,
+    ConversationAction.BRING_UP_LIVE: open_live_conversation,
     ConversationAction.KEEP_OPEN: status,
     ConversationAction.TEAR_DOWN: close_conversation,
     ConversationAction.ASK: ask,
@@ -141,7 +163,7 @@ def carry_out_here(arguments):
     parsed = parse_arguments(arguments)
     directory = listener_runtime.runtime_directory()
     decision = conversation_state.decide(
-        conversation_state.observe(directory), ConversationCommand(parsed.action)
+        conversation_state.observe(directory), conversation_state.command_of(parsed)
     )
     ACTIONS.get(decision, refuse_here)(parsed, directory)
     return 0

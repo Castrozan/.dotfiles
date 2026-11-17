@@ -5,6 +5,7 @@ import { reportVoiceDelay } from "/voice-delay.js";
 const MICROPHONE_RATE = 16000;
 const VOICE_RATE = 24000;
 const WORKLETS = "/seat-audio-worklets.js";
+const HUSH_MESSAGE = "hush";
 const state = document.getElementById("state");
 const noMeeting = {
   closed: new Promise(() => {}),
@@ -51,9 +52,10 @@ async function takeSeat() {
     if (socket.readyState === WebSocket.OPEN) socket.send(event.data);
   };
   socket.onmessage = (event) => {
-    if (typeof event.data === "string")
-      meeting.setLevels(JSON.parse(event.data));
-    else voice.port.postMessage(event.data, [event.data]);
+    if (typeof event.data !== "string")
+      voice.port.postMessage(event.data, [event.data]);
+    else if (event.data === HUSH_MESSAGE) voice.port.postMessage("clear");
+    else meeting.setLevels(JSON.parse(event.data));
   };
   socket.onopen = () => {
     state.textContent = "The avatar hears and speaks through this machine";

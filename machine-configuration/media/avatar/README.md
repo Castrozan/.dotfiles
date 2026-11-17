@@ -84,8 +84,11 @@ speakers when no conversation is open, and moves the mouth from the loudness of 
 conversation open, `say` raises the control server for that one sentence. `show` opens the avatar window on the Mac and
 `hide` closes it. Sustained speech from the room hushes the avatar mid-sentence, and `close` deletes the transcript.
 
-Meetings and the live voice stay with the avatar host, reached with `--seat` and `--live`; opening one of those ends the
-conversation the Mac holds, because both use port 8765.
+Meetings stay with the avatar host, reached with `--seat`; opening one ends the conversation the Mac holds, because both
+use port 8765. `open --live` runs the live voice on the Mac itself: the `avatar-live` launch agent hears the seat page's
+microphone resampled to the model rate, plays into the page's `/stream` websocket, moves the mouth through the control
+server's `voiceLevel` command, and `avatar-claim-floor` gives the opening pane the floor. A host conversation already
+seated at the Mac keeps `--live` on the host.
 
 ## Discord calls
 
@@ -134,10 +137,10 @@ The voice reaches a Mac later than chise measures its loudness, so the seat page
 plus each output's latency, and the control server holds the mouth back by that much for the Mac window and the Mac
 camera while chise's own renderer moves at once.
 
-`open --live` from a Mac names the agent that will receive the tasks as `--agent HOST:PANE`, built from the Mac's
-hostname and the caller's herdr pane. Chise reads that pane's Servant from `a2a list` on the Mac, gives it the floor,
-and sends each task there with `a2a ask` over ssh. With a remote seat the live voice hears `AvatarRemoteMicrophone`
-and plays only into `AvatarLipSync`.
+With a host conversation seated at the Mac, `open --live` from it names the agent that will receive the tasks as
+`--agent HOST:PANE`, built from the Mac's hostname and the caller's herdr pane. Chise reads that pane's Servant from
+`a2a list` on the Mac, gives it the floor, and sends each task there with `a2a ask` over ssh. With a remote seat the
+live voice hears `AvatarRemoteMicrophone` and plays only into `AvatarLipSync`.
 
 ### Meetings from a Mac
 

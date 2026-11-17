@@ -5,20 +5,28 @@ import time
 
 LAUNCHCTL = "/bin/launchctl"
 CONVERSATION_AGENT = "com.dotfiles.avatar-conversation"
+LIVE_AGENT = "com.dotfiles.avatar-live"
+CONVERSATION_TARGET = "avatar-conversation.target"
 AGENT_BY_UNIT = {
-    "avatar-conversation.target": CONVERSATION_AGENT,
+    CONVERSATION_TARGET: CONVERSATION_AGENT,
     "avatar-listener.service": CONVERSATION_AGENT,
+    "avatar-live.service": LIVE_AGENT,
     "avatar-control-server.service": "com.dotfiles.avatar-control",
     "avatar-renderer.service": "com.dotfiles.avatar-renderer",
 }
+AGENTS_KEEPING_UNIT_ACTIVE = {CONVERSATION_TARGET: (CONVERSATION_AGENT, LIVE_AGENT)}
 RUNNING = re.compile(r"^\tstate = running$", re.MULTILINE)
 COMMAND_TIMEOUT_SECONDS = 30
 STOP_WAIT_SECONDS = 10
 POLL_SECONDS = 0.1
 
 
+def agent_target(agent):
+    return f"gui/{os.getuid()}/{agent}"
+
+
 def service_target(unit):
-    return f"gui/{os.getuid()}/{AGENT_BY_UNIT[unit]}"
+    return agent_target(AGENT_BY_UNIT[unit])
 
 
 def launchctl(*arguments, check=False):
@@ -31,10 +39,15 @@ def launchctl(*arguments, check=False):
     )
 
 
+def agent_running(agent):
+    return bool(RUNNING.search(launchctl("print", agent_target(agent)).stdout))
+
+
 def unit_active(unit):
     if unit not in AGENT_BY_UNIT:
         return False
-    return bool(RUNNING.search(launchctl("print", service_target(unit)).stdout))
+    agents = AGENTS_KEEPING_UNIT_ACTIVE.get(unit, (AGENT_BY_UNIT[unit],))
+    return any(agent_running(agent) for agent in agents)
 
 
 def start(unit):

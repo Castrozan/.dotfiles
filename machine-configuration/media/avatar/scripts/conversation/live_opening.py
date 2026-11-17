@@ -1,3 +1,4 @@
+import dataclasses
 import os
 import subprocess
 
@@ -25,6 +26,30 @@ LIVE_NEEDS_A_SERVANT = (
 )
 
 
+@dataclasses.dataclass(frozen=True)
+class LiveStage:
+    bring_up: object
+    wait_until_seated: object
+    close: object
+
+
+def bring_up_the_room_stage(seat):
+    start.bring_up(
+        conversation_state.CONVERSATION_TARGET,
+        (
+            start.renderer_ready,
+            lambda: conversation_effects.seat_microphone_ready(seat),
+        ),
+    )
+
+
+def close_the_room_session(arguments, directory):
+    conversation_effects.close_conversation(arguments, directory)
+
+
+ROOM_STAGE = LiveStage(bring_up_the_room_stage, lambda: None, close_the_room_session)
+
+
 def receiving_agent(arguments):
     return arguments.agent or AgentPane(None, os.environ.get(PANE_ENVIRONMENT_VARIABLE))
 
@@ -45,7 +70,7 @@ def holds_the_floor(directory, agent):
     return holder is not None and (holder.host, holder.pane) == (agent.host, agent.pane)
 
 
-def open_live_conversation(arguments, directory):
+def open_live_conversation(arguments, directory, stage=ROOM_STAGE):
     agent = receiving_agent(arguments)
     if not agent.pane:
         raise RuntimeError(LIVE_NEEDS_A_PANE)
@@ -53,13 +78,7 @@ def open_live_conversation(arguments, directory):
     if seat is Seat.DISCORD:
         raise RuntimeError(LIVE_HAS_NO_DISCORD_SEAT)
     try:
-        start.bring_up(
-            conversation_state.CONVERSATION_TARGET,
-            (
-                start.renderer_ready,
-                lambda: conversation_effects.seat_microphone_ready(seat),
-            ),
-        )
+        stage.bring_up(seat)
         conversation_seat.prepare(seat)
         conversation_effects.show_chosen_character(arguments)
         listener_session.begin_listening(
@@ -68,10 +87,11 @@ def open_live_conversation(arguments, directory):
             {"human": conversation_seat.MICROPHONE_BY_SEAT[seat]},
             seat=seat,
         )
+        stage.wait_until_seated()
         give_the_floor(directory, agent)
         if not holds_the_floor(directory, agent):
             raise RuntimeError(LIVE_NEEDS_A_SERVANT)
     except BaseException:
-        conversation_effects.close_conversation(arguments, directory)
+        stage.close(arguments, directory)
         raise
     conversation_effects.status(arguments, directory)

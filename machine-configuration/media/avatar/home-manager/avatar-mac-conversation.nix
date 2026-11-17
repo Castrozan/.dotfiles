@@ -39,6 +39,17 @@ let
     ${environment}
     exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_seat_play.py "$@"
   '';
+  floor = pkgs.writeShellScriptBin "avatar-claim-floor" ''
+    export PATH=${
+      lib.makeBinPath [
+        programs.herdr
+        programs.unclaimedCommand
+      ]
+    }:$PATH
+    export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
+    export PYTHONPATH=${scripts}/listening:${scripts}/echo:${scripts}/wake:${programs.a2aLibrary}
+    exec ${pkgs.python312}/bin/python3 ${scripts}/wake/floor_cli.py "$@"
+  '';
 in
 {
   inherit modules;
@@ -58,12 +69,30 @@ in
     exec ${programs.serve}
   '';
   talk = pkgs.writeShellScriptBin "avatar-talk" ''
-    export PATH=${lib.makeBinPath [ programs.unclaimedCommand ]}:$PATH
+    export PATH=${
+      lib.makeBinPath [
+        programs.unclaimedCommand
+        floor
+      ]
+    }:$PATH
     ${environment}
+    export PYTHONPATH=$PYTHONPATH:${scripts}
     exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_talk.py "$@"
   '';
   listener = pkgs.writeShellScriptBin "avatar-conversation-listener" ''
     ${environment}
     exec ${conversationPython}/bin/python3 ${scripts}/listening/listener.py
+  '';
+  live = pkgs.writeShellScriptBin "avatar-live" ''
+    export PATH=${
+      lib.makeBinPath [
+        programs.a2a
+        programs.herdr
+      ]
+    }:$PATH
+    ${environment}
+    export AVATAR_CHARACTER_VOICES=${import ../cast/character-voices.nix { inherit pkgs; }}
+    export PYTHONPATH=${scripts}/live:$PYTHONPATH
+    exec ${conversationPython}/bin/python3 ${scripts}/live/live_bridge.py
   '';
 }

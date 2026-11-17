@@ -39,7 +39,9 @@ def test_the_closed_report_says_only_that_nothing_is_open(capsys):
     assert json.loads(capsys.readouterr().out) == {"open": False}
 
 
-@pytest.mark.parametrize("phase", [ConversationPhase.OPEN, ConversationPhase.CLOSED])
+@pytest.mark.parametrize(
+    "phase", [ConversationPhase.OPEN, ConversationPhase.CLOSED, ConversationPhase.LIVE]
+)
 def test_the_host_and_the_mac_print_the_same_status_shape(
     monkeypatch, tmp_path, capsys, phase
 ):

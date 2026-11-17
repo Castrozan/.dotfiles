@@ -33,7 +33,7 @@ def test_an_agent_is_active_only_while_launchd_reports_it_running(
 
 def test_a_unit_no_agent_stands_for_is_inactive_without_asking(monkeypatch):
     run = launchctl_printing(monkeypatch)
-    assert launchd_units.unit_active("avatar-live.service") is False
+    assert launchd_units.unit_active("avatar-audio.service") is False
     assert not run.called
 
 
@@ -65,3 +65,24 @@ def test_on_a_mac_units_are_launchd_agents_and_records_live_in_the_home(monkeypa
     assert user_units.unit_active(LISTENER) is True
     expected = Path.home() / listener_runtime.MAC_RUNTIME_DIRECTORY
     assert listener_runtime.runtime_directory() == expected
+
+
+def test_the_live_voice_is_the_agent_behind_its_service(monkeypatch):
+    run = launchctl_printing(monkeypatch, RUNNING)
+    assert launchd_units.unit_active("avatar-live.service") is True
+    assert run.call_args.args[0][-1].endswith(launchd_units.LIVE_AGENT)
+
+
+@pytest.mark.parametrize(
+    ("outputs", "active"),
+    [
+        ((LOADED, LOADED), False),
+        ((RUNNING,), True),
+        ((LOADED, RUNNING), True),
+    ],
+)
+def test_the_conversation_target_stands_while_the_listener_or_the_live_voice_runs(
+    monkeypatch, outputs, active
+):
+    launchctl_printing(monkeypatch, *outputs)
+    assert launchd_units.unit_active("avatar-conversation.target") is active
