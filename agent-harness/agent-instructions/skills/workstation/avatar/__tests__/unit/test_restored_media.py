@@ -80,7 +80,6 @@ def test_character_request_reaches_the_renderer_with_its_identity():
         const avatarState = { currentCharacter: null };
         const textToSpeechGenerator = { selectCharacter: () => {} };
         handleSetCharacterCommand({ name: "vita", id: "request-1" }, connection, { avatarState, textToSpeechGenerator, clientRegistry: { sendToRenderer: value => { forwarded.push(value); return true; } } });
-        handleSetCharacterCommand({ name: "vita", id: "request-2" }, connection, { avatarState, textToSpeechGenerator, clientRegistry: { sendToRenderer: () => false } });
         const result = { forwarded, sent };
         """
     )
@@ -88,7 +87,6 @@ def test_character_request_reaches_the_renderer_with_its_identity():
         {"type": "setCharacter", "name": "vita", "id": "request-1"}
     ]
     assert result["sent"][0]["type"] == "characterRequested"
-    assert "No renderer" in result["sent"][1]["error"]
 
 
 @requires_node

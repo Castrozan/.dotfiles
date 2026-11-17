@@ -6,9 +6,12 @@ class CharacterVoicedSpeechGenerator {
   }
 
   selectCharacter(name) {
-    this.selected =
-      this.characters.find((character) => character.name === name) ??
-      this.selected;
+    const character = this.characters.find(
+      (candidate) => candidate.name === name,
+    );
+    if (!character) return false;
+    this.selected = character;
+    return true;
   }
 
   generate(text, outputId, voice, emotion, model) {

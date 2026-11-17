@@ -43,7 +43,7 @@ function sendInitialStateToRenderer(connection, context) {
   });
 }
 
-function showCurrentCharacterToViewer(connection, context) {
+function showCurrentCharacter(connection, context) {
   const name = context.avatarState.currentCharacter;
   if (name) {
     sendResponse(connection, { type: "setCharacter", name });
@@ -63,6 +63,7 @@ function handleIdentification(role, connection, context) {
     clientRegistry.registerRenderer(connection);
     acknowledgeIdentification(connection, "renderer");
     sendInitialStateToRenderer(connection, context);
+    showCurrentCharacter(connection, context);
     return;
   }
 
@@ -70,7 +71,7 @@ function handleIdentification(role, connection, context) {
     clientRegistry[DISPLAY_COPY_REGISTRATIONS[role]](connection);
     acknowledgeIdentification(connection, role);
     sendInitialStateToRenderer(connection, context);
-    showCurrentCharacterToViewer(connection, context);
+    showCurrentCharacter(connection, context);
     return;
   }
 

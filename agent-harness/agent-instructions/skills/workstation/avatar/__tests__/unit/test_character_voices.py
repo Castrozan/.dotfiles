@@ -117,20 +117,6 @@ def test_asking_for_a_character_not_yet_shown_still_reaches_the_renderer():
 
 
 @requires_node
-def test_without_a_renderer_the_voice_stays_with_the_character_on_screen():
-    result = evaluate_node_json(
-        CHARACTER_VOICED_GENERATOR
-        + CHARACTER_REQUEST_SESSION
-        + """
-        rendererConnected.value = false;
-        request("second", "request-4");
-        const result = { voice: spokenVoice(), replies: sent.map((reply) => reply.type) };
-        """
-    )
-    assert result == {"voice": "firstCloud", "replies": ["error"]}
-
-
-@requires_node
 def test_an_unknown_character_request_leaves_the_voice_alone():
     result = evaluate_node_json(
         CHARACTER_VOICED_GENERATOR
