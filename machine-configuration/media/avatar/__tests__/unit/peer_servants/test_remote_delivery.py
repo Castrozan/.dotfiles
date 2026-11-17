@@ -2,6 +2,7 @@ import shlex
 from types import SimpleNamespace
 from unittest.mock import Mock
 
+import peer_sessions
 import pytest
 import wake_boundaries
 import wake_listener
@@ -68,25 +69,38 @@ def test_a_remote_session_is_notified_at_idle_through_ssh(ran):
     ]
 
 
-def test_the_sessions_boundary_lists_the_peers_named_in_the_environment(
-    monkeypatch, ran
-):
-    monkeypatch.setenv("AVATAR_PEER_HOSTS", "kira rin")
-    monkeypatch.setattr(wake_boundaries, "live_sessions", lambda: [LOCAL_MEDEA])
-    ran.return_value = SimpleNamespace(returncode=255, stdout="")
-    assert wake_boundaries.sessions_here_and_at_peers() == [LOCAL_MEDEA]
-    assert sorted(call.args[0][-3] for call in ran.call_args_list) == ["kira", "rin"]
-
-
-@pytest.mark.parametrize("peers", [None, "", "  "])
-def test_no_peer_hosts_means_no_ssh(monkeypatch, ran, peers):
-    if peers is None:
+@pytest.mark.parametrize(
+    ("variable", "hosts"),
+    [(None, []), ("", []), ("  ", []), ("kira rin", ["kira", "rin"])],
+)
+def test_the_peers_are_the_hosts_named_in_the_environment(monkeypatch, variable, hosts):
+    wake_boundaries.peers_of_this_machine.cache_clear()
+    if variable is None:
         monkeypatch.delenv("AVATAR_PEER_HOSTS", raising=False)
     else:
-        monkeypatch.setenv("AVATAR_PEER_HOSTS", peers)
+        monkeypatch.setenv("AVATAR_PEER_HOSTS", variable)
+    assert wake_boundaries.peers_of_this_machine().peer_hosts == hosts
+    wake_boundaries.peers_of_this_machine.cache_clear()
+
+
+def test_the_sessions_boundary_never_waits_on_a_peer(monkeypatch, ran):
+    started = []
+    peers = peer_sessions.PeerSessions(
+        ["kira", "rin"], ran, start_worker=started.append
+    )
+    monkeypatch.setattr(wake_boundaries, "peers_of_this_machine", lambda: peers)
     monkeypatch.setattr(wake_boundaries, "live_sessions", lambda: [LOCAL_MEDEA])
     assert wake_boundaries.sessions_here_and_at_peers() == [LOCAL_MEDEA]
     ran.assert_not_called()
+    ran.return_value = SimpleNamespace(
+        returncode=0, stdout='[{"servant": "Circe", "pane": "w2:p1"}]'
+    )
+    started.pop()()
+    assert wake_boundaries.sessions_here_and_at_peers() == [
+        LOCAL_MEDEA,
+        LiveSession("Circe", "w2:p1", "kira"),
+        LiveSession("Circe", "w2:p1", "rin"),
+    ]
 
 
 def test_the_remote_prompt_sends_every_avatar_command_to_the_room_machine(

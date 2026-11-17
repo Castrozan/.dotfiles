@@ -1,4 +1,5 @@
 import dataclasses
+import functools
 import os
 import subprocess
 import sys
@@ -81,11 +82,16 @@ def notify_at_idle(pane, text, host=None):
     )
 
 
+@functools.cache
+def peers_of_this_machine():
+    return peer_sessions.PeerSessions(
+        os.environ.get(PEER_HOSTS_VARIABLE, "").split(), subprocess.run
+    )
+
+
 def sessions_here_and_at_peers():
     return peer_sessions.sessions_everywhere(
-        live_sessions(),
-        os.environ.get(PEER_HOSTS_VARIABLE, "").split(),
-        subprocess.run,
+        live_sessions(), peers_of_this_machine().known()
     )
 
 
