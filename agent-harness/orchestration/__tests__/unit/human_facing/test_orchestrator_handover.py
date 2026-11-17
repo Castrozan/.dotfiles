@@ -1,7 +1,6 @@
 import json
 from datetime import datetime, timezone
 
-import pytest
 from orchestration_test_support import file_card, run_orchestrator
 from orchestrator_cli.handover import cli as handover_cli
 from orchestrator_cli.watch.herdr_events import HerdrUnavailable
@@ -19,18 +18,6 @@ REPORT = {
     "progress": "inventory filed",
     "next_step": "port the wake word",
 }
-
-
-@pytest.fixture
-def moved_panes(monkeypatch):
-    moved = []
-
-    def move(pane_id, label):
-        moved.append((pane_id, label))
-        return "wW:t9"
-
-    monkeypatch.setattr(handover_cli, "move_pane_to_new_tab", move)
-    return moved
 
 
 def file_report(monkeypatch, reports):
@@ -110,4 +97,5 @@ def test_a_failed_move_keeps_the_records_and_says_what_is_left(
     monkeypatch.setattr(handover_cli, "move_pane_to_new_tab", refuse)
     assert handover(monkeypatch, cards, reports) == 1
     assert records(reports)[0]["state"] == "handed-over"
+    assert "drives this session directly" in notifications[-1][2]
     assert "herdr did not move worker-pane" in capsys.readouterr().err

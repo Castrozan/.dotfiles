@@ -15,6 +15,7 @@ from ..peer_messenger import (
     sender_name,
 )
 from ..record_store import all_records, load_record, save_record
+from ..releases.released_sessions import require_unreleased_filer
 from ..user_model.directives import active_identifiers
 from .cards import (
     CardAuthor,
@@ -61,6 +62,7 @@ def save_and_notify(
 
 
 def command_file(arguments: argparse.Namespace, decision_directory: Path) -> int:
+    require_unreleased_filer()
     document = read_card_document(arguments.card)
     requester = sender_name(arguments.sender)
     author = CardAuthor(

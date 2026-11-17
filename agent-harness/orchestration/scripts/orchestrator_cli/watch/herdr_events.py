@@ -31,6 +31,21 @@ def workspace_panes(workspace: str) -> list[dict]:
     return panes
 
 
+def live_pane(pane_id: str) -> dict | None:
+    try:
+        completed = subprocess.run(
+            ["herdr", "pane", "get", pane_id],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=HERDR_COMMAND_TIMEOUT_SECONDS,
+        )
+        pane = json.loads(completed.stdout)["result"]["pane"]
+    except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, TypeError):
+        return None
+    return pane if isinstance(pane, dict) else None
+
+
 def move_pane_to_new_tab(pane_id: str, label: str) -> str:
     command = [
         "herdr",

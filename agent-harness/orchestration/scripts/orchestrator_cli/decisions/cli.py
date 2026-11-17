@@ -7,6 +7,7 @@ from pathlib import Path
 from ..document_fields import InvalidPeerDocument
 from ..peer_messenger import PeerMessageFailure
 from ..record_store import state_directory
+from ..releases.released_sessions import SessionReleased
 from ..user_model.directives import default_user_model_path
 from .cards import DECIDERS, ESCALATION_REASONS
 from .delegation import HUMAN_ONLY_REASONS
@@ -138,6 +139,6 @@ def add_parser(subcommands) -> None:
 def command_decision(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.dir))
-    except (InvalidPeerDocument, PeerMessageFailure) as failure:
+    except (InvalidPeerDocument, PeerMessageFailure, SessionReleased) as failure:
         print(f"orchestrator decision: {failure}", file=sys.stderr)
         return 1

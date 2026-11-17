@@ -89,6 +89,15 @@ def handed_over_report(report: dict) -> dict:
     }
 
 
+def taken_back_report(report: dict) -> dict:
+    return {
+        **report,
+        "state": report["previous_state"],
+        "previous_state": HANDED_OVER_STATE,
+        "updated_at": current_timestamp(),
+    }
+
+
 def needs_orchestrator_attention(report: dict) -> bool:
     return (
         report["state"] in ATTENTION_STATES

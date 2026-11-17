@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import shlex
 import subprocess
 import sys
@@ -60,6 +61,20 @@ def sender_name(explicit_sender: str | None) -> str:
     return run_a2a(
         "whoami", *(["--sender", explicit_sender] if explicit_sender else [])
     )
+
+
+def peer_pane(target: str) -> str | None:
+    try:
+        directory = json.loads(run_a2a("list", "--json"))
+    except ValueError as failure:
+        raise PeerMessageFailure(f"a2a list: {failure}") from failure
+    for agent in directory.values():
+        servant = agent.get("servant") or ""
+        if target in (agent.get("name"), agent.get("paneId")) or (
+            target.casefold() == servant.casefold()
+        ):
+            return agent.get("paneId")
+    return None
 
 
 def copy_file_to_host(path: Path, host: str) -> None:

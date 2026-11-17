@@ -14,6 +14,7 @@ from ..peer_messenger import (
     sender_name,
 )
 from ..record_store import all_records, state_directory
+from ..releases.released_sessions import SessionReleased, require_unreleased_target
 from .brief_template import brief_problems
 
 FACT_CHARACTERS = 200
@@ -77,6 +78,8 @@ def command_dispatch(arguments: argparse.Namespace) -> int:
         return 1
     if arguments.host:
         copy_file_to_host(brief, arguments.host)
+    else:
+        require_unreleased_target(arguments.target)
     address = PeerAddress(arguments.target, arguments.host)
     notify_peer(address, sender_name(None), dispatch_text(brief))
     print(f"sent {brief} to {address}")
@@ -116,6 +119,8 @@ def relay_text(arguments: argparse.Namespace) -> str:
 def command_relay(arguments: argparse.Namespace) -> int:
     text = relay_text(arguments)
     address = session_address(Path(arguments.reports_dir), arguments.session)
+    if address.host is None:
+        require_unreleased_target(address.target)
     notify_peer(address, sender_name(None), text)
     print(f"relayed to {address}")
     return 0
@@ -124,6 +129,11 @@ def command_relay(arguments: argparse.Namespace) -> int:
 def command_session_message(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments)
-    except (InvalidPeerDocument, PeerMessageFailure, OSError) as failure:
+    except (
+        InvalidPeerDocument,
+        PeerMessageFailure,
+        SessionReleased,
+        OSError,
+    ) as failure:
         print(f"orchestrator {arguments.command}: {failure}", file=sys.stderr)
         return 1

@@ -6,6 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 
 from ..record_store import all_records
+from ..releases.released_sessions import released_panes
 from .herdr_events import (
     decoded_messages,
     status_subscription,
@@ -81,8 +82,10 @@ class WorkspaceWatch:
 
     def follows(self, pane_id: str | None) -> bool:
         followed = self.configuration.followed_panes
-        return pane_id != self.configuration.own_pane and (
-            not followed or pane_id in followed
+        return (
+            pane_id != self.configuration.own_pane
+            and (not followed or pane_id in followed)
+            and pane_id not in released_panes()
         )
 
     def register(self, subscriptions: list[dict]) -> None:
@@ -101,11 +104,10 @@ class WorkspaceWatch:
         for pane in workspace_panes(self.configuration.workspace):
             if pane.get("agent"):
                 self.watch_pane(pane["pane_id"], pane.get("agent_status", "unknown"))
-        missing = sorted(self.configuration.followed_panes - set(self.sessions))
+        followed = self.configuration.followed_panes - {self.configuration.own_pane}
         return [
             f"EXITED {pane_id} no agent running when the watch started"
-            for pane_id in missing
-            if pane_id != self.configuration.own_pane
+            for pane_id in sorted(followed - set(self.sessions) - released_panes())
         ]
 
     def observe(self, event: str | None, data: dict) -> None:
@@ -148,10 +150,12 @@ class WorkspaceWatch:
     def check_timeouts(self) -> list[str]:
         now = current_time()
         records = self.current_records()
+        released = released_panes()
         pending = [
             session
             for session in self.sessions.values()
-            if not is_finished(session, records)
+            if session.pane_id not in released
+            and not is_finished(session, records)
             and not waits_on_human(session, records)
         ]
         overdue = [

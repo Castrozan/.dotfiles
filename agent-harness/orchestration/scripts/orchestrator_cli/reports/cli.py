@@ -14,6 +14,7 @@ from ..peer_messenger import (
     sender_name,
 )
 from ..record_store import all_records, load_record, save_record, state_directory
+from ..releases.released_sessions import SessionReleased, require_unreleased_filer
 from .status_reports import (
     REPORT_STATES,
     ReportAuthor,
@@ -85,6 +86,7 @@ def previous_state(report_directory: Path, name: str) -> str | None:
 
 
 def command_file(arguments: argparse.Namespace, report_directory: Path) -> int:
+    require_unreleased_filer()
     document = read_report_document(arguments.report)
     requester = sender_name(arguments.sender)
     requester_pane = os.environ.get("HERDR_PANE_ID")
@@ -125,6 +127,6 @@ def command_show(arguments: argparse.Namespace, report_directory: Path) -> int:
 def command_report(arguments: argparse.Namespace) -> int:
     try:
         return arguments.handler(arguments, Path(arguments.dir))
-    except (InvalidPeerDocument, PeerMessageFailure) as failure:
+    except (InvalidPeerDocument, PeerMessageFailure, SessionReleased) as failure:
         print(f"orchestrator report: {failure}", file=sys.stderr)
         return 1
