@@ -13,6 +13,7 @@ import local_seat
 import mac_seat_client
 import mac_stage
 import remote_talk
+import room_reach
 import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
@@ -163,6 +164,9 @@ def carry_out_here(arguments):
 
 
 def carry_out(arguments):
+    forwarded = room_reach.forwarded_from_this_machine(arguments)
+    if forwarded is not None:
+        return forwarded
     if belongs_to_the_host(arguments):
         make_room_for_the_host(arguments)
         return remote_talk.carry_out(

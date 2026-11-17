@@ -22,8 +22,8 @@ SETTINGS = {
 }
 
 REMOTE_ROOM = (
-    "the room is on machine {room}, so run every avatar command there, with your "
-    "own pane as identity: "
+    "the room is on machine {room}, so start every avatar command with "
+    "AVATAR_ROOM={room}, which sends it there as you: "
 )
 REMOTE_DESK_REPLY = (
     REMOTE_ROOM
@@ -40,8 +40,8 @@ REMOTE_SETTINGS = {
     ListenerPurpose.MEETING: (
         "You now hold the floor of the meeting the avatar transcribes, and "
         + REMOTE_ROOM
-        + "answer aloud with {reach} avatar-command speak, which the meeting hears, "
-        "and read it through {reach} avatar-listen follow in a background watcher."
+        + 'answer aloud with {reach} avatar-talk say "...", which the meeting hears, '
+        "and read it through {reach} avatar-talk follow in a background watcher."
     ),
 }
 
@@ -50,7 +50,7 @@ def setting_for(purpose, session):
     if session is None or session.host is None:
         return SETTINGS[purpose]
     room = os.environ[ROOM_HOST_VARIABLE]
-    reach = f"ssh {room} HERDR_PANE_ID={session.pane}"
+    reach = f"AVATAR_ROOM={room}"
     return REMOTE_SETTINGS[purpose].format(room=room, reach=reach)
 
 

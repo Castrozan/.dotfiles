@@ -109,13 +109,15 @@ def test_the_remote_prompt_sends_every_avatar_command_to_the_room_machine(
     text = spoken_prompt("check the build", None, REMOTE_MEDEA)
     assert "the room is on machine kira" in text
     for verb in ('say "..."', "follow", "close"):
-        assert f"ssh kira HERDR_PANE_ID=w9:p4 avatar-talk {verb}" in text
+        assert f"AVATAR_ROOM=kira avatar-talk {verb}" in text
+    assert "ssh" not in text
 
 
-def test_the_remote_meeting_prompt_also_runs_its_commands_in_the_room(room_on_kira):
+def test_the_remote_meeting_prompt_also_names_the_room_in_every_command(room_on_kira):
     text = spoken_prompt("status", ListenerPurpose.MEETING, REMOTE_MEDEA)
-    assert "ssh kira HERDR_PANE_ID=w9:p4 avatar-command speak" in text
-    assert "ssh kira HERDR_PANE_ID=w9:p4 avatar-listen follow" in text
+    assert 'AVATAR_ROOM=kira avatar-talk say "..."' in text
+    assert "AVATAR_ROOM=kira avatar-talk follow" in text
+    assert "ssh" not in text
 
 
 @pytest.mark.parametrize("session", [None, LOCAL_MEDEA])
@@ -134,7 +136,7 @@ def test_waking_a_remote_session_prompts_it_on_its_host(room_on_kira):
     armed_listener(fakes).hear(b"segment")
     pane, text, host = fakes.prompt_now.call_args.args
     assert (pane, host) == ("w9:p4", "rin")
-    assert "ssh kira HERDR_PANE_ID=w9:p4 avatar-talk say" in text
+    assert "AVATAR_ROOM=kira avatar-talk say" in text
 
 
 def test_a_refused_remote_prompt_is_notified_at_idle_on_its_host(room_on_kira):

@@ -5,6 +5,7 @@ import conversation_effects
 import conversation_state
 import listener_runtime
 import live_opening
+import room_reach
 import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
@@ -12,6 +13,9 @@ from talk_arguments import parse_arguments
 
 
 def main():
+    forwarded = room_reach.forwarded_from_this_machine(sys.argv[1:])
+    if forwarded is not None:
+        sys.exit(forwarded)
     arguments = parse_arguments()
     actions = {
         ConversationAction.BRING_UP: conversation_effects.open_conversation,
