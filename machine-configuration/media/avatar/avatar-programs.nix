@@ -2,6 +2,7 @@
   pkgs,
   lib,
   inputs,
+  hostname ? null,
 }:
 let
   herdr = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
@@ -164,6 +165,7 @@ let
         pkgs.systemd
       ]
     }:$PATH
+    ${lib.optionalString (hostname != null) "export AVATAR_AGENT_HOST=${hostname}"}
     export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
     export PYTHONPATH=${./scripts}:${./scripts/audio_graph}:${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}
     exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/talk_cli.py} "$@"

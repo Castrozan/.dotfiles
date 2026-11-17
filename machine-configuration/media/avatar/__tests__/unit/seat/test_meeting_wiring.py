@@ -115,3 +115,17 @@ def test_every_machine_gets_the_doctor():
     assert "./home-manager/avatar-doctor-home-manager.nix" in UNITS
     assert "import ./avatar-doctor-package.nix" in host
     assert 'arguments = "";' in host
+
+
+def test_the_linux_talk_command_knows_the_name_of_its_machine():
+    talk = wrapper(PROGRAMS, "talk")
+    assert (
+        '${lib.optionalString (hostname != null) "export AVATAR_AGENT_HOST=${hostname}"}'
+        in talk
+    )
+    assert "hostname ? null," in PROGRAMS
+
+
+def test_the_linux_module_that_installs_talk_passes_the_hostname():
+    assert "isNixOS,\n  hostname,\n" in UNITS
+    assert "inherit pkgs lib inputs;\n    inherit hostname;" in UNITS

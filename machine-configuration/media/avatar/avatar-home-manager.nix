@@ -3,17 +3,17 @@
   lib,
   inputs,
   isNixOS,
+  hostname,
   ...
 }:
 let
-  programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
+  programs = import ./avatar-programs.nix {
+    inherit pkgs lib inputs;
+    inherit hostname;
+  };
   characters = import ./cast/characters.nix { inherit pkgs; };
   characterVoices = import ./cast/character-voices.nix { inherit pkgs; };
-  transcriptionModel = pkgs.fetchurl {
-    url = "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-small-q5_1.bin";
-    sha256 = "1fqi0h90ig4ifpyb44cfc7dmnndv2vy5mr9g22yng9fp6nly91df";
-  };
-  speechVoices = import ./speech-voices.nix { inherit pkgs; };
+  transcriptionModel = import ./home-manager/avatar-transcription-model.nix { inherit pkgs; };
   tools = lib.makeBinPath [
     programs.audio
     (import ../media-generation/speech-package.nix { inherit pkgs; })
@@ -92,7 +92,7 @@ in
               "AVATAR_CLOUD_VOICE=${(builtins.head characters).cloudVoice}"
               "AVATAR_CHARACTER_VOICES=${characterVoices}"
               "AVATAR_TTS_VOICE=pt_BR-faber-medium"
-              "AVATAR_TTS_VOICE_DIRECTORY=${speechVoices}"
+              "AVATAR_TTS_VOICE_DIRECTORY=${import ./speech-voices.nix { inherit pkgs; }}"
               "AVATAR_AUDIO_MONITOR=AvatarLipSync.monitor"
               "XDG_RUNTIME_DIR=/run/user/%U"
             ];
