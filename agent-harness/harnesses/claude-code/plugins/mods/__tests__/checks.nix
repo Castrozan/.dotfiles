@@ -45,7 +45,7 @@ in
   claude-crayon-leaves-first-fullscreen-draw-to-engine =
     pkgs.runCommandLocal "claude-crayon-leaves-first-fullscreen-draw-to-engine" { }
       ''
-        grep -n 'props: { onScreen:\[null, { of: ' ${hostInteractiveSessionModsDirectory}/crayon/hooks/register.tsx
+        grep -n 'props: { onScreen: \[null, { of: ' ${hostInteractiveSessionModsDirectory}/crayon/hooks/register.tsx
         touch "$out"
       '';
 
