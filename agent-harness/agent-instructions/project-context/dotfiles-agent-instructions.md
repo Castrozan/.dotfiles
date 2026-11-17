@@ -24,11 +24,12 @@ live at `references/knowledge.md` beneath each skill.
 ### Stewardship
 
 This repo is kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents
-module and built from the clawde flake input where its behavior lives. The steward keeps idle machines current; its
-cycle waits rather than rebase a checkout under active work, so a session doing that work consolidates its own history.
+module and built from the clawde flake input where its behavior lives. The steward keeps idle machines current. Its
+cycle waits rather than rebase a checkout under active work, so the session doing that work consolidates its own
+history.
 
-When `main` is ahead of, behind, or diverged from `origin/main`, rebase your commits onto it, resolve conflicts
-yourself, submodule gitlinks included, re-run the checks your change requires, and push fast-forward only; never leave
+When `main` is ahead of, behind, or diverged from `origin/main`, rebase your commits onto it and resolve conflicts
+yourself, submodule gitlinks included. Re-run the checks your change requires and push fast-forward only; never leave
 this to the steward or report it as pending on the human. Rebase in your own worktree or a detached checkout, or in the
 shared checkout only when its tree is clean. Never autostash, reset, or force-push there: each moves a peer's
 uncommitted or unpushed work. Once pushed, fast-forward the shared checkout's `main` if it is behind.
