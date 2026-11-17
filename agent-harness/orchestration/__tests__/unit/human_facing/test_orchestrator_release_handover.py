@@ -49,6 +49,20 @@ def test_taking_a_session_back_lets_it_file_again_and_restores_its_report(scenar
     assert "worker-pane is not released" in scenario.errors()
 
 
+def test_a_session_taken_back_from_another_pane_gets_its_old_report_restored(
+    scenario, live_panes
+):
+    session = {"kind": "id", "value": "conversation-1"}
+    live_panes[RELEASED_PANE] = {"pane_id": RELEASED_PANE, "agent_session": session}
+    assert scenario.file_report(state="working") == 0
+    assert scenario.handover() == 0
+    live_panes["wL:p4"] = {"pane_id": "wL:p4", "agent_session": session}
+    arguments = ["wL:p4", "--take-back", "--for", ORCHESTRATOR]
+    arguments += ["--reports-dir", str(scenario.reports)]
+    assert scenario.run(scenario.cards, *arguments, command="handover") == 0
+    assert [report["state"] for report in records(scenario.reports)] == ["working"]
+
+
 def test_a_release_and_a_take_back_cannot_be_asked_together(scenario):
     assert scenario.handover("--no-move", "--take-back") == 2
     assert records(release_directory()) == []

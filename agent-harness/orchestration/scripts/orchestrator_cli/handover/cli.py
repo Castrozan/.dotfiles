@@ -135,7 +135,8 @@ def take_back(arguments: argparse.Namespace, orchestrator: str) -> None:
     for release in releases:
         save_record(release_directory(), release["name"], taken_back_release(release))
     reports_directory = Path(arguments.reports_dir)
-    for report in session_reports(reports_directory, orchestrator, identity.panes):
+    panes = identity.panes.union(*(release["panes"] for release in releases))
+    for report in session_reports(reports_directory, orchestrator, panes):
         if report["state"] == HANDED_OVER_STATE:
             save_record(reports_directory, report["name"], taken_back_report(report))
             print(f"restored report {report['name']}", flush=True)
