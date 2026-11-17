@@ -24,6 +24,8 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         listening_purpose=Mock(return_value=ListenerPurpose.CONVERSATION),
         addressee=Mock(return_value=None),
         hand_to=Mock(),
+        quiet_seconds=Mock(return_value=0.0),
+        close_conversation=Mock(),
     )
     fakes.update(changes)
     return wake_boundaries.Boundaries(**fakes)

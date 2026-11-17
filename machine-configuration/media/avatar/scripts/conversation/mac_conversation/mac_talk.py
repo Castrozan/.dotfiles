@@ -26,7 +26,12 @@ ATTACH_WAIT_SECONDS = 25
 POLL_SECONDS = 0.25
 WINDOW_VERBS = ("show", "hide")
 HOST_OPTIONS = ("--live", "--seat")
-PRIVATE_RECORDS = ("transcript.jsonl", listener.EMBEDDINGS_FILE, listener.HEARD_FILE)
+PRIVATE_RECORDS = (
+    "transcript.jsonl",
+    listener.EMBEDDINGS_FILE,
+    listener.HEARD_FILE,
+    listener_session.SPOKEN_FILE,
+)
 ROOM_HELD_ELSEWHERE = "Another session holds the room; it speaks until the room turns"
 SEAT_DID_NOT_ATTACH = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
@@ -99,6 +104,7 @@ def speak(arguments, directory):
     pane = os.environ.get(voice_turns.PANE_ENVIRONMENT_VARIABLE)
     if not conversation_addressee.addresses(directory, pane):
         raise RuntimeError(ROOM_HELD_ELSEWHERE)
+    listener_session.mark_spoken(directory)
     holder = conversation_addressee.current(directory)
     voice = arguments.voice or mac_speech.voice_of(holder.servant if holder else None)
     recording = mac_speech.synthesized(arguments.text, arguments.emotion, voice)

@@ -168,6 +168,11 @@ def mac_boundaries():
             lambda: conversation_addressee.current(directory),
             addressee_on_this_host,
         ),
+        "quiet_seconds": here_or_at_the_host(
+            listening_here,
+            lambda: listener_session.quiet_seconds(directory),
+            lambda: 0.0,
+        ),
         "hand_to": here_or_at_the_host(
             listening_here,
             lambda addressee: conversation_addressee.hand_to(directory, addressee),

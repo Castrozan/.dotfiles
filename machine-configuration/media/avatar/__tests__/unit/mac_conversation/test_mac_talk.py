@@ -13,7 +13,7 @@ OPENING = SimpleNamespace(language="en", character=None)
 
 
 @pytest.fixture(autouse=True)
-def this_mac(monkeypatch):
+def this_mac(monkeypatch, tmp_path):
     mac = SimpleNamespace(
         tunnel=None,
         attached=True,
@@ -28,6 +28,9 @@ def this_mac(monkeypatch):
         host=Mock(return_value=7),
     )
     monkeypatch.delenv("HERDR_PANE_ID", raising=False)
+    monkeypatch.setattr(
+        mac_talk.listener_runtime, "runtime_directory", lambda: tmp_path / "runtime"
+    )
     monkeypatch.setattr(mac_talk.local_seat, "health", lambda: mac.tunnel)
     monkeypatch.setattr(mac_talk.mac_seat_client, "attached", lambda: mac.attached)
     monkeypatch.setattr(mac_talk.mac_seat_client, "play", mac.played.append)
