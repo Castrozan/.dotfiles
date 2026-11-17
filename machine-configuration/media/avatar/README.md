@@ -32,7 +32,7 @@ when any link is broken, and `--json` prints the findings for another program. T
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
 device selected anywhere. It needs only a shell, so every harness reaches it the same way. On a Mac the same command
-forwards over ssh to chise, where the avatar runs, and can seat the conversation at that Mac.
+holds a voice conversation on that Mac alone, described under [conversation on a Mac](#conversation-on-a-mac).
 
 | Command | Result |
 | --- | --- |
@@ -70,13 +70,23 @@ The window code is the Hyprland boundary in `scripts/conversation/desktop_window
 depends only on the shared services. It addresses the first Hyprland instance by index, because a command forwarded
 over ssh carries no `HYPRLAND_INSTANCE_SIGNATURE`. This module is NixOS only because its audio graph is PipeWire.
 
+## Conversation on a Mac
+
+`avatar-talk open`, `say`, `ask`, `hear`, `follow`, `status` and `close` on a Mac run on that Mac and need no other
+machine. The `com.dotfiles.avatar-conversation` launch agent runs the same listener as the avatar host; `open` starts it
+and `close` ends it. The listener captures through a headless Chrome page served on `127.0.0.1:8772`, which also plays
+the voice, so Chrome cancels the avatar's own speech from the microphone. `say` synthesizes with `media-speech` on the
+Mac in the voice of the Servant the room turned to, and with no conversation open it plays through the speakers. Sustained
+speech from the room hushes the avatar mid-sentence. The conversation is voice only: the window, the characters on
+screen, meetings and the live voice stay with the avatar host, reached with `--seat`, `--live`, `show` and `hide`.
+`close` deletes the transcript.
+
 ## Remote seat
 
 A conversation has a seat: the machine whose microphone and speakers it uses. The `room` seat is chise. The `remote`
-seat is a Mac, so the avatar can be talked to from any machine while it keeps running on chise, with one floor, one
-transcript and one set of voices. `avatar-talk open` on a Mac asks for the remote seat when that Mac's keyboard or mouse
-was used in the last five minutes, and for the room otherwise, so an agent working unattended on a Mac still speaks
-where the user is. `--seat room` forces the room and `--seat remote` seats it at the Mac whatever its idle time.
+seat is a Mac, so the avatar on chise can be talked to from that Mac with its window, one floor, one transcript and one
+set of voices. `avatar-talk open --seat remote` on a Mac seats the host's conversation at that Mac and `--seat room`
+opens it in the room; while such a conversation is seated, every `avatar-talk` verb on that Mac goes to the host.
 `avatar-talk status` reports the seat.
 
 | Piece | Runs on | Does |

@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import floor_cli
+import listener_runtime
 import local_seat
 import mac_wake_boundaries
 import pytest
@@ -22,6 +23,13 @@ def shown(monkeypatch):
 def seat_listening(monkeypatch):
     state = SimpleNamespace(listening=True)
     monkeypatch.setattr(local_seat, "conversation_listening", lambda: state.listening)
+    return state
+
+
+@pytest.fixture(autouse=True)
+def conversation_here(monkeypatch):
+    state = SimpleNamespace(listening=False)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: state.listening)
     return state
 
 

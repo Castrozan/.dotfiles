@@ -1,5 +1,8 @@
 import subprocess
+import sys
 import time
+
+import launchd_units
 
 SYSTEMD_UNREACHABLE = 1
 UNREACHABLE_RETRY_SECONDS = 30
@@ -7,6 +10,8 @@ RETRY_INTERVAL_SECONDS = 0.5
 
 
 def unit_active(unit):
+    if sys.platform == "darwin":
+        return launchd_units.unit_active(unit)
     deadline = time.monotonic() + UNREACHABLE_RETRY_SECONDS
     while True:
         state = subprocess.run(

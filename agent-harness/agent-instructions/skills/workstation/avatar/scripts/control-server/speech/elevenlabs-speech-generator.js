@@ -4,20 +4,7 @@ const { spokenVowels } = require("./spoken-vowels");
 const MODEL = "eleven_v4";
 const REQUEST_TIMEOUT_MILLISECONDS = 15000;
 const NATURAL_DELIVERY = "natural and conversational";
-const EMOTION_DELIVERY = {
-  happy: "warm and cheerful, smiling",
-  excited: "excited and energetic",
-  sad: "soft and sad",
-  worried: "worried and hesitant",
-  angry: "firm and angry",
-  determined: "confident and determined",
-  relaxed: "calm and relaxed",
-  surprised: "surprised and amazed",
-  thinking: "thoughtful and unhurried",
-  shy: "shy and quiet",
-  smug: "playful and teasing",
-  sleepy: "sleepy and slow",
-};
+const EMOTION_DELIVERY = require("./emotion-delivery.json");
 
 class ElevenLabsSpeechGenerator {
   constructor(defaultVoice, language) {

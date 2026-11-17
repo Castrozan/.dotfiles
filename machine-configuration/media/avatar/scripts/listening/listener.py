@@ -36,6 +36,7 @@ class Listening:
     stopping: threading.Event
     pending: PendingSpeech
     interrupt_speaker: object
+    capture_command: object = source_capture.capture_command
     language: str | None = None
     identify_speakers: bool = False
     turn_finished: object = every_pause_ends_the_turn
@@ -102,7 +103,16 @@ def interrupt_speaker():
     )
 
 
+def boundaries_of_this_machine():
+    if sys.platform == "darwin":
+        import mac_seat_client
+
+        return mac_seat_client.capture_command, mac_seat_client.hush
+    return source_capture.capture_command, interrupt_speaker
+
+
 def main():
+    capture_command, stop_speaking = boundaries_of_this_machine()
     directory = listener_runtime.runtime_directory()
     configuration = json.loads((directory / "listener.json").read_text())
     detector = turn_detector.SmartTurnDetector(
@@ -112,9 +122,10 @@ def main():
         segments=queue.Queue(maxsize=PENDING_SEGMENT_LIMIT),
         stopping=threading.Event(),
         pending=PendingSpeech(directory / SPEECH_IN_PROGRESS_MARKER),
-        interrupt_speaker=interrupt_speaker
+        interrupt_speaker=stop_speaking
         if configuration.get("barge_in")
         else lambda: None,
+        capture_command=capture_command,
         language=configuration.get("language"),
         identify_speakers=configuration.get("identify_speakers", False),
         turn_finished=detector.finished,

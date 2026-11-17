@@ -54,12 +54,12 @@ def test_a_failed_transcription_is_dropped_and_the_wake_keeps_listening(on_a_mac
     assert "Dropped an utterance" in reported.call_args.args[0]
 
 
-def test_opening_seats_the_conversation_at_this_mac_whatever_the_idle_time(
+def test_opening_starts_the_conversation_this_mac_holds_itself(
     monkeypatch, on_a_mac
 ):
     runner = ran(monkeypatch)
     assert on_a_mac.open_conversation() is True
-    assert runner.call_args.args[0] == ["avatar-talk", "open", "--seat", "remote"]
+    assert runner.call_args.args[0] == ["avatar-talk", "open"]
     assert runner.call_args.kwargs["timeout"] > 0
     ran(monkeypatch, returncode=1)
     assert on_a_mac.open_conversation() is False

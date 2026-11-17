@@ -2,8 +2,10 @@ import enum
 import json
 import os
 import subprocess
+import sys
 
 import conversation_addressee
+import launchd_units
 import listener
 import listener_runtime
 from listener_runtime import LISTENER_SERVICE, LIVE_SERVICE
@@ -33,6 +35,20 @@ def systemctl(*arguments):
     )
 
 
+def start_unit(unit):
+    if sys.platform == "darwin":
+        launchd_units.start(unit)
+        return
+    systemctl("start", unit)
+
+
+def stop_unit(unit):
+    if sys.platform == "darwin":
+        launchd_units.stop(unit)
+        return
+    systemctl("stop", unit)
+
+
 def begin_listening(directory, purpose, sources, **settings):
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     stop_listening()
@@ -44,12 +60,12 @@ def begin_listening(directory, purpose, sources, **settings):
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:
         json.dump({"purpose": purpose, "sources": sources, **settings}, output)
-    systemctl("start", SERVICE_BY_PURPOSE[purpose])
+    start_unit(SERVICE_BY_PURPOSE[purpose])
 
 
 def stop_listening():
     for service in listener_runtime.capturing_services():
-        systemctl("stop", service)
+        stop_unit(service)
 
 
 def read_configuration(directory):

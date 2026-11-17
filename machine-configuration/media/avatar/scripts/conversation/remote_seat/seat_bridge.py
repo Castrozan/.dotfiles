@@ -10,9 +10,9 @@ import sys
 import channel_levels
 from host_state import HostState
 from meeting_relay import MEETING_PATH, MeetingRelay
-from seat_page import SeatPage, seat_page_files
+from seat_page import SeatPage, seat_page_files, sent_a_request
 from websockets.asyncio.server import serve
-from websockets.exceptions import ConnectionClosed, InvalidMessage
+from websockets.exceptions import ConnectionClosed
 
 HOST = "127.0.0.1"
 PORT = 8769
@@ -165,10 +165,6 @@ class RemoteSeat:
                 return
             await self.detached.wait()
             grace = REATTACH_SECONDS
-
-
-def sent_a_request(record):
-    return not (record.exc_info and isinstance(record.exc_info[1], InvalidMessage))
 
 
 async def serve_remote_seat(page_directory):

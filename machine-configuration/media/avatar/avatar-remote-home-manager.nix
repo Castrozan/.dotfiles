@@ -31,11 +31,16 @@ let
       export AVATAR_HOST=${topology.host}
       exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_meeting.py ${verb} "$@"
     '';
-  talk = pkgs.writeShellScriptBin "avatar-talk" ''
-    export AVATAR_HOST=${topology.host}
-    export AVATAR_AGENT_HOST=${hostname}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_talk.py "$@"
-  '';
+  conversation = import ./home-manager/avatar-mac-conversation.nix {
+    inherit
+      pkgs
+      lib
+      programs
+      hostname
+      ;
+    inherit (topology) host;
+  };
+  inherit (conversation) talk;
   websocketPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
   wake = pkgs.writeShellScriptBin "avatar-wake" ''
     export PATH=${
@@ -50,7 +55,7 @@ let
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
-    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/conversation/remote_seat}:${./scripts/wake}:${programs.a2aLibrary}
+    export PYTHONPATH=${conversation.modules}:${programs.a2aLibrary}
     exec ${websocketPython}/bin/python3 ${./scripts/wake}/wake_listener.py "$@"
   '';
   doctor = import ./home-manager/avatar-doctor-package.nix {
@@ -60,6 +65,19 @@ let
       programs.transcribe
     ];
     arguments = "--seat-of ${topology.host}";
+  };
+  conversationLog = "${config.home.homeDirectory}/Library/Logs/avatar-conversation.log";
+  conversationLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
+    name = "avatar-conversation";
+    label = "com.dotfiles.avatar-conversation";
+    package = conversation.listener;
+    executableName = "avatar-conversation-listener";
+    serviceConfig = {
+      KeepAlive = false;
+      RunAtLoad = false;
+      StandardOutPath = conversationLog;
+      StandardErrorPath = conversationLog;
+    };
   };
   wakeLog = "${config.home.homeDirectory}/Library/Logs/avatar-wake.log";
   wakeLaunchAgent = rebuildSafeLaunchAgentLib.mkRebuildSafeLaunchAgent {
@@ -92,4 +110,5 @@ lib.mkMerge [
     ];
   }
   wakeLaunchAgent
+  conversationLaunchAgent
 ]

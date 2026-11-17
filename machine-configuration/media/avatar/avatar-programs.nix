@@ -45,10 +45,7 @@ let
     url = "https://github.com/k2-fsa/sherpa-onnx/releases/download/speaker-recongition-models/3dspeaker_speech_campplus_sv_zh_en_16k-common_advanced.onnx";
     sha256 = "18pb1kqg82x3qa07yd4b6n6yjmvbdmfh7xckjdm5h41sjqbgqg5a";
   };
-  turnModel = pkgs.fetchurl {
-    url = "https://huggingface.co/pipecat-ai/smart-turn-v3/resolve/f766f81d3cfdf7737ac64aad813d91bbfd56bf93/smart-turn-v3.2-cpu.onnx";
-    sha256 = "2bb026316b14a660486a75b1733cd3fbab8c2fd0314dc9af7be49f8cca967e4f";
-  };
+  turnModel = import ./home-manager/avatar-turn-model.nix { inherit pkgs; };
   websocketPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
   listenerPython = pkgs.python3.withPackages (
     packages: with packages; [

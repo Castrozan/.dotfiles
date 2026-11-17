@@ -63,7 +63,9 @@ def test_a_mac_gets_the_same_four_commands_as_chise():
 
 
 def test_the_mac_meeting_commands_run_the_stdlib_module_with_the_caller_arguments():
-    command = re.search(r"remoteMeeting =(.*?)\n  talk =", MAC_COMMANDS, re.S).group(1)
+    command = re.search(
+        r"remoteMeeting =(.*?)\n  conversation =", MAC_COMMANDS, re.S
+    ).group(1)
     assert "${pkgs.python312}/bin/python3" in command
     assert "remote_seat}/remote_meeting.py ${verb}" in command
     assert command.rstrip().endswith("'';")
@@ -100,7 +102,10 @@ def test_the_avatar_host_is_named_once_and_every_mac_command_reads_it():
     topology = (AVATAR / "home-manager/avatar-topology.nix").read_text()
     assert re.findall(r'host = "([a-z]+)";', topology) == ["chise"]
     assert "chise" not in MAC_COMMANDS
-    assert MAC_COMMANDS.count("export AVATAR_HOST=${topology.host}") == 3
+    assert MAC_COMMANDS.count("export AVATAR_HOST=${topology.host}") == 2
+    assert "inherit (topology) host;" in MAC_COMMANDS
+    conversation = (AVATAR / "home-manager/avatar-mac-conversation.nix").read_text()
+    assert "export AVATAR_HOST=${host}" in conversation
 
 
 def test_every_machine_gets_the_doctor():
