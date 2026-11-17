@@ -86,12 +86,12 @@ other hosts build directly from this repo.
 
 ### Scripts
 
-Python 3.12 is the default language for scripts. Use bash only for a thin wrapper gluing shell-native tools (tmux
-send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via Nix - no uv,
-no venv, no pip. Only scripts under 10 lines of actual logic may live inline in `.nix` files via
-`pkgs.writeShellScript`, `pkgs.writeText`, or similar builders; anything longer goes to a file under the module's `scripts/` directory,
-referenced by path. Long inline scripts are unreadable, unformattable, untestable, and nix string interpolation escapes
-destroy quoting. When in doubt, extract.
+Python 3.12 is the default language for scripts. Use bash only when the script is a thin wrapper gluing shell-native
+tools (tmux send-keys, fzf, sysctl pipelines) where Python would just be subprocess.run calls. Python scripts run via
+Nix - no uv, no venv, no pip. Only scripts under 10 lines of actual logic may live inline in `.nix` files via
+`pkgs.writeShellScript`, `pkgs.writeText`, or similar builders. Anything longer goes to a dedicated file under the
+module's `scripts/` directory and is referenced by path. Long inline scripts are unreadable, unformattable, untestable,
+and escape from nix string interpolation rules destroys quoting. When in doubt, extract.
 
 ### Performance
 
@@ -161,9 +161,9 @@ an edit you cannot find here is usually sitting in another checkout rather than 
 A clawde agent's runtime config - heartbeat gate, interval, prompt, launch command, active hours, rotation - lives in a
 per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies it in place, no respawn.
 
-The exception is agent-wrapper code: the running wrapper keeps executing the code it launched with, so wrapper changes
-stay dormant until the window is fully respawned. Respawn by a reboot or by killing the window so the supervisor
-recreates it from the new spec. Never assume rebuilt wrapper code is live; check the live process and respawn if it runs old code.
+The exception is agent-wrapper code: a running wrapper keeps the code it launched with until its window is fully
+respawned, by a reboot or by killing the window so the supervisor recreates it from the new spec. Never assume rebuilt
+wrapper code is live; check the live process and respawn if it runs old code.
 
 Every other fleet trap that leaves no trace in the source - resume identity, supervisor reconciliation, channel gating,
 the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read it before
@@ -173,14 +173,14 @@ touching any agent, supervisor or heartbeat behavior.
 
 Required CI runs `agent-evals check --gravado` on `agent-harness/quality/evaluations/baseline.json` without model
 credentials, enforcing quality floors and per-case regression; stale or missing evidence stays explicitly unmeasured.
-`dotfiles-evals` is `agent-evals` with this repository's config.
-
-Use `dotfiles-evals check` for the strict verdict, which also fails on instructions changed after measurement and on
-expired evidence. Passing `check --gravado` does not prove current model behavior.
+`dotfiles-evals` is `agent-evals` with this repository's config. Use `dotfiles-evals check` for the strict verdict,
+which also fails on instructions changed after measurement and on expired evidence. Passing `check --gravado` does not
+prove current model behavior.
 
 Do not proactively run `dotfiles-evals baseline --rodar` after instruction edits: the full model suite is slow and
-routing evals flake, so re-recording can commit transient failures. Ordinary CI needs none; measure through an existing
-authorized model route only on explicit request, a diagnosed quality regression, or a deliberate instruction fix.
+routing evals flake, so re-recording can commit transient failures. Ordinary CI requires no measurement. Measure via an
+existing authorized model route only on explicit request, a diagnosed quality regression, or a deliberate instruction
+improvement.
 
 ### Herdr server restart
 
