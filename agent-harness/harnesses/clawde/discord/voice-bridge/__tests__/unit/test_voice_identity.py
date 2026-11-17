@@ -161,37 +161,3 @@ def test_unauthorized_guild_and_occupied_bot_never_connect(tmp_path):
         assert identity.lease is None
 
     asyncio.run(scenario())
-
-
-def test_pending_synthesis_cannot_play_into_a_replacement_call(tmp_path):
-    import asyncio
-    import contextlib
-    from unittest.mock import AsyncMock
-    import pytest
-
-    async def scenario():
-        module, call, identity, channel, connection = make_call(tmp_path)
-        started = asyncio.Event()
-        release = asyncio.Event()
-
-        @contextlib.asynccontextmanager
-        async def stream(text, language):
-            started.set()
-            await release.wait()
-            yield Mock()
-
-        call._audio_services.synthesizer.streamed_audio = stream
-        call._play = AsyncMock()
-        await call.join()
-        generation = call.status()["generation"]
-        speaking = asyncio.create_task(call.speak("old answer", "en-us", generation))
-        await started.wait()
-        await call.leave()
-        await call.join()
-        release.set()
-        with pytest.raises(module.VoiceCallError, match="stale_call_generation"):
-            await speaking
-        call._play.assert_not_awaited()
-        await call.leave()
-
-    asyncio.run(scenario())

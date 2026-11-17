@@ -54,8 +54,6 @@ def load_call_module():
 
 def make_call(tmp_path):
     from unittest.mock import AsyncMock
-    from voice_bridge.speech_synthesis import SpeechSelection
-    from voice_bridge.transcript_feed import TranscriptFeed
 
     module = load_call_module()
     identity, channel = make_identity("primary")
@@ -64,13 +62,6 @@ def make_call(tmp_path):
     )
     channel.connect = AsyncMock(return_value=connection)
     module.ListenerVoiceReceiver = Mock(return_value=Mock(listener_packet_count=0))
-    services = SimpleNamespace(
-        ffmpeg="ffmpeg",
-        synthesizer=SpeechSelection([], "voice"),
-        transcribe_audio=lambda audio: "test",
-        listener_audio=Mock(),
-    )
-    call = module.VoiceCall(
-        VoiceIdentityPool([identity], tmp_path), 42, 1, services, TranscriptFeed()
-    )
+    services = SimpleNamespace(ffmpeg="ffmpeg", listener_audio=Mock())
+    call = module.VoiceCall(VoiceIdentityPool([identity], tmp_path), 42, 1, services)
     return module, call, identity, channel, connection

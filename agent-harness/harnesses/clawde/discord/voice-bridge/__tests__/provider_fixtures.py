@@ -40,17 +40,10 @@ class FakePlayback:
         await self._stopped.wait()
 
 
-def make_clip_call(tmp_path, **options):
+def make_clip_call(tmp_path):
     call_module, call, _identity, channel, connection = make_call(tmp_path)
     receiver = SimpleNamespace(
-        listener_packet_count=0,
-        buffered_listener_seconds=lambda: 0.0,
-        check_silence=lambda: [],
-        flush_pending=lambda: [],
-        sustained_speech_seconds=lambda: 0.0,
-        forget_sustained_speech=lambda: None,
-        start=lambda: None,
-        stop=lambda: None,
+        listener_packet_count=0, start=lambda: None, stop=lambda: None
     )
     call_module.ListenerVoiceReceiver = Mock(return_value=receiver)
     playback = FakePlayback(connection)
@@ -65,8 +58,6 @@ def make_clip_call(tmp_path, **options):
         42,
         1,
         call._audio_services,
-        call._feed,
-        **options,
     )
     return call_module, clip_call, playback, connection
 

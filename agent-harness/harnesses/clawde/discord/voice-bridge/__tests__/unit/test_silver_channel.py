@@ -8,7 +8,6 @@ import pytest
 import silver_channel
 from silver_channel import HOLDER_UNIT, SilverChannel
 from voice_connection import IdentityConnection
-from provider_fixtures import make_clip_call
 
 GUILD_ID = 7
 LISTENER_ID = 42
@@ -136,30 +135,3 @@ def test_someone_else_moving_or_the_listener_staying_is_not_reported():
         )
     )
     silver.listener_moved_to.assert_not_awaited()
-
-
-def utterances_kept_in_channel(tmp_path, avatar_channel_name, channel_name):
-    async def scenario():
-        _module, call, _playback, connection = make_clip_call(
-            tmp_path, avatar_channel_name=avatar_channel_name
-        )
-        connection.channel.name = channel_name
-        await call.join()
-        call._receiver.check_silence = lambda: [(LISTENER_ID, b"pcm")]
-        kept = call._finished_utterances(0.0)
-        await call.leave()
-        return kept
-
-    return asyncio.run(scenario())
-
-
-def test_the_bridge_drops_the_listeners_utterances_in_the_silver_channel(tmp_path):
-    assert utterances_kept_in_channel(tmp_path, "silver", "silver") == []
-
-
-def test_the_bridge_keeps_the_listeners_utterances_in_every_other_channel(tmp_path):
-    assert utterances_kept_in_channel(tmp_path, "silver", "call") == [b"pcm"]
-
-
-def test_without_a_silver_channel_the_bridge_keeps_every_utterance(tmp_path):
-    assert utterances_kept_in_channel(tmp_path, None, "silver") == [b"pcm"]

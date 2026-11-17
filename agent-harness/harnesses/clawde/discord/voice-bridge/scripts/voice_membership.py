@@ -35,10 +35,6 @@ class VoiceMembership:
             return None
         return self.voice_client.channel
 
-    def in_channel_named(self, name):
-        channel = self.channel()
-        return channel is not None and channel.name == name
-
     def listener_channel(self):
         if self.identity is None:
             return None

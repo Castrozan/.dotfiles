@@ -4,21 +4,11 @@
   pkgs,
   isNixOS,
   hostname,
-  inputs,
   ...
 }:
 let
   bridgeSettings = config.clawdeDiscordVoiceBridge;
   scripts = ./scripts;
-  a2aClientScripts = ../../../../agent-to-agent-communication/client/scripts;
-  a2aServants = ../../../../servants;
-  a2aSessionDetection = ../../../../hooks/runtime/common;
-  pacePackage = inputs.herdr-pace.packages.${pkgs.stdenv.hostPlatform.system}.default;
-  transcriberScripts = ../../../../../machine-configuration/media/avatar/scripts/listening;
-  jessicaElevenLabsVoice = "cgSgspJ2msm6clMCkdW9";
-  characterVoices =
-    import ../../../../../machine-configuration/media/avatar/cast/character-voices.nix
-      { inherit pkgs; };
 
   identitySpecifications = pkgs.writeText "discord-voice-identities.json" (
     builtins.toJSON (
@@ -97,28 +87,16 @@ in
           conversationProfile = lib.mkOption {
             type = lib.types.nullOr lib.types.str;
             default = null;
-            description = "Hermes profile that answers the listener's speech.";
-          };
-          conversationAgent = lib.mkOption {
-            type = lib.types.nullOr lib.types.str;
-            default = null;
-            description = "Existing A2A peer that answers instead of a Hermes profile.";
+            description = "Hermes profile whose Silver holds the avatar floor in the silver voice channel.";
           };
         };
       }
     );
     default = null;
-    description = "Discord voice bridge carrying one listener's speech to an orchestrator and its replies back.";
+    description = "Discord transport for the avatar: bot identities, joining the listener's channel, capture and playback of call audio. Conversations run through the avatar.";
   };
 
   config = lib.mkIf (bridgeSettings != null) {
-    assertions = [
-      {
-        assertion =
-          (bridgeSettings.conversationProfile != null) != (bridgeSettings.conversationAgent != null);
-        message = "Discord voice requires exactly one conversationProfile or conversationAgent.";
-      }
-    ];
     home.packages = [
       silverVoice
       discordVoice
@@ -133,7 +111,7 @@ in
       Service = {
         ExecStart = "${config.hermes.unwrappedPackage.hermesVenv}/bin/python3 -m voice_bridge.bridge_daemon";
         Environment = [
-          "PYTHONPATH=${scripts}:${transcriberScripts}"
+          "PYTHONPATH=${scripts}"
           "VOICE_BRIDGE_FFMPEG=${pkgs.ffmpeg}/bin/ffmpeg"
           "VOICE_BRIDGE_OPUS_LIBRARY=${pkgs.libopus}/lib/libopus.so"
           "PATH=${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
@@ -143,42 +121,10 @@ in
           "VOICE_BRIDGE_ANSWERED_GUILD_ID=${bridgeSettings.answeredGuildId}"
           "VOICE_BRIDGE_IDENTITIES=${identitySpecifications}"
           "VOICE_BRIDGE_HOST=${hostname}"
-          "VOICE_BRIDGE_CLOUD_VOICE=${jessicaElevenLabsVoice}"
-          "VOICE_BRIDGE_CHARACTER_CATALOG=${characterVoices}"
         ];
         RuntimeDirectory = "silver-voice";
         RuntimeDirectoryMode = "0700";
         TimeoutStopSec = "30s";
-        Restart = "on-failure";
-        RestartSec = "3s";
-      };
-    };
-
-    systemd.user.services.silver-voice-conductor = lib.mkIf isNixOS {
-      Unit = {
-        Description = "Discord agent voice call conductor";
-        X-SwitchMethod = "keep-old";
-        After = [ "silver-voice-bridge.service" ];
-        BindsTo = [ "silver-voice-bridge.service" ];
-      };
-      Install.WantedBy = [ "silver-voice-bridge.service" ];
-      Service = {
-        ExecStart = "${pkgs.python312}/bin/python3 -m voice_bridge.call_conductor";
-        Environment = [
-          "PATH=/run/wrappers/bin:${config.home.profileDirectory}/bin:/run/current-system/sw/bin"
-          "PYTHONPATH=${scripts}:${a2aClientScripts}:${a2aServants}:${a2aSessionDetection}:${pacePackage}/${pkgs.python312.sitePackages}"
-          "VOICE_BRIDGE_CONTROL_SOCKET=%t/silver-voice/control.sock"
-          "VOICE_CONDUCTOR_CONTROL_SOCKET=%t/silver-voice/conductor.sock"
-          "VOICE_CONDUCTOR_HERDR_SOCKET=${config.xdg.configHome}/herdr/herdr.sock"
-          "VOICE_CONDUCTOR_HERMES=${config.hermes.package}/bin/hermes"
-        ]
-        ++ lib.optional (
-          bridgeSettings.conversationProfile != null
-        ) "VOICE_CONDUCTOR_PROFILE=${bridgeSettings.conversationProfile}"
-        ++ lib.optional (
-          bridgeSettings.conversationAgent != null
-        ) "VOICE_CONDUCTOR_AGENT=${bridgeSettings.conversationAgent}";
-        WorkingDirectory = config.home.homeDirectory;
         Restart = "on-failure";
         RestartSec = "3s";
       };

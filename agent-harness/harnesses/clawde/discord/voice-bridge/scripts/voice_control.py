@@ -13,10 +13,6 @@ CONTROL_SOCKET = os.environ.get(
         "control.sock",
     ),
 )
-CONDUCTOR_SOCKET = os.environ.get(
-    "VOICE_CONDUCTOR_CONTROL_SOCKET",
-    os.path.join(os.path.dirname(CONTROL_SOCKET), "conductor.sock"),
-)
 JOIN_DEADLINE_SECONDS = 45
 JOIN_RETRY_SECONDS = 0.2
 CONTROL_TIMEOUT_SECONDS = 180
@@ -86,19 +82,3 @@ def request_join(preferred=None, follow_listener=False):
             if time.monotonic() >= deadline:
                 return {"error": "bridge_did_not_start"}
         time.sleep(JOIN_RETRY_SECONDS)
-
-
-def request_conductor_selection(target):
-    request = (
-        {"command": "agent", "target": target, "default": False}
-        if target
-        else {"command": "status"}
-    )
-    deadline = time.monotonic() + JOIN_DEADLINE_SECONDS
-    while True:
-        try:
-            return request_once(socket_path=CONDUCTOR_SOCKET, **request)
-        except (FileNotFoundError, ConnectionRefusedError):
-            if time.monotonic() >= deadline:
-                return {"error": "conductor_did_not_start"}
-            time.sleep(JOIN_RETRY_SECONDS)

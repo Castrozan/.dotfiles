@@ -115,7 +115,7 @@ async def exchange(control, request_bytes):
 def test_the_socket_refuses_play_outside_a_call_with_a_json_error(tmp_path):
     async def scenario():
         module, call, _playback, _connection = make_clip_call(tmp_path)
-        control = load_control_server(module).ControlServer(call, Mock(), Mock())
+        control = load_control_server(module).ControlServer(call, Mock())
         reply = await exchange(
             control, header_line(sample_rate=24000, byte_count=len(CLIP)) + CLIP
         )
@@ -127,7 +127,7 @@ def test_the_socket_refuses_play_outside_a_call_with_a_json_error(tmp_path):
 def test_the_socket_plays_the_uploaded_bytes_and_answers_when_hushed(tmp_path):
     async def scenario():
         module, call, playback, _connection = make_clip_call(tmp_path)
-        control = load_control_server(module).ControlServer(call, Mock(), Mock())
+        control = load_control_server(module).ControlServer(call, Mock())
         await call.join()
         server = await asyncio.start_server(control.serve_connection, "127.0.0.1", 0)
         address = server.sockets[0].getsockname()
@@ -170,7 +170,7 @@ def test_the_socket_plays_the_uploaded_bytes_and_answers_when_hushed(tmp_path):
 def test_a_malformed_play_header_is_refused_before_any_audio_is_read(tmp_path, fields):
     async def scenario():
         module, call, playback, _connection = make_clip_call(tmp_path)
-        control = load_control_server(module).ControlServer(call, Mock(), Mock())
+        control = load_control_server(module).ControlServer(call, Mock())
         await call.join()
         reply = await exchange(control, header_line(**fields) + b"1234")
         assert json.loads(reply) == {"error": "invalid_request"}
@@ -184,7 +184,7 @@ def test_the_socket_streams_capture_silence_when_not_in_a_call(tmp_path):
     async def scenario():
         module, call, _playback, _connection = make_clip_call(tmp_path)
         broadcast = CaptureBroadcast(ListenerAudioTap())
-        control = load_control_server(module).ControlServer(call, Mock(), broadcast)
+        control = load_control_server(module).ControlServer(call, broadcast)
         server = await asyncio.start_server(control.serve_connection, "127.0.0.1", 0)
         reader, writer = await asyncio.open_connection(*server.sockets[0].getsockname())
         writer.write(b'{"command":"capture"}\n')

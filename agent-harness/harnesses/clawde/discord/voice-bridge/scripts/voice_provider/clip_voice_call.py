@@ -4,16 +4,9 @@ from voice_bridge.voice_call import VoiceCall, VoiceCallError
 
 
 class ClipVoiceCall(VoiceCall):
-    def __init__(self, *arguments, avatar_channel_name=None):
+    def __init__(self, *arguments):
         super().__init__(*arguments)
-        self._avatar_channel_name = avatar_channel_name
         self._hush_count = 0
-
-    def _finished_utterances(self, buffered_seconds):
-        finished = super()._finished_utterances(buffered_seconds)
-        if self._membership.in_channel_named(self._avatar_channel_name):
-            return []
-        return finished
 
     async def play_clip(self, pcm, sample_rate):
         if self._membership.channel() is None:

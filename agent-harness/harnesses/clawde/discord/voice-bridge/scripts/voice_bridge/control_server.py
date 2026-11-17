@@ -2,7 +2,6 @@ import asyncio
 import json
 import logging
 
-from voice_bridge.speech_synthesis import SpeechSynthesisError
 from voice_bridge.voice_call import VoiceCallError
 from voice_provider.clip_wire import read_clip
 
@@ -21,23 +20,17 @@ async def read_request(reader):
 
 
 class ControlServer:
-    def __init__(self, call, feed, capture):
+    def __init__(self, call, capture):
         self._call = call
-        self._feed = feed
         self._capture = capture
         self._connections = set()
         self._command_handlers = {
             "join": self._join,
             "leave": self._leave,
             "status": self._status,
-            "speak": self._speak,
-            "catalog": self._catalog,
-            "character": self._character,
-            "model": self._model,
             "hush": self._hush,
         }
         self._connection_handlers = {
-            "follow": self._stream_transcript,
             "capture": self._stream_capture,
             "play": self._play_clip,
         }
@@ -74,7 +67,7 @@ class ControlServer:
             return {"error": "unknown_command"}
         try:
             return await handler(request)
-        except (VoiceCallError, SpeechSynthesisError) as error:
+        except VoiceCallError as error:
             return {"error": str(error)}
 
     async def _join(self, _request):
@@ -89,20 +82,6 @@ class ControlServer:
 
     async def _status(self, _request):
         return self._call.status()
-
-    async def _speak(self, request):
-        return await self._call.speak(
-            request["text"], request["language"], request.get("generation")
-        )
-
-    async def _catalog(self, _request):
-        return self._call.capabilities()
-
-    async def _character(self, request):
-        return await self._call.select_character(request["name"])
-
-    async def _model(self, request):
-        return await self._call.select_model(request["name"])
 
     async def _hush(self, _request):
         return self._call.hush()
@@ -124,15 +103,3 @@ class ControlServer:
                 await writer.drain()
         finally:
             self._capture.unsubscribe(subscriber)
-
-    async def _stream_transcript(self, request, _reader, writer):
-        after_sequence = request.get("after")
-        subscriber = self._feed.subscribe(
-            self._feed.last_sequence if after_sequence is None else after_sequence
-        )
-        try:
-            while True:
-                writer.write(encoded_line(await subscriber.get()))
-                await writer.drain()
-        finally:
-            self._feed.unsubscribe(subscriber)

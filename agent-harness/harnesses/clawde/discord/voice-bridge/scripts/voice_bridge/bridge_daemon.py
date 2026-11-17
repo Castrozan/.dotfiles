@@ -1,19 +1,14 @@
 import asyncio
-import functools
 import json
 import logging
 import os
 import signal
-from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
 import discord
 
 from voice_bridge.control_server import ControlServer
-from voice_bridge.speech_synthesis import SpeechSelection
-from voice_bridge.speech_transcription import transcribe_discord_audio
-from voice_bridge.transcript_feed import TranscriptFeed
 from voice_connection import IdentityConnection
 from voice_identity import VoiceIdentity, VoiceIdentityPool
 from voice_permissions import identity_specifications
@@ -26,8 +21,6 @@ from voice_provider.listener_audio_tap import ListenerAudioTap
 @dataclass(frozen=True)
 class CallAudioServices:
     ffmpeg: str
-    synthesizer: SpeechSelection
-    transcribe_audio: Callable[[bytes], str]
     listener_audio: ListenerAudioTap
 
 
@@ -40,7 +33,6 @@ def discord_client():
 
 async def run_bridge():
     environment = os.environ
-    feed = TranscriptFeed()
     ffmpeg = environment["VOICE_BRIDGE_FFMPEG"]
     control_socket = Path(environment["VOICE_BRIDGE_CONTROL_SOCKET"])
     listener_user_id = int(environment["VOICE_BRIDGE_LISTENER_USER_ID"])
@@ -69,23 +61,11 @@ async def run_bridge():
         identities,
         listener_user_id,
         guild_id,
-        CallAudioServices(
-            ffmpeg,
-            SpeechSelection(
-                json.loads(
-                    Path(environment["VOICE_BRIDGE_CHARACTER_CATALOG"]).read_text()
-                ),
-                environment["VOICE_BRIDGE_CLOUD_VOICE"],
-            ),
-            functools.partial(transcribe_discord_audio, ffmpeg),
-            listener_audio,
-        ),
-        feed,
-        avatar_channel_name=silver_channel_name,
+        CallAudioServices(ffmpeg, listener_audio),
     )
     silver_channel = SilverChannel(guild_id, silver_channel_name)
 
-    control = ControlServer(call, feed, CaptureBroadcast(listener_audio))
+    control = ControlServer(call, CaptureBroadcast(listener_audio))
     server = await asyncio.start_unix_server(
         control.serve_connection, path=control_socket
     )

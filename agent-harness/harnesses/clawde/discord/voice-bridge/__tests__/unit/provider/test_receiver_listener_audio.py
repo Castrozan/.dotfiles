@@ -30,6 +30,7 @@ class FakeVoiceReceiver:
         self._lock = threading.Lock()
         self._buffers = defaultdict(bytearray)
         self._decoders = {}
+        self._last_packet_time = {}
         self._ssrc_to_user = {}
         self._bot_ssrc = 0
         self._creds = (b"", None, 0, False)
@@ -55,14 +56,12 @@ class FakeVoiceReceiver:
         decoded = self._decoders[source].decode(payload)
         with self._lock:
             self._buffers[source].extend(decoded)
+            self._last_packet_time[source] = 0.0
 
 
 def fake_modules():
     adapter = ModuleType("plugins.platforms.discord.adapter")
     adapter.VoiceReceiver = FakeVoiceReceiver
-    segmenter = ModuleType("speech_segmenter")
-    segmenter.SPEECH_LEVEL = 1.0
-    segmenter.frame_level = lambda _frame: 0.0
     discord = ModuleType("discord")
     discord.opus = SimpleNamespace(Decoder=FakeOpusDecoder)
     return {
@@ -71,7 +70,6 @@ def fake_modules():
         "plugins.platforms": ModuleType("plugins.platforms"),
         "plugins.platforms.discord": ModuleType("plugins.platforms.discord"),
         "plugins.platforms.discord.adapter": adapter,
-        "speech_segmenter": segmenter,
     }
 
 
@@ -95,13 +93,16 @@ def voice_packet(source, payload):
     return b"\x80\x78" + bytes(6) + source.to_bytes(4, "big") + payload
 
 
-def test_the_listener_audio_reaches_the_tap_and_the_existing_buffer(receiver_and_tap):
+def test_the_listener_audio_reaches_the_tap_and_is_not_kept_in_the_receiver(
+    receiver_and_tap,
+):
     receiver, tap = receiver_and_tap
     receiver._on_packet(voice_packet(LISTENER_SOURCE, DECODED_FRAME))
     expected = struct.pack("<h", 900) * (CAPTURE_FRAME_BYTES // 2)
     assert tap.take_frame() == expected
     assert tap.take_frame() == SILENCE_FRAME
-    assert receiver.buffered_listener_seconds() == pytest.approx(0.02)
+    assert not receiver._buffers
+    assert not receiver._last_packet_time
     assert receiver.listener_packet_count == 1
 
 

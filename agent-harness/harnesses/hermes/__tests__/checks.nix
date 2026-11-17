@@ -54,14 +54,9 @@ in
     pkgs.runCommand "domain-hermes-runtime-supports-the-discord-voice-bridge-listener" { }
       ''
         HOME=$TMPDIR \
-        PYTHONPATH=${../../clawde/discord/voice-bridge/scripts}:${../../../../machine-configuration/media/avatar/scripts/listening} \
+        PYTHONPATH=${../../clawde/discord/voice-bridge/scripts} \
           ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 \
           ${../../clawde/discord/voice-bridge/__tests__/verify-listener-receiver-credentials.py}
-        HOME=$TMPDIR \
-        PYTHONPATH=${../../clawde/discord/voice-bridge/scripts}:${../../../../machine-configuration/media/avatar/scripts/listening} \
-          ${cfg.hermes.unwrappedPackage.hermesVenv}/bin/python3 \
-          ${../../clawde/discord/voice-bridge/__tests__/verify-speech-transcription-contract.py} \
-          ${pkgs.ffmpeg}/bin/ffmpeg
         touch "$out"
       '';
 
