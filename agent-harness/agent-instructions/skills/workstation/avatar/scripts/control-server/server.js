@@ -28,7 +28,7 @@ const {
   ResilientSpeechGenerator,
 } = require("./speech/resilient-speech-generator");
 const { SpeechFloor } = require("./speech/speech-floor");
-const { AgentChannelGate } = require("./speech/agent-channel-gate");
+const { agentChannelFor } = require("./speech/agent-channel-gate");
 
 const {
   startMicrophoneLevelMeter,
@@ -154,7 +154,7 @@ async function main() {
     avatarState,
     clientRegistry,
     textToSpeechGenerator,
-    speechFloor: new SpeechFloor(new AgentChannelGate()),
+    speechFloor: new SpeechFloor(agentChannelFor(process.platform)),
     speakerSinkName: CONFIG.SPEAKER_SINK,
     playSpeech:
       process.platform === "darwin"

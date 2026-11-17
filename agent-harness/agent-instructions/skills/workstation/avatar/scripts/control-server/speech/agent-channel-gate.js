@@ -20,4 +20,16 @@ class AgentChannelGate {
   }
 }
 
-module.exports = { AgentChannelGate };
+class SeatAgentChannel {
+  async open() {
+    return async () => {};
+  }
+}
+
+function agentChannelFor(platform) {
+  return platform === "darwin"
+    ? new SeatAgentChannel()
+    : new AgentChannelGate();
+}
+
+module.exports = { AgentChannelGate, agentChannelFor };

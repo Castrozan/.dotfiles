@@ -79,6 +79,14 @@ in
     export PYTHONPATH=$PYTHONPATH:${scripts}
     exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_talk.py "$@"
   '';
+  meetingCommand =
+    name: entry:
+    pkgs.writeShellScriptBin name ''
+      export PATH=${lib.makeBinPath [ programs.unclaimedCommand ]}:$PATH
+      ${environment}
+      export PYTHONPATH=$PYTHONPATH:${scripts}
+      exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/${entry} "$@"
+    '';
   listener = pkgs.writeShellScriptBin "avatar-conversation-listener" ''
     ${environment}
     exec ${conversationPython}/bin/python3 ${scripts}/listening/listener.py

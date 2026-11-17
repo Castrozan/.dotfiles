@@ -9,6 +9,7 @@ import listener_runtime
 import listener_session
 import live_opening
 import local_seat
+import mac_meeting
 import mac_seat_client
 import mac_stage
 import remote_agent
@@ -16,8 +17,7 @@ import remote_talk
 import room_reach
 import utterances
 import voice_turns
-from conversation_state import ConversationAction
-from conversation_state import ConversationPhase
+from conversation_state import ConversationAction, ConversationPhase
 from listener_session import ListenerPurpose
 from talk_arguments import parse_arguments
 
@@ -149,7 +149,7 @@ ACTIONS = {
     ConversationAction.SHOW: lambda arguments, directory: mac_stage.show_window(),
     ConversationAction.HIDE: lambda arguments, directory: mac_stage.hide_window(),
     ConversationAction.REFUSE_CLOSED: refuse_closed,
-}
+} | mac_meeting.REFUSALS_IN_A_MEETING
 
 
 def make_room_for_the_host(arguments):

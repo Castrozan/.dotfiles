@@ -6,6 +6,7 @@ REMOTE_SEAT_UNIT = (
     AVATAR / "home-manager/avatar-remote-seat-home-manager.nix"
 ).read_text()
 MAC_COMMANDS = (AVATAR / "avatar-remote-home-manager.nix").read_text()
+MAC_CONVERSATION = (AVATAR / "home-manager/avatar-mac-conversation.nix").read_text()
 PROGRAMS = (AVATAR / "avatar-programs.nix").read_text()
 UNITS = (AVATAR / "avatar-home-manager.nix").read_text()
 REBUILD = (AVATAR / "home-manager/avatar-rebuild-home-manager.nix").read_text()
@@ -54,20 +55,16 @@ def test_a_seat_that_ends_stops_the_conversation_and_the_listener():
 def test_a_mac_gets_the_same_four_commands_as_chise():
     packages = MAC_COMMANDS[MAC_COMMANDS.index("home.packages") :]
     assert 'forwardToHost "avatar-audio"' in packages
-    for verb, command in [
-        ("start", "avatar-start"),
-        ("stop", "avatar-stop"),
-        ("listen", "avatar-listen"),
-    ]:
-        assert f'remoteMeeting "{verb}" "{command}"' in packages
+    for command in ["avatar-start", "avatar-stop", "avatar-controls", "avatar-listen"]:
+        assert f'conversation.meetingCommand "{command}"' in packages
 
 
-def test_the_mac_meeting_commands_run_the_stdlib_module_with_the_caller_arguments():
-    command = re.search(
-        r"remoteMeeting =(.*?)\n  conversation =", MAC_COMMANDS, re.S
-    ).group(1)
-    assert "${pkgs.python312}/bin/python3" in command
-    assert "remote_seat}/remote_meeting.py ${verb}" in command
+def test_the_mac_meeting_commands_run_the_local_modules_with_the_caller_arguments():
+    command = MAC_CONVERSATION.split("meetingCommand =")[1].split("listener =")[0]
+    assert "${conversationPython}/bin/python3" in command
+    assert "/conversation/mac_conversation/${entry}" in command
+    assert "${environment}" in command
+    assert "programs.unclaimedCommand" in command
     assert command.rstrip().endswith("'';")
     assert '"$@"' in command
 
@@ -102,10 +99,9 @@ def test_the_avatar_host_is_named_once_and_every_mac_command_reads_it():
     topology = (AVATAR / "home-manager/avatar-topology.nix").read_text()
     assert re.findall(r'host = "([a-z]+)";', topology) == ["chise"]
     assert "chise" not in MAC_COMMANDS
-    assert MAC_COMMANDS.count("export AVATAR_HOST=${topology.host}") == 2
+    assert MAC_COMMANDS.count("export AVATAR_HOST=${topology.host}") == 1
     assert "inherit (topology) host;" in MAC_COMMANDS
-    conversation = (AVATAR / "home-manager/avatar-mac-conversation.nix").read_text()
-    assert "export AVATAR_HOST=${host}" in conversation
+    assert "export AVATAR_HOST=${host}" in MAC_CONVERSATION
 
 
 def test_every_machine_gets_the_doctor():

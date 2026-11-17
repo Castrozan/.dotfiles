@@ -65,7 +65,7 @@ def test_the_scene_collection_holds_one_browser_source_inside_one_scene():
     assert collection["scene_order"] == [{"name": "Avatar"}]
     assert list(sources) == ["browser_source", "scene"]
     assert sources["browser_source"]["settings"] == {
-        "url": "http://localhost:8770/?stage&bare",
+        "url": "http://localhost:3000/?stage&bare",
         "width": 1280,
         "height": 720,
         "fps": 30,

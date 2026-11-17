@@ -171,3 +171,28 @@ def test_gate_refuses_to_speak_without_the_owned_audio_graph():
         """
     )
     assert result == "Avatar audio is not running; run avatar-start"
+
+
+@requires_node
+def test_a_mac_opens_the_agent_channel_without_the_audio_graph_and_linux_keeps_its_gate():
+    result = evaluate_node_json(
+        """
+        const Module = require("node:module");
+        const original = Module._load;
+        const commands = [];
+        Module._load = function(name, ...arguments_) {
+          if (name === "node:child_process") return { execFile: (command, args, callback) => {
+            commands.push(command);
+            callback(new Error("no audio graph"));
+          } };
+          return original.call(this, name, ...arguments_);
+        };
+        const { AgentChannelGate, agentChannelFor } = require("./speech/agent-channel-gate");
+        const result = (async () => {
+          const release = await agentChannelFor("darwin").open();
+          await release();
+          return { commands, linux: agentChannelFor("linux") instanceof AgentChannelGate };
+        })();
+        """
+    )
+    assert result == {"commands": [], "linux": True}

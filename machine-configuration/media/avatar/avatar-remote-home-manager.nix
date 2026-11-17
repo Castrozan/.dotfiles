@@ -19,13 +19,6 @@ let
     pkgs.writeShellScriptBin command ''
       exec ssh ${topology.host} ${command} "$(printf '%q ' "$@")"
     '';
-  remoteMeeting =
-    verb: command:
-    pkgs.writeShellScriptBin command ''
-      export AVATAR_HOST=${topology.host}
-      export PYTHONPATH=${./scripts/listening}
-      exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_meeting.py ${verb} "$@"
-    '';
   conversation = import ./home-manager/avatar-mac-conversation.nix {
     inherit
       pkgs
@@ -102,10 +95,10 @@ lib.mkMerge [
       programs.transcribe
       conversation.command
       (forwardToHost "avatar-audio")
-      (remoteMeeting "start" "avatar-start")
-      (remoteMeeting "stop" "avatar-stop")
-      (remoteMeeting "controls" "avatar-controls")
-      (remoteMeeting "listen" "avatar-listen")
+      (conversation.meetingCommand "avatar-start" "mac_meeting_cli.py start")
+      (conversation.meetingCommand "avatar-stop" "mac_meeting_cli.py stop")
+      (conversation.meetingCommand "avatar-controls" "mac_meeting_cli.py controls")
+      (conversation.meetingCommand "avatar-listen" "mac_listen.py")
     ];
   }
   wakeLaunchAgent

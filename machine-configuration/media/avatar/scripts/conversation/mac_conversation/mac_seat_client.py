@@ -11,8 +11,14 @@ PORT = 8772
 SPEECH_PATH = "/speech"
 HUSH_PATH = "/hush"
 STREAM_PATH = "/stream"
+MEETING_PATH = "/meeting"
+CALL_PATH = "/call"
+MEETING_FLAG = "--meeting"
+CALL_DEVICE = "meeting"
+MEETING_MICROPHONE = "the microphone of this Mac in a meeting"
 ORIGIN = f"http://{HOST}:{PORT}"
 SEAT_PROGRAM = pathlib.Path(__file__).with_name("mac_seat.py")
+CALL_CAPTURE_PROGRAM = pathlib.Path(__file__).with_name("mac_call_capture.py")
 PROFILE = pathlib.Path.home() / ".local/share/avatar/conversation-browser"
 PROFILE_FLAG = f"--user-data-dir={PROFILE}"
 HUSH_TIMEOUT_SECONDS = 1
@@ -25,7 +31,10 @@ NO_PAGE_MESSAGE = (
 
 
 def capture_command(device):
-    return [sys.executable, str(SEAT_PROGRAM)]
+    if device == CALL_DEVICE:
+        return [sys.executable, str(CALL_CAPTURE_PROGRAM)]
+    seat = [sys.executable, str(SEAT_PROGRAM)]
+    return [*seat, MEETING_FLAG] if device == MEETING_MICROPHONE else seat
 
 
 def attached():

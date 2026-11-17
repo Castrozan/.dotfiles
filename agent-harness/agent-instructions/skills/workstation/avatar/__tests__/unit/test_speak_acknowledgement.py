@@ -151,3 +151,31 @@ def test_the_mac_player_silences_the_mouth_when_playback_ends_and_stops_on_deman
         "signals": [["avatar-seat-play", "/a.wav", "SIGTERM"]],
         "last": 0,
     }
+
+
+@requires_node
+def test_speech_to_the_mic_on_a_mac_reaches_the_seat_player_through_the_real_floor():
+    result = evaluate_node_json(
+        """
+        const { SpeechFloor } = require("./speech/speech-floor");
+        const { agentChannelFor } = require("./speech/agent-channel-gate");
+        const { handleSpeakCommand } = require("./agent-commands/speak-command-handler");
+        const played = [];
+        const sent = [];
+        const context = {
+          clientRegistry: { hasRenderer: () => false, sendToRenderer: () => {} },
+          textToSpeechGenerator: { generate: async () => ({ audioPath: "/a.wav", source: "local" }) },
+          speechFloor: new SpeechFloor(agentChannelFor("darwin")),
+          playSpeech: (audioPath, output) => {
+            played.push([audioPath, output]);
+            return { finished: Promise.resolve(), stop: () => {} };
+          },
+        };
+        const result = handleSpeakCommand(
+          { text: "oi", output: "mic", id: "turn" },
+          { sendJson: (message) => sent.push(message) },
+          context,
+        ).then(() => ({ played, status: sent[0].status }));
+        """
+    )
+    assert result == {"played": [["/a.wav", "mic"]], "status": "finished"}
