@@ -5,6 +5,7 @@ import time
 import discord_call
 import listener_session
 import source_capture
+from listener_session import ListenerPurpose
 
 REMOTE_SEAT_SERVICE = "avatar-remote-seat.service"
 REMOTE_SEAT_ADDRESS = ("127.0.0.1", 8769)
@@ -40,6 +41,12 @@ def configured(directory):
 def current(directory):
     if listener_session.live_purpose(directory) is None:
         return Seat.ROOM
+    return configured(directory)
+
+
+def open_seat(directory):
+    if listener_session.live_purpose(directory) is not ListenerPurpose.CONVERSATION:
+        return None
     return configured(directory)
 
 

@@ -4,6 +4,7 @@ import time
 
 DISCORD_VOICE = "discord-voice"
 COMMAND_TIMEOUT_SECONDS = 30
+STATUS_TIMEOUT_SECONDS = 5
 JOIN_WAIT_SECONDS = 20
 POLL_SECONDS = 0.5
 JOIN_A_VOICE_CHANNEL_FIRST = (
@@ -11,28 +12,41 @@ JOIN_A_VOICE_CHANNEL_FIRST = (
 )
 
 
-def run_discord_voice(*arguments):
+def run_discord_voice(*arguments, timeout=COMMAND_TIMEOUT_SECONDS):
     try:
         return subprocess.run(
             [DISCORD_VOICE, *arguments],
             capture_output=True,
             text=True,
             check=False,
-            timeout=COMMAND_TIMEOUT_SECONDS,
+            timeout=timeout,
         ).stdout
     except (OSError, subprocess.TimeoutExpired):
         return ""
 
 
-def in_call():
+def read_status():
     try:
-        return json.loads(run_discord_voice("status")).get("joined") is True
-    except (ValueError, AttributeError):
+        status = json.loads(run_discord_voice("status", timeout=STATUS_TIMEOUT_SECONDS))
+    except ValueError:
+        return None
+    return status if isinstance(status, dict) and "joined" in status else None
+
+
+def in_call():
+    status = read_status()
+    return status is not None and status.get("joined") is True
+
+
+def listener_left_the_call():
+    status = read_status()
+    if status is None:
         return False
+    return not (status["joined"] is True and status.get("listener_present") is True)
 
 
 def join():
-    run_discord_voice("join", "--follow-listener")
+    run_discord_voice("join")
     deadline = time.monotonic() + JOIN_WAIT_SECONDS
     while not in_call():
         if time.monotonic() > deadline:

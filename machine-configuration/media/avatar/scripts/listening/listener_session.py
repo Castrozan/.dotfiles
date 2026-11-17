@@ -13,6 +13,12 @@ from listener_runtime import LISTENER_SERVICE, LIVE_SERVICE
 
 CONFIGURATION_FILE = "listener.json"
 SPOKEN_FILE = "spoken"
+SESSION_RECORDS = (
+    "transcript.jsonl",
+    listener.EMBEDDINGS_FILE,
+    listener.HEARD_FILE,
+    SPOKEN_FILE,
+)
 SYSTEMCTL_TIMEOUT_SECONDS = 120
 
 
@@ -51,14 +57,16 @@ def stop_unit(unit):
     systemctl("stop", unit)
 
 
+def erase_session_records(directory):
+    for record in SESSION_RECORDS:
+        (directory / record).unlink(missing_ok=True)
+    conversation_addressee.forget(directory)
+
+
 def begin_listening(directory, purpose, sources, **settings):
     directory.mkdir(mode=0o700, parents=True, exist_ok=True)
     stop_listening()
-    (directory / "transcript.jsonl").unlink(missing_ok=True)
-    (directory / listener.EMBEDDINGS_FILE).unlink(missing_ok=True)
-    (directory / listener.HEARD_FILE).unlink(missing_ok=True)
-    conversation_addressee.forget(directory)
-    (directory / SPOKEN_FILE).unlink(missing_ok=True)
+    erase_session_records(directory)
     configuration = directory / CONFIGURATION_FILE
     descriptor = os.open(configuration, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
     with os.fdopen(descriptor, "w") as output:

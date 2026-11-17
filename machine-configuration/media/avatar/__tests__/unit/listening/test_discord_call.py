@@ -48,13 +48,13 @@ def test_the_discord_seat_listens_to_the_discord_device_and_speaks_to_the_call()
     assert Seat.DISCORD not in conversation_seat.MEETING_SEATS
 
 
-def test_preparing_the_discord_seat_joins_following_the_listener_and_waits(
+def test_preparing_the_discord_seat_joins_the_listener_channel_once_and_waits(
     monkeypatch, no_waiting
 ):
     fake = install(monkeypatch, FakeDiscordVoice(joined_after_polls=2))
     conversation_seat.prepare(Seat.DISCORD)
     assert fake.calls == [
-        ["join", "--follow-listener"],
+        ["join"],
         ["status"],
         ["status"],
         ["status"],
@@ -86,6 +86,52 @@ def test_a_machine_without_a_working_bridge_fails_with_the_join_message(
 def test_a_status_that_is_not_json_is_not_a_call(monkeypatch):
     install(monkeypatch, Mock(return_value=SimpleNamespace(stdout="oops")))
     assert discord_call.in_call() is False
+
+
+def status_reader(monkeypatch, stdout):
+    runner = Mock(return_value=SimpleNamespace(returncode=0, stdout=stdout))
+    install(monkeypatch, runner)
+    return runner
+
+
+@pytest.mark.parametrize(
+    ("status", "left"),
+    [
+        ({"joined": True, "listener_present": True}, False),
+        ({"joined": True, "listener_present": False}, True),
+        ({"joined": True}, True),
+        ({"joined": False, "listener_present": False}, True),
+        ({"joined": False}, True),
+    ],
+)
+def test_the_call_ends_when_the_listener_is_not_in_the_joined_channel(
+    monkeypatch, status, left
+):
+    status_reader(monkeypatch, json.dumps(status))
+    assert discord_call.listener_left_the_call() is left
+
+
+@pytest.mark.parametrize(
+    "stdout", ["", "oops", "[]", '{"error": "bridge_not_running"}']
+)
+def test_a_status_that_cannot_be_read_never_ends_the_call(monkeypatch, stdout):
+    status_reader(monkeypatch, stdout)
+    assert discord_call.listener_left_the_call() is False
+
+
+@pytest.mark.parametrize(
+    "failure", [FileNotFoundError("discord-voice"), subprocess.TimeoutExpired("x", 5)]
+)
+def test_a_bridge_that_cannot_answer_never_ends_the_call(monkeypatch, failure):
+    install(monkeypatch, Mock(side_effect=failure))
+    assert discord_call.listener_left_the_call() is False
+
+
+def test_the_status_is_read_with_a_short_bounded_wait(monkeypatch):
+    runner = status_reader(monkeypatch, json.dumps({"joined": True}))
+    discord_call.listener_left_the_call()
+    assert runner.call_args.args[0] == [discord_call.DISCORD_VOICE, "status"]
+    assert 0 < runner.call_args.kwargs["timeout"] <= 5
 
 
 def test_other_seats_prepare_without_touching_the_bridge(monkeypatch):

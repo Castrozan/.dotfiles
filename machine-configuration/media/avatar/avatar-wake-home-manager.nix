@@ -1,4 +1,5 @@
 {
+  config,
   pkgs,
   lib,
   inputs,
@@ -21,7 +22,7 @@ let
         pkgs.pulseaudio
         pkgs.systemd
       ]
-    }:$PATH
+    }:$PATH:${config.home.profileDirectory}/bin
     export AVATAR_AGENT_HOST=${hostname}
     export AVATAR_PEER_HOSTS="${lib.concatStringsSep " " peerHosts}"
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}

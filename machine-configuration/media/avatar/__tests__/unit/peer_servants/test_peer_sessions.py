@@ -1,12 +1,10 @@
 import json
 import subprocess
-import sys
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import peer_sessions
 import pytest
-import wake_listener
 from hypothesis import given
 from hypothesis import strategies as st
 from wake_phrase import LiveSession
@@ -23,8 +21,9 @@ REMOTE = st.lists(
 MEDEA_AT_KIRA = LiveSession("Medea", "w1:p2", "kira")
 
 
-def listing(entries):
-    return SimpleNamespace(stdout=json.dumps(entries), returncode=0)
+def listing(entries, conversation_seat=None):
+    payload = {"sessions": entries, "conversation_seat": conversation_seat}
+    return SimpleNamespace(stdout=json.dumps(payload), returncode=0)
 
 
 def refreshed(peer_hosts, run):
@@ -82,6 +81,12 @@ def test_every_servant_is_heard_once_and_the_local_session_wins(local, remote):
         SimpleNamespace(stdout='{"servant": "Medea"}', returncode=0),
         SimpleNamespace(stdout='[{"servant": "Medea"}]', returncode=0),
         SimpleNamespace(stdout="[7]", returncode=0),
+        SimpleNamespace(stdout='{"sessions": []}', returncode=0),
+        SimpleNamespace(
+            stdout='{"sessions": [{"servant": "Medea"}], "conversation_seat": null}',
+            returncode=0,
+        ),
+        SimpleNamespace(stdout='[{"servant": "Medea", "pane": "w1:p2"}]', returncode=0),
     ],
 )
 def test_an_unreachable_peer_contributes_nothing_and_never_raises(failure):
@@ -152,20 +157,3 @@ def test_no_peer_hosts_never_start_a_worker():
     peers = peer_sessions.PeerSessions([], Mock(), start_worker=started.append)
     assert peers.known() == []
     assert not started
-
-
-def test_the_sessions_flag_prints_this_machines_sessions_as_one_json_list(
-    monkeypatch, capsys
-):
-    monkeypatch.setattr(sys, "argv", ["avatar-wake", "--sessions"])
-    monkeypatch.setattr(
-        wake_listener,
-        "live_sessions",
-        lambda: [LiveSession("Voyager", "w:p1"), LiveSession("Medea", "w:p2")],
-    )
-    monkeypatch.setattr(wake_listener, "run", Mock(side_effect=AssertionError))
-    wake_listener.main()
-    assert json.loads(capsys.readouterr().out) == [
-        {"servant": "Voyager", "pane": "w:p1"},
-        {"servant": "Medea", "pane": "w:p2"},
-    ]

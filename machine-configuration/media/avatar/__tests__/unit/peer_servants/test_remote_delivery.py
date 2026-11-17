@@ -93,7 +93,8 @@ def test_the_sessions_boundary_never_waits_on_a_peer(monkeypatch, ran):
     assert wake_boundaries.sessions_here_and_at_peers() == [LOCAL_MEDEA]
     ran.assert_not_called()
     ran.return_value = SimpleNamespace(
-        returncode=0, stdout='[{"servant": "Circe", "pane": "w2:p1"}]'
+        returncode=0,
+        stdout=peer_sessions.listing_of([LiveSession("Circe", "w2:p1")], None),
     )
     started.pop()()
     assert wake_boundaries.sessions_here_and_at_peers() == [

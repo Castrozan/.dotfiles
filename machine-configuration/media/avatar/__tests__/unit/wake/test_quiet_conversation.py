@@ -7,15 +7,23 @@ import pytest
 import quiet_conversation
 import wake_boundaries
 import wake_listener
+from conversation_seat import Seat
 from listener_session import ListenerPurpose
 
 LONG_QUIET = quiet_conversation.QUIET_CLOSE_SECONDS + 1
 
 
-def boundaries(quiet_seconds, purpose=ListenerPurpose.CONVERSATION):
+def boundaries(
+    quiet_seconds,
+    purpose=ListenerPurpose.CONVERSATION,
+    seat=Seat.ROOM,
+    call_ended=False,
+):
     return wake_boundaries.Boundaries(
         quiet_seconds=Mock(return_value=quiet_seconds),
         listening_purpose=Mock(return_value=purpose),
+        open_seat=Mock(return_value=seat),
+        discord_call_ended=Mock(return_value=call_ended),
         close_conversation=Mock(),
         report=Mock(),
     )
@@ -78,3 +86,40 @@ def test_a_dry_run_closes_nothing(monkeypatch):
     monkeypatch.setattr(quiet_conversation, "ARM_CHECK_SECONDS", 0)
     quiet_conversation.follow_conversation(wake_listener.WakeListener(following, True))
     assert not following.close_conversation.called
+
+
+def test_a_discord_conversation_closes_when_the_listener_left_the_call():
+    ended = boundaries(0.0, seat=Seat.DISCORD, call_ended=True)
+    assert quiet_conversation.close_when_the_call_ended(ended) is True
+    ended.close_conversation.assert_called_once_with()
+    ended.report.assert_called_once_with(quiet_conversation.CALL_ENDED)
+
+
+def test_a_discord_conversation_stays_open_while_the_listener_is_in_the_call():
+    present = boundaries(0.0, seat=Seat.DISCORD, call_ended=False)
+    assert quiet_conversation.close_when_the_call_ended(present) is False
+    assert not present.close_conversation.called
+
+
+@pytest.mark.parametrize("seat", [Seat.ROOM, Seat.REMOTE, None])
+def test_only_a_discord_conversation_is_closed_for_the_call_ending(seat):
+    other = boundaries(0.0, seat=seat, call_ended=True)
+    assert quiet_conversation.close_when_the_call_ended(other) is False
+    assert not other.close_conversation.called
+    assert not other.discord_call_ended.called
+
+
+def test_a_dry_run_closes_no_call():
+    ended = boundaries(0.0, seat=Seat.DISCORD, call_ended=True)
+    assert quiet_conversation.close_when_the_call_ended(ended, True) is False
+    assert not ended.close_conversation.called
+
+
+def test_the_loop_closes_an_ended_call_without_waiting_for_quiet(monkeypatch):
+    following = boundaries(0.0, seat=Seat.DISCORD, call_ended=True)
+    following.conversation_listening = Mock(side_effect=[True, False])
+    following.transcript_entries = Mock(return_value=[])
+    monkeypatch.setattr(quiet_conversation, "ARM_CHECK_SECONDS", 0)
+    quiet_conversation.follow_conversation(wake_listener.WakeListener(following, False))
+    following.close_conversation.assert_called_once_with()
+    following.report.assert_called_once_with(quiet_conversation.CALL_ENDED)

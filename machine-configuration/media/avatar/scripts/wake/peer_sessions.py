@@ -1,20 +1,43 @@
+import dataclasses
 import json
 import subprocess
 import threading
 import time
 
+import listener_runtime
+from conversation_seat import Seat, open_seat
+from servant_panes import live_sessions
 from wake_phrase import LiveSession
 
 PEER_TIMEOUT_SECONDS = 10
-PEER_REFRESH_SECONDS = 60
+PEER_REFRESH_SECONDS = 20
 REACH_PEER = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=5"]
 PEER_UNREADABLE = (OSError, subprocess.SubprocessError, ValueError, KeyError, TypeError)
 
 
-def listing_of(sessions):
+@dataclasses.dataclass(frozen=True)
+class PeerListing:
+    sessions: list
+    conversation_seat: str | None
+
+
+NOTHING_LISTED = PeerListing([], None)
+
+
+def listing_of(sessions, conversation_seat):
     return json.dumps(
-        [{"servant": session.servant, "pane": session.pane} for session in sessions]
+        {
+            "sessions": [
+                {"servant": session.servant, "pane": session.pane}
+                for session in sessions
+            ],
+            "conversation_seat": conversation_seat,
+        }
     )
+
+
+def this_machine_listing():
+    return listing_of(live_sessions(), open_seat(listener_runtime.runtime_directory()))
 
 
 def sessions_of_peer(host, run):
@@ -26,13 +49,17 @@ def sessions_of_peer(host, run):
             timeout=PEER_TIMEOUT_SECONDS,
         )
         if listing.returncode != 0:
-            return []
-        return [
-            LiveSession(entry["servant"], entry["pane"], host)
-            for entry in json.loads(listing.stdout)
-        ]
+            return NOTHING_LISTED
+        payload = json.loads(listing.stdout)
+        return PeerListing(
+            [
+                LiveSession(entry["servant"], entry["pane"], host)
+                for entry in payload["sessions"]
+            ],
+            payload["conversation_seat"],
+        )
     except PEER_UNREADABLE:
-        return []
+        return NOTHING_LISTED
 
 
 def sessions_everywhere(local_sessions, peer_sessions):
@@ -64,14 +91,22 @@ class PeerSessions:
         self.clock = clock
         self.start_worker = start_worker
         self.sessions = []
+        self.discord_hosts = []
         self.started_at = None
         self.refreshing = False
         self.lock = threading.Lock()
 
     def known(self):
+        self.refresh_when_due()
+        return self.sessions
+
+    def discord_call_host(self):
+        self.refresh_when_due()
+        return next(iter(self.discord_hosts), None)
+
+    def refresh_when_due(self):
         if self.refresh_is_due():
             self.start_worker(self.refresh)
-        return self.sessions
 
     def refresh_is_due(self):
         if not self.peer_hosts:
@@ -91,10 +126,16 @@ class PeerSessions:
 
     def refresh(self):
         try:
+            listings = {
+                host: sessions_of_peer(host, self.run) for host in self.peer_hosts
+            }
             self.sessions = [
-                session
-                for host in self.peer_hosts
-                for session in sessions_of_peer(host, self.run)
+                session for listing in listings.values() for session in listing.sessions
+            ]
+            self.discord_hosts = [
+                host
+                for host, listing in listings.items()
+                if listing.conversation_seat == Seat.DISCORD
             ]
         finally:
             self.refreshing = False

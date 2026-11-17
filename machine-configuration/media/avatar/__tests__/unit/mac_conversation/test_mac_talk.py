@@ -137,7 +137,7 @@ def test_an_opening_whose_page_never_attaches_leaves_nothing_running(
 
 
 def test_closing_leaves_no_record_of_what_was_said(this_mac, tmp_path, capsys):
-    for record in mac_talk.PRIVATE_RECORDS:
+    for record in mac_talk.listener_session.SESSION_RECORDS:
         (tmp_path / record).write_text("private")
     conversation_addressee.hand_to(tmp_path, Addressee("w1:p1", "Sasaki Kojirou", 0))
     mac_talk.close_conversation(SimpleNamespace(), tmp_path)

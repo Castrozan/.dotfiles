@@ -5,7 +5,6 @@ import sys
 import conversation_addressee
 import conversation_report
 import conversation_state
-import listener
 import listener_runtime
 import listener_session
 import local_seat
@@ -25,12 +24,6 @@ MICROPHONE = "the microphone of this Mac"
 SEAT = "room"
 ATTACH_WAIT_SECONDS = 25
 HOST_OPTIONS = ("--live", "--seat")
-PRIVATE_RECORDS = (
-    "transcript.jsonl",
-    listener.EMBEDDINGS_FILE,
-    listener.HEARD_FILE,
-    listener_session.SPOKEN_FILE,
-)
 ROOM_HELD_ELSEWHERE = "Another session holds the room; it speaks until the room turns"
 SEAT_DID_NOT_ATTACH = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
@@ -72,9 +65,7 @@ def end_conversation(directory):
     listener_session.stop_listening()
     mac_seat_client.close_browser()
     mac_stage.strike()
-    for record in PRIVATE_RECORDS:
-        (directory / record).unlink(missing_ok=True)
-    conversation_addressee.forget(directory)
+    listener_session.erase_session_records(directory)
 
 
 def open_conversation(arguments, directory):

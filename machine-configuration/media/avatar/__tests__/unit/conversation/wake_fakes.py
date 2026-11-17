@@ -12,6 +12,7 @@ IBARAKI = LiveSession("Ibaraki-dōji", "wW:pPY")
 def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **changes):
     fakes = dict(
         sessions=Mock(return_value=list(sessions)),
+        discord_call_host=Mock(return_value=None),
         conversation_listening=Mock(return_value=False),
         transcribe=Mock(return_value=heard),
         claim_wake=Mock(return_value=True),

@@ -127,6 +127,7 @@ def close_conversation(arguments, directory):
         check=True,
         timeout=listener_session.SYSTEMCTL_TIMEOUT_SECONDS,
     )
+    listener_session.erase_session_records(directory)
     if user_units.unit_active(start.MEETING_TARGET):
         hide_everywhere()
     else:

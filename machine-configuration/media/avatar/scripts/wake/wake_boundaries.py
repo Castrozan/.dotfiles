@@ -6,6 +6,8 @@ import sys
 import time
 
 import conversation_addressee
+import conversation_seat
+import discord_call
 import listener_runtime
 import listener_session
 import peer_sessions
@@ -24,6 +26,12 @@ COMMAND_TIMEOUT_SECONDS = 120
 PEER_HOSTS_VARIABLE = "AVATAR_PEER_HOSTS"
 PEER_HEAD_START_SECONDS = 1.0
 PEER_CLAIM_TIMEOUT_SECONDS = 20
+FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
+
+
+def microphone_frames(capture):
+    while frame := capture.stdout.read(FRAME_BYTES):
+        yield frame
 
 
 def capture_command():
@@ -126,10 +134,19 @@ def sessions_here_and_at_peers():
     )
 
 
+def discord_call_at_a_peer():
+    return peers_of_this_machine().discord_call_host()
+
+
 @dataclasses.dataclass
 class Boundaries:
     capture_command: object = capture_command
     sessions: object = sessions_here_and_at_peers
+    discord_call_host: object = discord_call_at_a_peer
+    open_seat: object = lambda: conversation_seat.open_seat(
+        listener_runtime.runtime_directory()
+    )
+    discord_call_ended: object = discord_call.listener_left_the_call
     conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
     open_conversation: object = conversation_opened

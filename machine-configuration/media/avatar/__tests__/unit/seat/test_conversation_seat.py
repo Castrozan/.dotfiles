@@ -80,6 +80,30 @@ def test_the_seat_is_remote_only_while_a_remote_conversation_listens(
     assert conversation_seat.current(tmp_path) is seat
 
 
+@pytest.mark.parametrize(
+    ("listening", "configuration", "seat"),
+    [
+        (True, {"seat": "discord"}, Seat.DISCORD),
+        (True, {"seat": "remote"}, Seat.REMOTE),
+        (True, {}, Seat.ROOM),
+        (True, {"purpose": "meeting", "seat": "remote"}, None),
+        (True, {"purpose": "live", "seat": "room"}, None),
+        (False, {"seat": "discord"}, None),
+    ],
+)
+def test_a_machine_reports_the_seat_only_of_an_open_conversation(
+    tmp_path, monkeypatch, listening, configuration, seat
+):
+    monkeypatch.setattr(listener_runtime, "listening", lambda: listening)
+    write_listener(tmp_path, **configuration)
+    assert conversation_seat.open_seat(tmp_path) is seat
+
+
+def test_a_machine_with_no_listener_reports_no_seat(tmp_path, monkeypatch):
+    monkeypatch.setattr(listener_runtime, "listening", lambda: False)
+    assert conversation_seat.open_seat(tmp_path) is None
+
+
 def test_every_seat_has_a_microphone_and_a_speech_output():
     assert set(conversation_seat.MICROPHONE_BY_SEAT) == set(Seat)
     assert set(conversation_seat.SPEECH_OUTPUT_BY_SEAT) == set(Seat)

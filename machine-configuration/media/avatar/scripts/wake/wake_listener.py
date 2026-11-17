@@ -7,8 +7,7 @@ import room_holder
 import speech_segmenter
 import wake_claim
 from quiet_conversation import ARM_CHECK_SECONDS, follow_conversation
-from servant_panes import live_sessions
-from wake_boundaries import for_this_machine
+from wake_boundaries import for_this_machine, microphone_frames
 from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
 from wake_prompts import SETTINGS, spoken_prompt
 
@@ -16,7 +15,6 @@ FLEET_REFRESH_SECONDS = 60
 TRANSCRIBER_ATTEMPTS = 5
 TRANSCRIBER_RETRY_SECONDS = 0.4
 TRANSCRIBER_UNAVAILABLE = (OSError, subprocess.SubprocessError)
-FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
 MEETING_SOURCE = "meeting"
 AVATAR = "avatar"
@@ -78,6 +76,12 @@ class WakeListener:
         return True
 
     def holds_the_room(self, session):
+        discord_host = self.boundaries.discord_call_host()
+        if discord_host:
+            self.boundaries.report(
+                f"left {session.servant} to the Discord call on {discord_host}"
+            )
+            return False
         if self.dry_run or self.boundaries.claim_wake(session):
             return True
         self.boundaries.report(f"left {session.servant} to another room")
@@ -155,11 +159,6 @@ class WakeListener:
         return False
 
 
-def microphone_frames(capture):
-    while frame := capture.stdout.read(FRAME_BYTES):
-        yield frame
-
-
 def run(wake):
     while True:
         if wake.boundaries.conversation_listening():
@@ -189,7 +188,7 @@ def main():
     if arguments.claim:
         raise SystemExit(wake_claim.exit_status(arguments.claim, arguments.room))
     if arguments.sessions:
-        print(peer_sessions.listing_of(live_sessions()))
+        print(peer_sessions.this_machine_listing())
         return
     run(WakeListener(for_this_machine(), arguments.dry_run))
 
