@@ -107,8 +107,14 @@ def boundaries_of_this_machine():
     if sys.platform == "darwin":
         import mac_seat_client
 
-        return mac_seat_client.capture_command, mac_seat_client.hush
-    return source_capture.capture_command, interrupt_speaker
+        return (
+            source_capture.capture_command_by_device(mac_seat_client.capture_command),
+            mac_seat_client.hush,
+        )
+    return (
+        source_capture.capture_command_by_device(source_capture.capture_command),
+        interrupt_speaker,
+    )
 
 
 def main():

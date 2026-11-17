@@ -8,6 +8,8 @@ from turn_detector import TurnTracker
 FRAME_BYTES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS) * 2
 CAPTURE_RETRY_SECONDS = 1
 BARGE_IN_SECONDS = 0.6
+DISCORD_DEVICE = "discord"
+DISCORD_CAPTURE_COMMAND = ["discord-voice", "capture"]
 
 
 def capture_command(device):
@@ -23,6 +25,15 @@ def capture_command(device):
         "--channels=1",
         "--latency-msec=100",
     ]
+
+
+def capture_command_by_device(machine_capture_command):
+    def capture_command(device):
+        if device == DISCORD_DEVICE:
+            return list(DISCORD_CAPTURE_COMMAND)
+        return machine_capture_command(device)
+
+    return capture_command
 
 
 class SourceSpeech:
