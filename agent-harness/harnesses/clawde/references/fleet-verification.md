@@ -56,10 +56,10 @@ the checkout.
 
 ### Pushing to a stewarded repo
 
-The steward shares the same checkout and continuously rebases and pushes `main`, so local `main` routinely diverges
-mid-session and the submodule is often dirty during a sync. Land a single commit through a detached worktree
-cherry-picked onto `origin/main` and fast-forward push it, rather than reconciling a diverged history by hand and racing
-the loop.
+The steward shares the same checkout but only keeps idle machines synced; its cycle waits rather than rebase a checkout
+under active work, so a diverged `main` mid-session is yours to consolidate. Rebase your commits onto `origin/main` in
+your own worktree or a detached checkout, resolve conflicts and submodule gitlinks there, re-run the required checks,
+and fast-forward push. Never reset, autostash, or force-push the shared checkout, which moves peer work.
 
 ### The service cgroup is the whole shared server
 

@@ -23,15 +23,19 @@ live at `references/knowledge.md` beneath each skill.
 
 ### Stewardship
 
-This repo is continuously kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the
-clawde-agents module and built from the clawde flake input where its behavior lives. You still push your own commits,
-but push only what fast-forwards. Leave a diverged history, a rebase, or a submodule gitlink conflict to the steward.
-Reconciling them by hand races its live loop, so do it only when explicitly told to act in the steward's place.
+This repo is kept synced, green, and pushed by an autonomous per-machine steward agent, declared in the clawde-agents
+module and built from the clawde flake input where its behavior lives. The steward keeps idle machines current; its
+cycle waits rather than rebase a checkout under active work, so a session doing that work consolidates its own history.
 
-A checkout that is ahead of, behind, or diverged from origin/main is normal in-flight state the steward will reconcile;
-never surface it as a task pending on the human. Treat CI failures on `main` during active WIP as expected. Check
-ongoing work and its context before escalating; do not alert or initiate unsolicited repairs solely because `main` is
-red while that work is in progress. Existing validation requirements for changes you own still apply.
+When `main` is ahead of, behind, or diverged from `origin/main`, rebase your commits onto it, resolve conflicts
+yourself, submodule gitlinks included, re-run the checks your change requires, and push fast-forward only; never leave
+this to the steward or report it as pending on the human. Rebase in your own worktree or a detached checkout, or in the
+shared checkout only when its tree is clean. Never autostash, reset, or force-push there: each moves a peer's
+uncommitted or unpushed work. Once pushed, fast-forward the shared checkout's `main` if it is behind.
+
+Treat CI failures on `main` during active WIP as expected. Check ongoing work and its context before escalating; do not
+alert or initiate unsolicited repairs solely because `main` is red while that work is in progress. Existing validation
+requirements for changes you own still apply.
 
 ### Configuration
 
