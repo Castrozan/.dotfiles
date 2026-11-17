@@ -1,4 +1,7 @@
-from orchestrator_cli.releases.released_sessions import release_directory
+from orchestrator_cli.releases.released_sessions import (
+    release_directory,
+    standing_releases,
+)
 from release_test_support import ORCHESTRATOR, RELEASED_PANE, records
 
 
@@ -34,9 +37,10 @@ def test_a_release_records_every_pane_and_the_conversation_of_the_session(
 def test_taking_a_session_back_lets_it_file_again_and_restores_its_report(scenario):
     assert scenario.file_report(state="working") == 0
     assert scenario.handover() == 0
+    assert scenario.handover() == 0
     assert scenario.handover("--take-back") == 0
     assert "orchestrates you again" in scenario.notifications[-1][2]
-    assert records(release_directory()) == []
+    assert standing_releases() == [] and len(records(release_directory())) == 1
     assert [report["state"] for report in records(scenario.reports)] == ["working"]
     assert "worker-session" in scenario.round_output()
     assert scenario.file_report() == 0

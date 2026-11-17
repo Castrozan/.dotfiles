@@ -11,7 +11,7 @@ from ..watch.herdr_events import live_pane
 
 FILING_REFUSAL = (
     "{orchestrator} released this session to Lucas on {released_at}: he drives it "
-    "directly, so nothing was filed and {orchestrator} was not told. Tell Lucas in "
+    "directly, so nothing was filed and no orchestrator was told. Tell Lucas in "
     "your pane instead; this replaces your brief's Contract."
 )
 MESSAGE_REFUSAL = (
@@ -84,16 +84,26 @@ def new_release(
     }
 
 
+def taken_back_release(release: dict) -> dict:
+    return {**release, "taken_back_at": current_timestamp()}
+
+
+def standing_releases() -> list[dict]:
+    return [
+        release
+        for release in all_records(release_directory())
+        if "taken_back_at" not in release
+    ]
+
+
 def released_panes() -> frozenset[str]:
     return frozenset(
-        pane_id
-        for release in all_records(release_directory())
-        for pane_id in release["panes"]
+        pane_id for release in standing_releases() for pane_id in release["panes"]
     )
 
 
 def releases_of_filer() -> list[dict]:
-    releases = all_records(release_directory())
+    releases = standing_releases()
     pane_id = os.environ.get("HERDR_PANE_ID")
     if not releases or not pane_id:
         return []
@@ -109,7 +119,7 @@ def require_unreleased_filer() -> None:
 
 
 def require_unreleased_target(target: str) -> None:
-    releases = all_records(release_directory())
+    releases = standing_releases()
     if not releases:
         return
     matching = releases_of(identity_of_target(target), releases)

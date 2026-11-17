@@ -82,10 +82,8 @@ class WorkspaceWatch:
 
     def follows(self, pane_id: str | None) -> bool:
         followed = self.configuration.followed_panes
-        return (
-            pane_id != self.configuration.own_pane
-            and (not followed or pane_id in followed)
-            and pane_id not in released_panes()
+        return pane_id != self.configuration.own_pane and (
+            not followed or pane_id in followed
         )
 
     def register(self, subscriptions: list[dict]) -> None:
@@ -128,7 +126,7 @@ class WorkspaceWatch:
         if new_pane:
             self.watch_pane(new_pane)
         self.observe(message.get("event"), data)
-        return line
+        return None if data.get("pane_id") in released_panes() else line
 
     def lines_from(self, connection) -> list[str]:
         chunk = connection.recv(65536)

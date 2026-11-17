@@ -12,12 +12,14 @@ from ..peer_messenger import (
     notify_peer,
     sender_name,
 )
-from ..record_store import all_records, delete_record, save_record, state_directory
+from ..record_store import all_records, save_record, state_directory
 from ..releases.released_sessions import (
     identity_of_pane,
     new_release,
     release_directory,
     releases_of,
+    standing_releases,
+    taken_back_release,
 )
 from ..reports.status_reports import (
     HANDED_OVER_STATE,
@@ -109,8 +111,9 @@ def hand_over(arguments: argparse.Namespace, orchestrator: str) -> None:
     save_record(release_directory(), release["name"], release)
     lines = close_cards(Path(arguments.dir), orchestrator, identity.panes)
     for report in reports:
-        save_record(reports_directory, report["name"], handed_over_report(report))
-        lines.append(f"retired report {report['name']}")
+        if report["state"] != HANDED_OVER_STATE:
+            save_record(reports_directory, report["name"], handed_over_report(report))
+            lines.append(f"retired report {report['name']}")
     lines.append(f"released {label}: what it files from now on is refused")
     print("\n".join(lines), flush=True)
     notify_peer(
@@ -126,11 +129,11 @@ def hand_over(arguments: argparse.Namespace, orchestrator: str) -> None:
 def take_back(arguments: argparse.Namespace, orchestrator: str) -> None:
     pane = arguments.pane
     identity = identity_of_pane(pane)
-    releases = releases_of(identity, all_records(release_directory()))
+    releases = releases_of(identity, standing_releases())
     if not releases:
         raise InvalidPeerDocument(f"{pane} is not released")
     for release in releases:
-        delete_record(release_directory(), release["name"])
+        save_record(release_directory(), release["name"], taken_back_release(release))
     reports_directory = Path(arguments.reports_dir)
     for report in session_reports(reports_directory, orchestrator, identity.panes):
         if report["state"] == HANDED_OVER_STATE:

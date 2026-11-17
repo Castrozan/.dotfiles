@@ -39,10 +39,6 @@ def load_record(directory: Path, name: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def delete_record(directory: Path, name: str) -> None:
-    record_path(directory, name).unlink(missing_ok=True)
-
-
 def all_records(directory: Path) -> list[dict]:
     if not directory.is_dir():
         return []

@@ -87,8 +87,23 @@ def test_a_released_session_prints_no_watch_event_and_no_timeout(
     watch.timeout = -watch.timeout
     overdue = [line.split()[:2] for line in watch.check_timeouts()]
     assert overdue == [["TIMEOUT", "wW:p2"]]
-    restarted = workspace_watch.WorkspaceWatch(watch.configuration)
-    assert restarted.start() == [] and set(restarted.sessions) == {"wW:p2"}
+    assert scenario.handover("--take-back") == 0
+    assert (
+        watch.line_from_message(blocked_event(RELEASED_PANE)) == "BLOCKED worker-pane"
+    )
+    assert len(watch.check_timeouts()) == 2
+
+
+def test_a_released_pane_whose_agent_is_gone_is_not_announced_as_exited(
+    scenario, monkeypatch, tmp_path, subscribed_sockets
+):
+    assert scenario.handover() == 0
+    monkeypatch.setattr(workspace_watch, "workspace_panes", lambda _: [])
+    followed = frozenset({RELEASED_PANE, "wW:p2"})
+    watch = workspace_watch.WorkspaceWatch(
+        workspace_watch.WatchConfiguration("wW", tmp_path, tmp_path, 15, followed, None)
+    )
+    assert watch.start() == ["EXITED wW:p2 no agent running when the watch started"]
 
 
 identifiers = st.sampled_from(["a", "b", "c", "d"])
