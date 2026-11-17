@@ -36,9 +36,7 @@ const {
 
 const RENDERER_PORT = process.env.AVATAR_RENDERER_PORT || "3000";
 
-const {
-  playThroughTheMacSeat,
-} = require("./audio-playback/mac-seat-player");
+const { playThroughProgram } = require("./audio-playback/program-audio-player");
 
 const CONFIG = {
   WS_PORT: parseInt(process.env.AVATAR_WS_PORT || "8765", 10),
@@ -128,6 +126,7 @@ async function main() {
 
   const avatarState = new AvatarStateStore();
   const clientRegistry = new ConnectedClientRegistry();
+  const sendVoiceLevel = (level) => clientRegistry.sendVoiceLevel(level);
   const localSpeechGenerator = new TextToSpeechGenerator(
     CONFIG.TTS_DIR,
     CONFIG.TTS_VOICE,
@@ -159,8 +158,12 @@ async function main() {
     speakerSinkName: CONFIG.SPEAKER_SINK,
     playSpeech:
       process.platform === "darwin"
-        ? playThroughTheMacSeat((level) => clientRegistry.sendVoiceLevel(level))
+        ? playThroughProgram(["avatar-seat-play"], sendVoiceLevel)
         : undefined,
+    playToDiscord: playThroughProgram(
+      ["discord-voice", "play"],
+      sendVoiceLevel,
+    ),
   };
 
   const httpServer = startAudioFileHttpServer(context);

@@ -108,7 +108,7 @@ def test_a_machine_with_its_own_player_speaks_through_it_and_not_the_sinks():
 def test_the_mac_player_reports_the_loudness_of_what_is_being_heard():
     result = evaluate_node_json(
         """
-        const { levelAt, recordingOf } = require("./audio-playback/mac-seat-player");
+        const { levelAt, recordingOf } = require("./audio-playback/program-audio-player");
         const rate = 24000;
         const header = Buffer.alloc(44);
         header.write("RIFF", 0);
@@ -139,10 +139,10 @@ def test_the_mac_player_silences_the_mouth_when_playback_ends_and_stops_on_deman
         const header = Buffer.alloc(44);
         header.writeUInt32LE(24000, 24);
         header.write("data", 36);
-        const { playThroughTheMacSeat } = require("./audio-playback/mac-seat-player");
+        const { playThroughProgram } = require("./audio-playback/program-audio-player");
         fileSystem.readFileSync = () => Buffer.concat([header, Buffer.alloc(480)]);
         const levels = [];
-        const playback = playThroughTheMacSeat((level) => levels.push(level))("/a.wav");
+        const playback = playThroughProgram(["avatar-seat-play"], (level) => levels.push(level))("/a.wav");
         playback.stop();
         const result = playback.finished.then(() => ({ signals, last: levels.at(-1) }));
         """

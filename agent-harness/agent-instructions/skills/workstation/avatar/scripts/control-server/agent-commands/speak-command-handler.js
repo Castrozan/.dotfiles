@@ -49,6 +49,11 @@ function playToRequestedSinks(audioPath, output, context) {
   );
 }
 
+function playerFor(output, context) {
+  if (output === "discord") return context.playToDiscord;
+  return context.playSpeech ?? playToRequestedSinks;
+}
+
 function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, model, id } = command;
   const { clientRegistry, textToSpeechGenerator } = context;
@@ -65,8 +70,7 @@ function performSpeech(command, context, delivery) {
       return { finished: Promise.resolve(), stop: () => {} };
     }
     announceSpeechToRenderer(clientRegistry, command, speech);
-    const play = context.playSpeech ?? playToRequestedSinks;
-    return play(speech.audioPath, output, context);
+    return playerFor(output, context)(speech.audioPath, output, context);
   };
 }
 

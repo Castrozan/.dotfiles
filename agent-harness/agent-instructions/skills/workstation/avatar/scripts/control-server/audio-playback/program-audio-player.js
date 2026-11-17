@@ -1,7 +1,6 @@
 const { spawn } = require("node:child_process");
 const fileSystem = require("node:fs");
 
-const PLAYER = "avatar-seat-play";
 const LEVEL_INTERVAL_MILLISECONDS = 33;
 const LEVEL_WINDOW_SECONDS = LEVEL_INTERVAL_MILLISECONDS / 1000;
 const SOUND_DELAY_SECONDS = 0.3;
@@ -32,14 +31,18 @@ function levelAt({ rate, samples }, seconds) {
   return Math.sqrt(power / (last - first));
 }
 
-function playThroughTheMacSeat(sendVoiceLevel, now = Date.now) {
+function playThroughProgram(
+  [program, ...programArguments],
+  sendVoiceLevel,
+  now = Date.now,
+) {
   return (audioPath) => {
     const recording = recordingOf(fileSystem.readFileSync(audioPath));
-    const player = spawn(PLAYER, [audioPath], {
+    const player = spawn(program, [...programArguments, audioPath], {
       stdio: ["ignore", "ignore", "pipe"],
     });
     player.stderr.on("data", (chunk) =>
-      console.error(`${PLAYER}: ${chunk.toString().trim()}`),
+      console.error(`${program}: ${chunk.toString().trim()}`),
     );
     const started = now();
     const levels = setInterval(() => {
@@ -60,4 +63,4 @@ function playThroughTheMacSeat(sendVoiceLevel, now = Date.now) {
   };
 }
 
-module.exports = { levelAt, playThroughTheMacSeat, recordingOf };
+module.exports = { levelAt, playThroughProgram, recordingOf };
