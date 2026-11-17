@@ -43,9 +43,17 @@ def test_report_publication_uses_private_versioned_and_promoted_artifact_trees()
     assert ".quality-results/overview/payload.json" in versioned["run"]
     assert ".quality-results/overview/site" in versioned["run"]
     assert "reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT/" in versioned["run"]
-    assert "steps.overview.outcome == 'success'" in versioned["if"]
+    eligibility = next(
+        step for step in steps if step.get("id") == "publication_eligibility"
+    )
+    assert "steps.overview.outcome == 'success'" in eligibility["if"]
+    assert "steps.publication_eligibility.outputs.current == 'true'" in versioned["if"]
+    assert steps.index(eligibility) < steps.index(versioned)
     assert ".quality-results/overview/payload.json" in current["run"]
-    assert "steps.promotion.outputs.current == 'true'" in current["if"]
+    assert (
+        "steps.current_publication_eligibility.outputs.current == 'true'"
+        in current["if"]
+    )
     assert "steps.reports.outcome == 'success'" in current["if"]
     for step in publications:
         for variable_name, configuration_context in (
@@ -56,7 +64,12 @@ def test_report_publication_uses_private_versioned_and_promoted_artifact_trees()
             assert step["env"][variable_name] == expected_expression
     promotion = next(step for step in steps if step.get("id") == "promotion")
     assert "steps.overview_artifacts.outcome == 'success'" in promotion["if"]
-    assert steps.index(promotion) < steps.index(current)
+    recheck = next(
+        step for step in steps if step.get("id") == "current_publication_eligibility"
+    )
+    assert steps.index(versioned) < steps.index(recheck) < steps.index(current)
+    assert steps.index(current) < steps.index(promotion)
+    assert "steps.current_artifacts.outcome == 'success'" in promotion["if"]
 
 
 def test_report_provenance_and_completeness_controls_remain_in_the_pipeline():

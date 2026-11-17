@@ -60,6 +60,7 @@ jobs:
           node "$PUBLISHING_SCRIPTS/build_snapshot.mjs" "$PWD/.quality-results/verdr" \
             .quality-results/workflow-context.json .quality-results/downloads .quality-results/overview
       - name: Retain overview and source metadata
+        id: overview_archive
         if: ${{ always() }}
         uses: actions/upload-artifact@v4
         with:
@@ -69,17 +70,6 @@ jobs:
             .quality-results/workflow-context.json
           include-hidden-files: true
           if-no-files-found: error
-      - name: Publish versioned overview artifacts
-        id: overview_artifacts
-        if: ${{ !cancelled() && steps.overview.outcome == 'success' }}
-        env:
-          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
-          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
-        run: |
-          mkdir -p .quality-results/publications
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
-            .quality-results/overview/payload.json .quality-results/overview/site \
-            "reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT/" > .quality-results/publications/overview.json
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
@@ -114,15 +104,41 @@ jobs:
             cp "$evaluation_results/badge.svg" "$REPORT_SITE/baseline/badge.svg"
             echo "evaluation_report=present" >> "$GITHUB_OUTPUT"
           fi
-      - name: Check this snapshot still represents the current main run
-        if: ${{ !cancelled() && steps.overview.outcome == 'success' && steps.overview_artifacts.outcome == 'success' }}
-        id: promotion
+      - name: Retain the complete current report directory
+        id: current_reports_archive
+        if: ${{ always() && steps.reports.outcome == 'success' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: dotfiles-current-reports
+          path: agent-harness/measurement-and-reporting/reports/site
+          include-hidden-files: true
+          if-no-files-found: error
+      - name: Decide whether this snapshot is still current before any D1 upload
+        id: publication_eligibility
+        if: ${{ !cancelled() && steps.overview.outcome == 'success' && steps.reports.outcome == 'success' && steps.overview_archive.outcome == 'success' && steps.current_reports_archive.outcome == 'success' }}
+        run: |
+          promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
+          echo "current=$promote" >> "$GITHUB_OUTPUT"
+      - name: Publish versioned overview artifacts
+        id: overview_artifacts
+        if: ${{ !cancelled() && steps.publication_eligibility.outputs.current == 'true' }}
+        env:
+          INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
+          INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
+        run: |
+          mkdir -p .quality-results/publications
+          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
+            .quality-results/overview/payload.json .quality-results/overview/site \
+            "reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT/" > .quality-results/publications/overview.json
+      - name: Recheck this snapshot before replacing current report files
+        id: current_publication_eligibility
+        if: ${{ !cancelled() && steps.overview_artifacts.outcome == 'success' && steps.publication_eligibility.outputs.current == 'true' }}
         run: |
           promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
           echo "current=$promote" >> "$GITHUB_OUTPUT"
       - name: Publish current report artifacts
         id: current_artifacts
-        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.overview_artifacts.outcome == 'success' && steps.publication_eligibility.outputs.current == 'true' && steps.current_publication_eligibility.outputs.current == 'true' }}
         env:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
@@ -131,15 +147,21 @@ jobs:
           python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
             .quality-results/overview/payload.json agent-harness/measurement-and-reporting/reports/site \
             reports/ > .quality-results/publications/current.json
+      - name: Check this snapshot is still current after all file uploads
+        id: promotion
+        if: ${{ !cancelled() && steps.overview_artifacts.outcome == 'success' && steps.current_artifacts.outcome == 'success' }}
+        run: |
+          promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
+          echo "current=$promote" >> "$GITHUB_OUTPUT"
       - name: Publish the current overview to the existing ingestion API
-        if: ${{ !cancelled() && steps.promotion.outputs.current == 'true' }}
+        if: ${{ !cancelled() && steps.promotion.outputs.current == 'true' && steps.overview_artifacts.outcome == 'success' && steps.current_artifacts.outcome == 'success' }}
         env:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
         run: python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
       - name: Publish the current coverage snapshot to the ingestion API
-        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.current_artifacts.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
+        if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.current_artifacts.outcome == 'success' && steps.overview_artifacts.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
         env:
           SOURCE_REVISION: ${{ github.event.workflow_run.head_sha }}
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
