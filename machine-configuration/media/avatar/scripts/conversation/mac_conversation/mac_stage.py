@@ -14,6 +14,8 @@ POLL_SECONDS = 0.1
 SPEECH_TIMEOUT_SECONDS = 310
 COMMAND_TIMEOUT_SECONDS = 30
 SPEAKERS = "speakers"
+RENDERER_PAGE = ""
+WINDOW_POLL_SECONDS = 0.5
 NOT_READY = "The avatar control server on this Mac did not start"
 
 
@@ -62,6 +64,7 @@ def command(*arguments, timeout=COMMAND_TIMEOUT_SECONDS):
     subprocess.run(
         ["avatar-command", *arguments],
         stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
         check=True,
         timeout=timeout,
     )
@@ -81,11 +84,23 @@ def present(shown):
     command("presence", "shown" if shown else "hidden")
 
 
+def present_once_the_window_renders():
+    deadline = time.monotonic() + READY_WAIT_SECONDS
+    while True:
+        try:
+            present(True)
+            return
+        except subprocess.CalledProcessError:
+            if time.monotonic() > deadline:
+                raise
+            time.sleep(WINDOW_POLL_SECONDS)
+
+
 def show_window():
-    local_window.show(local_seat.RENDERER_PORT)
-    present(True)
+    local_window.hide()
+    local_window.open_window(RENDERER_PAGE, local_seat.RENDERER_PORT)
+    present_once_the_window_renders()
 
 
 def hide_window():
     local_window.hide()
-    present(False)

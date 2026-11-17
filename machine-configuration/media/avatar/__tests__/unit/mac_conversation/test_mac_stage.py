@@ -13,7 +13,7 @@ def stage(monkeypatch):
     monkeypatch.setattr(mac_stage.listener_session, "stop_unit", state.active.discard)
     monkeypatch.setattr(mac_stage, "answers", lambda port: state.answers)
     monkeypatch.setattr(mac_stage.local_window, "hide", Mock())
-    monkeypatch.setattr(mac_stage.local_window, "show", Mock())
+    monkeypatch.setattr(mac_stage.local_window, "open_window", Mock())
     monkeypatch.setattr(
         mac_stage.subprocess,
         "run",
@@ -54,12 +54,21 @@ def test_speech_goes_to_the_speakers_of_this_mac_in_the_chosen_voice(
     assert timeout == mac_stage.SPEECH_TIMEOUT_SECONDS
 
 
-def test_the_window_shows_the_renderer_of_this_mac(stage):
+def test_the_window_is_the_renderer_of_this_mac_and_is_presented(stage):
     mac_stage.show_window()
-    mac_stage.local_window.show.assert_called_once_with(
-        mac_stage.local_seat.RENDERER_PORT
+    mac_stage.local_window.open_window.assert_called_once_with(
+        mac_stage.RENDERER_PAGE, mac_stage.local_seat.RENDERER_PORT
     )
     assert stage.ran[0][0] == ["avatar-command", "presence", "shown"]
+
+
+def test_presenting_waits_for_the_window_to_start_rendering(stage, monkeypatch):
+    refusals = [mac_stage.subprocess.CalledProcessError(1, "avatar-command"), None]
+    present = Mock(side_effect=refusals)
+    monkeypatch.setattr(mac_stage, "present", present)
+    monkeypatch.setattr(mac_stage.time, "sleep", Mock())
+    mac_stage.present_once_the_window_renders()
+    assert present.call_count == 2
 
 
 def test_no_character_asked_for_changes_nothing(stage):
