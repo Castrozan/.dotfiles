@@ -38,6 +38,7 @@ in
       run ${hexCommand} settings set recording_audio_behavior do_nothing
       run ${hexCommand} settings set release_microphone_while_idle true
       run ${hexCommand} settings set capture.enabled false
+      run ${hexCommand} model use parakeet_v3 || run ${hexCommand} model install parakeet_v3
       # enable_on_launch requires listener_control, which Hex does not provide on macOS.
       run ${hexCommand} launch-at-login on
     else
