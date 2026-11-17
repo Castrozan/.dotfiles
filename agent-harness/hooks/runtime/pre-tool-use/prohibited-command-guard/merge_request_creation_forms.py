@@ -90,14 +90,12 @@ class MergeRequestCreationForm:
         creates,
         names_an_assignee,
         location_named_by,
-        resolves_its_host_as_glab_does,
         remedy,
     ):
         self.opened_request = opened_request
         self.creates = creates
         self.names_an_assignee = names_an_assignee
         self.location_named_by = location_named_by
-        self.resolves_its_host_as_glab_does = resolves_its_host_as_glab_does
         self.remedy = remedy
 
 
@@ -107,7 +105,6 @@ MERGE_REQUEST_CREATION_FORMS = (
         creates=_glab_creates_merge_request,
         names_an_assignee=_carries_assignee_flag,
         location_named_by=_location_named_by_the_repository_flag,
-        resolves_its_host_as_glab_does=True,
         remedy="Add `--assignee @me`",
     ),
     MergeRequestCreationForm(
@@ -115,7 +112,6 @@ MERGE_REQUEST_CREATION_FORMS = (
         creates=_glab_api_call_creates_merge_request,
         names_an_assignee=request_body_names_assignee,
         location_named_by=_location_named_by_a_glab_api_call,
-        resolves_its_host_as_glab_does=True,
         remedy=REST_CALL_REMEDY,
     ),
     MergeRequestCreationForm(
@@ -123,7 +119,6 @@ MERGE_REQUEST_CREATION_FORMS = (
         creates=_curl_call_creates_merge_request,
         names_an_assignee=request_body_names_assignee,
         location_named_by=_location_named_by_a_curl_call,
-        resolves_its_host_as_glab_does=False,
         remedy=REST_CALL_REMEDY,
     ),
 )

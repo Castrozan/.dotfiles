@@ -117,10 +117,9 @@ def _directory_the_creation_runs_in(
         invocation_words = words_after_command_wrappers(earlier_command_words)
         if invocation_words[:1] != [DIRECTORY_CHANGING_COMMAND]:
             continue
-        if len(invocation_words) < 2:
-            continue
+        destination = invocation_words[-1] if invocation_words[1:] else "~"
         working_directory = os.path.join(
-            working_directory, os.path.expanduser(invocation_words[-1])
+            working_directory, os.path.expanduser(destination)
         )
     return working_directory
 
@@ -148,8 +147,6 @@ def creation_targets_betha_gitlab(
     named_location = creation_form.location_named_by(arguments)
     if named_location:
         return _host_of(named_location) == BETHA_GITLAB_HOST
-    if not creation_form.resolves_its_host_as_glab_does:
-        return False
     return BETHA_GITLAB_HOST in _hosts_glab_may_reach(
         simple_commands, creation_position, session_directory
     )

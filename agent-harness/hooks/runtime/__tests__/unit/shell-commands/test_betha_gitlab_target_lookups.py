@@ -1,11 +1,16 @@
 import subprocess
 
 import pytest
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 from merge_request_target_test_support import BETHA_GITLAB_HOST, betha_gitlab_target
 
 
 def checkout_with_remotes(directory, remote_locations_by_name):
-    subprocess.run(["git", "init", "--quiet", str(directory)], check=True)
+    subprocess.run(
+        ["git", "init", "--quiet", str(directory)],
+        check=True,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
+    )
     for remote_name, remote_location in remote_locations_by_name.items():
         subprocess.run(
             [
@@ -18,6 +23,7 @@ def checkout_with_remotes(directory, remote_locations_by_name):
                 remote_location,
             ],
             check=True,
+            timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         )
     return str(directory)
 
@@ -50,6 +56,7 @@ def test_reads_a_remote_location_the_way_git_rewrites_it(tmp_path):
             "https://github.com/owner/",
         ],
         check=True,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     assert betha_gitlab_target.remote_locations_of(checkout) == {
         f"https://{BETHA_GITLAB_HOST}/group/project.git"

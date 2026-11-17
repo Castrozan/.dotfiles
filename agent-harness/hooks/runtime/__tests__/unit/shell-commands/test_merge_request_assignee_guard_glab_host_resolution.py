@@ -28,6 +28,14 @@ def test_an_assignment_left_unexported_on_an_earlier_line_reaches_no_glab():
     assert guard(command, GITHUB_CHECKOUT) is None
 
 
+def test_a_bare_directory_change_leaves_the_checkout_for_home(monkeypatch):
+    monkeypatch.setenv("HOME", GITHUB_CHECKOUT)
+    assert guard("cd && glab mr create --fill", BETHA_CHECKOUT) is None
+    monkeypatch.setenv("HOME", BETHA_CHECKOUT)
+    command = "cd; glab mr create --fill"
+    assert_denied(guard(command, GITHUB_CHECKOUT), command)
+
+
 def test_the_built_in_default_host_overrides_no_checkout():
     command = "GITLAB_HOST=gitlab.com glab mr create --fill --yes"
     assert_denied(guard(command, BETHA_CHECKOUT), command)

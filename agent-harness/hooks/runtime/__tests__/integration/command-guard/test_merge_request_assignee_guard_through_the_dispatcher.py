@@ -2,7 +2,11 @@ import json
 import subprocess
 
 import pytest
-from hook_module_loader import find_hook_module_path, run_hook_subprocess
+from hook_module_loader import (
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
+    find_hook_module_path,
+    run_hook_subprocess,
+)
 
 PRE_TOOL_USE_DISPATCHER = find_hook_module_path("pre-tool-use-dispatcher")
 BETHA_GITLAB_HOST = "gitlab.services.betha.cloud"
@@ -23,10 +27,15 @@ def glab_settings_of_no_machine(monkeypatch, tmp_path):
 
 def checkout_whose_origin_is(tmp_path, origin_location):
     checkout = tmp_path / "checkout"
-    subprocess.run(["git", "init", "--quiet", str(checkout)], check=True)
+    subprocess.run(
+        ["git", "init", "--quiet", str(checkout)],
+        check=True,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
+    )
     subprocess.run(
         ["git", "-C", str(checkout), "remote", "add", "origin", origin_location],
         check=True,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     )
     return str(checkout)
 
