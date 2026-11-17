@@ -1,27 +1,23 @@
 import itertools
-import sys
-from pathlib import Path
 
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-
-from hook_module_loader import import_hyphenated_hook_module
-
-merge_request_assignee_guard_handler = import_hyphenated_hook_module(
-    "merge_request_assignee_guard_handler"
+from merge_request_target_test_support import (
+    BETHA_CHECKOUT,
+    BETHA_GITLAB_HOST,
+    guard,
+    install_machine_the_guard_looks_at,
 )
 
 INVOCATION_PREFIXES = (
     "",
-    "GITLAB_HOST=gitlab.example.com ",
+    f"GITLAB_HOST={BETHA_GITLAB_HOST} ",
     'GIT_SSH_COMMAND="ssh -4" ',
-    "env GITLAB_HOST=gitlab.example.com ",
+    f"env GITLAB_HOST={BETHA_GITLAB_HOST} ",
     "rtk ",
     "rtk proxy ",
     "/opt/homebrew/bin/",
     "timeout 120 ",
-    "cd /repo/project && ",
+    f"cd {BETHA_CHECKOUT} && ",
     "git push -u origin feature && ",
 )
 
@@ -30,9 +26,6 @@ COMMAND_LINE_CREATIONS = (
     '--title "feat: thing" --description "$(cat /tmp/body.md)"{assignee} --yes',
     "glab -R group/project mr new --fill{assignee}",
     "glab mr create{assignee} --fill --yes 2>&1 | tail -1",
-    "gh pr create --base main --head feature "
-    '--title "feat: thing" --body-file /tmp/body.md{assignee}',
-    "gh pr new --fill{assignee}",
 )
 
 COMMAND_LINE_ASSIGNEES = (
@@ -49,10 +42,11 @@ REST_CREATIONS = (
     "-f source_branch=feature -f title=thing{assignee}",
     "glab api --method=post projects/:id/merge_requests --input /tmp/body.json{assignee}",
     'curl -sS -X POST -H "PRIVATE-TOKEN: $TOKEN" '
-    '"https://gitlab.example.com/api/v4/projects/7/merge_requests" '
+    f'"https://{BETHA_GITLAB_HOST}/api/v4/projects/7/merge_requests" '
     '--data "source_branch=feature"{assignee}',
     "curl -sS --request POST --data-binary @/tmp/body.json "
-    "https://gitlab.example.com/api/v4/projects/7/merge_requests/{assignee}",
+    f"https://{BETHA_GITLAB_HOST}/api/v4/projects/7/merge_requests/"
+    "{assignee}",
 )
 
 REST_ASSIGNEES = (
@@ -62,10 +56,9 @@ REST_ASSIGNEES = (
 )
 
 
-def guard(command):
-    return merge_request_assignee_guard_handler.handle(
-        {"tool_name": "Bash", "tool_input": {"command": command}}
-    )
+@pytest.fixture(autouse=True)
+def machine(monkeypatch):
+    return install_machine_the_guard_looks_at(monkeypatch)
 
 
 def commands_from(creations, assignees):
@@ -109,7 +102,8 @@ def test_allows_a_rest_creation_naming_the_assignee_in_the_query_string():
     assert (
         guard(
             "curl -X POST --data-binary @/tmp/body.json "
-            '"https://gitlab.example.com/api/v4/projects/1/merge_requests?assignee_id=7"'
+            f'"https://{BETHA_GITLAB_HOST}/api/v4/projects/1/merge_requests'
+            '?assignee_id=7"'
         )
         is None
     )

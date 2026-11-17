@@ -1,21 +1,18 @@
 from __future__ import annotations
 
-import re
+from merge_request_rest_calls import (
+    flag_values,
+    merge_request_collection_paths,
+    posts_to_merge_request_collection,
+    request_body_names_assignee,
+)
 
 CREATING_SUBCOMMANDS = frozenset({"create", "new"})
 HELP_FLAGS = frozenset({"--help", "-h"})
-SHORT_REQUEST_METHOD_FLAG = "-X"
-REQUEST_METHOD_FLAGS = frozenset({SHORT_REQUEST_METHOD_FLAG, "--method", "--request"})
-QUERY_STRING_BODY_FLAGS = frozenset({"-G", "--get"})
-REQUEST_BODY_FLAGS = frozenset(
-    "-f --raw-field -F --field --form --input -d --data --data-raw --data-binary "
-    "--data-urlencode --json".split()
-)
-MERGE_REQUEST_COLLECTION_PATH_PATTERN = re.compile(
-    r"(?:^|/)projects/[^/\s]+/merge_requests/?$"
-)
-REST_ASSIGNEE_FIELD_PATTERN = re.compile(r"assignee_ids?(?:\[\])?[\"']?\s*[:=]")
-REST_CLIENT_COMMAND_NAMES = frozenset({"glab", "curl"})
+REPOSITORY_FLAGS = frozenset({"-R", "--repo"})
+HOSTNAME_FLAGS = frozenset({"--hostname"})
+OPENED_BY_A_REST_CALL = "this POST to merge_requests opens a merge request"
+REST_CALL_REMEDY = "Send `assignee_id=<your user id>` in the same command"
 
 
 def _command_name(invocation_words):
@@ -40,90 +37,67 @@ def _carries_assignee_flag(arguments, _whole_command_text):
     )
 
 
-def _flag_values(arguments, flags):
-    following_arguments = [*arguments[1:], ""]
-    for argument, following_argument in zip(
-        arguments, following_arguments, strict=True
-    ):
-        flag, joining_separator, joined_value = argument.partition("=")
-        if flag in flags:
-            yield joined_value if joining_separator else following_argument
-
-
-def _methods_joined_to_the_short_flag(arguments):
-    return [
-        argument[len(SHORT_REQUEST_METHOD_FLAG) :]
-        for argument in arguments
-        if argument.startswith(SHORT_REQUEST_METHOD_FLAG)
-        and argument != SHORT_REQUEST_METHOD_FLAG
-    ]
-
-
-def _sends_a_body(arguments):
-    return any(
-        argument.partition("=")[0] in REQUEST_BODY_FLAGS for argument in arguments
-    )
-
-
-def _request_method(arguments):
-    if QUERY_STRING_BODY_FLAGS.intersection(arguments):
-        return "GET"
-    explicit_methods = [
-        *_flag_values(arguments, REQUEST_METHOD_FLAGS),
-        *_methods_joined_to_the_short_flag(arguments),
-    ]
-    if explicit_methods:
-        return explicit_methods[0].upper()
-    return "POST" if _sends_a_body(arguments) else "GET"
-
-
-def _request_paths(arguments):
-    for argument in arguments:
-        request_path = argument.partition("?")[0]
-        if "=" not in request_path:
-            yield request_path
-
-
-def _posts_to_merge_request_collection(arguments):
-    if _request_method(arguments) != "POST":
-        return False
-    return any(
-        MERGE_REQUEST_COLLECTION_PATH_PATTERN.search(request_path)
-        for request_path in _request_paths(arguments)
-    )
-
-
-def _request_body_names_assignee(_arguments, whole_command_text):
-    return bool(REST_ASSIGNEE_FIELD_PATTERN.search(whole_command_text))
-
-
 def _glab_creates_merge_request(invocation_words):
     return _command_name(invocation_words) == "glab" and _runs_creating_subcommand(
         invocation_words[1:], "mr"
     )
 
 
-def _gh_creates_pull_request(invocation_words):
-    return _command_name(invocation_words) == "gh" and _runs_creating_subcommand(
-        invocation_words[1:], "pr"
+def _glab_api_call_creates_merge_request(invocation_words):
+    arguments = invocation_words[1:]
+    return (
+        _command_name(invocation_words) == "glab"
+        and "api" in arguments
+        and posts_to_merge_request_collection(arguments)
     )
 
 
-def _rest_call_creates_merge_request(invocation_words):
-    command_name = _command_name(invocation_words)
-    arguments = invocation_words[1:]
-    if command_name not in REST_CLIENT_COMMAND_NAMES:
-        return False
-    if command_name == "glab" and "api" not in arguments:
-        return False
-    return _posts_to_merge_request_collection(arguments)
+def _curl_call_creates_merge_request(invocation_words):
+    return _command_name(
+        invocation_words
+    ) == "curl" and posts_to_merge_request_collection(invocation_words[1:])
+
+
+def _first_of(candidates):
+    return next(iter(candidates), "")
+
+
+def _location_named_by_the_repository_flag(arguments):
+    return _first_of(
+        repository
+        for repository in flag_values(arguments, REPOSITORY_FLAGS)
+        if ":" in repository
+    )
+
+
+def _location_named_by_a_glab_api_call(arguments):
+    request_addresses = [
+        request_path
+        for request_path in merge_request_collection_paths(arguments)
+        if "://" in request_path
+    ]
+    return _first_of([*flag_values(arguments, HOSTNAME_FLAGS), *request_addresses])
+
+
+def _location_named_by_a_curl_call(arguments):
+    return _first_of(merge_request_collection_paths(arguments))
 
 
 class MergeRequestCreationForm:
-    def __init__(self, opened_request, creates, names_an_assignee, remedy):
+    def __init__(
+        self,
+        opened_request,
+        creates,
+        names_an_assignee,
+        location_named_by,
+        resolves_its_host_as_glab_does,
+        remedy,
+    ):
         self.opened_request = opened_request
         self.creates = creates
         self.names_an_assignee = names_an_assignee
+        self.location_named_by = location_named_by
+        self.resolves_its_host_as_glab_does = resolves_its_host_as_glab_does
         self.remedy = remedy
 
 
@@ -132,19 +106,25 @@ MERGE_REQUEST_CREATION_FORMS = (
         opened_request="'glab mr create' opens a merge request",
         creates=_glab_creates_merge_request,
         names_an_assignee=_carries_assignee_flag,
+        location_named_by=_location_named_by_the_repository_flag,
+        resolves_its_host_as_glab_does=True,
         remedy="Add `--assignee @me`",
     ),
     MergeRequestCreationForm(
-        opened_request="'gh pr create' opens a pull request",
-        creates=_gh_creates_pull_request,
-        names_an_assignee=_carries_assignee_flag,
-        remedy="Add `--assignee @me`",
+        opened_request=OPENED_BY_A_REST_CALL,
+        creates=_glab_api_call_creates_merge_request,
+        names_an_assignee=request_body_names_assignee,
+        location_named_by=_location_named_by_a_glab_api_call,
+        resolves_its_host_as_glab_does=True,
+        remedy=REST_CALL_REMEDY,
     ),
     MergeRequestCreationForm(
-        opened_request="this POST to merge_requests opens a merge request",
-        creates=_rest_call_creates_merge_request,
-        names_an_assignee=_request_body_names_assignee,
-        remedy="Send `assignee_id=<your user id>` in the same command",
+        opened_request=OPENED_BY_A_REST_CALL,
+        creates=_curl_call_creates_merge_request,
+        names_an_assignee=request_body_names_assignee,
+        location_named_by=_location_named_by_a_curl_call,
+        resolves_its_host_as_glab_does=False,
+        remedy=REST_CALL_REMEDY,
     ),
 )
 

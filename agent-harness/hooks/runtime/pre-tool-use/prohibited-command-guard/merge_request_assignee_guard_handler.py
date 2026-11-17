@@ -23,19 +23,21 @@ from hook_dispatch import HandlerResult  # noqa: E402
 
 WITHOUT_ASSIGNEE_OVERRIDE_SENTINEL = "MERGE_REQUEST_WITHOUT_ASSIGNEE_SANCTIONED=1"
 MERGE_REQUEST_ASSIGNEE_REFERENCE_FILE_PATH = "~/.claude/hooks/merge-request-assignee.md"
-CREATION_VOCABULARY_PATTERN = re.compile(r"\bmr\b|\bpr\b|merge_requests")
+CREATION_VOCABULARY_PATTERN = re.compile(r"\bmr\b|merge_requests")
 
 
 def build_denial_reason(creation_form) -> str:
     return (
-        f"BLOCKED (Bash): {creation_form.opened_request} with no assignee. "
+        f"BLOCKED (Bash): {creation_form.opened_request} on Betha's GitLab with "
+        f"no assignee. "
         f"{creation_form.remedy} and run it again; read "
         f"{MERGE_REQUEST_ASSIGNEE_REFERENCE_FILE_PATH} for the other forms and "
         f"the override."
     )
 
 
-def _creation_form_missing_an_assignee_in(command):
+def _unassigned_betha_creation_form_in(command, session_directory):
+    from betha_gitlab_target import creation_targets_betha_gitlab
     from merge_request_creation_forms import creation_form_missing_an_assignee
     from shell_data_heredoc_bodies import shell_text_outside_data_heredoc_bodies
     from shell_simple_commands import (
@@ -43,12 +45,18 @@ def _creation_form_missing_an_assignee_in(command):
         words_after_command_wrappers,
     )
 
-    shell_text = shell_text_outside_data_heredoc_bodies(command)
-    for simple_command_words in simple_commands_in(shell_text):
+    simple_commands = simple_commands_in(
+        shell_text_outside_data_heredoc_bodies(command)
+    )
+    for creation_position, simple_command_words in enumerate(simple_commands):
         creation_form = creation_form_missing_an_assignee(
             words_after_command_wrappers(simple_command_words), command
         )
-        if creation_form is not None:
+        if creation_form is None:
+            continue
+        if creation_targets_betha_gitlab(
+            creation_form, simple_commands, creation_position, session_directory
+        ):
             return creation_form
     return None
 
@@ -70,7 +78,9 @@ def handle(hook_input):
     command = _bash_command_of(hook_input)
     if not _may_open_an_unassigned_request(command):
         return None
-    creation_form = _creation_form_missing_an_assignee_in(command)
+    creation_form = _unassigned_betha_creation_form_in(
+        command, hook_input.get("cwd") or os.getcwd()
+    )
     if creation_form is None:
         return None
     reason = build_denial_reason(creation_form)

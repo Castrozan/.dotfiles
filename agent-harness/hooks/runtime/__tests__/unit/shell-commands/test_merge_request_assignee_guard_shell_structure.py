@@ -1,21 +1,15 @@
-import sys
-from pathlib import Path
-
 import pytest
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
-
-from hook_module_loader import import_hyphenated_hook_module
-
-merge_request_assignee_guard_handler = import_hyphenated_hook_module(
-    "merge_request_assignee_guard_handler"
+from merge_request_target_test_support import (
+    BETHA_CHECKOUT,
+    guard,
+    install_machine_the_guard_looks_at,
+    merge_request_assignee_guard_handler,
 )
 
 
-def guard(command):
-    return merge_request_assignee_guard_handler.handle(
-        {"tool_name": "Bash", "tool_input": {"command": command}}
-    )
+@pytest.fixture(autouse=True)
+def machine(monkeypatch):
+    return install_machine_the_guard_looks_at(monkeypatch)
 
 
 def test_denies_a_creation_that_follows_a_script_fed_to_another_interpreter():
@@ -89,9 +83,9 @@ def test_an_assignee_flag_on_a_later_command_does_not_count():
     "command",
     [
         "URL=$(glab mr create --fill --yes)",
-        'echo "opened $(gh pr create --fill)"',
+        'echo "opened $(glab mr new --fill)"',
         "echo `glab mr create --fill --yes`",
-        "(cd /repo/project && glab mr create --fill --yes)",
+        f"(cd {BETHA_CHECKOUT} && glab mr create --fill --yes)",
         "if glab mr create --fill --yes; then echo opened; fi",
         "bash <<'EOF'\nglab mr create --fill --yes\nEOF",
     ],
@@ -144,7 +138,7 @@ def test_ignores_a_creation_that_is_only_mentioned(command):
 
 def test_a_sanctioned_override_lets_an_unassigned_creation_through():
     sentinel = merge_request_assignee_guard_handler.WITHOUT_ASSIGNEE_OVERRIDE_SENTINEL
-    assert guard(f"{sentinel} gh pr create --fill") is None
+    assert guard(f"{sentinel} glab mr create --fill") is None
 
 
 def test_ignores_tools_other_than_bash():
