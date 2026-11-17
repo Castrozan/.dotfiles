@@ -26,12 +26,14 @@ def this_mac(monkeypatch, tmp_path):
         close_browser=Mock(),
         hush=Mock(),
         host=Mock(return_value=7),
+        leave=Mock(),
     )
     monkeypatch.delenv("HERDR_PANE_ID", raising=False)
     monkeypatch.setattr(
         mac_talk.listener_runtime, "runtime_directory", lambda: tmp_path / "runtime"
     )
     monkeypatch.setattr(mac_talk.local_seat, "health", lambda: mac.tunnel)
+    monkeypatch.setattr(mac_talk.local_seat, "leave", mac.leave)
     monkeypatch.setattr(mac_talk.mac_seat_client, "attached", lambda: mac.attached)
     monkeypatch.setattr(mac_talk.mac_seat_client, "play", mac.played.append)
     monkeypatch.setattr(mac_talk.mac_seat_client, "hush", mac.hush)
@@ -71,8 +73,26 @@ def test_what_only_the_avatar_host_offers_goes_to_the_host(this_mac, arguments):
 def test_a_conversation_seated_through_the_host_keeps_its_verbs_there(
     this_mac, arguments
 ):
-    this_mac.tunnel = {"attached": True}
+    this_mac.tunnel = {"attached": True, "listening": True}
     assert mac_talk.carry_out(arguments) == 7
+
+
+def test_a_seat_the_host_stopped_using_does_not_draw_speech_to_the_host(this_mac):
+    this_mac.tunnel = {"attached": True, "listening": False}
+    assert mac_talk.carry_out(["say", "Good evening"]) == 0
+    assert not this_mac.host.called
+
+
+def test_opening_here_leaves_a_seat_the_host_stopped_using(this_mac, tmp_path):
+    this_mac.tunnel = {"attached": True, "listening": False}
+    mac_talk.open_conversation(OPENING, tmp_path)
+    this_mac.leave.assert_called_once_with()
+
+
+def test_a_seat_kept_for_a_meeting_is_left_alone(this_mac, tmp_path):
+    this_mac.tunnel = {"attached": True, "listening": False, "meeting": True}
+    mac_talk.open_conversation(OPENING, tmp_path)
+    assert not this_mac.leave.called
 
 
 def test_speech_stays_on_this_mac_when_no_host_conversation_is_seated(this_mac):

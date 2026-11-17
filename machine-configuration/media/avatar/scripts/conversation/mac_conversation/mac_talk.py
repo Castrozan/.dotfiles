@@ -45,8 +45,15 @@ def belongs_to_the_host(arguments):
     return (
         any(option in arguments for option in HOST_OPTIONS)
         or arguments[:1] in ([verb] for verb in WINDOW_VERBS)
-        or local_seat.health() is not None
+        or local_seat.conversation_listening()
     )
+
+
+def leave_a_seat_the_host_stopped_using():
+    if local_seat.health() is None or local_seat.meeting_held():
+        return
+    if not local_seat.meeting_seat_kept_here():
+        local_seat.leave()
 
 
 def status(arguments, directory):
@@ -69,6 +76,7 @@ def wait_until_the_seat_attaches():
 
 
 def end_conversation(directory):
+    leave_a_seat_the_host_stopped_using()
     mac_seat_client.hush()
     listener_session.stop_listening()
     mac_seat_client.close_browser()
@@ -80,6 +88,7 @@ def end_conversation(directory):
 def open_conversation(arguments, directory):
     if arguments.character:
         print(VOICE_ONLY, file=sys.stderr)
+    leave_a_seat_the_host_stopped_using()
     try:
         listener_session.begin_listening(
             directory,
