@@ -162,8 +162,8 @@ A clawde agent's runtime config - heartbeat gate, interval, prompt, launch comma
 per-agent file the wrapper re-reads on every restart, so a rebuild's warm redeploy applies it in place, no respawn.
 
 The exception is agent-wrapper code: the running wrapper keeps executing the code it launched with, so wrapper changes
-stay dormant until the window is fully respawned, by a reboot or by killing the window so the supervisor recreates it
-from the new spec. Never assume rebuilt wrapper code is live; check the live process and respawn if it runs old code.
+stay dormant until the window is fully respawned. Respawn by a reboot or by killing the window so the supervisor
+recreates it from the new spec. Never assume rebuilt wrapper code is live; check the live process and respawn if it runs old code.
 
 Every other fleet trap that leaves no trace in the source - resume identity, supervisor reconciliation, channel gating,
 the steward loop, the shared server cgroup - is in `agent-harness/harnesses/clawde/knowledge.md`; read it before
