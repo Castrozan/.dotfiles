@@ -20,7 +20,7 @@ NAMING_TURN = {
 }
 
 
-def test_the_addressee_is_the_holder_when_one_of_this_macs_sessions_holds_the_floor(
+def test_a_holder_on_this_mac_is_seen_as_a_session_without_a_host(
     monkeypatch, on_a_mac
 ):
     holder = Addressee(VOYAGER.pane, VOYAGER.servant, 7, "kira")
@@ -31,13 +31,15 @@ def test_the_addressee_is_the_holder_when_one_of_this_macs_sessions_holds_the_fl
             | {"host": "kira"}
         ),
     )
-    assert on_a_mac.addressee() == holder
+    assert on_a_mac.addressee() == Addressee(VOYAGER.pane, VOYAGER.servant, 7, None)
     assert remote_command(runner) == "avatar-listen addressee"
 
 
-@pytest.mark.parametrize("host", [None, "another-mac"])
-def test_a_floor_held_by_another_machines_session_is_not_held_here(
-    monkeypatch, on_a_mac, host
+@pytest.mark.parametrize(
+    ("held_host", "seen_host"), [(None, "chise"), ("another-mac", "another-mac")]
+)
+def test_a_floor_held_elsewhere_is_seen_with_the_machine_it_lives_on(
+    monkeypatch, on_a_mac, held_host, seen_host
 ):
     ran(
         monkeypatch,
@@ -46,16 +48,24 @@ def test_a_floor_held_by_another_machines_session_is_not_held_here(
                 "pane": VOYAGER.pane,
                 "servant": "Voyager",
                 "heard_through": 3,
-                "host": host,
+                "host": held_host,
             }
         ),
     )
-    assert on_a_mac.addressee() is None
+    assert on_a_mac.addressee() == Addressee("wW:pPZ", "Voyager", 3, seen_host)
 
 
 def test_nobody_holding_the_floor_is_no_addressee(monkeypatch, on_a_mac):
     ran(monkeypatch, "null")
     assert on_a_mac.addressee() is None
+
+
+def test_the_handover_names_the_machine_of_a_peer_session(monkeypatch, on_a_mac):
+    runner = ran(monkeypatch, "")
+    on_a_mac.hand_to(Addressee(VOYAGER.pane, VOYAGER.servant, 4, "rin"))
+    assert remote_command(runner) == (
+        "avatar-claim-floor --agent rin:wW:pPZ --heard-through 4"
+    )
 
 
 def test_the_handover_carries_how_far_the_room_was_heard(monkeypatch, on_a_mac):

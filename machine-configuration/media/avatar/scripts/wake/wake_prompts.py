@@ -1,4 +1,8 @@
+import os
+
 from listener_session import ListenerPurpose
+
+ROOM_HOST_VARIABLE = "AVATAR_AGENT_HOST"
 
 DESK_REPLY = (
     "speak with avatar-talk say, and hear the reply through avatar-talk follow in a "
@@ -17,9 +21,41 @@ SETTINGS = {
     ),
 }
 
+REMOTE_ROOM = (
+    "the room is on machine {room}, so run every avatar command there, with your "
+    "own pane as identity: "
+)
+REMOTE_DESK_REPLY = (
+    REMOTE_ROOM
+    + 'speak with {reach} avatar-talk say "...", and hear the reply through {reach} '
+    "avatar-talk follow in a background watcher. When the room dismisses you, such "
+    "as 'you can go now', say a short goodbye and run {reach} avatar-talk close, "
+    "which hands the room back to the wake."
+)
+REMOTE_SETTINGS = {
+    None: f"An avatar conversation is opening: {REMOTE_DESK_REPLY}",
+    ListenerPurpose.CONVERSATION: (
+        f"The open avatar conversation now listens for you: {REMOTE_DESK_REPLY}"
+    ),
+    ListenerPurpose.MEETING: (
+        "You now hold the floor of the meeting the avatar transcribes, and "
+        + REMOTE_ROOM
+        + "answer aloud with {reach} avatar-command speak, which the meeting hears, "
+        "and read it through {reach} avatar-listen follow in a background watcher."
+    ),
+}
 
-def spoken_prompt(message, purpose):
+
+def setting_for(purpose, session):
+    if session is None or session.host is None:
+        return SETTINGS[purpose]
+    room = os.environ[ROOM_HOST_VARIABLE]
+    reach = f"ssh {room} HERDR_PANE_ID={session.pane}"
+    return REMOTE_SETTINGS[purpose].format(room=room, reach=reach)
+
+
+def spoken_prompt(message, purpose, session=None):
     return (
         f"[wake] Voice from the room, speaker not verified: {message} "
-        f"{SETTINGS[purpose]}"
+        f"{setting_for(purpose, session)}"
     )

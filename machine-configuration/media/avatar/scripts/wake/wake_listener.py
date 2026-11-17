@@ -2,9 +2,11 @@ import argparse
 import subprocess
 import time
 
+import peer_sessions
 import quiet_conversation
+import room_holder
 import speech_segmenter
-from conversation_addressee import Addressee
+from servant_panes import live_sessions
 from wake_boundaries import for_this_machine
 from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
 from wake_prompts import SETTINGS, spoken_prompt
@@ -70,9 +72,10 @@ class WakeListener:
             self.boundaries.report(f"would wake {target}: {match.message}")
             return False
         self.boundaries.report(f"wake {target}")
-        text = spoken_prompt(match.message, purpose)
-        if not self.boundaries.prompt_now(match.session.pane, text):
-            self.boundaries.notify_at_idle(match.session.pane, text)
+        text = spoken_prompt(match.message, purpose, match.session)
+        session = match.session
+        if not self.boundaries.prompt_now(session.pane, text, session.host):
+            self.boundaries.notify_at_idle(session.pane, text, session.host)
         return True
 
     def answer(self, segment):
@@ -83,9 +86,7 @@ class WakeListener:
         if match is None or not self.deliver(match, purpose=None):
             return
         self.boundaries.open_conversation()
-        self.boundaries.hand_to(
-            Addressee(match.session.pane, match.session.servant, heard_through=0)
-        )
+        self.boundaries.hand_to(room_holder.addressee_of(match.session, 0))
 
     def start_reading_conversation(self):
         entries = self.boundaries.transcript_entries()
@@ -119,13 +120,16 @@ class WakeListener:
             return
         if not self.dry_run:
             self.boundaries.hand_to(
-                Addressee(match.session.pane, match.session.servant, entry["sequence"])
+                room_holder.addressee_of(match.session, entry["sequence"])
             )
         self.deliver_to_the_listening_purpose(match, entry)
 
     def already_holds_the_floor(self, match):
         addressee = self.boundaries.addressee()
-        return bool(addressee) and addressee.pane == match.session.pane
+        return bool(addressee) and (addressee.pane, addressee.host) == (
+            match.session.pane,
+            match.session.host,
+        )
 
     def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()
@@ -183,7 +187,11 @@ def run(wake):
 def main():
     parser = argparse.ArgumentParser(prog="avatar-wake")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--sessions", action="store_true")
     arguments = parser.parse_args()
+    if arguments.sessions:
+        print(peer_sessions.listing_of(live_sessions()))
+        return
     run(WakeListener(for_this_machine(), arguments.dry_run))
 
 

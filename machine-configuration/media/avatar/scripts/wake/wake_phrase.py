@@ -15,6 +15,7 @@ WINDOW_SIZES = (1, 2, 3)
 class LiveSession:
     servant: str
     pane: str
+    host: str | None = None
 
 
 @dataclasses.dataclass(frozen=True)

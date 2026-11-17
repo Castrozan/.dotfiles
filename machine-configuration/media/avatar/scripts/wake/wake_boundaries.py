@@ -1,4 +1,5 @@
 import dataclasses
+import os
 import subprocess
 import sys
 import time
@@ -6,6 +7,8 @@ import time
 import conversation_addressee
 import listener_runtime
 import listener_session
+import peer_sessions
+import remote_agent
 import room_holder
 import speech_segmenter
 from transcription import transcriber
@@ -15,6 +18,7 @@ from servant_panes import live_sessions
 MICROPHONE = "@DEFAULT_SOURCE@"
 VOICE_SENDER = "voice"
 COMMAND_TIMEOUT_SECONDS = 120
+PEER_HOSTS_VARIABLE = "AVATAR_PEER_HOSTS"
 
 
 def capture_command():
@@ -56,10 +60,10 @@ def transcript_entries():
     )
 
 
-def prompt_now(pane, text):
+def prompt_now(pane, text, host=None):
     return (
         subprocess.run(
-            ["herdr", "agent", "prompt", pane, text],
+            remote_agent.on_host(host, ["herdr", "agent", "prompt", pane, text]),
             capture_output=True,
             timeout=COMMAND_TIMEOUT_SECONDS,
         ).returncode
@@ -67,18 +71,28 @@ def prompt_now(pane, text):
     )
 
 
-def notify_at_idle(pane, text):
+def notify_at_idle(pane, text, host=None):
     subprocess.run(
-        ["a2a", "notify", "--sender", VOICE_SENDER, pane, text],
+        remote_agent.on_host(
+            host, ["a2a", "notify", "--sender", VOICE_SENDER, pane, text]
+        ),
         capture_output=True,
         timeout=COMMAND_TIMEOUT_SECONDS,
+    )
+
+
+def sessions_here_and_at_peers():
+    return peer_sessions.sessions_everywhere(
+        live_sessions(),
+        os.environ.get(PEER_HOSTS_VARIABLE, "").split(),
+        subprocess.run,
     )
 
 
 @dataclasses.dataclass
 class Boundaries:
     capture_command: object = capture_command
-    sessions: object = live_sessions
+    sessions: object = sessions_here_and_at_peers
     conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
     open_conversation: object = conversation_opened

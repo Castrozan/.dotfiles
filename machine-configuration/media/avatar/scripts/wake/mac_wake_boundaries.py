@@ -1,3 +1,4 @@
+import dataclasses
 import json
 import os
 import pathlib
@@ -57,7 +58,8 @@ def run_at_the_avatar_host(command, timeout):
 
 
 def floor_handed_to(addressee):
-    agent = f"{os.environ[HOST_ENVIRONMENT_VARIABLE]}:{addressee.pane}"
+    host = addressee.host or os.environ[HOST_ENVIRONMENT_VARIABLE]
+    agent = f"{host}:{addressee.pane}"
     run_at_the_avatar_host(
         [
             "avatar-claim-floor",
@@ -113,7 +115,15 @@ def listening_purpose():
     return ListenerPurpose(purpose)
 
 
-def addressee_on_this_host():
+def seen_from_this_mac(addressee):
+    if addressee.host == os.environ[HOST_ENVIRONMENT_VARIABLE]:
+        return dataclasses.replace(addressee, host=None)
+    if addressee.host is None:
+        return dataclasses.replace(addressee, host=local_seat.AVATAR_HOST)
+    return addressee
+
+
+def addressee_seen_from_this_mac():
     if not local_seat.conversation_listening():
         return None
     holder = json.loads(
@@ -123,10 +133,7 @@ def addressee_on_this_host():
     )
     if holder is None:
         return None
-    addressee = Addressee(**holder)
-    if addressee.host != os.environ[HOST_ENVIRONMENT_VARIABLE]:
-        return None
-    return addressee
+    return seen_from_this_mac(Addressee(**holder))
 
 
 def conversation_listening():
@@ -167,7 +174,7 @@ def mac_boundaries():
         "addressee": here_or_at_the_host(
             listening_here,
             lambda: conversation_addressee.current(directory),
-            addressee_on_this_host,
+            addressee_seen_from_this_mac,
         ),
         "quiet_seconds": here_or_at_the_host(
             listening_here,

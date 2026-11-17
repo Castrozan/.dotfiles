@@ -43,7 +43,7 @@ def test_naming_another_session_mid_conversation_turns_the_room_to_it():
     assert fakes.hand_to.call_args.args[0] == Addressee(
         IBARAKI.pane, IBARAKI.servant, heard_through=2
     ), "the new session's follow starts after the words that named it"
-    pane, text = fakes.prompt_now.call_args.args
+    pane, text, _ = fakes.prompt_now.call_args.args
     assert pane == IBARAKI.pane and "status" in text and "open" in text
     fakes.open_conversation.assert_not_called()
 

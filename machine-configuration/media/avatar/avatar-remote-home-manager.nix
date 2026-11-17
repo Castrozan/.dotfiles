@@ -35,6 +35,7 @@ let
     inherit (topology) host;
   };
   inherit (conversation) talk;
+  peerHosts = lib.filter (machine: machine != hostname) topology.machines;
   websocketPython = pkgs.python312.withPackages (packages: [ packages.websockets ]);
   wake = pkgs.writeShellScriptBin "avatar-wake" ''
     export PATH=${
@@ -47,6 +48,7 @@ let
     }:$PATH
     export AVATAR_HOST=${topology.host}
     export AVATAR_AGENT_HOST=${hostname}
+    export AVATAR_PEER_HOSTS="${lib.concatStringsSep " " peerHosts}"
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}

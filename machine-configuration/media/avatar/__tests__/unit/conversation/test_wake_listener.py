@@ -36,7 +36,7 @@ def test_a_spoken_wake_prompts_the_named_session_before_opening_the_avatar():
         "prompt_now",
         "open_conversation",
     ], "the words reach the session at once; the avatar takes about 4 s to open"
-    pane, text = order.prompt_now.call_args.args
+    pane, text, _ = order.prompt_now.call_args.args
     assert pane == VOYAGER.pane and "check the build" in text
 
 

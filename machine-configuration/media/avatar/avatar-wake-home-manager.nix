@@ -3,10 +3,13 @@
   lib,
   inputs,
   isNixOS,
+  hostname,
   ...
 }:
 let
   programs = import ./avatar-programs.nix { inherit pkgs lib inputs; };
+  topology = import ./home-manager/avatar-topology.nix;
+  peerHosts = lib.filter (machine: machine != hostname) topology.machines;
   wake = pkgs.writeShellScriptBin "avatar-wake" ''
     export PATH=${
       lib.makeBinPath [
@@ -14,10 +17,13 @@ let
         programs.command
         programs.herdr
         programs.talk
+        pkgs.openssh
         pkgs.pulseaudio
         pkgs.systemd
       ]
     }:$PATH
+    export AVATAR_AGENT_HOST=${hostname}
+    export AVATAR_PEER_HOSTS="${lib.concatStringsSep " " peerHosts}"
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}:${programs.a2aLibrary}
