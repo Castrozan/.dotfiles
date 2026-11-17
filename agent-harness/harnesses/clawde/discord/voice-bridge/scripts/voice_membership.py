@@ -47,10 +47,16 @@ class VoiceMembership:
         channel = self.channel()
         if channel is None:
             return dict(
-                joined=False, channel=None, guild=None, channel_id=None, guild_id=None
+                joined=False,
+                listener_present=False,
+                channel=None,
+                guild=None,
+                channel_id=None,
+                guild_id=None,
             )
         return dict(
             joined=True,
+            listener_present=self.listener_user_id in channel.voice_states,
             channel=channel.name,
             guild=channel.guild.name,
             channel_id=str(channel.id),
