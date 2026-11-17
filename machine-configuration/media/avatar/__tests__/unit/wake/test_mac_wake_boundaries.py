@@ -5,6 +5,7 @@ from unittest.mock import Mock
 import local_seat
 import mac_wake_boundaries
 import pytest
+import remote_agent
 import wake_boundaries
 import wake_listener
 from conversation_addressee import Addressee
@@ -17,7 +18,7 @@ VOYAGER = LiveSession("Voyager", "wW:pPZ")
 @pytest.fixture
 def on_a_mac(monkeypatch):
     monkeypatch.setattr(wake_boundaries.sys, "platform", "darwin")
-    monkeypatch.setenv(mac_wake_boundaries.HOST_ENVIRONMENT_VARIABLE, "kira")
+    monkeypatch.setenv(remote_agent.HOST_ENVIRONMENT_VARIABLE, "kira")
     return wake_boundaries.for_this_machine()
 
 

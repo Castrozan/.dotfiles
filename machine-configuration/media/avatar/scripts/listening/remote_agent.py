@@ -7,6 +7,9 @@ import subprocess
 HOST_NAME = re.compile(r"[A-Za-z0-9][A-Za-z0-9.-]*")
 LISTING_TIMEOUT_SECONDS = 20
 REACH_HOST = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10"]
+LONGEST_SEAT_SECONDS = 12 * 60 * 60
+HOST_ENVIRONMENT_VARIABLE = "AVATAR_AGENT_HOST"
+PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 
 
 @dataclasses.dataclass(frozen=True)

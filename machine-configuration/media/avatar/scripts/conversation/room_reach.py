@@ -1,32 +1,38 @@
 import os
-import shlex
 import socket
 import subprocess
 import sys
 
+import remote_agent
+
 ROOM_VARIABLE = "AVATAR_ROOM"
-HOST_VARIABLE = "AVATAR_AGENT_HOST"
-PANE_VARIABLE = "HERDR_PANE_ID"
-LONGEST_SEAT_SECONDS = 12 * 60 * 60
-REACH_ROOM = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10"]
 
 
 def this_host(environment):
-    return environment.get(HOST_VARIABLE) or socket.gethostname().partition(".")[0]
+    return (
+        environment.get(remote_agent.HOST_ENVIRONMENT_VARIABLE)
+        or socket.gethostname().partition(".")[0]
+    )
 
 
 def command_in_the_room(arguments, pane):
-    identity = f"{PANE_VARIABLE}={shlex.quote(pane)} " if pane else ""
-    return f"{identity}avatar-talk {shlex.join(arguments)}"
+    identity = (
+        ["env", f"{remote_agent.PANE_ENVIRONMENT_VARIABLE}={pane}"] if pane else []
+    )
+    return [*identity, "avatar-talk", *arguments]
 
 
 def forwarded_to_the_room(arguments, environment, this_host, run):
     room = environment.get(ROOM_VARIABLE)
     if not room or room == this_host:
         return None
-    command = command_in_the_room(arguments, environment.get(PANE_VARIABLE))
+    command = command_in_the_room(
+        arguments, environment.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
+    )
     return run(
-        [*REACH_ROOM, room, command], check=False, timeout=LONGEST_SEAT_SECONDS
+        remote_agent.on_host(room, command),
+        check=False,
+        timeout=remote_agent.LONGEST_SEAT_SECONDS,
     ).returncode
 
 

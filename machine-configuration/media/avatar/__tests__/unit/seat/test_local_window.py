@@ -8,6 +8,7 @@ from unittest.mock import Mock
 import local_seat
 import local_window
 import pytest
+import remote_agent
 import remote_talk
 
 RENDERER_CONTROLS = (
@@ -40,7 +41,9 @@ def test_the_window_follows_a_seat_held_here(monkeypatch, verb):
     forwarded = forwarding(monkeypatch)
     monkeypatch.setattr(local_seat, "attached", lambda: True)
     assert run_main(monkeypatch, verb) == 0
-    assert forwarded.call_args.args == (["ssh", "chise", "avatar-talk", verb],)
+    assert forwarded.call_args.args == (
+        [*remote_agent.REACH_HOST, "chise", f"avatar-talk {verb}"],
+    )
     steps[verb].assert_called_once_with()
 
 

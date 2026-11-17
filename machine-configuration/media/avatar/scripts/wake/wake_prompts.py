@@ -1,8 +1,7 @@
 import os
 
+import remote_agent
 from listener_session import ListenerPurpose
-
-ROOM_HOST_VARIABLE = "AVATAR_AGENT_HOST"
 
 DESK_REPLY = (
     "speak with avatar-talk say, and hear the reply through avatar-talk follow in a "
@@ -47,7 +46,7 @@ REMOTE_SETTINGS = {
 
 
 def room_name():
-    return os.environ[ROOM_HOST_VARIABLE]
+    return os.environ[remote_agent.HOST_ENVIRONMENT_VARIABLE]
 
 
 def setting_for(purpose, session):

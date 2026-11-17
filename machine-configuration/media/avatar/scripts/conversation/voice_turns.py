@@ -6,13 +6,13 @@ import conversation_addressee
 import conversation_seat
 import conversation_state
 import listener_session
+import remote_agent
 import utterances
 from conversation_state import ConversationPhase
 
 FOLLOW_SLICE_SECONDS = 30
 SPEECH_TIMEOUT_SECONDS = 310
 VOICE_TAG = "[voice]"
-PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 
 
 def speech_command(arguments, directory):
@@ -67,7 +67,7 @@ def ask(arguments, directory):
 
 
 def follow(arguments, directory):
-    pane = os.environ.get(PANE_ENVIRONMENT_VARIABLE)
+    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
 
     def still_addressed():
         return conversation_addressee.addresses(directory, pane)

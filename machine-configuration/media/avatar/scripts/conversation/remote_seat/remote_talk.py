@@ -2,20 +2,18 @@ import itertools
 import json
 import os
 import re
-import shlex
 import subprocess
 import sys
 
 import local_seat
 import local_window
+import remote_agent
 
 PRESENT_WITHIN_SECONDS = 300
 IDLE_TIME = re.compile(r'"HIDIdleTime" = (\d+)')
 NANOSECONDS = 1_000_000_000
 REMOTE_SEAT = "remote"
 OPEN_TIMEOUT_SECONDS = 120
-PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
-HOST_ENVIRONMENT_VARIABLE = "AVATAR_AGENT_HOST"
 LIVE_NEEDS_A_PANE = (
     "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
     "the room's tasks to that agent"
@@ -40,12 +38,12 @@ def user_is_here():
 
 
 def forward_command(arguments):
-    return ["ssh", local_seat.AVATAR_HOST, "avatar-talk", shlex.join(arguments)]
+    return remote_agent.on_host(local_seat.AVATAR_HOST, ["avatar-talk", *arguments])
 
 
 def forward(arguments):
     return subprocess.run(
-        forward_command(arguments), timeout=local_seat.LONGEST_SEAT_SECONDS
+        forward_command(arguments), timeout=remote_agent.LONGEST_SEAT_SECONDS
     ).returncode
 
 
@@ -122,8 +120,8 @@ def opens_here(arguments):
 def with_the_agent_that_receives_live_tasks(arguments):
     if arguments[:1] != ["open"] or "--live" not in arguments:
         return arguments
-    host = os.environ.get(HOST_ENVIRONMENT_VARIABLE)
-    pane = os.environ.get(PANE_ENVIRONMENT_VARIABLE)
+    host = os.environ.get(remote_agent.HOST_ENVIRONMENT_VARIABLE)
+    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
     if not host or not pane:
         raise RuntimeError(LIVE_NEEDS_A_PANE)
     return [*arguments, "--agent", f"{host}:{pane}"]

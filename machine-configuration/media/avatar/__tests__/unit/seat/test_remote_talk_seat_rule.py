@@ -6,6 +6,7 @@ from unittest.mock import Mock
 
 import local_seat
 import pytest
+import remote_agent
 import remote_talk
 
 
@@ -39,10 +40,9 @@ def test_an_explicit_remote_seat_is_taken_here_whatever_the_idle_time(
     runner = chise_answers(monkeypatch)
     assert run_main(monkeypatch, "open", "--seat", "remote", "--language", "pt") == 0
     assert runner.call_args.args[0] == [
-        "ssh",
+        *remote_agent.REACH_HOST,
         "chise",
-        "avatar-talk",
-        "open --seat remote --language pt",
+        "avatar-talk open --seat remote --language pt",
     ]
     seat_here.assert_called_once_with()
 
@@ -55,10 +55,9 @@ def test_an_explicit_room_seat_is_forwarded_unchanged(
     runner = chise_answers(monkeypatch, seat="room")
     assert run_main(monkeypatch, "open", "--seat", "room") == 0
     assert runner.call_args.args[0] == [
-        "ssh",
+        *remote_agent.REACH_HOST,
         "chise",
-        "avatar-talk",
-        "open --seat room",
+        "avatar-talk open --seat room",
     ]
     seat_here.assert_not_called()
 
@@ -87,9 +86,9 @@ def test_opening_here_does_not_repeat_a_remote_seat_already_named(monkeypatch):
     runner = chise_answers(monkeypatch)
     monkeypatch.setattr(local_seat, "attached", lambda: True)
     remote_talk.open_here(["open", "--seat", "remote"])
-    assert runner.call_args.args[0][-1] == "open --seat remote"
+    assert runner.call_args.args[0][-1] == "avatar-talk open --seat remote"
     remote_talk.open_here(["open"])
-    assert runner.call_args.args[0][-1] == "open --seat remote"
+    assert runner.call_args.args[0][-1] == "avatar-talk open --seat remote"
 
 
 def closing(monkeypatch, health):

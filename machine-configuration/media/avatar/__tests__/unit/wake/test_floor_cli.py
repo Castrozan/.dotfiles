@@ -69,7 +69,7 @@ def test_the_shared_hand_over_names_the_servant_and_reports_whether_it_exists(
 
 
 def test_without_an_agent_a_pane_outside_herdr_claims_nothing(monkeypatch, tmp_path):
-    monkeypatch.delenv(floor_cli.PANE_ENVIRONMENT_VARIABLE, raising=False)
+    monkeypatch.delenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, raising=False)
     assert run_floor_cli(monkeypatch, tmp_path) == 0
     assert conversation_addressee.current(tmp_path) is None
 
@@ -81,7 +81,7 @@ def run_in_fresh_directory(monkeypatch, *arguments):
 
 
 def speak_from_pane(monkeypatch, tmp_path, pane, sessions, listening=False):
-    monkeypatch.setenv(floor_cli.PANE_ENVIRONMENT_VARIABLE, pane)
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, pane)
     monkeypatch.setattr(floor_cli, "live_sessions", lambda: sessions)
     monkeypatch.setattr(listener_runtime, "listening", lambda: listening)
     return run_floor_cli(monkeypatch, tmp_path)

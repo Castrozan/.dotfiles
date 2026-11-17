@@ -5,6 +5,7 @@ from unittest.mock import Mock
 import local_seat
 import meeting_camera
 import pytest
+import remote_agent
 import remote_meeting
 
 
@@ -29,6 +30,10 @@ def run_main(monkeypatch, *arguments):
     return finished.value.code
 
 
+def on_chise(command):
+    return [*remote_agent.REACH_HOST, "chise", command]
+
+
 def ssh_commands(mac):
     return [call.args[0] for call in mac.ssh.call_args_list]
 
@@ -38,7 +43,7 @@ def test_starting_seats_the_meeting_page_then_opens_the_camera_then_names_the_de
 ):
     assert run_main(monkeypatch, "start") == 0
     assert [call[0] for call in mac.mock_calls] == ["ssh", "take", "camera_start"]
-    assert ssh_commands(mac) == [["ssh", "chise", "avatar-start --seat remote"]]
+    assert ssh_commands(mac) == [on_chise("avatar-start --seat remote")]
     mac.take.assert_called_once_with("?meeting")
     ready = capsys.readouterr().out
     assert ready.count("\n") == 1
@@ -76,7 +81,7 @@ def test_a_failure_after_the_remote_start_undoes_every_earlier_step(
     assert run_main(monkeypatch, "start") == 1
     steps = [call[0] for call in mac.mock_calls]
     assert steps[-3:] == ["leave", "camera_stop", "ssh"]
-    assert ssh_commands(mac)[-1] == ["ssh", "chise", "avatar-stop"]
+    assert ssh_commands(mac)[-1] == on_chise("avatar-stop")
     reported = capsys.readouterr()
     assert str(failure) in reported.err
     assert "BlackHole 2ch" not in reported.out
@@ -99,7 +104,7 @@ def test_stopping_ends_the_seat_then_its_camera_before_stopping_the_avatar(
 ):
     assert run_main(monkeypatch, "stop") == 0
     assert [call[0] for call in mac.mock_calls] == ["leave", "camera_stop", "ssh"]
-    assert ssh_commands(mac) == [["ssh", "chise", "avatar-stop"]]
+    assert ssh_commands(mac) == [on_chise("avatar-stop")]
 
 
 @pytest.mark.parametrize("returncode", [0, 1, 255])
@@ -113,7 +118,7 @@ def test_listening_forwards_every_argument_quoted_like_the_talk_forwarder(
 ):
     run_main(monkeypatch, "listen", "read", "--since", "3", "--language", "pt BR")
     assert ssh_commands(mac) == [
-        ["ssh", "chise", "avatar-listen read --since 3 --language 'pt BR'"]
+        on_chise("avatar-listen read --since 3 --language 'pt BR'")
     ]
     mac.attached.assert_not_called()
 
@@ -129,7 +134,7 @@ def test_a_start_from_a_mac_holding_the_seat_listens_at_the_remote_seat(
     mac.attached.return_value = True
     run_main(monkeypatch, "listen", "start", "--language", "pt")
     assert ssh_commands(mac) == [
-        ["ssh", "chise", "avatar-listen start --language pt --seat remote"]
+        on_chise("avatar-listen start --language pt --seat remote")
     ]
 
 
@@ -144,21 +149,19 @@ def test_a_start_from_a_mac_holding_the_seat_listens_at_the_remote_seat(
 def test_a_seat_that_was_given_is_never_overridden(mac, monkeypatch, arguments):
     mac.attached.return_value = True
     run_main(monkeypatch, "listen", *arguments)
-    assert ssh_commands(mac) == [
-        ["ssh", "chise", "avatar-listen " + " ".join(arguments)]
-    ]
+    assert ssh_commands(mac) == [on_chise("avatar-listen " + " ".join(arguments))]
 
 
 def test_a_start_from_a_mac_without_the_seat_listens_in_the_room(mac, monkeypatch):
     run_main(monkeypatch, "listen", "start")
-    assert ssh_commands(mac) == [["ssh", "chise", "avatar-listen start"]]
+    assert ssh_commands(mac) == [on_chise("avatar-listen start")]
 
 
 @pytest.mark.parametrize("verb", ["read", "follow", "stop", "status", "voices"])
 def test_only_a_start_is_given_a_seat(mac, monkeypatch, verb):
     mac.attached.return_value = True
     run_main(monkeypatch, "listen", verb)
-    assert ssh_commands(mac) == [["ssh", "chise", f"avatar-listen {verb}"]]
+    assert ssh_commands(mac) == [on_chise(f"avatar-listen {verb}")]
 
 
 @pytest.mark.parametrize("arguments", [[], ["fly"], ["start", "now"], ["stop", "now"]])

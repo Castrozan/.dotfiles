@@ -35,7 +35,12 @@ def forwarded(arguments, environment, run=None, this_host="chise"):
 def test_the_remote_command_carries_exactly_the_original_arguments(arguments, pane):
     _, run = forwarded(arguments, {"AVATAR_ROOM": "kira", "HERDR_PANE_ID": pane})
     remote = run.call_args.args[0][-1]
-    assert shlex.split(remote) == [f"HERDR_PANE_ID={pane}", "avatar-talk", *arguments]
+    assert shlex.split(remote) == [
+        "env",
+        f"HERDR_PANE_ID={pane}",
+        "avatar-talk",
+        *arguments,
+    ]
 
 
 @given(arguments=ARGUMENTS)
@@ -46,7 +51,7 @@ def test_without_a_pane_the_remote_command_has_no_identity(arguments):
 
 def test_a_quoted_sentence_reaches_the_room_as_one_argument():
     _, run = forwarded(HARD_ARGUMENTS, {"AVATAR_ROOM": "kira", "HERDR_PANE_ID": "w:p1"})
-    assert shlex.split(run.call_args.args[0][-1])[2:] == HARD_ARGUMENTS
+    assert shlex.split(run.call_args.args[0][-1])[3:] == HARD_ARGUMENTS
 
 
 def test_the_command_goes_over_ssh_to_the_room_with_the_longest_seat_wait():

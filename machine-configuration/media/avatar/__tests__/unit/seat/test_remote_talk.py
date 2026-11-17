@@ -5,6 +5,7 @@ from unittest.mock import Mock
 
 import local_seat
 import pytest
+import remote_agent
 import remote_talk
 
 
@@ -13,6 +14,10 @@ def chise_answers(monkeypatch, returncode=0, seat="remote"):
     runner = Mock(return_value=SimpleNamespace(returncode=returncode, stdout=status))
     monkeypatch.setattr(remote_talk.subprocess, "run", runner)
     return runner
+
+
+def on_chise(command):
+    return [*remote_agent.REACH_HOST, "chise", command]
 
 
 def run_main(monkeypatch, *arguments):
@@ -51,7 +56,7 @@ def test_no_verb_at_all_is_forwarded_untouched(monkeypatch):
     monkeypatch.setattr(remote_talk, "user_is_here", lambda: True)
     forwarded = forwarding(monkeypatch, returncode=2)
     assert run_main(monkeypatch) == 2
-    assert forwarded.call_args.args == (["ssh", "chise", "avatar-talk", ""],)
+    assert forwarded.call_args.args == (on_chise("avatar-talk"),)
 
 
 def test_an_open_while_the_user_is_away_stays_in_the_room(monkeypatch):
@@ -60,9 +65,7 @@ def test_an_open_while_the_user_is_away_stays_in_the_room(monkeypatch):
     monkeypatch.setattr(local_seat, "take", take)
     forwarded = forwarding(monkeypatch)
     assert run_main(monkeypatch, "open", "--character", "vita") == 0
-    assert forwarded.call_args.args == (
-        ["ssh", "chise", "avatar-talk", "open --character vita"],
-    )
+    assert forwarded.call_args.args == (on_chise("avatar-talk open --character vita"),)
     assert forwarded.call_args.kwargs["timeout"] > 0
     take.assert_not_called()
 
@@ -74,12 +77,9 @@ def test_an_open_while_the_user_is_here_takes_the_seat(monkeypatch, capsys):
     take = Mock()
     monkeypatch.setattr(local_seat, "take", take)
     assert run_main(monkeypatch, "open", "--language", "pt") == 0
-    assert runner.call_args.args[0] == [
-        "ssh",
-        "chise",
-        "avatar-talk",
-        "open --language pt --seat remote",
-    ]
+    assert runner.call_args.args[0] == on_chise(
+        "avatar-talk open --language pt --seat remote"
+    )
     take.assert_called_once_with()
     assert json.loads(capsys.readouterr().out)["seat"] == "remote"
 

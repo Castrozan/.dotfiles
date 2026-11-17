@@ -11,13 +11,13 @@ import conversation_addressee
 import listener_runtime
 import listener_session
 import local_seat
+import remote_agent
 import room_holder
 import transcript_log
 import utterances
 from conversation_addressee import Addressee
 from listener_session import ListenerPurpose
 
-HOST_ENVIRONMENT_VARIABLE = "AVATAR_AGENT_HOST"
 MICROPHONE_PROGRAM = pathlib.Path(__file__).with_name("mac_microphone.py")
 REACH_AVATAR_HOST = [
     "ssh",
@@ -58,7 +58,7 @@ def run_at_the_avatar_host(command, timeout):
 
 
 def floor_handed_to(addressee):
-    host = addressee.host or os.environ[HOST_ENVIRONMENT_VARIABLE]
+    host = addressee.host or os.environ[remote_agent.HOST_ENVIRONMENT_VARIABLE]
     agent = f"{host}:{addressee.pane}"
     run_at_the_avatar_host(
         [
@@ -116,7 +116,7 @@ def listening_purpose():
 
 
 def seen_from_this_mac(addressee):
-    if addressee.host == os.environ[HOST_ENVIRONMENT_VARIABLE]:
+    if addressee.host == os.environ[remote_agent.HOST_ENVIRONMENT_VARIABLE]:
         return dataclasses.replace(addressee, host=None)
     if addressee.host is None:
         return dataclasses.replace(addressee, host=local_seat.AVATAR_HOST)

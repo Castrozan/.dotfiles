@@ -5,6 +5,7 @@ import listener_runtime
 import local_seat
 import mac_wake_boundaries
 import pytest
+import remote_agent
 import wake_boundaries
 
 
@@ -41,7 +42,7 @@ def clock():
 @pytest.fixture
 def on_a_mac(monkeypatch, seat_listening, clock):
     monkeypatch.setattr(wake_boundaries.sys, "platform", "darwin")
-    monkeypatch.setenv(mac_wake_boundaries.HOST_ENVIRONMENT_VARIABLE, "kira")
+    monkeypatch.setenv(remote_agent.HOST_ENVIRONMENT_VARIABLE, "kira")
     transcript = mac_wake_boundaries.ConversationTranscript
     monkeypatch.setattr(
         mac_wake_boundaries,

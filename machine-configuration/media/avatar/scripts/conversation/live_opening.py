@@ -10,9 +10,8 @@ import speaking_floor
 from meetings import start
 from conversation_seat import Seat
 from listener_session import ListenerPurpose
-from remote_agent import AgentPane
+from remote_agent import PANE_ENVIRONMENT_VARIABLE, AgentPane
 
-PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 LIVE_NEEDS_A_PANE = (
     "avatar-talk open --live must run from an agent's herdr pane: the live voice hands "
     "the room's tasks to that agent"

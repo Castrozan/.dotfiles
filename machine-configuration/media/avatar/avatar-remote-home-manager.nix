@@ -23,6 +23,7 @@ let
     verb: command:
     pkgs.writeShellScriptBin command ''
       export AVATAR_HOST=${topology.host}
+      export PYTHONPATH=${./scripts/listening}
       exec ${pkgs.python312}/bin/python3 ${./scripts/conversation/remote_seat}/remote_meeting.py ${verb} "$@"
     '';
   conversation = import ./home-manager/avatar-mac-conversation.nix {

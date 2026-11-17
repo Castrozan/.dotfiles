@@ -4,6 +4,7 @@ import conversation_addressee
 import listener_runtime
 import mac_wake_boundaries
 import pytest
+import remote_agent
 import transcript_log
 import wake_boundaries
 from avatar_host_runner import ran
@@ -17,7 +18,7 @@ def a_mac_with_records(monkeypatch, tmp_path, seat_listening):
     seat_listening.listening = False
     monkeypatch.setattr(listener_runtime, "runtime_directory", lambda: tmp_path)
     monkeypatch.setattr(wake_boundaries.sys, "platform", "darwin")
-    monkeypatch.setenv(mac_wake_boundaries.HOST_ENVIRONMENT_VARIABLE, "kira")
+    monkeypatch.setenv(remote_agent.HOST_ENVIRONMENT_VARIABLE, "kira")
     return wake_boundaries.for_this_machine()
 
 

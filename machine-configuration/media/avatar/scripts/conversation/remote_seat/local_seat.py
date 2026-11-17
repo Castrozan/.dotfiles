@@ -48,7 +48,6 @@ HOLDER_SCRIPT = "remote_seat/seat_holder.py"
 HOLDER_PATH = pathlib.Path(__file__).with_name("seat_holder.py")
 MEETING_PAGE_QUERY = "?meeting"
 TUNNEL_WAIT_SECONDS = 15
-LONGEST_SEAT_SECONDS = 12 * 60 * 60
 COMMAND_TIMEOUT_SECONDS = 30
 ATTACH_WAIT_SECONDS = 20
 POLL_SECONDS = 0.25
@@ -111,12 +110,22 @@ def leave():
     close_browsers()
 
 
-def wait_for_tunnel():
-    deadline = time.monotonic() + TUNNEL_WAIT_SECONDS
-    while health() is None:
+def wait_until(is_ready, seconds, timeout_message):
+    deadline = time.monotonic() + seconds
+    while not is_ready():
         if time.monotonic() > deadline:
-            raise TimeoutError("The tunnel to the avatar did not open")
+            raise TimeoutError(timeout_message)
         time.sleep(POLL_SECONDS)
+
+
+def tunnel_is_open():
+    return health() is not None
+
+
+def wait_for_tunnel():
+    wait_until(
+        tunnel_is_open, TUNNEL_WAIT_SECONDS, "The tunnel to the avatar did not open"
+    )
 
 
 def wait_until_attached():

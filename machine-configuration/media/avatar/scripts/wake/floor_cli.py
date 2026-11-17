@@ -10,7 +10,6 @@ import servant_character
 import speaking_floor
 from servant_panes import live_sessions
 
-PANE_ENVIRONMENT_VARIABLE = "HERDR_PANE_ID"
 NO_SERVANT_MESSAGE = (
     "The pane has no Servant name: only a session with one can hold the avatar's floor."
 )
@@ -35,7 +34,7 @@ def servant_of_pane(pane, holder):
 
 
 def claim_for_this_pane():
-    pane = os.environ.get(PANE_ENVIRONMENT_VARIABLE)
+    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
     if not pane:
         return
     holder = speaking_floor.claim(

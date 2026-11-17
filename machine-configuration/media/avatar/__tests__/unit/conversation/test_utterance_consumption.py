@@ -6,6 +6,7 @@ from unittest.mock import Mock
 import conversation_addressee
 import listener
 import pytest
+import remote_agent
 import transcript_log
 import utterances
 import voice_turns
@@ -94,7 +95,7 @@ def test_the_new_addressee_hears_only_what_follows_its_wake(tmp_path):
 def test_follow_ends_once_the_room_turns_to_another_session(
     tmp_path, monkeypatch, capsys
 ):
-    monkeypatch.setenv(voice_turns.PANE_ENVIRONMENT_VARIABLE, "wW:pQZ")
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, "wW:pQZ")
     conversation_addressee.hand_to(
         tmp_path, conversation_addressee.Addressee("wW:pPY", "Ibaraki-dōji", 0)
     )

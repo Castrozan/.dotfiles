@@ -1,10 +1,9 @@
-import json
 import os
 import subprocess
 import sys
-import time
 
 import conversation_addressee
+import conversation_report
 import conversation_state
 import listener
 import listener_runtime
@@ -12,6 +11,7 @@ import listener_session
 import local_seat
 import mac_seat_client
 import mac_stage
+import remote_agent
 import remote_talk
 import room_reach
 import utterances
@@ -24,7 +24,6 @@ from talk_arguments import parse_arguments
 MICROPHONE = "the microphone of this Mac"
 SEAT = "room"
 ATTACH_WAIT_SECONDS = 25
-POLL_SECONDS = 0.25
 HOST_OPTIONS = ("--live", "--seat")
 PRIVATE_RECORDS = (
     "transcript.jsonl",
@@ -56,21 +55,15 @@ def leave_a_seat_the_host_stopped_using():
 
 def status(arguments, directory):
     is_open = conversation_state.observe(directory) is ConversationPhase.OPEN
-    report = {
-        "open": is_open,
-        "live": False,
-        "seat": SEAT if is_open else None,
-        "last_heard": utterances.last_heard(directory),
-    }
-    print(json.dumps(report))
+    conversation_report.print_status(
+        directory, is_open=is_open, live=False, seat=SEAT if is_open else None
+    )
 
 
 def wait_until_the_seat_attaches():
-    deadline = time.monotonic() + ATTACH_WAIT_SECONDS
-    while not mac_seat_client.attached():
-        if time.monotonic() > deadline:
-            raise TimeoutError(SEAT_DID_NOT_ATTACH)
-        time.sleep(POLL_SECONDS)
+    local_seat.wait_until(
+        mac_seat_client.attached, ATTACH_WAIT_SECONDS, SEAT_DID_NOT_ATTACH
+    )
 
 
 def end_conversation(directory):
@@ -105,11 +98,11 @@ def open_conversation(arguments, directory):
 
 def close_conversation(arguments, directory):
     end_conversation(directory)
-    print(json.dumps({"open": False}))
+    conversation_report.print_closed()
 
 
 def speak(arguments, directory):
-    pane = os.environ.get(voice_turns.PANE_ENVIRONMENT_VARIABLE)
+    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
     if not conversation_addressee.addresses(directory, pane):
         raise RuntimeError(ROOM_HELD_ELSEWHERE)
     listener_session.mark_spoken(directory)

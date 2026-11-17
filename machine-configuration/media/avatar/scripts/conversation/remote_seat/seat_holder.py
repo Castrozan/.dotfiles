@@ -6,6 +6,7 @@ import time
 
 import local_seat
 import meeting_camera
+import remote_agent
 
 ROUND_SECONDS = 10
 LOOKS_WITHOUT_A_MEETING_BEFORE_IT_ENDED = 6
@@ -94,7 +95,7 @@ def tunnel_stays_open(tunnel):
 
 def hold_seat(keeper):
     tunnel = subprocess.Popen(local_seat.TUNNEL_COMMAND, stderr=sys.stderr)
-    deadline = time.monotonic() + local_seat.LONGEST_SEAT_SECONDS
+    deadline = time.monotonic() + remote_agent.LONGEST_SEAT_SECONDS
     try:
         while time.monotonic() < deadline and tunnel_stays_open(tunnel):
             if not keeper.look(local_seat.health()):

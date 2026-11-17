@@ -1,11 +1,11 @@
 import contextlib
-import shlex
 import subprocess
 import sys
 
 import local_seat
 import local_window
 import meeting_camera
+import remote_agent
 
 REMOTE_SEAT = "remote"
 START_TIMEOUT_SECONDS = 180
@@ -22,7 +22,7 @@ USAGE = "Usage: avatar-start | avatar-stop | avatar-controls | avatar-listen ARG
 
 
 def host_command(program, arguments):
-    return ["ssh", local_seat.AVATAR_HOST, shlex.join([program, *arguments])]
+    return remote_agent.on_host(local_seat.AVATAR_HOST, [program, *arguments])
 
 
 def start():
@@ -70,7 +70,7 @@ def listen_arguments(arguments):
 def listen(arguments):
     return subprocess.run(
         host_command("avatar-listen", listen_arguments(arguments)),
-        timeout=local_seat.LONGEST_SEAT_SECONDS,
+        timeout=remote_agent.LONGEST_SEAT_SECONDS,
     ).returncode
 
 

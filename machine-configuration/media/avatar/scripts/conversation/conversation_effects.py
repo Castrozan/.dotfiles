@@ -1,8 +1,8 @@
 import enum
-import json
 import subprocess
 import sys
 
+import conversation_report
 import conversation_seat
 import conversation_state
 import desktop_window
@@ -34,15 +34,11 @@ def seat_microphone_ready(seat):
 def status(arguments, directory):
     phase = conversation_state.observe(directory)
     is_open = phase in (ConversationPhase.OPEN, ConversationPhase.LIVE)
-    print(
-        json.dumps(
-            {
-                "open": is_open,
-                "live": phase is ConversationPhase.LIVE,
-                "seat": conversation_seat.configured(directory) if is_open else None,
-                "last_heard": utterances.last_heard(directory),
-            }
-        )
+    conversation_report.print_status(
+        directory,
+        is_open=is_open,
+        live=phase is ConversationPhase.LIVE,
+        seat=conversation_seat.configured(directory) if is_open else None,
     )
 
 
@@ -117,11 +113,11 @@ def close_conversation(arguments, directory):
             stdout=subprocess.DEVNULL,
             timeout=COMMAND_TIMEOUT_SECONDS,
         )
-    print(json.dumps({"open": False}))
+    conversation_report.print_closed()
 
 
 def leave_meeting(arguments, directory):
-    print(json.dumps({"open": False}))
+    conversation_report.print_closed()
 
 
 def set_canvas_presence(presence):

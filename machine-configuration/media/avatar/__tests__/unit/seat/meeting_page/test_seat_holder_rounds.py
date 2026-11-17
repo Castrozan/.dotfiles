@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import local_seat
 import pytest
+import remote_agent
 import seat_holder
 
 MEETING = {"meeting": True}
@@ -96,7 +97,7 @@ def test_a_meeting_that_ended_on_the_host_ends_the_holder_and_its_camera(seat):
 
 def test_the_holder_never_outlives_the_longest_seat(seat, monkeypatch):
     seat.open_tunnel(5)
-    clock = iter([0, 0, local_seat.LONGEST_SEAT_SECONDS + 1])
+    clock = iter([0, 0, remote_agent.LONGEST_SEAT_SECONDS + 1])
     monkeypatch.setattr(seat_holder.time, "monotonic", lambda: next(clock))
     keeper = Mock()
     seat_holder.hold_seat(keeper)

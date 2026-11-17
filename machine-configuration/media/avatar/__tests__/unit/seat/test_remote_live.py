@@ -27,8 +27,8 @@ def run_main(monkeypatch, *arguments):
 
 def agent_session(monkeypatch, host="kira", pane="w4A:p1"):
     for name, value in (
-        (remote_talk.HOST_ENVIRONMENT_VARIABLE, host),
-        (remote_talk.PANE_ENVIRONMENT_VARIABLE, pane),
+        (remote_agent.HOST_ENVIRONMENT_VARIABLE, host),
+        (remote_agent.PANE_ENVIRONMENT_VARIABLE, pane),
     ):
         if value is None:
             monkeypatch.delenv(name, raising=False)
@@ -53,7 +53,11 @@ def test_live_from_a_mac_names_the_agent_that_receives_the_tasks(
     monkeypatch.setattr(remote_talk.subprocess, "run", runner)
     monkeypatch.setattr(local_seat, "take", Mock())
     assert run_main(monkeypatch, "open", "--live") == 0
-    assert runner.call_args.args[0] == ["ssh", "chise", "avatar-talk", forwarded]
+    assert runner.call_args.args[0] == [
+        *remote_agent.REACH_HOST,
+        "chise",
+        f"avatar-talk {forwarded}",
+    ]
 
 
 @pytest.mark.parametrize(("host", "pane"), [(None, "w4A:p1"), ("kira", None)])
@@ -72,7 +76,7 @@ def opening_live_for_a_remote_agent(tmp_path, monkeypatch, servant):
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.delenv(live_opening.PANE_ENVIRONMENT_VARIABLE, raising=False)
+    monkeypatch.delenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, raising=False)
     monkeypatch.setattr(start, "bring_up", Mock())
     monkeypatch.setattr(conversation_seat, "prepare", Mock())
     listening = Mock()

@@ -7,6 +7,7 @@ import conversation_state
 import listener_session
 import live_opening
 import pytest
+import remote_agent
 from meetings import start
 from conversation_addressee import Addressee
 from conversation_state import ConversationPhase
@@ -19,7 +20,7 @@ def test_opening_live_needs_the_agent_pane_that_will_receive_the_tasks(
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.delenv(live_opening.PANE_ENVIRONMENT_VARIABLE, raising=False)
+    monkeypatch.delenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, raising=False)
     bring_up = Mock()
     monkeypatch.setattr(start, "bring_up", bring_up)
     with pytest.raises(SystemExit):
@@ -33,7 +34,7 @@ def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
 ):
     phases = iter([ConversationPhase.CLOSED, ConversationPhase.LIVE])
     monkeypatch.setattr(conversation_state, "observe", lambda directory: next(phases))
-    monkeypatch.setenv(live_opening.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
     steps = []
     monkeypatch.setattr(start, "bring_up", lambda *arguments: steps.append("bring-up"))
     monkeypatch.setattr(
@@ -79,7 +80,7 @@ def test_opening_live_fails_and_closes_when_the_floor_cannot_name_the_opener(
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.CLOSED
     )
-    monkeypatch.setenv(live_opening.PANE_ENVIRONMENT_VARIABLE, "wW:p00")
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, "wW:p00")
     monkeypatch.setattr(start, "bring_up", Mock())
     monkeypatch.setattr(listener_session, "begin_listening", Mock())
     monkeypatch.setattr(conversation_effects.subprocess, "run", Mock())
