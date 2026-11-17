@@ -1,3 +1,4 @@
+import json
 import stat
 import subprocess
 
@@ -27,6 +28,15 @@ def test_the_sender_comes_from_a2a_so_identity_rules_live_in_one_place(fake_a2a)
     assert peer_messenger.sender_name(None) == "pane-servant"
     assert peer_messenger.sender_name("Medea") == "Medea"
     assert fake_a2a.read_text().split() == ["whoami", "--sender", "Medea"]
+
+
+def test_peer_pane_resolves_each_alias_case_insensitively(monkeypatch):
+    directory = {"one": {"name": "Medea", "servant": "Caster", "paneId": "Pane-1"}}
+    monkeypatch.setattr(peer_messenger, "run_a2a", lambda *args: json.dumps(directory))
+
+    for alias in ("MEDEA", "caster", "pAnE-1"):
+        assert peer_messenger.peer_pane(alias) == "Pane-1"
+    assert peer_messenger.peer_pane("unknown") is None
 
 
 def test_a_notification_passes_target_text_and_sender_to_a2a_notify(fake_a2a):
