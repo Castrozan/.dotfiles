@@ -99,9 +99,15 @@ record it with `orchestrator decision override` so the sub-session reworks it.
 
 ### Handing a session to Lucas
 
-When Lucas says he will drive a session himself, run `orchestrator handover <pane>`. It closes that session's open
-cards, drops it from the round and from timeouts, moves its pane to a tab of its own, and tells the peer that Lucas
-drives it now. Then restart the watch without that `--pane`.
+Orchestrate only sessions you launched and have not released. When Lucas says he will drive a session himself, or you
+escalate to him a session you cannot settle, run `orchestrator handover <pane>`; add `--no-move` when its pane already
+sits where he wants it. It tells the session that Lucas drives it and that its brief's Contract is over, closes its open
+cards, retires its report, and moves its pane to a tab of its own.
+
+The release holds until Lucas hands the session back. Whatever the session files afterwards is refused where it files
+it, with the reason, and the round, the watch, `relay` and `dispatch` leave it out. Never read its pane, message it or
+report on it meanwhile, and act on nothing it still sends you by hand. When Lucas hands it back, run `orchestrator
+handover <pane> --take-back`.
 
 ### Learning loop
 
