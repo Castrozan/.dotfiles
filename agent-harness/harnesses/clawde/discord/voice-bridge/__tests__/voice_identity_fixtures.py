@@ -68,6 +68,7 @@ def make_call(tmp_path):
         ffmpeg="ffmpeg",
         synthesizer=SpeechSelection([], "voice"),
         transcribe_audio=lambda audio: "test",
+        listener_audio=Mock(),
     )
     call = module.VoiceCall(
         VoiceIdentityPool([identity], tmp_path), 42, 1, services, TranscriptFeed()

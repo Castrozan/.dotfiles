@@ -1,5 +1,6 @@
 import time
 
+import discord
 from plugins.platforms.discord.adapter import VoiceReceiver
 from speech_segmenter import SPEECH_LEVEL, frame_level
 
@@ -15,13 +16,28 @@ DISCORD_FRAME_SECONDS = 0.02
 MAXIMUM_VOICED_GAP_SECONDS = 0.2
 
 
+class DecodedAudioObserver:
+    def __init__(self, on_decoded):
+        self._decoder = None
+        self._on_decoded = on_decoded
+
+    def decode(self, *arguments, **keywords):
+        if self._decoder is None:
+            self._decoder = discord.opus.Decoder()
+        pcm = self._decoder.decode(*arguments, **keywords)
+        self._on_decoded(pcm)
+        return pcm
+
+
 class ListenerVoiceReceiver(VoiceReceiver):
     SILENCE_THRESHOLD = 0.7
     MIN_SPEECH_DURATION = 0.3
 
-    def __init__(self, voice_client, listener_user_id):
+    def __init__(self, voice_client, listener_user_id, listener_audio):
         super().__init__(voice_client, allowed_user_ids={str(listener_user_id)})
         self._listener_user_id = listener_user_id
+        self._listener_audio = listener_audio
+        self._latest_decoded_pcm = None
         self.listener_packet_count = 0
         self._speech_detector = SustainedSpeechDetector(MAXIMUM_VOICED_GAP_SECONDS)
 
@@ -48,7 +64,7 @@ class ListenerVoiceReceiver(VoiceReceiver):
             source_owner = self._ssrc_to_user.get(source)
         if source_owner == self._listener_user_id:
             self.listener_packet_count += 1
-            super()._on_packet(data)
+            self._decode_listener_packet(source, data)
             self._observe_latest_frame(source)
         elif source_owner is None and self._dave_session is not None:
             self._attribute_source(source, data)
@@ -58,12 +74,24 @@ class ListenerVoiceReceiver(VoiceReceiver):
         secret_key, _, protocol_version, downgraded = self._creds
         self._creds = (secret_key, attempt, protocol_version, downgraded)
         self.map_ssrc(source, self._listener_user_id)
-        super()._on_packet(data)
+        self._decode_listener_packet(source, data)
         if attempt.opened:
             self.listener_packet_count += 1
             return
         with self._lock:
             self._ssrc_to_user.pop(source, None)
+        self._decoders.pop(source, None)
+
+    def _decode_listener_packet(self, source, data):
+        if source not in self._decoders:
+            self._decoders[source] = DecodedAudioObserver(self._remember_decoded_pcm)
+        self._latest_decoded_pcm = None
+        super()._on_packet(data)
+        if self._latest_decoded_pcm is not None:
+            self._listener_audio.append_discord_pcm(self._latest_decoded_pcm)
+
+    def _remember_decoded_pcm(self, pcm):
+        self._latest_decoded_pcm = pcm
 
     def _observe_latest_frame(self, source):
         with self._lock:

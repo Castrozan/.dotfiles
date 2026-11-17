@@ -14,10 +14,12 @@ from voice_bridge.control_server import ControlServer
 from voice_bridge.speech_synthesis import SpeechSelection
 from voice_bridge.speech_transcription import transcribe_discord_audio
 from voice_bridge.transcript_feed import TranscriptFeed
-from voice_bridge.voice_call import VoiceCall
 from voice_connection import IdentityConnection
 from voice_identity import VoiceIdentity, VoiceIdentityPool
 from voice_permissions import identity_specifications
+from voice_provider.capture_broadcast import CaptureBroadcast
+from voice_provider.clip_voice_call import ClipVoiceCall
+from voice_provider.listener_audio_tap import ListenerAudioTap
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,7 @@ class CallAudioServices:
     ffmpeg: str
     synthesizer: SpeechSelection
     transcribe_audio: Callable[[bytes], str]
+    listener_audio: ListenerAudioTap
 
 
 def discord_client():
@@ -58,7 +61,8 @@ async def run_bridge():
         ],
         control_socket.parent.parent / "discord-voice-identities",
     )
-    call = VoiceCall(
+    listener_audio = ListenerAudioTap()
+    call = ClipVoiceCall(
         identities,
         listener_user_id,
         int(environment["VOICE_BRIDGE_ANSWERED_GUILD_ID"]),
@@ -71,11 +75,12 @@ async def run_bridge():
                 environment["VOICE_BRIDGE_CLOUD_VOICE"],
             ),
             functools.partial(transcribe_discord_audio, ffmpeg),
+            listener_audio,
         ),
         feed,
     )
 
-    control = ControlServer(call, feed)
+    control = ControlServer(call, feed, CaptureBroadcast(listener_audio))
     server = await asyncio.start_unix_server(
         control.serve_connection, path=control_socket
     )

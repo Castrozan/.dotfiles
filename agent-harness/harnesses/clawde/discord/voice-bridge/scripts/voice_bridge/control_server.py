@@ -4,6 +4,7 @@ import logging
 
 from voice_bridge.speech_synthesis import SpeechSynthesisError
 from voice_bridge.voice_call import VoiceCallError
+from voice_provider.clip_wire import read_clip
 
 logger = logging.getLogger(__name__)
 
@@ -20,9 +21,10 @@ async def read_request(reader):
 
 
 class ControlServer:
-    def __init__(self, call, feed):
+    def __init__(self, call, feed, capture):
         self._call = call
         self._feed = feed
+        self._capture = capture
         self._connections = set()
         self._command_handlers = {
             "join": self._join,
@@ -32,6 +34,12 @@ class ControlServer:
             "catalog": self._catalog,
             "character": self._character,
             "model": self._model,
+            "hush": self._hush,
+        }
+        self._connection_handlers = {
+            "follow": self._stream_transcript,
+            "capture": self._stream_capture,
+            "play": self._play_clip,
         }
 
     async def serve_connection(self, reader, writer):
@@ -39,8 +47,9 @@ class ControlServer:
         self._connections.add(connection)
         try:
             request = await read_request(reader)
-            if request["command"] == "follow":
-                await self._stream_transcript(request, writer)
+            handler = self._connection_handlers.get(request["command"])
+            if handler is not None:
+                await handler(request, reader, writer)
             else:
                 writer.write(encoded_line(await self._answer(request)))
                 await writer.drain()
@@ -95,7 +104,28 @@ class ControlServer:
     async def _model(self, request):
         return await self._call.select_model(request["name"])
 
-    async def _stream_transcript(self, request, writer):
+    async def _hush(self, _request):
+        return self._call.hush()
+
+    async def _play_clip(self, request, reader, writer):
+        pcm, sample_rate = await read_clip(request, reader)
+        try:
+            reply = await self._call.play_clip(pcm, sample_rate)
+        except VoiceCallError as error:
+            reply = {"error": str(error)}
+        writer.write(encoded_line(reply))
+        await writer.drain()
+
+    async def _stream_capture(self, _request, _reader, writer):
+        subscriber = self._capture.subscribe()
+        try:
+            while True:
+                writer.write(await subscriber.get())
+                await writer.drain()
+        finally:
+            self._capture.unsubscribe(subscriber)
+
+    async def _stream_transcript(self, request, _reader, writer):
         after_sequence = request.get("after")
         subscriber = self._feed.subscribe(
             self._feed.last_sequence if after_sequence is None else after_sequence

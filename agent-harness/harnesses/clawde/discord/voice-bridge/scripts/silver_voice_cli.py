@@ -10,6 +10,7 @@ from voice_control import (
     request_running_bridge,
     send_request,
 )
+from voice_provider.provider_commands import capture, hush, play
 from voice_setup import join, meeting_start
 
 
@@ -118,6 +119,19 @@ def parse_arguments(arguments=None):
     follow_parser.add_argument(
         "--after", type=int, help="Replay retained lines after this sequence."
     )
+    commands.add_parser(
+        "capture",
+        help="Stream the listener's call audio to stdout as raw s16le 16 kHz mono PCM, with silence frames while nobody speaks.",
+    ).set_defaults(handler=capture)
+    play_parser = commands.add_parser(
+        "play",
+        help="Play a 16-bit PCM WAV into the call; returns when finished or hushed. SIGTERM hushes it.",
+    )
+    play_parser.set_defaults(handler=play)
+    play_parser.add_argument("wav")
+    commands.add_parser(
+        "hush", help="Stop whatever the bridge is playing into the call at once."
+    ).set_defaults(handler=hush)
     agent_parser = commands.add_parser(
         "agent",
         help="Show or select the answering A2A conversation; selection resets on restart.",
@@ -144,6 +158,8 @@ def main():
         reply = {"error": f"control_request_failed_{type(error).__name__}"}
     if reply is None:
         return 0
+    if isinstance(reply, int):
+        return reply
     print(json.dumps(reply, ensure_ascii=False))
     return 1 if "error" in reply else 0
 

@@ -2,6 +2,7 @@ import struct
 from types import SimpleNamespace
 
 from voice_bridge.listener_receiver import ListenerVoiceReceiver
+from voice_provider.listener_audio_tap import ListenerAudioTap
 
 LISTENER_USER_ID = 42
 LISTENER_SOURCE = 2
@@ -13,7 +14,7 @@ def receiver_connected_with(dave_session):
         secret_key=list(SECRET_KEY), dave_session=dave_session, ssrc=1
     )
     receiver = ListenerVoiceReceiver(
-        SimpleNamespace(_connection=connection), LISTENER_USER_ID
+        SimpleNamespace(_connection=connection), LISTENER_USER_ID, ListenerAudioTap()
     )
     receiver._running = True
     return receiver

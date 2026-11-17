@@ -73,7 +73,7 @@ def test_shutdown_closes_an_idle_transcript_follower():
 
     async def scenario():
         feed = TranscriptFeed()
-        control = module.ControlServer(Mock(), feed)
+        control = module.ControlServer(Mock(), feed, Mock())
         server = await asyncio.start_server(control.serve_connection, "127.0.0.1", 0)
         reader, writer = await asyncio.open_connection(*server.sockets[0].getsockname())
         writer.write(b'{"command":"follow"}\n')

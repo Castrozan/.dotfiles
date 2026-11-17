@@ -26,7 +26,7 @@ class VoiceCall:
         self._receiver = None
         self._tasks = []
         self._recovery_tasks = set()
-        self._barged_in = False
+        self._interrupted = False
         self._playback_started_at = 0.0
         self._membership = VoiceMembership(
             identities,
@@ -57,7 +57,9 @@ class VoiceCall:
 
     def _start_audio(self):
         self._receiver = ListenerVoiceReceiver(
-            self._membership.voice_client, self._listener_user_id
+            self._membership.voice_client,
+            self._listener_user_id,
+            self._audio_services.listener_audio,
         )
         self._receiver.start()
         utterances = asyncio.Queue()
@@ -108,7 +110,7 @@ class VoiceCall:
         if time.monotonic() - self._playback_started_at < PLAYBACK_GRACE_SECONDS:
             self._receiver.forget_sustained_speech()
         elif self._receiver.sustained_speech_seconds() >= BARGE_IN_SECONDS:
-            self._barged_in = True
+            self._interrupted = True
             self._membership.voice_client.stop()
 
     def _finished_utterances(self, buffered_seconds):
@@ -174,15 +176,15 @@ class VoiceCall:
         async with self._speech_lock:
             return self._audio_services.synthesizer.select_model(model)
 
-    async def _play(self, audio_stream):
+    async def _play(self, audio_stream, sample_rate=SPEECH_SAMPLE_RATE):
         voice_client = self._membership.voice_client
         if voice_client is None or not voice_client.is_connected():
             raise VoiceCallError("not_in_voice_channel")
         if self._receiver.sustained_speech_seconds() >= BARGE_IN_SECONDS:
             return "interrupted"
-        self._barged_in = False
+        self._interrupted = False
         self._playback_started_at = time.monotonic()
         await play_audio_stream(
-            voice_client, audio_stream, SPEECH_SAMPLE_RATE, self._audio_services.ffmpeg
+            voice_client, audio_stream, sample_rate, self._audio_services.ffmpeg
         )
-        return "interrupted" if self._barged_in else "finished"
+        return "interrupted" if self._interrupted else "finished"

@@ -19,11 +19,14 @@ CONDUCTOR_SOCKET = os.environ.get(
 )
 JOIN_DEADLINE_SECONDS = 45
 JOIN_RETRY_SECONDS = 0.2
+CONTROL_TIMEOUT_SECONDS = 180
 
 
-def connected_control_socket(socket_path=CONTROL_SOCKET):
+def connected_control_socket(
+    socket_path=CONTROL_SOCKET, timeout_seconds=CONTROL_TIMEOUT_SECONDS
+):
     connection = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    connection.settimeout(180)
+    connection.settimeout(timeout_seconds)
     try:
         connection.connect(socket_path)
     except OSError:
@@ -36,8 +39,10 @@ def send_request(connection, **request):
     connection.sendall(json.dumps(request).encode() + b"\n")
 
 
-def request_once(socket_path=CONTROL_SOCKET, **request):
-    with connected_control_socket(socket_path) as connection:
+def request_once(
+    socket_path=CONTROL_SOCKET, timeout_seconds=CONTROL_TIMEOUT_SECONDS, **request
+):
+    with connected_control_socket(socket_path, timeout_seconds) as connection:
         send_request(connection, **request)
         with connection.makefile(encoding="utf-8") as replies:
             reply = replies.readline()
