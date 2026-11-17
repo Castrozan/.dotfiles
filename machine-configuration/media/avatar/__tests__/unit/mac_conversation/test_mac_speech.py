@@ -37,9 +37,7 @@ def test_anyone_without_a_voiced_character_speaks_in_the_first_voice(servant):
     ("emotion", "delivery"),
     [("happy", DELIVERY["happy"]), ("neutral", mac_speech.NATURAL_DELIVERY)],
 )
-def test_the_emotion_becomes_the_delivery_the_voice_is_directed_with(
-    emotion, delivery
-):
+def test_the_emotion_becomes_the_delivery_the_voice_is_directed_with(emotion, delivery):
     command = mac_speech.synthesis_command("Good evening", emotion, "a-voice")
     assert command[command.index("--directions") + 1] == delivery
     assert command[command.index("--voice") + 1] == "a-voice"

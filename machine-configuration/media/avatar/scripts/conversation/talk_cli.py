@@ -10,6 +10,7 @@ import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
 from talk_arguments import parse_arguments
 
+
 def main():
     arguments = parse_arguments()
     actions = {
