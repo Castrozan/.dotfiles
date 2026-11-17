@@ -3,7 +3,6 @@ from types import SimpleNamespace
 from unittest.mock import Mock
 
 import remote_agent
-import remote_meeting
 import remote_talk
 import room_reach
 from hypothesis import given
@@ -31,12 +30,6 @@ def test_the_remote_shell_splits_the_command_back_into_the_words_given(words):
 def test_the_mac_talk_forwarder_keeps_every_argument_whole(words):
     command = remote_talk.forward_command(words)
     assert remote_words(command) == ["avatar-talk", *words]
-
-
-@given(words=WORDS)
-def test_the_meeting_forwarder_keeps_every_argument_whole(words):
-    command = remote_meeting.host_command("avatar-listen", words)
-    assert remote_words(command) == ["avatar-listen", *words]
 
 
 @given(words=WORDS, pane=PANES)

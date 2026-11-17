@@ -9,10 +9,6 @@ def hide():
     local_seat.end_processes_matching(local_seat.WINDOW_PROFILE_FLAG)
 
 
-def show_controls():
-    open_window("controls.html")
-
-
 def show(port=local_seat.WINDOW_PORT):
     hide()
     open_window("?viewer", port)

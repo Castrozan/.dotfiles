@@ -138,19 +138,16 @@ store or send the transcript elsewhere without being asked.
 
 ### Meetings on a Mac
 
-On a Mac, run the same five steps with the same commands: `avatar-start`, `avatar-listen`, `avatar-audio` and
-`avatar-stop` there forward to chise, where the avatar runs. `avatar-start` seats the meeting at that Mac, opens its
-virtual camera and prints the devices to select. A failed `avatar-start` undoes the steps it took and exits 1 with its
-reason, so report that message instead of retrying blindly.
+On a Mac, run the same steps with the same commands: `avatar-start`, `avatar-listen start`, `avatar-command` and
+`avatar-stop` run on that Mac alone and reach no other machine; the Mac has no `avatar-audio`. `avatar-start` stands the
+avatar there, opens the meeting page and the transcription, starts the virtual camera and prints the devices to select.
+A failed `avatar-start` undoes the steps it took and exits 1 with its reason, so report that message instead of
+retrying blindly.
 
 The call must already have the camera `OBS Virtual Camera`, the microphone `BlackHole 2ch` and the speaker `BlackHole
-16ch` selected; the user chooses them once, so ask when the call shows no avatar or hears nothing. `avatar-listen start`
-adds `--seat remote` while the Mac holds the seat, and `avatar-command speak TEXT EMOTION` then plays into the call and
-to the user's ears without an output argument.
+16ch` selected; the user chooses them once, so ask when the call shows no avatar or hears nothing.
+`avatar-command speak TEXT EMOTION` plays into the call.
 
-There the camera and composite modes open that Mac's webcam, never chise's, and `avatar-audio mute` and `volume` act on
-what the call hears. A wake by name still opens a conversation during the meeting, and closing it leaves the meeting
-running. `avatar-controls` opens there while the meeting runs at that Mac and offers that Mac's cameras.
-`avatar-listen enroll` builds a voice from what its microphone or call carried. A call camera that dies during the
-meeting returns within a minute in avatar mode, so set the video mode again if another was chosen. The Mac's seat and
-OBS end a minute after the meeting stops on chise; after a longer avatar restart, run `avatar-start` there again.
+The camera and composite modes open that Mac's webcam. A conversation and a meeting refuse each other on a Mac: run
+`avatar-talk close` before `avatar-start`, and `avatar-stop` before `avatar-talk`. `avatar-controls` opens while the
+meeting runs on that Mac and offers that Mac's cameras.

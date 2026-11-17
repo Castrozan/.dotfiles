@@ -52,11 +52,16 @@ def test_a_seat_that_ends_stops_the_conversation_and_the_listener():
     assert "--no-block" in stop
 
 
-def test_a_mac_gets_the_same_four_commands_as_chise():
+def test_a_mac_gets_the_same_four_commands_as_chise_and_forwards_none_to_it():
     packages = MAC_COMMANDS[MAC_COMMANDS.index("home.packages") :]
-    assert 'forwardToHost "avatar-audio"' in packages
+    assert "forwardToHost" not in MAC_COMMANDS
     for command in ["avatar-start", "avatar-stop", "avatar-controls", "avatar-listen"]:
         assert f'conversation.meetingCommand "{command}"' in packages
+
+
+def test_the_floor_command_is_defined_once_and_the_mac_talk_command_uses_it():
+    assert "avatar-claim-floor" not in MAC_CONVERSATION
+    assert "        programs.floor\n" in MAC_CONVERSATION
 
 
 def test_the_mac_meeting_commands_run_the_local_modules_with_the_caller_arguments():

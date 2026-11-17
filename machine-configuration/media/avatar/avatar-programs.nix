@@ -24,19 +24,16 @@ let
   unclaimedCommand = pkgs.writeShellScriptBin "avatar-command" ''
     exec ${sendCommand} "$@"
   '';
-  floor = pkgs.writeShellScriptBin "avatar-claim-floor" ''
-    export PATH=${
-      lib.makeBinPath [
-        herdr
-        unclaimedCommand
-        pkgs.openssh
-        pkgs.systemd
-      ]
-    }:$PATH
-    export AVATAR_SERVANT_CHARACTERS=${servantCharacters}
-    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/wake}:${a2aLibrary}
-    exec ${pkgs.python312}/bin/python3 ${./scripts/wake}/floor_cli.py "$@"
-  '';
+  floor = import ./home-manager/avatar-floor-package.nix {
+    inherit
+      pkgs
+      lib
+      herdr
+      unclaimedCommand
+      servantCharacters
+      a2aLibrary
+      ;
+  };
   transcribe = pkgs.writeShellScriptBin "avatar-transcribe" ''
     export PYTHONPATH=${./scripts/listening}
     exec ${pkgs.python312}/bin/python3 -m transcription.transcriber

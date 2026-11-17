@@ -84,11 +84,38 @@ speakers when no conversation is open, and moves the mouth from the loudness of 
 conversation open, `say` raises the control server for that one sentence. `show` opens the avatar window on the Mac and
 `hide` closes it. Sustained speech from the room hushes the avatar mid-sentence, and `close` deletes the transcript.
 
-Meetings stay with the avatar host, reached with `--seat`; opening one ends the conversation the Mac holds, because both
-use port 8765. `open --live` runs the live voice on the Mac itself: the `avatar-live` launch agent hears the seat page's
+A meeting runs on the Mac too, described under [meetings on a Mac](#meetings-on-a-mac); the conversation and the meeting
+refuse each other. `open --live` runs the live voice on the Mac itself: the `avatar-live` launch agent hears the seat page's
 microphone resampled to the model rate, plays into the page's `/stream` websocket, moves the mouth through the control
 server's `voiceLevel` command, and `avatar-claim-floor` gives the opening pane the floor. A host conversation already
 seated at the Mac keeps `--live` on the host.
+
+## Meetings on a Mac
+
+A video call that runs on a Mac is accompanied by the same commands as on chise, and nothing runs on another machine. In
+the call app the user selects once the camera `OBS Virtual Camera`, the microphone `BlackHole 2ch` and the speaker
+`BlackHole 16ch`. The seat page, opened in headless Chrome on `127.0.0.1:8772` as `/?meeting`, carries the call audio
+from `BlackHole 16ch` to the listener as the `meeting` source and plays it to the user, and feeds the user's microphone
+and the avatar's voice into `BlackHole 2ch`. The camera is a windowless Mac OBS instance named `Avatar` whose browser
+source shows `?stage&bare` from the local renderer. That page joins the control server as the stage, the one page that
+owns the camera, so the camera and composite modes open the Mac's webcam.
+
+| Command on a Mac | Does |
+| --- | --- |
+| `avatar-start` | Stands the control server, the renderer and the avatar window, opens the meeting page, starts the meeting listener with the call as `meeting` and the Mac's microphone as `human`, then starts OBS with its virtual camera; any failure undoes the steps already taken |
+| `avatar-listen start [--language CODE]` | Starts the meeting listener on this Mac; every other `avatar-listen` verb is the ordinary listen command |
+| `avatar-command speak TEXT [EMOTION]` | Plays into the call through the seat page, so speech reaches `BlackHole 2ch` |
+| `avatar-controls` | Opens the controls window on this Mac; it refuses unless `avatar-start` left the seat page and OBS running here |
+| `avatar-stop` | Ends the listener and its records, OBS, the meeting page and the stage |
+
+`avatar-start`, `avatar-stop` and `avatar-listen start` refuse while a conversation is open on the Mac, and talking
+refuses while a meeting runs. The Mac has no `avatar-audio`.
+
+The controls window owns no camera. It asks the control server, which passes `listCameras`, `enableCamera` and
+`disableCamera` to the stage inside OBS and returns its `cameraList` and `cameraResult`, so the cameras offered are the
+ones on the Mac showing the call picture.
+
+The seat page fails with the name of the missing device when `BlackHole 2ch` or `BlackHole 16ch` is not installed.
 
 ## Discord calls
 
@@ -141,43 +168,6 @@ With a host conversation seated at the Mac, `open --live` from it names the agen
 `--agent HOST:PANE`, built from the Mac's hostname and the caller's herdr pane. Chise reads that pane's Servant from
 `a2a list` on the Mac, gives it the floor, and sends each task there with `a2a ask` over ssh. With a remote seat the
 live voice hears `AvatarRemoteMicrophone` and plays only into `AvatarLipSync`.
-
-### Meetings from a Mac
-
-A video call that runs on a Mac is accompanied with the commands used on chise. In the call app the user selects once
-the camera `OBS Virtual Camera`, the microphone `BlackHole 2ch` and the speaker `BlackHole 16ch`, and the seat page opened
-as `/?meeting` does all the routing. It sends the call audio from `BlackHole 16ch` to chise and plays it to the user, and
-it feeds the user's microphone and the avatar's voice into `BlackHole 2ch`. The camera is a windowless Mac OBS instance named `Avatar`
-whose browser source shows `?stage&bare` through the tunnel. That page joins the control server as the stage, the one
-page that owns the camera, so the camera and composite modes open the Mac's webcam and chise's stays closed.
-
-| Command on a Mac | Does |
-| --- | --- |
-| `avatar-start` | Runs `avatar-start --seat remote` on chise, which leaves chise's microphone closed, takes the seat with the meeting page and starts OBS with its virtual camera; any failure undoes the steps already taken |
-| `avatar-listen start\|read\|follow\|stop` | Forwards to chise; `start` adds `--seat remote` while this Mac holds the seat, so the call is `meeting` and the Mac's microphone is `human` |
-| `avatar-command speak TEXT [EMOTION]` | Plays into the call and to the user's ears: with no output given, the output is `remote` while a Mac holds the seat and `both` otherwise |
-| `avatar-listen enroll NAME --first N --last M` | Forwards to chise, which builds the voice from the sequences heard through this Mac's microphone or its call |
-| `avatar-controls` | Opens the controls window on this Mac through the seat tunnel; it refuses unless `avatar-start` left the seat and OBS running here |
-| `avatar-audio`, `avatar-stop` | `avatar-audio` forwards to chise; `avatar-stop` closes OBS and the seat, then stops the avatar |
-
-The controls window owns no camera. It asks the control server, which passes `listCameras`, `enableCamera` and
-`disableCamera` to the page that owns the camera, the stage inside OBS on a Mac and the renderer on chise, and returns
-that page's `cameraList` and `cameraResult`. The cameras offered are therefore the ones on the machine showing the call
-picture.
-
-The process that holds a meeting seat's tunnel also keeps the call camera, so nothing else runs on the Mac. Every ten
-seconds it asks the seat whether a meeting is running. Once OBS has reported its virtual camera active, an OBS that ends
-during the meeting is started again, which takes up to a minute and brings the picture back in avatar mode. A start that
-fails stops the OBS it left and is tried again the next round. Six answered looks in a row without a meeting, about one
-minute, mean the meeting ended on chise: the process then ends the seat and OBS with it, while a shorter restart of the
-avatar's services keeps both. A closed tunnel or `avatar-stop` ends them at once. Opening or closing a conversation
-never takes or leaves a meeting seat while that process runs, so a conversation opened in the minute after a meeting
-ends sits on the meeting seat until it ends. Its errors, with their time, and the tunnel's own are appended to
-`~/.local/share/avatar/seat-holder.log`, which starts over past a megabyte. A seat opened for a conversation keeps no
-camera.
-
-The seat page fails with the name of the missing device when `BlackHole 2ch` or `BlackHole 16ch` is not installed, and a
-seat that ends stops the transcription.
 
 ## Live voice
 

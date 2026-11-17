@@ -14,11 +14,6 @@ let
       {
         inherit config lib pkgs;
       };
-  forwardToHost =
-    command:
-    pkgs.writeShellScriptBin command ''
-      exec ssh ${topology.host} ${command} "$(printf '%q ' "$@")"
-    '';
   conversation = import ./home-manager/avatar-mac-conversation.nix {
     inherit
       pkgs
@@ -94,7 +89,6 @@ lib.mkMerge [
       doctor
       programs.transcribe
       conversation.command
-      (forwardToHost "avatar-audio")
       (conversation.meetingCommand "avatar-start" "mac_meeting_cli.py start")
       (conversation.meetingCommand "avatar-stop" "mac_meeting_cli.py stop")
       (conversation.meetingCommand "avatar-controls" "mac_meeting_cli.py controls")

@@ -39,17 +39,6 @@ let
     ${environment}
     exec ${conversationPython}/bin/python3 ${scripts}/conversation/mac_conversation/mac_seat_play.py "$@"
   '';
-  floor = pkgs.writeShellScriptBin "avatar-claim-floor" ''
-    export PATH=${
-      lib.makeBinPath [
-        programs.herdr
-        programs.unclaimedCommand
-      ]
-    }:$PATH
-    export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
-    export PYTHONPATH=${scripts}/listening:${scripts}/echo:${scripts}/wake:${programs.a2aLibrary}
-    exec ${pkgs.python312}/bin/python3 ${scripts}/wake/floor_cli.py "$@"
-  '';
 in
 {
   inherit modules;
@@ -72,7 +61,7 @@ in
     export PATH=${
       lib.makeBinPath [
         programs.unclaimedCommand
-        floor
+        programs.floor
       ]
     }:$PATH
     ${environment}
