@@ -42,7 +42,7 @@ local function adviseReplug(stuckButtons)
 			title = "Mouse button stuck",
 			informativeText = string.format(
 				"macOS has read the %s mouse button as held for over a minute, so pointer moves act as drags"
-					.. " and the menu bar will not reveal. Replug the monitor to reset the mouse receiver.",
+					.. " and the menu bar will not reveal. Replug the mouse receiver, or the monitor whose USB hub carries it.",
 				stuckButtons
 			),
 			withdrawAfter = 0,

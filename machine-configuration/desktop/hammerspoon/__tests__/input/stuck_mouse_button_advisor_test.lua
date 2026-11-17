@@ -136,10 +136,10 @@ expectEqual("a right button held for 55 seconds sends no advice", 0, #sentNotifi
 pollAfterSeconds(5)
 expectEqual("a right button held for 60 seconds sends one advice", 1, #sentNotifications)
 expectEqual(
-	"the advice names the held button and tells you to replug the monitor",
+	"the advice names the held button and tells you to replug the mouse receiver",
 	true,
 	sentNotifications[1].informativeText:find("right mouse button", 1, true) ~= nil
-		and sentNotifications[1].informativeText:find("Replug the monitor", 1, true) ~= nil
+		and sentNotifications[1].informativeText:find("Replug the mouse receiver", 1, true) ~= nil
 )
 
 for _ = 1, 20 do
