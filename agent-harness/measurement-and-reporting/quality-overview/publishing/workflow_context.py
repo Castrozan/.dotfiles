@@ -6,6 +6,7 @@ import subprocess
 from time import monotonic, sleep
 
 from artifact_selection import ARTIFACT_PRODUCERS, select_artifacts, timestamp
+from producer_replay import resolve_producing_run, write_producing_environment
 import workflow_identity_validation
 
 REPOSITORY = "Castrozan/.dotfiles"
@@ -132,7 +133,12 @@ def producing_attempts(workflow, jobs):
 
 
 def collect_context(event):
-    run = event["workflow_run"]
+    run = resolve_producing_run(
+        event,
+        lambda identifier: github_document(
+            f"repos/{REPOSITORY}/actions/runs/{identifier}"
+        ),
+    )
     workflow_identity(run)
     identifier = str(run["id"])
     if not re.fullmatch(r"[1-9]\d*", identifier, flags=re.ASCII):
@@ -158,8 +164,11 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("event", type=Path)
     parser.add_argument("output", type=Path)
+    parser.add_argument("--github-env", type=Path)
     arguments = parser.parse_args()
     context = collect_context(json.loads(arguments.event.read_text()))
+    if arguments.github_env:
+        write_producing_environment(context["workflow"], arguments.github_env)
     arguments.output.write_text(json.dumps(context, indent=2) + "\n")
     identifiers = [
         str(item["id"]) for item in context["artifacts"].values() if item["id"]

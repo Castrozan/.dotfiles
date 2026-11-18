@@ -84,7 +84,7 @@ def test_report_provenance_and_completeness_controls_remain_in_the_pipeline():
     ):
         assert control in source
     assert any(
-        step.get("with", {}).get("ref") == "${{ github.event.workflow_run.head_sha }}"
+        step.get("with", {}).get("ref") == "${{ env.SOURCE_REVISION }}"
         for step in steps
     )
     assert "baseline --rodar" not in source
@@ -94,3 +94,25 @@ def test_report_provenance_and_completeness_controls_remain_in_the_pipeline():
         if "publish_test_coverage_snapshot.py" in step.get("run", "")
     )
     assert "steps.current_artifacts.outcome == 'success'" in coverage["if"]
+    assert "SOURCE_REVISION" not in coverage["env"]
+    assert 'export GITHUB_SHA="$SOURCE_REVISION"' in coverage["run"]
+
+
+def test_manual_report_replay_is_main_only_and_uses_confirmed_source_environment():
+    caller = yaml.safe_load(
+        (REPOSITORY / ".github/workflows/reports-deploy.yml").read_text()
+    )
+    replay = caller[True]["workflow_dispatch"]["inputs"]["producing_run_id"]
+    assert replay["required"] is True
+    assert replay["type"] == "string"
+    assert (
+        "github.event_name == 'workflow_dispatch'"
+        in caller["jobs"]["quality-overview"]["if"]
+    )
+    assert "github.ref == 'refs/heads/main'" in caller["jobs"]["quality-overview"]["if"]
+    binding = next(
+        step
+        for step in report_job()["steps"]
+        if "workflow_context.py" in step.get("run", "")
+    )
+    assert '--github-env "$GITHUB_ENV"' in binding["run"]
