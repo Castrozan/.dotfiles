@@ -94,6 +94,8 @@ def test_report_provenance_and_completeness_controls_remain_in_the_pipeline():
         if "publish_test_coverage_snapshot.py" in step.get("run", "")
     )
     assert "steps.current_artifacts.outcome == 'success'" in coverage["if"]
+    assert "SOURCE_REVISION" not in coverage["env"]
+    assert 'export GITHUB_SHA="$SOURCE_REVISION"' in coverage["run"]
 
 
 def test_manual_report_replay_is_main_only_and_uses_confirmed_source_environment():

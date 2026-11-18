@@ -163,7 +163,6 @@ jobs:
       - name: Publish the current coverage snapshot to the ingestion API
         if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.current_artifacts.outcome == 'success' && steps.overview_artifacts.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
         env:
-          SOURCE_REVISION: ${{ github.event.workflow_run.head_sha }}
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
