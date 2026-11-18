@@ -39,7 +39,7 @@ jobs:
       - name: Bind the completed producing run and artifact attempt
         run: |
           mkdir -p .quality-results/downloads
-          python3 "$PUBLISHING_SCRIPTS/workflow_context.py" "$GITHUB_EVENT_PATH" .quality-results/workflow-context.json
+          python3 "$PUBLISHING_SCRIPTS/workflow_context.py" "$GITHUB_EVENT_PATH" .quality-results/workflow-context.json --github-env "$GITHUB_ENV"
       - name: Download verified artifacts by exact identifier
         run: python3 "$PUBLISHING_SCRIPTS/download_artifacts.py" .quality-results/workflow-context.json .quality-results/downloads
       - uses: actions/checkout@v4
@@ -72,7 +72,7 @@ jobs:
           if-no-files-found: error
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ env.SOURCE_REVISION }}
           path: .quality-results/source
           submodules: false
       - uses: ./.github/actions/nix-setup
