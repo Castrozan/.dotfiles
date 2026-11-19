@@ -6,6 +6,8 @@ from workflow_context import github_document, REPOSITORY, workflow_identity
 
 def promotion_matches(payload, current_head, current_run, current_attempt):
     workflow = payload["workflow"]
+    if current_run.get("status") != "completed":
+        return False
     latest = workflow_identity(current_run)
     confirmed = workflow_identity(current_attempt)
     identity_fields = ("repository", "revision", "runId", "runAttempt", "conclusion")

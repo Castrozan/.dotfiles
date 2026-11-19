@@ -18,6 +18,15 @@ def test_promotion_rejects_newer_main_and_rerun_attempt(run, monkeypatch):
     )
 
 
+@pytest.mark.parametrize("status", ["queued", "in_progress"])
+def test_promotion_skips_snapshot_when_newer_attempt_is_running(run, status):
+    import promote_snapshot
+
+    payload = {"workflow": CONTEXT.workflow_identity(run)}
+    latest = {**run, "run_attempt": 3, "status": status, "conclusion": None}
+    assert not promote_snapshot.promotion_matches(payload, run["head_sha"], latest, run)
+
+
 def test_stored_receipt_must_match_the_expected_report_location(
     run, tmp_path, monkeypatch
 ):
