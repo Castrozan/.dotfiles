@@ -27,6 +27,15 @@ PEER_LIVENESS_PROBE_PATTERN = re.compile(
     r"|\bpgrep\b"
     r"|\bps\s+-p\b"
 )
+FORGE_STATE_READ_PATTERN = re.compile(r"(?<![\w-])(?:glab|gh)\s+\w")
+WAIT_CAP_PATTERN = re.compile(
+    r"\bseq\s"
+    r"|\$\(\(\s*\w+\s*\+\s*1\s*\)\)"
+    r"|\(\(\s*\w+\s*(?:\+\+|\+=)"
+    r"|\btimeout\s+\d"
+    r"|\$SECONDS\b"
+    r"|\bdate\s+\+%s\b"
+)
 
 
 def shell_loop_span(command_string):
@@ -66,6 +75,17 @@ def command_polls_in_a_sleep_paced_loop(command_string):
     return pattern_matches_inside_a_shell_loop(PACING_SLEEP_PATTERN, command_string)
 
 
+def command_polls_a_forge_without_a_cap(command_string, tool_name):
+    return (
+        tool_name != MONITOR_TOOL_NAME
+        and command_polls_in_a_sleep_paced_loop(command_string)
+        and pattern_matches_inside_a_shell_loop(
+            FORGE_STATE_READ_PATTERN, command_string
+        )
+        and not WAIT_CAP_PATTERN.search(command_string)
+    )
+
+
 def command_is_a_background_wait(command_string):
     return (
         command_streams_peer_events(command_string)
@@ -95,6 +115,7 @@ def _is_a_condition_poll(command_string, tool_name):
         command_polls_in_a_sleep_paced_loop(command_string)
         and not command_polls_peer_state_in_a_loop(command_string)
         and not command_streams_peer_events(command_string)
+        and not command_polls_a_forge_without_a_cap(command_string, tool_name)
     )
 
 
@@ -119,6 +140,8 @@ def find_unlisted_background_wait_rules(command_string, tool_name):
         return []
     if command_streams_peer_events(command_string):
         return ["peer-event-stream-outside-monitor"]
+    if command_polls_a_forge_without_a_cap(command_string, tool_name):
+        return ["forge-poll-without-cap"]
     return ["peer-wait-without-liveness-exit"]
 
 
@@ -134,6 +157,13 @@ UNLISTED_BACKGROUND_WAIT_EXPLANATIONS_BY_RULE_NAME = {
         "loop also exit, printing why, when the peer is gone: add "
         "'|| ! herdr pane get <pane> >/dev/null 2>&1' to the exit condition and "
         "echo PEER-GONE after the loop when that probe fails."
+    ),
+    "forge-poll-without-cap": (
+        "It polls a merge request, pipeline or job in a sleep-paced loop with "
+        "no cap, and forge state can park forever where the loop never looks: "
+        "a failed or stuck pipeline leaves the merge request open, so a loop "
+        "waiting for 'merged' never ends. Bound it with 'for i in $(seq 1 N)', "
+        "break on every terminal state, and print the state it ended on."
     ),
     "peer-event-stream-outside-monitor": (
         "It runs 'orchestrator watch' in backgrounded Bash, which notifies only "

@@ -64,6 +64,9 @@ KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "for attempt in $(seq 1 45); do "
     "verdict=$(gh run view 30957498339 --json conclusion --jq .conclusion); "
     '[ -n "$verdict" ] && break; sleep 20; done; echo "verdict: $verdict"',
+    "for i in $(seq 1 120); do "
+    "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
+    '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"',
     "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
     "until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); "
     '[ "$cur" != "$first" ]; } || ! herdr pane get w4E:p6 >/dev/null 2>&1 '

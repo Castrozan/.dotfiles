@@ -44,8 +44,8 @@ COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
         "for i in $(seq 1 25); do out=$(gh run list --commit abc --json conclusion); "
         'if [ -n "$out" ]; then echo "$out"; exit 0; fi; sleep 40; done'
     ),
-    "while true; do gh run view 123 --json conclusion; sleep 30; done",
-    "until gh pr checks 42 | grep -q pass; do sleep 20; done",
+    "n=0; while [ $n -lt 60 ]; do gh run view 123 --json conclusion; sleep 30; n=$((n+1)); done",
+    "until gh pr checks 42 | grep -qE 'pass|fail' || [ $((n+=1)) -gt 60 ]; do sleep 20; done",
 ]
 
 

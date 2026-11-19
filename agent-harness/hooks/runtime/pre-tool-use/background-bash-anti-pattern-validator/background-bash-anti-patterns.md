@@ -81,6 +81,24 @@ Probes that count, inside the loop: `herdr pane get`, `herdr pane list`,
 `kill -0`, `pgrep`, `ps -p`. A probe that runs only after the loop is not an
 exit.
 
+## forge-poll-without-cap
+
+- Wrong: `until [ "$(glab api .../merge_requests/N | jq -r .state)" = merged ]; do sleep 30; done`
+- Right: bound the loop and leave on every terminal state:
+
+```bash
+for i in $(seq 1 120); do
+  state=$(glab api .../merge_requests/N | jq -r .state)
+  [ "$state" != opened ] && break; sleep 30
+done
+echo "merge request: $state"
+```
+
+Forge state parks where an uncapped loop never looks: a failed or stuck
+pipeline leaves the merge request open, and a job waits pending while no
+runner is online. Any sleep-paced loop over `gh` or `glab` needs a `seq`
+bound, a counter, a `timeout` or a deadline.
+
 ## peer-event-stream-outside-monitor
 
 - Wrong: `orchestrator watch --workspace <id>` with `run_in_background: true`
@@ -98,7 +116,7 @@ A backgrounded command that waits is allowed only in one of these shapes:
 - `peer-event-stream-under-monitor`: `orchestrator watch` under Monitor.
 - `peer-poll-with-liveness-exit`: the loop above.
 - `condition-poll`: a sleep-paced loop over a process, file, CI run or
-  endpoint, with no peer read in it.
+  endpoint, with no peer read in it, capped when it reads `gh` or `glab`.
 
 One-shot jobs that do not loop (a build, a test run, a server) are not waits
 and stay allowed.
