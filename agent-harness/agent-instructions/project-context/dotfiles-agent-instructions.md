@@ -71,12 +71,11 @@ every other key collision, so an MCP dropped from its nix source disappears from
 
 ### Betha marketplace source
 
-On kira, Claude reaches `betha-agent-marketplace` over HTTPS at `plataforma-marketplace.betha.cloud` with Lucas's
-personal key. The key-free URL lives in `private-configuration/machines/kira/workspace-profiles.nix`; the git credential
-rule in `private-configuration/machines/kira/git-user.nix` reads `~/.secrets/betha-marketplace-git-credentials` and
-disables the keychain helper for that host. Change it only there and rebuild. Never put the key in a URL, setting,
-repository or the keychain, never run `/plugin marketplace add` for it, and never hand-edit the marketplace records
-under `~/.claude`.
+On kira, Claude reaches `betha-agent-marketplace` at `plataforma-marketplace.betha.cloud` over HTTPS with Lucas's key.
+The key-free URL is in `~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix`; the git credential rule
+in `~/.dotfiles/private-configuration/machines/kira/git-user.nix` reads `~/.secrets/betha-marketplace-git-credentials`
+and disables the keychain helper for that host. Change it only there and rebuild. Never put the key in a URL, setting,
+repository or keychain, run `/plugin marketplace add` for it, or hand-edit marketplace records under `~/.claude`.
 
 ### Machine local wrapper
 
