@@ -69,13 +69,13 @@ Codex deploys an authoritative nix-source for managed settings, including `mcp_s
 config. The live model and entries in projects, marketplaces, and plugins survive rebuilds. The declarative source wins
 every other key collision, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
 
-### Betha marketplace source
+### Private marketplace source
 
-On kira, Claude reaches `betha-agent-marketplace` at `plataforma-marketplace.betha.cloud` over HTTPS with Lucas's key.
-The key-free URL is in `~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix`; the git credential rule
-in `~/.dotfiles/private-configuration/machines/kira/git-user.nix` reads `~/.secrets/betha-marketplace-git-credentials`
-and disables the keychain helper for that host. Change it only there and rebuild. Never put the key in a URL, setting,
-repository or keychain, run `/plugin marketplace add` for it, or hand-edit marketplace records under `~/.claude`.
+On kira, the private configuration owns the marketplace URL in
+`~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix` and the credential rule in
+`~/.dotfiles/private-configuration/machines/kira/git-user.nix`. The rule reads a secret file and disables the keychain
+helper for that host. Change those sources and rebuild. Keep the key out of URLs, settings, repositories and the
+keychain. Do not run `/plugin marketplace add` or hand-edit marketplace records under `~/.claude`.
 
 ### Machine local wrapper
 
