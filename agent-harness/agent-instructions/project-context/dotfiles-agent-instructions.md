@@ -8,10 +8,8 @@ alwaysApply: true
 This repository is the declarative source of truth for every configured machine. Nix modules produce all packages,
 services, host and user settings, dotfiles, secrets, packaged scripts and agent instructions; rebuilds materialize them.
 
-Hand changes on the running machine are drift that rebuilds erase. Find and edit the module that owns the change.
-
-Before guessing where something lives, load the `nix` skill: it carries this repo's map - module layout, host split,
-secrets, script packaging, the "where does this belong" call.
+Hand changes on the running machine are drift that rebuilds erase. Edit the owning module. Before guessing where
+something lives, load the `nix` skill for the repo map, host split, secrets, script packaging and placement rules.
 
 ### Repo local skills
 
