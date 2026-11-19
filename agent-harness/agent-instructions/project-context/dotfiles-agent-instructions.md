@@ -69,13 +69,14 @@ Codex deploys an authoritative nix-source for managed settings, including `mcp_s
 config. The live model and entries in projects, marketplaces, and plugins survive rebuilds. The declarative source wins
 every other key collision, so an MCP dropped from its nix source disappears from the live config on the next rebuild.
 
-### Private marketplace source
+### Private marketplaces
 
-On kira, the private configuration owns the marketplace URL in
+On kira, private marketplace URLs and Git credential helpers are managed in private configuration machine modules.
+The marketplace URL is in
 `~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix` and the credential rule in
 `~/.dotfiles/private-configuration/machines/kira/git-user.nix`. The rule reads a secret file and disables the keychain
-helper for that host. Change those sources and rebuild. Keep the key out of URLs, settings, repositories and the
-keychain. Do not run `/plugin marketplace add` or hand-edit marketplace records under `~/.claude`.
+helper for that host. Change managed sources in their machine modules and rebuild. Keep keys out of URLs, settings,
+repositories and the keychain. Do not use `/plugin marketplace add` or hand-edit managed records under `~/.claude`.
 
 ### Machine local wrapper
 
