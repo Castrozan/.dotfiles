@@ -8,9 +8,10 @@ import listener_session
 import live_opening
 import pytest
 import remote_agent
+import talk_cli
 from meetings import start
 from conversation_addressee import Addressee
-from conversation_state import ConversationPhase
+from conversation_state import ConversationCommand, ConversationPhase
 from talk_runner import run_talk
 
 
@@ -102,3 +103,31 @@ def test_opening_live_fails_and_closes_when_the_floor_cannot_name_the_opener(
         run_talk(monkeypatch, tmp_path, "open", "--live")
     close.assert_called_once()
     assert live_opening.LIVE_NEEDS_A_SERVANT in capsys.readouterr().err
+
+
+def test_opening_live_over_an_open_conversation_refuses_and_leaves_it_running(
+    tmp_path, monkeypatch, capsys
+):
+    monkeypatch.setattr(
+        conversation_state, "observe", lambda directory: ConversationPhase.OPEN
+    )
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, "wW:pSP")
+    bring_up = Mock()
+    close = Mock()
+    monkeypatch.setattr(start, "bring_up", bring_up)
+    monkeypatch.setattr(conversation_effects, "close_conversation", close)
+    with pytest.raises(SystemExit):
+        run_talk(monkeypatch, tmp_path, "open", "--live")
+    bring_up.assert_not_called()
+    close.assert_not_called()
+    assert (
+        capsys.readouterr().err.strip()
+        == conversation_effects.CONVERSATION_OWNS_THE_ROOM
+    )
+
+
+def test_every_avatar_talk_command_in_every_phase_has_a_handler():
+    talk_commands = set(ConversationCommand) - {ConversationCommand.TRANSCRIBE_MEETING}
+    for phase in ConversationPhase:
+        for command in talk_commands:
+            assert conversation_state.decide(phase, command) in talk_cli.ACTIONS

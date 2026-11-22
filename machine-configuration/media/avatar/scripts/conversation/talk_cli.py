@@ -14,6 +14,28 @@ from conversation_state import ConversationAction, ConversationCommand
 from talk_arguments import parse_arguments
 
 
+ACTIONS = {
+    ConversationAction.BRING_UP: conversation_effects.open_conversation,
+    ConversationAction.BRING_UP_LIVE: live_opening.open_live_conversation,
+    ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
+    ConversationAction.TEAR_DOWN: conversation_effects.close_or_return_the_floor,
+    ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,
+    ConversationAction.ASK: voice_turns.ask,
+    ConversationAction.HEAR: voice_turns.hear,
+    ConversationAction.FOLLOW: voice_turns.follow,
+    ConversationAction.SAY: voice_turns.say,
+    ConversationAction.REPLY: voice_turns.reply,
+    ConversationAction.SHOW: conversation_effects.show_window,
+    ConversationAction.HIDE: conversation_effects.hide_window,
+    ConversationAction.REPORT: conversation_effects.status,
+    ConversationAction.REFUSE_CLOSED: conversation_effects.refuse_closed,
+    ConversationAction.REFUSE_MEETING: conversation_effects.refuse_meeting,
+    ConversationAction.REFUSE_CONVERSATION: conversation_effects.refuse_conversation,
+    ConversationAction.REFUSE_LIVE: conversation_effects.refuse_live,
+    ConversationAction.REFUSE_SEAT_CHANGE: conversation_effects.refuse_seat_change,
+}
+
+
 def decision_for(arguments, directory):
     command = (
         ConversationCommand.OPEN_LIVE
@@ -37,28 +59,9 @@ def main():
     transcript_log.report_talk(
         transcript_log.report_to_log, arguments.action, voice_turns.this_pane()
     )
-    actions = {
-        ConversationAction.BRING_UP: conversation_effects.open_conversation,
-        ConversationAction.BRING_UP_LIVE: live_opening.open_live_conversation,
-        ConversationAction.KEEP_OPEN: conversation_effects.keep_conversation_open,
-        ConversationAction.TEAR_DOWN: conversation_effects.close_or_return_the_floor,
-        ConversationAction.LEAVE_MEETING: conversation_effects.leave_meeting,
-        ConversationAction.ASK: voice_turns.ask,
-        ConversationAction.HEAR: voice_turns.hear,
-        ConversationAction.FOLLOW: voice_turns.follow,
-        ConversationAction.SAY: voice_turns.say,
-        ConversationAction.REPLY: voice_turns.reply,
-        ConversationAction.SHOW: conversation_effects.show_window,
-        ConversationAction.HIDE: conversation_effects.hide_window,
-        ConversationAction.REPORT: conversation_effects.status,
-        ConversationAction.REFUSE_CLOSED: conversation_effects.refuse_closed,
-        ConversationAction.REFUSE_MEETING: conversation_effects.refuse_meeting,
-        ConversationAction.REFUSE_LIVE: conversation_effects.refuse_live,
-        ConversationAction.REFUSE_SEAT_CHANGE: conversation_effects.refuse_seat_change,
-    }
     try:
         directory = listener_runtime.runtime_directory()
-        actions[decision_for(arguments, directory)](arguments, directory)
+        ACTIONS[decision_for(arguments, directory)](arguments, directory)
     except (
         utterances.ConversationClosed,
         subprocess.SubprocessError,

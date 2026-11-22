@@ -23,6 +23,10 @@ LIVE_OWNS_THE_TURNS = (
     "The live voice speaks and listens in this conversation and sends you each task "
     "over a2a: end your turn to receive them, or run avatar-talk close"
 )
+CONVERSATION_OWNS_THE_ROOM = (
+    "A conversation is open on the local listener; run avatar-talk close, then "
+    "avatar-talk open --live to move the room to the live voice"
+)
 COMMAND_TIMEOUT_SECONDS = 120
 
 
@@ -93,6 +97,10 @@ def refuse_seat_change(arguments, directory):
 
 def refuse_live(arguments, directory):
     raise RuntimeError(LIVE_OWNS_THE_TURNS)
+
+
+def refuse_conversation(arguments, directory):
+    raise RuntimeError(CONVERSATION_OWNS_THE_ROOM)
 
 
 def keep_conversation_open(arguments, directory):
