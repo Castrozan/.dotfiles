@@ -111,27 +111,10 @@ def monitor_shows_uncovered_rectangle(
     )
 
 
-def released_player_would_be_visible(
-    clients, monitors, player_process_id, target_workspace_id
-):
-    return any(
-        monitor_shows_uncovered_rectangle(
-            monitor,
-            clients,
-            monitor_rectangle(monitor),
-            player_process_id,
-            target_workspace_id,
-        )
-        for monitor in monitors
-    )
-
-
 def player_is_visible(clients, monitors, player_process_id, target_workspace_id):
     player = find_player_window(clients, player_process_id)
     if player is None:
-        return released_player_would_be_visible(
-            clients, monitors, player_process_id, target_workspace_id
-        )
+        return False
     if not player_is_mapped_on_workspace(player, target_workspace_id):
         return False
     player_rectangle = window_rectangle(player)

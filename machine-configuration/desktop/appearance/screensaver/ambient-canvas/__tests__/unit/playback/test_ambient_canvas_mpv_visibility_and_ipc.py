@@ -12,12 +12,10 @@ from mpv_ambient_canvas_ipc import MpvIpcClient
 
 HIDDEN_PLAYER_COMMANDS = [
     ["set_property", "pause", "yes"],
-    ["set_property", "force-window", "no"],
     ["set_property", "vid", "no"],
 ]
 VISIBLE_PLAYER_COMMANDS = [
     ["set_property", "vid", "auto"],
-    ["set_property", "force-window", "yes"],
     ["set_property", "pause", "no"],
 ]
 

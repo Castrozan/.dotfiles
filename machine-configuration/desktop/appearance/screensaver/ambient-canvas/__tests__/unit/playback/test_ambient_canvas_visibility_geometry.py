@@ -76,17 +76,12 @@ def test_inactive_workspace_is_not_visible(compositor_state):
     )
 
 
-@pytest.mark.parametrize(("active_workspace_id", "visible"), [(11, True), (5, False)])
-def test_released_player_returns_only_when_its_workspace_is_shown(
-    compositor_state, active_workspace_id, visible
-):
+@pytest.mark.parametrize("active_workspace_id", [11, 5])
+def test_missing_player_is_not_assumed_visible(compositor_state, active_workspace_id):
     compositor_state["clients"] = []
     compositor_state["monitors"][0]["activeWorkspace"] = {"id": active_workspace_id}
-    assert (
-        player_is_visible(
-            **compositor_state, player_process_id=14534, target_workspace_id=11
-        )
-        is visible
+    assert not player_is_visible(
+        **compositor_state, player_process_id=14534, target_workspace_id=11
     )
 
 

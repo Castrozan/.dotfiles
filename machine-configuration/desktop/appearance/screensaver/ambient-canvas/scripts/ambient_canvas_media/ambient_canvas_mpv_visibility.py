@@ -8,12 +8,10 @@ VISIBILITY_POLL_INTERVAL_SECONDS = 1.0
 
 HIDDEN_PLAYER_COMMANDS = (
     ["set_property", "pause", "yes"],
-    ["set_property", "force-window", "no"],
     ["set_property", "vid", "no"],
 )
 VISIBLE_PLAYER_COMMANDS = (
     ["set_property", "vid", "auto"],
-    ["set_property", "force-window", "yes"],
     ["set_property", "pause", "no"],
 )
 
