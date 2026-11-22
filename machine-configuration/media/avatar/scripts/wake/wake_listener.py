@@ -5,11 +5,16 @@ import time
 import peer_sessions
 import room_holder
 import speech_segmenter
+import transcript_log
 import wake_claim
-from quiet_conversation import ARM_CHECK_SECONDS, follow_conversation
+import wake_prompts
+from quiet_conversation import (
+    ARM_CHECK_SECONDS,
+    ConversationTranscript,
+    follow_conversation,
+)
 from wake_boundaries import for_this_machine, microphone_frames
-from wake_phrase import addressed_session, named_in_turn, opens_with_greeting
-from wake_prompts import SETTINGS, spoken_prompt
+from wake_phrase import addressed_session, opens_with_greeting
 
 FLEET_REFRESH_SECONDS = 60
 TRANSCRIBER_ATTEMPTS = 5
@@ -17,7 +22,6 @@ TRANSCRIBER_RETRY_SECONDS = 0.4
 TRANSCRIBER_UNAVAILABLE = (OSError, subprocess.SubprocessError)
 FRAMES_PER_ARM_CHECK = int(ARM_CHECK_SECONDS / speech_segmenter.FRAME_SECONDS)
 MEETING_SOURCE = "meeting"
-AVATAR = "avatar"
 
 
 class WakeListener:
@@ -26,7 +30,7 @@ class WakeListener:
         self.dry_run = dry_run
         self.sessions = []
         self.sessions_read_at = None
-        self.conversation_read_through = 0
+        self.conversation = ConversationTranscript()
 
     def refresh_sessions(self):
         self.sessions = self.boundaries.sessions()
@@ -59,21 +63,13 @@ class WakeListener:
 
     def addressed(self, heard):
         if not opens_with_greeting(heard):
+            self.boundaries.report("Ignored wake: no opening greeting")
             return None
         self.refresh_sessions()
-        return addressed_session(heard, self.sessions)
-
-    def deliver(self, match, purpose):
-        target = f"{match.session.servant} at {match.session.pane}"
-        if self.dry_run:
-            self.boundaries.report(f"would wake {target}: {match.message}")
-            return False
-        self.boundaries.report(f"wake {target}")
-        text = spoken_prompt(match.message, purpose, match.session)
-        session = match.session
-        if not self.boundaries.prompt_now(session.pane, text, session.host):
-            self.boundaries.notify_at_idle(session.pane, text, session.host)
-        return True
+        match = addressed_session(heard, self.sessions)
+        if match is None:
+            self.boundaries.report("Ignored wake: no unique live servant")
+        return match
 
     def holds_the_room(self, session):
         discord_host = self.boundaries.discord_call_host()
@@ -89,19 +85,20 @@ class WakeListener:
 
     def answer(self, segment):
         heard = self.transcribed(segment)
+        transcript_log.report_wake(self.boundaries.report, heard, segment)
         if not heard:
+            self.boundaries.report("Ignored wake: empty transcript")
             return
         match = self.addressed(heard)
         if match is None or not self.holds_the_room(match.session):
             return
-        if not self.deliver(match, purpose=None):
+        if not wake_prompts.deliver(self.boundaries, self.dry_run, match, purpose=None):
             return
         self.boundaries.open_conversation()
         self.boundaries.hand_to(room_holder.addressee_of(match.session, 0))
 
     def start_reading_conversation(self):
-        entries = self.boundaries.transcript_entries()
-        self.conversation_read_through = entries[-1]["sequence"] if entries else 0
+        self.conversation.start(self.boundaries.transcript_entries())
 
     def read_conversation(self):
         try:
@@ -110,21 +107,21 @@ class WakeListener:
             self.boundaries.report(f"Dropped a conversation turn: {error}")
 
     def turn_on_new_entries(self):
-        entries = self.boundaries.transcript_entries()
-        if entries and entries[-1]["sequence"] < self.conversation_read_through:
-            self.conversation_read_through = 0
-        for entry in entries:
-            if entry["sequence"] > self.conversation_read_through:
-                self.conversation_read_through = entry["sequence"]
-                self.turn_to(entry)
+        for entry in self.conversation.new_entries(
+            self.boundaries.transcript_entries()
+        ):
+            self.turn_to(entry)
 
     def named_in_conversation(self, text):
-        if opens_with_greeting(text) or self.sessions_stale():
-            self.refresh_sessions()
-        return named_in_turn(text, self.sessions)
+        if not opens_with_greeting(text):
+            return None
+        self.refresh_sessions()
+        return addressed_session(text, self.sessions)
 
     def turn_to(self, entry):
-        if entry.get("speaker") == AVATAR:
+        transcript_log.report_conversation(self.boundaries.report, entry)
+        entry = self.conversation.completed_turn(entry)
+        if entry is None:
             return
         match = self.named_in_conversation(entry["text"])
         if match is None or self.already_holds_the_floor(match):
@@ -144,8 +141,8 @@ class WakeListener:
 
     def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()
-        if entry.get("source") != MEETING_SOURCE and purpose in SETTINGS:
-            self.deliver(match, purpose)
+        if entry.get("source") != MEETING_SOURCE and purpose in wake_prompts.SETTINGS:
+            wake_prompts.deliver(self.boundaries, self.dry_run, match, purpose)
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()
@@ -182,9 +179,13 @@ def main():
     parser = argparse.ArgumentParser(prog="avatar-wake")
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--sessions", action="store_true")
+    parser.add_argument("--conversation", action="store_true")
     parser.add_argument("--claim")
     parser.add_argument("--room")
     arguments = parser.parse_args()
+    if arguments.conversation:
+        print(wake_claim.conversation_report())
+        return
     if arguments.claim:
         raise SystemExit(wake_claim.exit_status(arguments.claim, arguments.room))
     if arguments.sessions:

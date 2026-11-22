@@ -1,8 +1,89 @@
 import json
+import logging
 import os
+import sys
 import time
+from datetime import UTC, datetime
+from functools import cache
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+
+import remote_agent
+import speech_segmenter
 
 POLL_SECONDS = 0.25
+WAKE_LOG_MAX_BYTES = 5 * 1024 * 1024
+WAKE_LOG_BACKUP_COUNT = 2
+
+
+class _PrivateRotatingFileHandler(RotatingFileHandler):
+    def _open(self):
+        return open(
+            self.baseFilename,
+            self.mode,
+            encoding=self.encoding,
+            errors=self.errors,
+            opener=lambda filename, flags: os.open(filename, flags, 0o600),
+        )
+
+
+@cache
+def _wake_logger():
+    state_home = os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state"
+    path = Path(state_home) / "avatar" / "wake.log"
+    path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    path.parent.chmod(0o700)
+    handler = _PrivateRotatingFileHandler(
+        path,
+        maxBytes=WAKE_LOG_MAX_BYTES,
+        backupCount=WAKE_LOG_BACKUP_COUNT,
+        encoding="utf-8",
+        errors="backslashreplace",
+    )
+    logger = logging.Logger("avatar-wake", logging.INFO)
+    logger.propagate = False
+    logger.addHandler(handler)
+    return logger
+
+
+def report_to_log(line):
+    try:
+        logger = _wake_logger()
+    except OSError as error:
+        print(f"Could not open the wake log: {error}", file=sys.stderr, flush=True)
+        return
+    logger.info(line)
+
+
+def _report(report, phase, text, **details):
+    record = {
+        "timestamp": datetime.now(UTC).isoformat(),
+        "phase": phase,
+        "room": os.environ.get(remote_agent.HOST_ENVIRONMENT_VARIABLE),
+        "text": text,
+        **details,
+    }
+    report(json.dumps(record, ensure_ascii=False))
+
+
+def report_wake(report, text, segment):
+    _report(
+        report,
+        "wake",
+        text,
+        audio_seconds=len(segment) / (2 * speech_segmenter.SAMPLE_RATE),
+    )
+
+
+def report_conversation(report, entry):
+    _report(
+        report,
+        "conversation",
+        entry["text"],
+        sequence=entry["sequence"],
+        source=entry.get("source"),
+        speaker=entry.get("speaker"),
+    )
 
 
 def read_since(path, sequence):

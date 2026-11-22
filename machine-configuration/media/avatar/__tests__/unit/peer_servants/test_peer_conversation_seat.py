@@ -123,7 +123,7 @@ def test_the_wake_leaves_the_servant_to_a_discord_call_at_a_peer():
         discord_call_host=Mock(return_value="chise"),
     )
     armed_listener(fakes).hear(b"segment")
-    fakes.report.assert_called_once_with("left Medea to the Discord call on chise")
+    fakes.report.assert_any_call("left Medea to the Discord call on chise")
     fakes.claim_wake.assert_not_called()
     fakes.prompt_now.assert_not_called()
     fakes.open_conversation.assert_not_called()

@@ -167,7 +167,7 @@ class Boundaries:
         listener_runtime.runtime_directory()
     )
     close_conversation: object = conversation_closed
-    report: object = lambda line: print(line, file=sys.stderr, flush=True)
+    report: object = transcript_log.report_to_log
     now: object = time.monotonic
     pause: object = time.sleep
 

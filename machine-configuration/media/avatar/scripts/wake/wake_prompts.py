@@ -62,3 +62,16 @@ def spoken_prompt(message, purpose, session=None):
         f"[wake] Voice from the room, speaker not verified: {message} "
         f"{setting_for(purpose, session)}"
     )
+
+
+def deliver(boundaries, dry_run, match, purpose):
+    session = match.session
+    target = f"{session.servant} at {session.pane}"
+    if dry_run:
+        boundaries.report(f"would wake {target}: {match.message}")
+        return False
+    boundaries.report(f"wake {target}")
+    text = spoken_prompt(match.message, purpose, session)
+    if not boundaries.prompt_now(session.pane, text, session.host):
+        boundaries.notify_at_idle(session.pane, text, session.host)
+    return True

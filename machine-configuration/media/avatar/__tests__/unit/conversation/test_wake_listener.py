@@ -1,9 +1,14 @@
+import json
 import struct
 import subprocess
+from datetime import UTC, datetime
 from unittest.mock import Mock
 
+import pytest
 import speech_segmenter
 import wake_listener
+from hypothesis import given
+from hypothesis import strategies as st
 from wake_fakes import VOYAGER, armed_listener, boundaries
 from wake_phrase import LiveSession
 
@@ -62,11 +67,41 @@ def test_a_dry_run_reports_the_match_and_reaches_nobody():
     assert "Voyager" in fakes.report.call_args.args[0]
 
 
-def test_unaddressed_speech_reaches_nobody():
-    fakes = boundaries(heard="I think Voyager broke it")
-    armed_listener(fakes).hear(b"segment")
+@pytest.mark.parametrize(
+    ("heard", "reason"),
+    [
+        ("", "empty transcript"),
+        ("I think Voyager broke it", "no opening greeting"),
+        ("hey Zeno, check the build", "no unique live servant"),
+    ],
+)
+def test_rejected_wake_speech_is_logged_and_reaches_nobody(monkeypatch, heard, reason):
+    monkeypatch.setenv("AVATAR_AGENT_HOST", "kira")
+    fakes = boundaries(heard=heard)
+    segment = frames(4000, 1)[0]
+    armed_listener(fakes).hear(segment)
+    transcript, rejection = [call.args[0] for call in fakes.report.call_args_list]
+    record = json.loads(transcript)
+    assert record["text"] == heard
+    assert record["phase"] == "wake"
+    assert record["room"] == "kira"
+    assert record["audio_seconds"] == speech_segmenter.FRAME_SECONDS
+    assert datetime.fromisoformat(record["timestamp"]).tzinfo == UTC
+    assert reason in rejection
+    fakes.claim_wake.assert_not_called()
     fakes.prompt_now.assert_not_called()
     fakes.open_conversation.assert_not_called()
+
+
+@given(st.text())
+def test_a_wake_transcript_preserves_the_address_and_every_character_of_the_tail(tail):
+    heard = f"hey Voyager, ça marche\n{tail}"
+    fakes = boundaries(heard=heard)
+    armed_listener(fakes).hear(b"segment")
+    transcript = fakes.report.call_args_list[0].args[0]
+    assert "\n" not in transcript and "\r" not in transcript
+    assert "ça marche" in transcript
+    assert json.loads(transcript)["text"] == heard
 
 
 def test_listening_stops_once_the_fleet_is_gone():
@@ -136,7 +171,9 @@ def test_a_busy_transcriber_is_asked_again_until_it_answers():
         (wake_listener.TRANSCRIBER_RETRY_SECONDS,)
     ] * 2
     assert fakes.prompt_now.call_args.args[0] == VOYAGER.pane
-    fakes.report.assert_called_once_with(f"wake Voyager at {VOYAGER.pane}")
+    transcript, wake = [call.args[0] for call in fakes.report.call_args_list]
+    assert json.loads(transcript)["text"] == busy[-1]
+    assert wake == f"wake Voyager at {VOYAGER.pane}"
 
 
 def test_a_transcriber_that_never_answers_drops_the_utterance_after_a_bounded_wait():

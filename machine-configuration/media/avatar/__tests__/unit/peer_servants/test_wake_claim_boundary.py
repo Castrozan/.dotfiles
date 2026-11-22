@@ -92,7 +92,7 @@ def test_a_lost_claim_neither_prompts_nor_opens_and_says_so():
     assert not fakes.notify_at_idle.called
     assert not fakes.open_conversation.called
     assert not fakes.hand_to.called
-    fakes.report.assert_called_once_with("left Medea to another room")
+    fakes.report.assert_any_call("left Medea to another room")
 
 
 def test_a_won_claim_is_taken_before_the_prompt():

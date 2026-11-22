@@ -1,5 +1,6 @@
 import json
 import sys
+from unittest.mock import Mock
 from concurrent.futures import ThreadPoolExecutor
 
 import listener_runtime
@@ -29,6 +30,13 @@ START = 1_000_000.0
 NO_FIXTURE_CHECK = settings(
     suppress_health_check=[HealthCheck.function_scoped_fixture], max_examples=60
 )
+
+
+@pytest.fixture(autouse=True)
+def no_active_conversation(monkeypatch):
+    monkeypatch.setenv("AVATAR_AGENT_HOST", "chise")
+    monkeypatch.setattr(wake_claim, "active_conversation", Mock(return_value=None))
+    monkeypatch.setattr(wake_claim, "conversation_in_room", Mock(return_value=None))
 
 
 def claims_in_time_order(directory, pane, first_room, attempts):

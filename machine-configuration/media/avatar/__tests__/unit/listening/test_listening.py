@@ -10,6 +10,7 @@ import source_capture
 import speech_segmenter
 from transcription import transcriber
 import transcript_log
+import wake_boundaries
 
 FRAME_SAMPLES = 480
 
@@ -54,6 +55,38 @@ def test_transcript_entries_are_sequenced_and_private(tmp_path):
     ]
     assert [item["text"] for item in transcript_log.read_since(path, 1)] == ["second"]
     assert stat.S_IMODE(path.stat().st_mode) == 0o600
+
+
+def test_wake_reports_rotate_as_complete_private_lines(tmp_path, monkeypatch):
+    monkeypatch.setenv("XDG_STATE_HOME", str(tmp_path))
+    monkeypatch.setattr(transcript_log, "WAKE_LOG_MAX_BYTES", 512, raising=False)
+    transcript_log._wake_logger.cache_clear()
+    logger = transcript_log._wake_logger()
+    try:
+        report = wake_boundaries.Boundaries().report
+        texts = [f"{index}: olá Ibaraki-dōji\nmais uma frase" for index in range(20)]
+        for text in texts:
+            transcript_log.report_wake(report, text, b"")
+        report("Ignored wake: no opening greeting")
+        assert transcript_log._wake_logger() is logger
+        directory = tmp_path / "avatar"
+        paths = sorted(directory.glob("wake.log*"), reverse=True)
+        assert [path.name for path in paths] == ["wake.log.2", "wake.log.1", "wake.log"]
+        assert stat.S_IMODE(directory.stat().st_mode) == 0o700
+        assert all(stat.S_IMODE(path.stat().st_mode) == 0o600 for path in paths)
+        lines = [
+            line
+            for path in paths
+            for line in path.read_text(encoding="utf-8").splitlines()
+        ]
+        assert lines[-1] == "Ignored wake: no opening greeting"
+        retained = [json.loads(line)["text"] for line in lines[:-1]]
+        assert 0 < len(retained) < len(texts)
+        assert retained == texts[-len(retained) :]
+    finally:
+        for handler in logger.handlers:
+            handler.close()
+        transcript_log._wake_logger.cache_clear()
 
 
 def test_a_partially_written_line_is_not_read(tmp_path):

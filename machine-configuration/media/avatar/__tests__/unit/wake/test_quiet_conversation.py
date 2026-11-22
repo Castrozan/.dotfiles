@@ -123,3 +123,50 @@ def test_the_loop_closes_an_ended_call_without_waiting_for_quiet(monkeypatch):
     quiet_conversation.follow_conversation(wake_listener.WakeListener(following, False))
     following.close_conversation.assert_called_once_with()
     following.report.assert_called_once_with(quiet_conversation.CALL_ENDED)
+
+
+def test_avatar_speech_does_not_change_the_pending_human_turn():
+    transcript = quiet_conversation.ConversationTranscript()
+    opening = {"source": "human", "text": "hey", "turn_finished": False}
+    echo = {"source": "human", "speaker": "avatar", "text": "Ibaraki"}
+    ending = {"sequence": 3, "source": "human", "speaker": "Lucas", "text": "Voyager"}
+    assert transcript.completed_turn(opening) is None
+    assert transcript.completed_turn(echo) is None
+    assert transcript.completed_turn(ending) == ending | {"text": "hey Voyager"}
+
+
+def test_starting_to_read_a_conversation_discards_an_old_partial_turn():
+    transcript = quiet_conversation.ConversationTranscript()
+    opening = {"sequence": 1, "text": "hey", "turn_finished": False}
+    ending = {"sequence": 2, "text": "Ibaraki"}
+    assert transcript.completed_turn(opening) is None
+    transcript.start([opening])
+    assert list(transcript.new_entries([opening, ending])) == [ending]
+    assert transcript.completed_turn(ending) == ending
+
+
+@pytest.mark.parametrize("changed", [{"source": "meeting"}, {"speaker": "Lucas"}])
+def test_fragments_from_different_sources_or_speakers_are_not_joined(changed):
+    transcript = quiet_conversation.ConversationTranscript()
+    opening = {
+        "source": "human",
+        "speaker": "Ana",
+        "text": "hey",
+        "turn_finished": False,
+    }
+    ending = {"source": "human", "speaker": "Ana", "text": "Ibaraki"} | changed
+    assert transcript.completed_turn(opening) is None
+    assert transcript.completed_turn(ending) == ending
+
+
+def test_a_turn_over_the_character_limit_does_not_route_its_suffix(monkeypatch):
+    monkeypatch.setattr(quiet_conversation, "MAX_TURN_CHARACTERS", 20)
+    transcript = quiet_conversation.ConversationTranscript()
+    fragments = [
+        {"text": "I was thinking about", "turn_finished": False},
+        {"text": "something", "turn_finished": False},
+        {"text": "hey Ibaraki"},
+    ]
+    for entry in fragments:
+        assert transcript.completed_turn(entry) is None
+    assert transcript.completed_turn(fragments[-1]) == fragments[-1]
