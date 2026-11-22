@@ -28,6 +28,12 @@ host's own findings, then checks the wake agent, its microphone page and this Ma
 when any link is broken, and `--json` prints the findings for another program. The host is named once, in
 `home-manager/avatar-topology.nix`.
 
+`avatar-switch-latency [--since WHEN] [--until WHEN]` times each switch to another agent, today by default: every stage
+from the end of the speech that named the agent to the first audio of its reply, then p50 and p95 per stage. The
+listener, the wake, `avatar-talk` and the control server each log the moment they own to
+`~/.local/state/avatar/wake.log`. Each run, and a daily timer, keeps the newest thousand switches in
+`switch-latency.jsonl` beside it, so the baseline outlives log rotation.
+
 ## Desktop conversation
 
 `avatar-talk` is the interface for talking with the avatar at the desk, with no meeting, virtual camera or virtual
