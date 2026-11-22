@@ -130,6 +130,7 @@ def this_mac_in(monkeypatch, tmp_path):
         mac_talk.listener_runtime, "runtime_directory", lambda: tmp_path / "runtime"
     )
     monkeypatch.setattr(mac_talk, "mac_stage", mac.stage)
+    monkeypatch.setattr(mac_talk.mac_turns, "mac_stage", mac.stage)
     monkeypatch.setattr(mac_talk.local_seat, "health", lambda: None)
     monkeypatch.setattr(mac_talk.listener_session, "begin_listening", mac.begin)
     monkeypatch.setattr(mac_talk.conversation_state, "observe", lambda _: mac.phase)

@@ -46,7 +46,7 @@ EXPECTED_TRANSITIONS = {
         ConversationCommand.ASK: ConversationAction.ASK,
         ConversationCommand.HEAR: ConversationAction.HEAR,
         ConversationCommand.FOLLOW: ConversationAction.FOLLOW,
-        ConversationCommand.SAY: ConversationAction.SAY,
+        ConversationCommand.SAY: ConversationAction.REPLY,
         ConversationCommand.SHOW: ConversationAction.SHOW,
         ConversationCommand.HIDE: ConversationAction.HIDE,
         ConversationCommand.STATUS: ConversationAction.REPORT,

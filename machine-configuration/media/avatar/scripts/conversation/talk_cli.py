@@ -47,6 +47,7 @@ def main():
         ConversationAction.HEAR: voice_turns.hear,
         ConversationAction.FOLLOW: voice_turns.follow,
         ConversationAction.SAY: voice_turns.say,
+        ConversationAction.REPLY: voice_turns.reply,
         ConversationAction.SHOW: conversation_effects.show_window,
         ConversationAction.HIDE: conversation_effects.hide_window,
         ConversationAction.REPORT: conversation_effects.status,

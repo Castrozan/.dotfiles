@@ -47,7 +47,7 @@ holds a voice conversation on that Mac alone, described under [conversation on a
 | `avatar-talk ask TEXT [EMOTION]` | Speaks and prints the reply; one verb per turn |
 | `avatar-talk hear [--wait SECONDS]` | Blocks for the next complete utterance and prints it; prints nothing on silence |
 | `avatar-talk follow` | Prints each utterance as a line, for harnesses with a background watcher; only one of `follow`, `hear` and `ask` listens at a time |
-| `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted` |
+| `avatar-talk say TEXT [EMOTION] [--voice VOICE]` | Speaks aloud and reports `finished` or `interrupted`, or `withheld` with a `reason` when the reply would talk over the room, answer a turn not yet heard out, or follow an interrupted or withheld reply |
 | `avatar-talk status` | Reports whether a conversation is open |
 | `avatar-talk show` / `hide` | Brings the avatar window to the current workspace, or hides it again |
 | `avatar-talk close` | Hides or stops the avatar and closes the microphone; a running meeting keeps its services and a meeting transcription keeps running |
@@ -61,6 +61,9 @@ the conversation's stream.
 The window stays on the hidden `special:avatar` workspace until the agent shows it, because the user wants the avatar
 on screen only when an agent chooses to show it.
 Speaking for 0.6 seconds over the avatar stops it, so interrupting needs no agent turn.
+In an open conversation a reply first waits for the room to fall quiet, so a sound that leaves no words only delays it,
+and one sent right behind an interrupted or withheld reply is withheld, as
+[LiveKit Agents](https://docs.livekit.io/agents/build/turns.md) drops the speech queued behind an interruption.
 
 A pause alone does not end the speaker's turn. After each pause, [Smart Turn](https://github.com/pipecat-ai/smart-turn)
 v3.2 judges the turn's last 8 seconds of audio locally, and an unfinished turn holds the reply 2.5 seconds for the rest

@@ -1,13 +1,16 @@
 import contextlib
 import json
+import subprocess
 from types import SimpleNamespace
 from unittest.mock import Mock
 
 import conversation_addressee
 import mac_talk
+import mac_turns
 import pytest
 from conversation_addressee import Addressee
 from conversation_state import ConversationPhase
+from room_turns import FINISHED
 
 SPEECH = SimpleNamespace(text="Good evening", emotion="neutral", voice=None)
 OPENING = SimpleNamespace(language="en", character="swordsman")
@@ -34,6 +37,7 @@ def this_mac(monkeypatch, tmp_path):
         mac_talk.listener_runtime, "runtime_directory", lambda: tmp_path / "runtime"
     )
     monkeypatch.setattr(mac_talk, "mac_stage", mac.stage)
+    monkeypatch.setattr(mac_turns, "mac_stage", mac.stage)
     monkeypatch.setattr(mac_talk.local_seat, "health", lambda: mac.tunnel)
     monkeypatch.setattr(mac_talk.local_seat, "leave", mac.leave)
     monkeypatch.setattr(mac_talk.mac_seat_client, "attached", lambda: mac.attached)
@@ -73,11 +77,22 @@ def test_a_conversation_listening_at_the_host_keeps_its_verbs_there(
     assert mac_talk.carry_out(arguments) == 7
 
 
-def test_a_seat_the_host_stopped_using_does_not_draw_speech_to_the_host(this_mac):
+def test_a_seat_the_host_stopped_using_does_not_draw_speech_to_the_host(
+    this_mac, monkeypatch
+):
     this_mac.tunnel = IDLE_AT_THE_HOST
-    assert mac_talk.carry_out(["say", "Good evening", "happy"]) == 0
+    speaker = Mock(return_value=subprocess.CompletedProcess([], 0, FINISHED))
+    monkeypatch.setattr(mac_turns.voice_turns.subprocess, "run", speaker)
+    with pytest.raises(SystemExit):
+        mac_talk.carry_out(["say", "Good evening", "happy"])
     assert not this_mac.host.called
-    this_mac.stage.speak.assert_called_once_with("Good evening", "happy", None)
+    assert speaker.call_args.args[0] == [
+        "avatar-command",
+        "speak",
+        "Good evening",
+        "happy",
+        "speakers",
+    ]
 
 
 def test_the_window_is_shown_and_hidden_on_this_mac(this_mac):
@@ -93,12 +108,12 @@ def test_a_session_the_room_did_not_turn_to_may_not_speak(
     conversation_addressee.hand_to(tmp_path, Addressee("w1:p1", "Sasaki Kojirou", 0))
     monkeypatch.setenv("HERDR_PANE_ID", "w9:p9")
     with pytest.raises(RuntimeError, match="holds the room"):
-        mac_talk.speak(SPEECH, tmp_path)
+        mac_turns.speak(SPEECH, tmp_path)
     assert not this_mac.stage.speak.called
 
 
 def test_speaking_marks_the_conversation_as_not_quiet(this_mac, tmp_path):
-    mac_talk.speak(SPEECH, tmp_path)
+    mac_turns.speak(SPEECH, tmp_path)
     assert (tmp_path / mac_talk.listener_session.SPOKEN_FILE).exists()
 
 

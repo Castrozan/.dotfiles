@@ -12,6 +12,7 @@ import conversation_state
 import listener_session
 import remote_agent
 import transcript_log
+import turn_taking
 import utterances
 from conversation_state import ConversationPhase
 
@@ -49,8 +50,7 @@ def speech_moments(response):
     }
 
 
-def spoken(command):
-    invoked = time.time()
+def spoken(command, invoked):
     completed = subprocess.run(
         command, stdout=subprocess.PIPE, text=True, timeout=SPEECH_TIMEOUT_SECONDS
     )
@@ -64,6 +64,34 @@ def spoken(command):
         **speech_moments(response),
     )
     return completed
+
+
+def withheld_speech(command, directory, reason, invoked):
+    response = turn_taking.withhold(directory, reason)
+    transcript_log.report_speech(
+        transcript_log.report_to_log,
+        this_pane(),
+        invoked=invoked,
+        status=response["status"],
+        reason=reason,
+    )
+    return subprocess.CompletedProcess(command, 0, json.dumps(response) + "\n")
+
+
+def spoken_in_turn(command, directory):
+    invoked = time.time()
+    reason = turn_taking.withheld_reason(directory)
+    if reason:
+        return withheld_speech(command, directory, reason, invoked)
+    completed = spoken(command, invoked)
+    status = acknowledgement(completed.stdout).get("status")
+    turn_taking.remember_outcome(directory, status)
+    return completed
+
+
+def print_and_exit(completed):
+    print(completed.stdout, end="", flush=True)
+    sys.exit(completed.returncode)
 
 
 def speech_command_on_seat(arguments, seat):
@@ -95,9 +123,12 @@ def speak_on_seat(directory, text, seat):
 
 def say(arguments, directory):
     listener_session.mark_spoken(directory)
-    completed = spoken(speech_command(arguments, directory))
-    print(completed.stdout, end="", flush=True)
-    sys.exit(completed.returncode)
+    print_and_exit(spoken(speech_command(arguments, directory), time.time()))
+
+
+def reply(arguments, directory):
+    listener_session.mark_spoken(directory)
+    print_and_exit(spoken_in_turn(speech_command(arguments, directory), directory))
 
 
 def print_next_utterance(
@@ -118,11 +149,18 @@ def hear(arguments, directory):
         print_next_utterance(directory, arguments.wait)
 
 
+def listen_after(completed, directory, wait_seconds):
+    completed.check_returncode()
+    if acknowledgement(completed.stdout).get("status") == turn_taking.WITHHELD:
+        print(completed.stdout, end="", flush=True)
+    print_next_utterance(directory, wait_seconds)
+
+
 def ask(arguments, directory):
     with utterances.exclusive_consumer(directory):
         listener_session.mark_spoken(directory)
-        spoken(speech_command(arguments, directory)).check_returncode()
-        print_next_utterance(directory, arguments.wait)
+        completed = spoken_in_turn(speech_command(arguments, directory), directory)
+        listen_after(completed, directory, arguments.wait)
 
 
 def follow(arguments, directory):

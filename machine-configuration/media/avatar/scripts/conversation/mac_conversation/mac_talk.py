@@ -1,8 +1,6 @@
-import os
 import subprocess
 import sys
 
-import conversation_addressee
 import conversation_report
 import conversation_state
 import listener_runtime
@@ -12,7 +10,7 @@ import local_seat
 import mac_meeting
 import mac_seat_client
 import mac_stage
-import remote_agent
+import mac_turns
 import remote_talk
 import room_reach
 import utterances
@@ -25,7 +23,6 @@ MICROPHONE = "the microphone of this Mac"
 SEAT = "room"
 ATTACH_WAIT_SECONDS = 25
 HOST_OPTIONS = ("--seat",)
-ROOM_HELD_ELSEWHERE = "Another session holds the room; it speaks until the room turns"
 SEAT_DID_NOT_ATTACH = (
     f"The conversation page did not attach; check that {local_seat.BROWSER} "
     "may use the microphone"
@@ -113,21 +110,6 @@ def open_live_conversation(arguments, directory):
     live_opening.open_live_conversation(arguments, directory, MAC_LIVE_STAGE)
 
 
-def speak(arguments, directory):
-    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
-    if not conversation_addressee.addresses(directory, pane):
-        raise RuntimeError(ROOM_HELD_ELSEWHERE)
-    listener_session.mark_spoken(directory)
-    with mac_stage.standing():
-        mac_stage.speak(arguments.text, arguments.emotion, arguments.voice)
-
-
-def ask(arguments, directory):
-    with utterances.exclusive_consumer(directory):
-        speak(arguments, directory)
-        voice_turns.print_next_utterance(directory, arguments.wait)
-
-
 def refuse_closed(arguments, directory):
     raise utterances.ConversationClosed(utterances.CLOSED_MESSAGE)
 
@@ -141,10 +123,11 @@ ACTIONS = {
     ConversationAction.BRING_UP_LIVE: open_live_conversation,
     ConversationAction.KEEP_OPEN: status,
     ConversationAction.TEAR_DOWN: close_conversation,
-    ConversationAction.ASK: ask,
+    ConversationAction.ASK: mac_turns.ask,
     ConversationAction.HEAR: voice_turns.hear,
     ConversationAction.FOLLOW: voice_turns.follow,
-    ConversationAction.SAY: speak,
+    ConversationAction.SAY: mac_turns.speak,
+    ConversationAction.REPLY: mac_turns.reply,
     ConversationAction.REPORT: status,
     ConversationAction.SHOW: lambda arguments, directory: mac_stage.show_window(),
     ConversationAction.HIDE: lambda arguments, directory: mac_stage.hide_window(),
