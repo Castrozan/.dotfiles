@@ -1,5 +1,6 @@
 import dataclasses
 import json
+import os
 import re
 import shlex
 import subprocess
@@ -22,7 +23,11 @@ def parse(text):
     host, _, pane = text.partition(":")
     if not HOST_NAME.fullmatch(host) or not pane:
         raise ValueError(f"{text!r} is not HOST:PANE")
-    return AgentPane(host, pane)
+    return AgentPane(None if host == this_machine() else host, pane)
+
+
+def this_machine():
+    return os.environ.get(HOST_ENVIRONMENT_VARIABLE)
 
 
 def on_host(host, command):

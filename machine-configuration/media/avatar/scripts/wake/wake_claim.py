@@ -30,6 +30,14 @@ def conversation_report():
     return json.dumps(active_conversation(listener_runtime.runtime_directory()))
 
 
+def names_a_session(conversation):
+    return (
+        isinstance(conversation, dict)
+        and set(conversation) == {"host", "pane"}
+        and all(isinstance(value, str) for value in conversation.values())
+    )
+
+
 def conversation_in_room(directory, room):
     if room == os.environ[remote_agent.HOST_ENVIRONMENT_VARIABLE]:
         return active_conversation(directory)
@@ -42,15 +50,11 @@ def conversation_in_room(directory, room):
     )
     try:
         conversation = json.loads(answer.stdout)
-        if conversation is not None and (
-            not isinstance(conversation, dict)
-            or set(conversation) != {"host", "pane"}
-            or not all(isinstance(value, str) for value in conversation.values())
-        ):
-            raise ValueError("invalid conversation identity")
-        return conversation
-    except (KeyError, TypeError, ValueError) as error:
+    except ValueError as error:
         raise ConnectionError(f"Cannot verify the conversation on {room}") from error
+    if conversation is not None and not names_a_session(conversation):
+        raise ConnectionError(f"Cannot verify the conversation on {room}")
+    return conversation
 
 
 def matches_session(conversation, pane):
@@ -77,6 +81,29 @@ def held_by_another_room(text, room, now):
     return bool(holder) and holder != room and now - claimed_at < CLAIM_SECONDS
 
 
+def session_talks_on_this_machine(directory, pane, room):
+    return room != os.environ[
+        remote_agent.HOST_ENVIRONMENT_VARIABLE
+    ] and matches_session(active_conversation(directory), pane)
+
+
+def session_talks_in_the_previous_room(directory, pane, room, recorded):
+    previous_room, _ = recorded_claim(recorded)
+    return (
+        bool(previous_room)
+        and previous_room != room
+        and matches_session(conversation_in_room(directory, previous_room), pane)
+    )
+
+
+def refused(directory, pane, room, now, recorded):
+    return (
+        session_talks_on_this_machine(directory, pane, room)
+        or held_by_another_room(recorded, room, now)
+        or session_talks_in_the_previous_room(directory, pane, room, recorded)
+    )
+
+
 def claim(directory, pane, room, now):
     path = claim_path(directory, pane)
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -86,19 +113,7 @@ def claim(directory, pane, room, now):
         except BlockingIOError:
             return False
         handle.seek(0)
-        recorded = handle.read()
-        if room != os.environ[
-            remote_agent.HOST_ENVIRONMENT_VARIABLE
-        ] and matches_session(active_conversation(directory), pane):
-            return False
-        if held_by_another_room(recorded, room, now):
-            return False
-        previous_room, _ = recorded_claim(recorded)
-        if (
-            previous_room
-            and previous_room != room
-            and matches_session(conversation_in_room(directory, previous_room), pane)
-        ):
+        if refused(directory, pane, room, now, handle.read()):
             return False
         handle.truncate(0)
         handle.write(json.dumps({"room": room, "claimed_at": now}))

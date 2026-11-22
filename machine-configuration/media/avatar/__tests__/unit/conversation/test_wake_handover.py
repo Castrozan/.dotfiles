@@ -125,7 +125,7 @@ def test_a_name_mention_in_the_last_fragment_keeps_the_current_servant():
     fakes.prompt_now.assert_not_called()
     records = [json.loads(call.args[0]) for call in fakes.report.call_args_list]
     assert [(item["sequence"], item["text"]) for item in records] == list(
-        zip((16, 17), texts)
+        zip((16, 17), texts, strict=True)
     )
 
 

@@ -32,28 +32,35 @@ class ConversationTranscript:
                 self.read_through = entry["sequence"]
                 yield entry
 
-    def completed_turn(self, entry):
-        speaker = entry.get("speaker")
-        if speaker == "avatar":
-            return None
-        source = entry.get("source")
-        if source != self.source or (
+    def spoken_by_another_voice(self, source, speaker):
+        return source != self.source or bool(
             speaker and self.speaker and speaker != self.speaker
-        ):
+        )
+
+    def append(self, fragment):
+        if self.text is None:
+            return
+        joined = f"{self.text} {fragment}" if self.text else fragment
+        self.text = joined if len(joined) <= MAX_TURN_CHARACTERS else None
+
+    def extend_turn(self, entry):
+        source = entry.get("source")
+        speaker = entry.get("speaker")
+        if self.spoken_by_another_voice(source, speaker):
             self.reset_turn()
         self.source = source
         self.speaker = speaker or self.speaker
-        if self.text is not None:
-            fragment = entry["text"]
-            if len(self.text) + len(fragment) + bool(self.text) > MAX_TURN_CHARACTERS:
-                self.text = None
-            else:
-                self.text = f"{self.text} {fragment}" if self.text else fragment
+        self.append(entry["text"])
+
+    def completed_turn(self, entry):
+        if entry.get("speaker") == "avatar":
+            return None
+        self.extend_turn(entry)
         if not entry.get("turn_finished", True):
             return None
         text = self.text
         self.reset_turn()
-        return entry | {"text": text} if text is not None else None
+        return None if text is None else entry | {"text": text}
 
 
 def close_when_quiet(boundaries, dry_run=False):

@@ -22,6 +22,12 @@ def test_an_agent_on_another_machine_is_named_by_host_and_pane():
     assert remote_agent.parse("kira:w4A:p1") == AgentPane("kira", "w4A:p1")
 
 
+def test_an_agent_addressed_by_this_machine_name_is_local(monkeypatch):
+    monkeypatch.setenv(remote_agent.HOST_ENVIRONMENT_VARIABLE, "chise")
+    assert remote_agent.parse("chise:w4A:p1") == AgentPane(None, "w4A:p1")
+    assert remote_agent.parse("kira:w4A:p1") == AgentPane("kira", "w4A:p1")
+
+
 @pytest.mark.parametrize("text", ["kira", "kira:", ":w4A:p1", "-oProxyCommand=x:p1"])
 def test_a_malformed_agent_address_is_refused(text):
     with pytest.raises(ValueError, match="HOST:PANE"):
