@@ -61,12 +61,7 @@ def control_bridge_service(action):
 
 
 def wait_for_identity(result, deadline):
-    if result.get("error") != "no_eligible_available_bot_for_listener":
-        return False
-    if time.monotonic() >= deadline:
-        return False
-    state = request_once(command="status")
-    return not any(identity["ready"] for identity in state["identities"])
+    return result.get("error") == "bridge_not_ready" and time.monotonic() < deadline
 
 
 def request_join(preferred=None, follow_listener=False):

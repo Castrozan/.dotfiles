@@ -118,9 +118,12 @@ class VoiceMembership:
             self.listener_user_id, self.guild_id, preferred
         )
         if selected is None:
-            raise VoiceCallError("no_eligible_available_bot_for_listener")
+            raise VoiceCallError(
+                self.identities.join_refusal(self.listener_user_id, self.guild_id)
+            )
         self.identity, self.voice_client = selected
         try:
+            self.identities.remember_voice_session(self.identity, self.guild_id)
             self.audio_lifecycle.start()
         except BaseException:
             await self._disconnect()
@@ -131,6 +134,12 @@ class VoiceMembership:
             self.following = False
             await self._disconnect()
 
+    async def release_stale_voice_state(self, identity):
+        async with self._lock:
+            if identity is self.identity:
+                return
+            await self.identities.release_stale_voice_state(identity, self.guild_id)
+
     async def _disconnect(self):
         self.generation = uuid.uuid4().hex
         self.audio_lifecycle.stop()
@@ -138,6 +147,12 @@ class VoiceMembership:
             self.voice_client.stop()
             await self.voice_client.disconnect()
             self.voice_client = None
-        if self.identity is not None:
+        if self.identity is None:
+            return
+        try:
+            await self.identities.release_stale_voice_state(
+                self.identity, self.guild_id
+            )
+        finally:
             self.identities.release(self.identity)
             self.identity = None

@@ -82,9 +82,29 @@ def identity_guild(identity, guild_id):
     return guild, None
 
 
-def occupancy_refusal(identity, member):
-    if member.voice is None:
+def occupancy_refusal(identity, member, bridge_owned_voice_state):
+    if getattr(member.voice, "channel", None) is None:
         return None
-    if member.voice.channel is None:
-        return None
-    return "owned_call" if identity.lease is not None else "bot_voice_connection_in_use"
+    if identity.lease is not None:
+        return "owned_call"
+    return None if bridge_owned_voice_state else "bot_voice_connection_in_use"
+
+
+def ready_identity(identity):
+    return identity.error is None and identity.client.is_ready()
+
+
+def listener_absent(identities, listener_user_id, guild_id):
+    guilds = (identity_guild(identity, guild_id)[0] for identity in identities)
+    visible_guilds = [guild for guild in guilds if guild is not None]
+    return bool(visible_guilds) and not any(
+        guild_listener_channel(guild, listener_user_id) for guild in visible_guilds
+    )
+
+
+def join_refusal(identities, listener_user_id, guild_id):
+    if not any(ready_identity(identity) for identity in identities):
+        return "bridge_not_ready"
+    if listener_absent(identities, listener_user_id, guild_id):
+        return "listener_not_in_allowed_voice_channel"
+    return "no_eligible_available_bot_for_listener"

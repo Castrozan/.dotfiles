@@ -108,7 +108,8 @@ def test_a_command_that_cannot_run_is_no_answer(monkeypatch, failure):
 def connection_with(silver):
     identity = SimpleNamespace(client=SimpleNamespace(user=SimpleNamespace(id=100)))
     call = SimpleNamespace(follow_listener=AsyncMock(), observe_bot_movement=Mock())
-    return IdentityConnection(identity, call, LISTENER_ID, set(), silver), call
+    connection = IdentityConnection(identity, call, LISTENER_ID, silver, Mock())
+    return connection, call
 
 
 def voice_move(member_id, before, after):

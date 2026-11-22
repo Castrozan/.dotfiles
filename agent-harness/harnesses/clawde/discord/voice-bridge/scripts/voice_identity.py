@@ -9,7 +9,15 @@ from voice_permissions import (
     channel_refusal,
     guild_listener_channel,
     identity_guild,
+    join_refusal,
     occupancy_refusal,
+    ready_identity,
+)
+from voice_presence import (
+    VoiceSessionRecord,
+    bridge_owns_voice_state,
+    release_stale_voice_state,
+    self_voice_state,
 )
 
 logger = logging.getLogger(__name__)
@@ -29,6 +37,7 @@ class VoiceIdentityPool:
     def __init__(self, identities, lease_directory):
         self.identities = sorted(identities, key=lambda identity: identity.name)
         self._lease_directory = Path(lease_directory)
+        self.voice_sessions = VoiceSessionRecord(lease_directory)
 
     def candidates(self, listener_user_id, guild_id, preferred=None):
         for identity in sorted(
@@ -46,13 +55,27 @@ class VoiceIdentityPool:
         guild, refusal = identity_guild(identity, guild_id)
         if refusal:
             return None, refusal
-        busy = occupancy_refusal(identity, guild.me)
+        busy = occupancy_refusal(
+            identity, guild.me, self.bridge_owned_voice_state(identity, guild_id)
+        )
         if busy:
             return None, busy
         channel = guild_listener_channel(guild, listener_user_id)
         if channel is None:
             return None, "listener_not_in_allowed_voice_channel"
         return channel, channel_refusal(channel, guild.me)
+
+    def bridge_owned_voice_state(self, identity, guild_id):
+        voice = self_voice_state(identity.client, guild_id)
+        return voice is not None and bridge_owns_voice_state(
+            identity, voice, self.voice_sessions
+        )
+
+    def join_refusal(self, listener_user_id, guild_id):
+        return join_refusal(self.identities, listener_user_id, guild_id)
+
+    async def release_stale_voice_state(self, identity, guild_id):
+        return await release_stale_voice_state(identity, guild_id, self.voice_sessions)
 
     async def connect(self, listener_user_id, guild_id, preferred):
         for identity, channel in self.candidates(listener_user_id, guild_id, preferred):
@@ -65,15 +88,25 @@ class VoiceIdentityPool:
                 return identity, connection
         return None
 
-    async def _connect_candidate(self, identity, channel, listener_user_id):
+    def remember_voice_session(self, identity, guild_id):
+        voice = self_voice_state(identity.client, guild_id)
+        self.voice_sessions.remember(
+            identity.client.user.id, getattr(voice, "session_id", None)
+        )
+
+    async def _connect_reserved(self, identity, channel, listener_user_id):
+        await self.release_stale_voice_state(identity, channel.guild.id)
         if (
             self.eligibility(identity, listener_user_id, channel.guild.id)[1]
             is not None
         ):
             self.release(identity)
             return None
+        return await channel.connect(timeout=20, reconnect=True)
+
+    async def _connect_candidate(self, identity, channel, listener_user_id):
         try:
-            return await channel.connect(timeout=20, reconnect=True)
+            return await self._connect_reserved(identity, channel, listener_user_id)
         except BaseException as error:
             self.release(identity)
             if not isinstance(error, Exception):
@@ -112,7 +145,7 @@ class VoiceIdentityPool:
                 "bot_user_id": str(identity.client.user.id)
                 if identity.client.user
                 else None,
-                "ready": identity.client.is_ready() and identity.error is None,
+                "ready": ready_identity(identity),
                 "error": identity.error,
                 "owned": identity.lease is not None,
                 "unavailable_reason": self.eligibility(

@@ -33,6 +33,9 @@ class VoiceCall:
     def observe_bot_movement(self, identity):
         self._membership.observe_bot_movement(identity)
 
+    async def release_stale_voice_state(self, identity):
+        await self._membership.release_stale_voice_state(identity)
+
     async def join(self, preferred=None, follow=False, automatic=False):
         await self._membership.join(preferred, follow, automatic)
         return self.status()

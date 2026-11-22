@@ -154,10 +154,33 @@ def test_unauthorized_guild_and_occupied_bot_never_connect(tmp_path):
             await call.join()
         channel.connect.assert_not_awaited()
         call._membership.guild_id = 1
-        channel.guild.me.voice = SimpleNamespace(channel=channel)
+        channel.guild.me.voice = SimpleNamespace(
+            channel=channel, session_id="foreign-session"
+        )
         with pytest.raises(module.VoiceCallError, match="no_eligible"):
             await call.join()
         channel.connect.assert_not_awaited()
         assert identity.lease is None
 
     asyncio.run(scenario())
+
+
+def expected_join_refusal(ready, in_guild, listener_present):
+    if not ready:
+        return "bridge_not_ready"
+    if in_guild and not listener_present:
+        return "listener_not_in_allowed_voice_channel"
+    return "no_eligible_available_bot_for_listener"
+
+
+def test_every_join_refusal_names_what_is_actually_missing(tmp_path):
+    for ready, in_guild, listener_present in itertools.product((False, True), repeat=3):
+        identity, channel = make_identity(
+            "primary", ready=ready, guild_id=1 if in_guild else 2
+        )
+        if not listener_present:
+            del channel.voice_states[42]
+        pool = VoiceIdentityPool([identity], tmp_path)
+        assert pool.join_refusal(42, 1) == expected_join_refusal(
+            ready, in_guild, listener_present
+        )

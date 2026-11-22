@@ -9,7 +9,7 @@ from pathlib import Path
 import discord
 
 from voice_bridge.control_server import ControlServer
-from voice_connection import IdentityConnection
+from voice_connection import IdentityConnection, IdentityLogin
 from voice_identity import VoiceIdentity, VoiceIdentityPool
 from voice_permissions import identity_specifications
 from silver_channel import SilverChannel
@@ -71,7 +71,9 @@ async def run_bridge():
     )
     control_socket.chmod(0o600)
 
-    claimed_bot_ids = set()
+    login = IdentityLogin(
+        {}, discord_client, (discord.LoginFailure, discord.PrivilegedIntentsRequired)
+    )
 
     stop_requested = asyncio.Event()
     loop = asyncio.get_running_loop()
@@ -80,7 +82,7 @@ async def run_bridge():
     client_tasks = [
         asyncio.create_task(
             IdentityConnection(
-                identity, call, listener_user_id, claimed_bot_ids, silver_channel
+                identity, call, listener_user_id, silver_channel, login
             ).run()
         )
         for identity in identities.identities
@@ -98,6 +100,7 @@ async def run_bridge():
 def main():
     logging.basicConfig(level=logging.WARNING)
     logging.getLogger("discord.voice_state").setLevel(logging.INFO)
+    logging.getLogger("discord.gateway").setLevel(logging.INFO)
     discord.opus.load_opus(os.environ["VOICE_BRIDGE_OPUS_LIBRARY"])
     asyncio.run(run_bridge())
 

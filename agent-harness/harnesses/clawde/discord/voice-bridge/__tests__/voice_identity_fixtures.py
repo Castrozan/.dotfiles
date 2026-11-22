@@ -20,7 +20,9 @@ def make_identity(name, *, ready=True, occupied=False, allowed=True, guild_id=1)
     )
     channel.guild = guild
     if occupied:
-        member.voice = SimpleNamespace(channel=channel, mute=False, deaf=False)
+        member.voice = SimpleNamespace(
+            channel=channel, mute=False, deaf=False, session_id="foreign-session"
+        )
     client = Mock(
         user=SimpleNamespace(id=100 + len(name)),
         is_ready=Mock(return_value=ready),
