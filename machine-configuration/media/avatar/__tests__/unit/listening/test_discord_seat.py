@@ -113,7 +113,7 @@ def test_saying_while_the_seat_is_discord_speaks_into_the_call(tmp_path, monkeyp
         conversation_state, "observe", lambda directory: ConversationPhase.OPEN
     )
     monkeypatch.setattr(conversation_seat, "current", lambda directory: Seat.DISCORD)
-    runner = Mock(return_value=SimpleNamespace(returncode=0))
+    runner = Mock(return_value=SimpleNamespace(returncode=0, stdout=""))
     monkeypatch.setattr(voice_turns.subprocess, "run", runner)
     with pytest.raises(SystemExit):
         run_talk(monkeypatch, tmp_path, "say", "Hello")

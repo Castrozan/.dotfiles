@@ -7,6 +7,7 @@ import conversation_state
 import listener_runtime
 import live_opening
 import room_reach
+import transcript_log
 import utterances
 import voice_turns
 from conversation_state import ConversationAction, ConversationCommand
@@ -33,6 +34,9 @@ def main():
     if forwarded is not None:
         sys.exit(forwarded)
     arguments = parse_arguments()
+    transcript_log.report_talk(
+        transcript_log.report_to_log, arguments.action, voice_turns.this_pane()
+    )
     actions = {
         ConversationAction.BRING_UP: conversation_effects.open_conversation,
         ConversationAction.BRING_UP_LIVE: live_opening.open_live_conversation,

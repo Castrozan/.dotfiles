@@ -94,6 +94,10 @@ def test_an_interrupted_synthesis_never_starts_a_player_or_announces_speech():
         })();
         """
     )
+    timing = result["agentMessages"][0].pop("timing")
+    assert list(timing) == ["received", "synthesisStarted", "synthesized"], (
+        "speech interrupted before playing never claims audio went out"
+    )
     assert result == {
         "spawned": [],
         "rendererMessageTypes": ["speechEnded"],

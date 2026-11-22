@@ -58,6 +58,7 @@ function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, model, id } = command;
   const { clientRegistry, textToSpeechGenerator } = context;
   return async (holdsFloor) => {
+    delivery.timing.synthesisStarted = Date.now();
     const speech = await textToSpeechGenerator.generate(
       text,
       id,
@@ -66,11 +67,18 @@ function performSpeech(command, context, delivery) {
       model,
     );
     delivery.source = speech.source;
+    delivery.timing.synthesized = Date.now();
     if (!holdsFloor()) {
       return { finished: Promise.resolve(), stop: () => {} };
     }
     announceSpeechToRenderer(clientRegistry, command, speech);
-    return playerFor(output, context)(speech.audioPath, output, context);
+    const playback = playerFor(output, context)(
+      speech.audioPath,
+      output,
+      context,
+    );
+    delivery.timing.playing = Date.now();
+    return playback;
   };
 }
 
@@ -90,7 +98,7 @@ async function handleSpeakCommand(command, connection, context) {
   }
 
   const usesAgentChannel = output === "mic" || output === "both";
-  const delivery = {};
+  const delivery = { timing: { received: Date.now() } };
   const speech = performSpeech(
     { text, emotion, output, voice, model, id },
     context,
@@ -108,6 +116,7 @@ async function handleSpeakCommand(command, connection, context) {
       output,
       status,
       source: delivery.source,
+      timing: delivery.timing,
     });
   } catch (error) {
     sendError(connection, `Speech failed: ${error.message}`);

@@ -93,8 +93,9 @@ def test_a_failed_segment_is_dropped_and_the_next_one_is_still_recorded(
     listening.segments = queue.Queue()
     listening.pending.begin()
     listening.pending.begin()
-    listening.segments.put_nowait(("human", b"lost", True))
-    listening.segments.put_nowait(("human", b"kept", True))
+    heard = source_capture.HeardMoments(speech_ended=1.0, segment_closed=1.7)
+    listening.segments.put_nowait(("human", b"lost", True, heard))
+    listening.segments.put_nowait(("human", b"kept", True, heard))
     transcribed = []
 
     def transcribe(segment, language):

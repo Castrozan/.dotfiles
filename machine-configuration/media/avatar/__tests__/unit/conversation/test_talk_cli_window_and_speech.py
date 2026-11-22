@@ -57,7 +57,10 @@ def test_asking_speaks_and_prints_only_the_reply_tagged_as_voice(
     monkeypatch.setattr(
         conversation_state, "observe", lambda directory: ConversationPhase.OPEN
     )
-    runner = Mock()
+    acknowledged = '{"type":"speakAck","status":"finished"}\n'
+    runner = Mock(
+        return_value=voice_turns.subprocess.CompletedProcess([], 0, acknowledged)
+    )
     monkeypatch.setattr(voice_turns.subprocess, "run", runner)
     monkeypatch.setattr(utterances, "next_utterance", lambda *_: "tudo certo")
     voice_turns.ask(
@@ -67,7 +70,6 @@ def test_asking_speaks_and_prints_only_the_reply_tagged_as_voice(
         tmp_path,
     )
     assert runner.call_args.args[0][:4] == ["avatar-command", "speak", "Oi", "happy"]
-    assert runner.call_args.kwargs["stdout"] == voice_turns.subprocess.DEVNULL
     assert capsys.readouterr().out == "[voice] tudo certo\n"
 
 
@@ -90,7 +92,7 @@ def test_asking_after_the_user_closed_the_window_never_reopens_it(
 def test_saying_plays_where_the_conversation_is_seated(
     tmp_path, monkeypatch, seat, output
 ):
-    runner = Mock(return_value=SimpleNamespace(returncode=0))
+    runner = Mock(return_value=SimpleNamespace(returncode=0, stdout=""))
     monkeypatch.setattr(voice_turns.subprocess, "run", runner)
     monkeypatch.setattr(conversation_seat, "current", lambda directory: seat)
     with pytest.raises(SystemExit):
@@ -99,5 +101,7 @@ def test_saying_plays_where_the_conversation_is_seated(
         )
     runner.assert_called_once_with(
         ["avatar-command", "speak", "oi", "happy", output],
+        stdout=voice_turns.subprocess.PIPE,
+        text=True,
         timeout=voice_turns.SPEECH_TIMEOUT_SECONDS,
     )

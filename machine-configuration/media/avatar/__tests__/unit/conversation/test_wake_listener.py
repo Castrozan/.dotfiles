@@ -174,7 +174,7 @@ def test_a_busy_transcriber_is_asked_again_until_it_answers():
         (wake_listener.TRANSCRIBER_RETRY_SECONDS,)
     ] * 2
     assert fakes.prompt_now.call_args.args[0] == VOYAGER.pane
-    transcript, _, wake = [call.args[0] for call in fakes.report.call_args_list]
+    transcript, _, wake, _ = [call.args[0] for call in fakes.report.call_args_list]
     assert json.loads(transcript)["text"] == busy[-1]
     assert wake == f"wake Voyager at {VOYAGER.pane}"
 

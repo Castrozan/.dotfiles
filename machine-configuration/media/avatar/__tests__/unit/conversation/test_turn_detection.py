@@ -82,13 +82,14 @@ def test_a_segment_carries_whether_the_speaker_finished(tmp_path):
     speech = source_capture.SourceSpeech("human", listening)
     for frame in [FRAME] * 30 + [SILENT_FRAME] * 40:
         speech.feed(frame)
-    source, segment, turn_finished = listening.segments.get_nowait()
+    source, segment, turn_finished, _ = listening.segments.get_nowait()
     assert (source, turn_finished) == ("human", False)
 
 
 def test_the_transcript_records_an_unfinished_turn(tmp_path, monkeypatch):
     listening = listening_with(tmp_path, Mock())
-    listening.segments.put_nowait(("human", b"pcm", False))
+    heard = source_capture.HeardMoments(speech_ended=1.0, segment_closed=1.7)
+    listening.segments.put_nowait(("human", b"pcm", False, heard))
     monkeypatch.setattr(listener, "transcribe_when_ready", Mock(return_value="e"))
     listening.pending.begin()
     listening.pending.finish = Mock(side_effect=listening.stopping.set)

@@ -138,7 +138,9 @@ class WakeListener:
     def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()
         if entry.get("source") != MEETING_SOURCE and purpose in wake_prompts.SETTINGS:
-            wake_prompts.deliver(self.boundaries, self.dry_run, match, purpose)
+            wake_prompts.deliver(
+                self.boundaries, self.dry_run, match, purpose, entry["sequence"]
+            )
 
     def listen_while_armed(self, frames):
         segmenter = speech_segmenter.SpeechSegmenter()

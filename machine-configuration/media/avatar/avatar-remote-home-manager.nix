@@ -58,6 +58,7 @@ let
     ];
     arguments = "--seat-of ${topology.host}";
   };
+  switchLatency = import ./home-manager/avatar-switch-latency-package.nix { inherit pkgs; };
   conversationLog = "${config.home.homeDirectory}/Library/Logs/avatar-conversation.log";
   onDemandAgent =
     name: package: executableName:
@@ -92,6 +93,7 @@ lib.mkMerge [
       talk
       wake
       doctor
+      switchLatency
       programs.transcribe
       conversation.command
       (conversation.meetingCommand "avatar-start" "mac_meeting_cli.py start")
@@ -101,6 +103,27 @@ lib.mkMerge [
     ];
   }
   wakeLaunchAgent
+  {
+    launchd.agents.avatar-switch-latency = {
+      enable = true;
+      config = {
+        Label = "com.dotfiles.avatar-switch-latency";
+        ProgramArguments = [
+          "${switchLatency}/bin/avatar-switch-latency"
+          "--record"
+        ];
+        RunAtLoad = false;
+        StartCalendarInterval = [
+          {
+            Hour = 0;
+            Minute = 0;
+          }
+        ];
+        StandardOutPath = wakeLog;
+        StandardErrorPath = wakeLog;
+      };
+    };
+  }
   (onDemandAgent "avatar-conversation" conversation.listener "avatar-conversation-listener")
   (onDemandAgent "avatar-live" conversation.live "avatar-live")
   (onDemandAgent "avatar-control" conversation.controlServer "avatar-control-server")

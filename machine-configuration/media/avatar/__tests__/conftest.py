@@ -41,5 +41,10 @@ def no_decisions_api_key(monkeypatch, tmp_path_factory):
 
 
 @pytest.fixture(autouse=True)
+def no_private_log_of_this_machine(monkeypatch):
+    monkeypatch.setattr("transcript_log.report_to_log", Mock())
+
+
+@pytest.fixture(autouse=True)
 def no_meeting_seat_kept_on_this_machine(monkeypatch):
     monkeypatch.setattr("local_seat.meeting_seat_kept_here", Mock(return_value=False))

@@ -27,10 +27,14 @@ class _PrivateRotatingFileHandler(RotatingFileHandler):
         )
 
 
+def wake_log_path():
+    state_home = os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state"
+    return Path(state_home) / "avatar" / "wake.log"
+
+
 @cache
 def _wake_logger():
-    state_home = os.environ.get("XDG_STATE_HOME") or Path.home() / ".local" / "state"
-    path = Path(state_home) / "avatar" / "wake.log"
+    path = wake_log_path()
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     path.parent.chmod(0o700)
     handler = _PrivateRotatingFileHandler(
@@ -82,11 +86,28 @@ def report_conversation(report, entry):
         sequence=entry["sequence"],
         source=entry.get("source"),
         speaker=entry.get("speaker"),
+        turn_finished=entry.get("turn_finished"),
+        speech_ended=entry.get("speech_ended"),
+        segment_closed=entry.get("segment_closed"),
+        transcription_started=entry.get("transcription_started"),
+        transcript_written=entry.get("time"),
     )
 
 
 def report_addressing(report, phase, **decision):
     _report(report, phase, decision="addressing", **decision)
+
+
+def report_delivery(report, **delivery):
+    _report(report, "delivery", **delivery)
+
+
+def report_talk(report, action, pane):
+    _report(report, "talk", action=action, pane=pane)
+
+
+def report_speech(report, pane, **speech):
+    _report(report, "speech", pane=pane, **speech)
 
 
 def read_since(path, sequence):
@@ -107,14 +128,15 @@ def last_sequence(path):
     return entries[-1]["sequence"] if entries else 0
 
 
-def append(path, source, text, speaker=None, turn_finished=True):
+def append(path, source, text, speaker=None, **details):
     entry = {
         "sequence": last_sequence(path) + 1,
         "time": time.time(),
         "source": source,
         "text": text,
         "speaker": speaker,
-        "turn_finished": turn_finished,
+        "turn_finished": True,
+        **details,
     }
     descriptor = os.open(path, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o600)
     with os.fdopen(descriptor, "a") as transcript:

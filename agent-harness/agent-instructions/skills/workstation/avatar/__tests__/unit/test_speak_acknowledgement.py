@@ -23,15 +23,17 @@ def test_the_acknowledgement_names_the_voice_source_that_spoke():
           .then(() => sent);
         """
     )
-    assert result == [
-        {
-            "type": "speakAck",
-            "id": "turn",
-            "output": "none",
-            "status": "finished",
-            "source": "kokoro",
-        }
-    ]
+    (acknowledgement,) = result
+    timing = acknowledgement.pop("timing")
+    assert acknowledgement == {
+        "type": "speakAck",
+        "id": "turn",
+        "output": "none",
+        "status": "finished",
+        "source": "kokoro",
+    }
+    assert list(timing) == ["received", "synthesisStarted", "synthesized", "playing"]
+    assert list(timing.values()) == sorted(timing.values())
 
 
 @requires_node

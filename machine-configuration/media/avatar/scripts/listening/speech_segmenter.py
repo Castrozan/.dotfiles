@@ -28,6 +28,7 @@ class SpeechSegmenter:
         self.segment = []
         self.speech_frames = 0
         self.silent_frames = 0
+        self.closing_silence_seconds = 0.0
 
     @property
     def active(self):
@@ -62,6 +63,7 @@ class SpeechSegmenter:
     def finish(self):
         segment = b"".join(self.segment)
         was_speech = self.speech_frames >= frames_for(MINIMUM_SPEECH_SECONDS)
+        self.closing_silence_seconds = self.silent_frames * FRAME_SECONDS
         self.segment = []
         self.speech_frames = 0
         self.silent_frames = 0

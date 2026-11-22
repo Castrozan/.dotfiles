@@ -1,6 +1,9 @@
+import contextlib
+import json
 import os
 import subprocess
 import sys
+import time
 from types import SimpleNamespace
 
 import conversation_addressee
@@ -8,12 +11,59 @@ import conversation_seat
 import conversation_state
 import listener_session
 import remote_agent
+import transcript_log
 import utterances
 from conversation_state import ConversationPhase
 
 FOLLOW_SLICE_SECONDS = 30
 SPEECH_TIMEOUT_SECONDS = 310
 VOICE_TAG = "[voice]"
+ACKNOWLEDGEMENT = "speakAck"
+SPEECH_MOMENTS = {
+    "received": "speech_received",
+    "synthesisStarted": "synthesis_started",
+    "synthesized": "synthesized",
+    "playing": "playing",
+}
+
+
+def this_pane():
+    return os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
+
+
+def acknowledgement(output):
+    for line in output.splitlines():
+        with contextlib.suppress(ValueError):
+            response = json.loads(line)
+            if isinstance(response, dict) and response.get("type") == ACKNOWLEDGEMENT:
+                return response
+    return {}
+
+
+def speech_moments(response):
+    timing = response.get("timing") or {}
+    return {
+        moment: timing[key] / 1000
+        for key, moment in SPEECH_MOMENTS.items()
+        if key in timing
+    }
+
+
+def spoken(command):
+    invoked = time.time()
+    completed = subprocess.run(
+        command, stdout=subprocess.PIPE, text=True, timeout=SPEECH_TIMEOUT_SECONDS
+    )
+    response = acknowledgement(completed.stdout)
+    transcript_log.report_speech(
+        transcript_log.report_to_log,
+        this_pane(),
+        invoked=invoked,
+        status=response.get("status"),
+        source=response.get("source"),
+        **speech_moments(response),
+    )
+    return completed
 
 
 def speech_command_on_seat(arguments, seat):
@@ -45,11 +95,9 @@ def speak_on_seat(directory, text, seat):
 
 def say(arguments, directory):
     listener_session.mark_spoken(directory)
-    sys.exit(
-        subprocess.run(
-            speech_command(arguments, directory), timeout=SPEECH_TIMEOUT_SECONDS
-        ).returncode
-    )
+    completed = spoken(speech_command(arguments, directory))
+    print(completed.stdout, end="", flush=True)
+    sys.exit(completed.returncode)
 
 
 def print_next_utterance(
@@ -73,17 +121,12 @@ def hear(arguments, directory):
 def ask(arguments, directory):
     with utterances.exclusive_consumer(directory):
         listener_session.mark_spoken(directory)
-        subprocess.run(
-            speech_command(arguments, directory),
-            check=True,
-            stdout=subprocess.DEVNULL,
-            timeout=SPEECH_TIMEOUT_SECONDS,
-        )
+        spoken(speech_command(arguments, directory)).check_returncode()
         print_next_utterance(directory, arguments.wait)
 
 
 def follow(arguments, directory):
-    pane = os.environ.get(remote_agent.PANE_ENVIRONMENT_VARIABLE)
+    pane = this_pane()
 
     def still_addressed():
         return conversation_addressee.addresses(directory, pane)

@@ -1,8 +1,11 @@
 import os
 
 import remote_agent
+import transcript_log
 from listener_session import ListenerPurpose
 
+PROMPTED = "prompt"
+NOTIFIED_AT_IDLE = "notify"
 DESK_REPLY = (
     "speak with avatar-talk say, and hear the reply through avatar-talk follow in a "
     "background watcher. When the room dismisses you, such as 'you can go now', say "
@@ -64,7 +67,14 @@ def spoken_prompt(message, purpose, session=None):
     )
 
 
-def deliver(boundaries, dry_run, match, purpose):
+def handed_the_prompt(boundaries, session, text):
+    if boundaries.prompt_now(session.pane, text, session.host):
+        return PROMPTED
+    boundaries.notify_at_idle(session.pane, text, session.host)
+    return NOTIFIED_AT_IDLE
+
+
+def deliver(boundaries, dry_run, match, purpose, sequence=None):
     session = match.session
     target = f"{session.servant} at {session.pane}"
     if dry_run:
@@ -72,6 +82,16 @@ def deliver(boundaries, dry_run, match, purpose):
         return False
     boundaries.report(f"wake {target}")
     text = spoken_prompt(match.message, purpose, session)
-    if not boundaries.prompt_now(session.pane, text, session.host):
-        boundaries.notify_at_idle(session.pane, text, session.host)
+    sent = boundaries.now()
+    delivered = handed_the_prompt(boundaries, session, text)
+    transcript_log.report_delivery(
+        boundaries.report,
+        purpose=purpose,
+        sequence=sequence,
+        servant=session.servant,
+        pane=session.pane,
+        host=session.host,
+        delivered=delivered,
+        delivery_ms=round((boundaries.now() - sent) * 1000),
+    )
     return True

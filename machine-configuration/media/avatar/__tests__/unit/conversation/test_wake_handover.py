@@ -70,7 +70,9 @@ def test_each_conversation_turn_is_logged_and_matched_once():
     listener.read_conversation()
     fakes.addressee.return_value = Addressee(VOYAGER.pane, VOYAGER.servant, 0)
     listener.read_conversation()
-    transcript, decision, wake = [call.args[0] for call in fakes.report.call_args_list]
+    transcript, decision, wake, _ = [
+        call.args[0] for call in fakes.report.call_args_list
+    ]
     assert json.loads(decision)["candidates"] == ["Ibaraki"]
     assert "\n" not in transcript and "\r" not in transcript
     assert "revisão" in transcript

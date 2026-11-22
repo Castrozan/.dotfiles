@@ -58,13 +58,21 @@ class TranscriptRecorder:
     echoes: transcript_echo.EchoFilter
     identifier: object
 
-    def record(self, source, segment, turn_finished):
+    def record(self, source, segment, turn_finished, heard):
+        transcription_started = time.time()
         text = transcribe_when_ready(segment, self.listening.language)
         if not text or self.echoes.is_echo(source, text, time.time()):
             return
         speaker, embedding = self.identifier.identify(segment)
         entry = transcript_log.append(
-            self.path, source, text, speaker, turn_finished=turn_finished
+            self.path,
+            source,
+            text,
+            speaker,
+            turn_finished=turn_finished,
+            speech_ended=heard.speech_ended,
+            segment_closed=heard.segment_closed,
+            transcription_started=transcription_started,
         )
         if embedding:
             speaker_identity.append_embedding(
@@ -82,11 +90,13 @@ def write_transcript(path, listening):
     try:
         while not listening.stopping.is_set():
             try:
-                source, segment, turn_finished = listening.segments.get(timeout=0.5)
+                source, segment, turn_finished, heard = listening.segments.get(
+                    timeout=0.5
+                )
             except queue.Empty:
                 continue
             try:
-                recorder.record(source, segment, turn_finished)
+                recorder.record(source, segment, turn_finished, heard)
             except Exception as error:
                 print(f"Dropped a {source} segment: {error}", file=sys.stderr)
             finally:

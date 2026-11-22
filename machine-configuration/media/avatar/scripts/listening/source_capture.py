@@ -1,6 +1,8 @@
+import dataclasses
 import subprocess
 import sys
 import queue
+import time
 
 import speech_segmenter
 from turn_detector import TurnTracker
@@ -10,6 +12,12 @@ CAPTURE_RETRY_SECONDS = 1
 BARGE_IN_SECONDS = 0.6
 DISCORD_DEVICE = "discord"
 DISCORD_CAPTURE_COMMAND = ["discord-voice", "capture"]
+
+
+@dataclasses.dataclass(frozen=True)
+class HeardMoments:
+    speech_ended: float
+    segment_closed: float
 
 
 def capture_command(device):
@@ -67,9 +75,11 @@ class SourceSpeech:
         if segment is None:
             self.listening.pending.finish()
             return
+        closed = time.time()
+        heard = HeardMoments(closed - self.segmenter.closing_silence_seconds, closed)
         turn_finished = self.turn.add(segment)
         if not enqueue_segment(
-            self.listening.segments, self.source, segment, turn_finished
+            self.listening.segments, self.source, segment, turn_finished, heard
         ):
             self.listening.pending.finish()
 
@@ -94,9 +104,9 @@ def capture_source(source, device, listening):
         listening.stopping.wait(CAPTURE_RETRY_SECONDS)
 
 
-def enqueue_segment(segments, source, segment, turn_finished):
+def enqueue_segment(segments, source, segment, turn_finished, heard):
     try:
-        segments.put_nowait((source, segment, turn_finished))
+        segments.put_nowait((source, segment, turn_finished, heard))
         return True
     except queue.Full:
         print(f"Dropped a {source} segment: transcription is behind", file=sys.stderr)
