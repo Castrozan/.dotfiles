@@ -8,7 +8,7 @@ import urllib.request
 import uuid
 from pathlib import Path
 
-from transcription import ordinary_words, spoken_names, transcriber
+from transcription import ordinary_words, spoken_languages, spoken_names, transcriber
 
 SCRIBE_URL = "https://api.elevenlabs.io/v1/speech-to-text"
 SCRIBE_MODEL = "scribe_v2"
@@ -29,6 +29,7 @@ RECOGNIZED_TERMS = (
     "Lucas",
     "Lulu",
 )
+recent_language = spoken_languages.RecentLanguage()
 
 
 def api_key():
@@ -91,7 +92,7 @@ def multipart_body(boundary, fields, wav):
     return b"".join(parts)
 
 
-def transcribe(pcm, language=None):
+def scribe_answer(pcm, language):
     boundary = uuid.uuid4().hex
     request = urllib.request.Request(
         SCRIBE_URL,
@@ -104,7 +105,33 @@ def transcribe(pcm, language=None):
         },
     )
     with urllib.request.urlopen(request, timeout=REQUEST_TIMEOUT_SECONDS) as response:
-        return transcriber.clean_transcript(json.load(response)["text"])
+        return json.load(response)
+
+
+def repinned_answer(pcm, answer):
+    pinning_code = recent_language.pinning_code
+    print(
+        f"Scribe detected {answer['language_code']} "
+        f"({answer.get('language_probability')}), pinning {pinning_code}",
+        file=sys.stderr,
+    )
+    return scribe_answer(pcm, pinning_code)
+
+
+def spoken_answer(pcm, language):
+    answer = scribe_answer(pcm, language)
+    detected_code = answer.get("language_code")
+    if language or detected_code is None:
+        return answer
+    detected_language = spoken_languages.spoken_language(detected_code)
+    if detected_language is None:
+        return repinned_answer(pcm, answer)
+    recent_language.remember(detected_language)
+    return answer
+
+
+def transcribe(pcm, language=None):
+    return transcriber.clean_transcript(spoken_answer(pcm, language)["text"])
 
 
 def transcribe_with_local_fallback(pcm, language=None):
