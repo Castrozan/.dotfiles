@@ -15,7 +15,6 @@ in
     ../workflows/workflows-home-manager.nix
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-agent-instructions-home-manager.nix
     ./dotfiles-checkout-agent-surfaces/dotfiles-repo-skills-home-manager.nix
-    ./dotfiles-checkout-agent-surfaces/dotfiles-repo-delta-home-manager.nix
     ./skills/media/twitter/install/twitter-home-manager.nix
     ./skills/services/phone-status/phone-status-cli-home-manager.nix
     ./skills/services/url-shortener/url-shortener-cli-home-manager.nix
