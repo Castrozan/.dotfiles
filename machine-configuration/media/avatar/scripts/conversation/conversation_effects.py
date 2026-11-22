@@ -15,7 +15,6 @@ import remote_agent
 from meetings import start
 import user_units
 import utterances
-import voice_turns
 from conversation_seat import Seat
 from conversation_state import ConversationPhase
 from listener_session import ListenerPurpose
@@ -25,7 +24,6 @@ LIVE_OWNS_THE_TURNS = (
     "over a2a: end your turn to receive them, or run avatar-talk close"
 )
 COMMAND_TIMEOUT_SECONDS = 120
-TRANSCRIPTION_NOTICE = "This call is transcribed by ElevenLabs."
 
 
 class WindowPresence(enum.StrEnum):
@@ -78,18 +76,12 @@ def open_conversation(arguments, directory):
             seat=seat,
             **default_holder.listener_settings(arguments),
         )
-        announce_transcription(seat, directory)
     except BaseException:
         if seat is Seat.DISCORD:
             discord_call.leave()
         close_conversation(arguments, directory)
         raise
     status(arguments, directory)
-
-
-def announce_transcription(seat, directory):
-    if seat is Seat.DISCORD:
-        voice_turns.speak_on_seat(directory, TRANSCRIPTION_NOTICE, seat)
 
 
 def refuse_seat_change(arguments, directory):

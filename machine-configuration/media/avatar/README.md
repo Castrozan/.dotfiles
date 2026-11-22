@@ -135,7 +135,7 @@ to join you: it runs `avatar-talk open --seat discord`, and the bot enters your 
 
 Naming a Servant in the call gives it the floor, as in the room; when it is dismissed, the floor returns to Silver in the
 `silver` channel. Leaving the channel ends the call, deletes its transcript and sends the bot out. No agent joins a
-channel by itself or follows you between channels. The people in the call are told ElevenLabs transcribes them.
+channel by itself or follows you between channels.
 
 ## Remote seat
 

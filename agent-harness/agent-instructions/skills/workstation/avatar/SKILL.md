@@ -75,7 +75,9 @@ markup, and take a moment to say so before long work. `hear` returns everything 
 
 Speak each turn as one short sentence in a single `ask` or `say`. Never loop over lines or chain several `say` or
 `speak` calls for one reply: the pieces come out stilted and disjointed. A turn that ends `interrupted` means the
-microphone heard speech: listen and answer only what was said to you, never resend the rest in pieces.
+microphone heard speech: listen and answer only what was said to you, never resend the rest in pieces. A turn that ends
+`withheld` was not spoken, because the room was talking or had said something you have not heard: answer the next
+`[voice]` line instead of resending it.
 
 ### Where the conversation sits
 
@@ -100,9 +102,8 @@ user's current voice channel once and never follows them, and the call closes by
 channel. Speak with `avatar-talk say` and hear with `avatar-talk follow` exactly as in the room, with
 `AVATAR_ROOM=MACHINE` when the turn prompt says so.
 
-The open tells the people in the call that ElevenLabs transcribes them, so add no notice of your own. Silver answers
-only in the `silver` voice channel and only when the user enters it. When a Servant is named in that call and later runs
-`avatar-talk close`, the floor returns to Silver and the call stays open.
+Silver answers only in the `silver` voice channel and only when the user enters it. When a Servant is named in that call
+and later runs `avatar-talk close`, the floor returns to Silver and the call stays open.
 
 ### Live voice
 

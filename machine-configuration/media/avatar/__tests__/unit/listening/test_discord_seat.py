@@ -20,8 +20,6 @@ from meetings import start
 from remote_agent import AgentPane
 from talk_runner import run_talk
 
-NOTICE = "This call is transcribed by ElevenLabs."
-
 
 def open_discord(tmp_path, monkeypatch):
     monkeypatch.setattr(listener_runtime, "listening", lambda: False)
@@ -39,7 +37,7 @@ def open_discord(tmp_path, monkeypatch):
     return begin, runner, sources
 
 
-def test_opening_the_discord_seat_skips_the_pulse_check_and_announces_transcription(
+def test_opening_the_discord_seat_skips_the_pulse_check_and_announces_nothing(
     tmp_path, monkeypatch
 ):
     begin, runner, sources = open_discord(tmp_path, monkeypatch)
@@ -48,12 +46,7 @@ def test_opening_the_discord_seat_skips_the_pulse_check_and_announces_transcript
     sources.assert_not_called()
     assert begin.call_args.args[2] == {"human": source_capture.DISCORD_DEVICE}
     assert begin.call_args.kwargs["seat"] is Seat.DISCORD
-    speaking = [call for call in runner.call_args_list if "speak" in call.args[0]]
-    assert [call.args[0] for call in speaking] == [
-        ["avatar-command", "speak", NOTICE, "neutral", "discord"]
-    ]
-    assert speaking[0].kwargs["timeout"] > 0
-    assert (tmp_path / listener_session.SPOKEN_FILE).exists()
+    assert not [call for call in runner.call_args_list if "speak" in call.args[0]]
 
 
 def test_opening_the_room_seat_announces_nothing(tmp_path, monkeypatch):
@@ -68,20 +61,25 @@ def test_opening_the_room_seat_announces_nothing(tmp_path, monkeypatch):
     assert not [call for call in runner.call_args_list if "speak" in call.args[0]]
 
 
-def test_a_notice_that_cannot_be_spoken_fails_the_open_and_leaves_the_call(
+def test_a_listener_that_cannot_start_fails_the_open_and_leaves_the_call(
     tmp_path, monkeypatch
 ):
     leave = Mock()
     monkeypatch.setattr(discord_call, "leave", leave)
+    monkeypatch.setattr(listener_runtime, "listening", lambda: False)
+    monkeypatch.setattr(start, "bring_up", Mock())
+    monkeypatch.setattr(conversation_seat, "prepare", Mock())
     monkeypatch.setattr(
-        voice_turns,
-        "speak_on_seat",
-        Mock(side_effect=subprocess.CalledProcessError(1, "avatar-command")),
+        listener_session,
+        "begin_listening",
+        Mock(side_effect=subprocess.CalledProcessError(1, "avatar-listen")),
     )
     close = Mock()
     monkeypatch.setattr(conversation_effects, "close_conversation", close)
     with pytest.raises(subprocess.CalledProcessError):
-        open_discord(tmp_path, monkeypatch)
+        conversation_effects.open_conversation(
+            argparse.Namespace(language="pt", character=None, seat="discord"), tmp_path
+        )
     leave.assert_called_once_with()
     close.assert_called_once()
 
