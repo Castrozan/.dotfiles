@@ -15,6 +15,8 @@ let
     dotfiles-housekeeping-slice = ./definitions/dotfiles-housekeeping-slice;
     dotfiles-housekeeping-verify = ./definitions/dotfiles-housekeeping-verify;
     dotfiles-test-cut = ./definitions/dotfiles-test-cut;
+    avatar-rust-analysis = ./definitions/avatar-rust-analysis;
+    avatar-rust-analysis-topic = ./definitions/avatar-rust-analysis-topic;
     compose-page = skillsDirectory + "/writing/page-composer/workflow/compose-page";
     research-pulse = skillsDirectory + "/knowledge/research/workflow/research-pulse";
     research-pulse-fetch = skillsDirectory + "/knowledge/research/workflow/research-pulse-fetch";
@@ -106,6 +108,15 @@ let
       argumentNames = [
         "root"
         "subtree"
+      ];
+    }
+    {
+      commandName = "dotfiles-avatar-rust-analysis";
+      workflowName = "avatar-rust-analysis";
+      argumentNames = [
+        "avatar_root"
+        "standards_file"
+        "output_directory"
       ];
     }
     {

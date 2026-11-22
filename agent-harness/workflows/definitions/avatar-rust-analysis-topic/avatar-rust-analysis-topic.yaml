@@ -1,0 +1,42 @@
+name: avatar-rust-analysis-topic
+description: Research one avatar Rust rewrite topic from its brief file and return a sourced report.
+inputs:
+  topic_path: { required: true }
+returns: research
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: topic_data
+    bash: '@instructionData@ --text INPUTS_TOPIC_PATH'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic_path: { type: string }
+      required: [topic_path]
+  - id: research
+    command: research-topic
+    depends_on: [topic_data]
+    with:
+      topic_path: $topic_data.output.topic_path
+    model: medium
+    effort: medium
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topic: { type: string }
+        decisions:
+          type: array
+          maxItems: 12
+          items:
+            type: object
+            properties:
+              decision: { type: string }
+              reason: { type: string }
+              sources: { type: array, maxItems: 5, items: { type: string } }
+            required: [decision, reason, sources]
+        rejected: { type: array, maxItems: 8, items: { type: string } }
+        unknowns: { type: array, maxItems: 8, items: { type: string } }
+      required: [topic, decisions, rejected, unknowns]
