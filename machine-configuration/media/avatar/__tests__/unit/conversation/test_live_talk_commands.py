@@ -62,6 +62,18 @@ def test_opening_live_listens_for_the_live_voice_then_claims_the_floor(
     }
 
 
+def test_the_floor_goes_to_a_named_pane_of_this_machine_not_the_calling_pane(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setenv(remote_agent.HOST_ENVIRONMENT_VARIABLE, "chise")
+    monkeypatch.setenv(remote_agent.PANE_ENVIRONMENT_VARIABLE, "wW:pPT")
+    handed = Mock()
+    monkeypatch.setattr(live_opening.speaking_floor, "hand_to_remote_agent", handed)
+    named = remote_agent.parse("chise:wW:pSP")
+    live_opening.give_the_floor(tmp_path, named)
+    handed.assert_called_once_with(tmp_path, remote_agent.AgentPane(None, "wW:pSP"))
+
+
 @pytest.mark.parametrize("verb", [["ask", "oi"], ["hear"], ["follow"], ["say", "oi"]])
 def test_the_desk_verbs_refuse_while_the_live_voice_owns_the_turns(
     tmp_path, monkeypatch, capsys, verb

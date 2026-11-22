@@ -54,8 +54,12 @@ def receiving_agent(arguments):
     return arguments.agent or AgentPane(None, os.environ.get(PANE_ENVIRONMENT_VARIABLE))
 
 
+def is_the_calling_pane(agent):
+    return agent == AgentPane(None, os.environ.get(PANE_ENVIRONMENT_VARIABLE))
+
+
 def give_the_floor(directory, agent):
-    if agent.host is None:
+    if is_the_calling_pane(agent):
         subprocess.run(
             ["avatar-claim-floor"],
             check=True,
