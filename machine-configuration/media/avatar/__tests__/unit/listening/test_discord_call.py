@@ -13,15 +13,16 @@ JOIN_MESSAGE = "join a Discord voice channel first"
 
 
 class FakeDiscordVoice:
-    def __init__(self, joined_after_polls=0):
+    def __init__(self, joined_after_polls=0, join_reply=None):
         self.calls = []
         self.status_polls = 0
         self.joined_after_polls = joined_after_polls
+        self.join_reply = join_reply or {"joined": True}
 
     def __call__(self, command, **keywords):
         assert keywords["timeout"] > 0
         self.calls.append(command[1:])
-        stdout = ""
+        stdout = json.dumps(self.join_reply)
         if command[1] == "status":
             self.status_polls += 1
             stdout = json.dumps({"joined": self.status_polls > self.joined_after_polls})
@@ -61,12 +62,49 @@ def test_preparing_the_discord_seat_joins_the_listener_channel_once_and_waits(
     ]
 
 
-def test_a_call_never_joined_tells_the_user_to_join_a_voice_channel(
+def test_a_listener_outside_any_voice_channel_is_told_to_join_one(
+    monkeypatch, no_waiting
+):
+    fake = install(
+        monkeypatch,
+        FakeDiscordVoice(join_reply={"error": "listener_not_in_allowed_voice_channel"}),
+    )
+    with pytest.raises(RuntimeError, match=JOIN_MESSAGE):
+        conversation_seat.prepare(Seat.DISCORD)
+    assert fake.calls == [["join"]]
+
+
+@pytest.mark.parametrize(
+    ("error", "message"),
+    [
+        *discord_call.JOIN_REFUSALS.items(),
+        ("unforeseen_reason", "the Discord bridge refused with unforeseen_reason"),
+    ],
+)
+def test_every_bridge_refusal_reaches_the_user_as_its_own_reason(
+    monkeypatch, no_waiting, error, message
+):
+    install(monkeypatch, FakeDiscordVoice(join_reply={"error": error}))
+    with pytest.raises(RuntimeError) as refusal:
+        conversation_seat.prepare(Seat.DISCORD)
+    assert str(refusal.value) == f"{discord_call.COULD_NOT_JOIN}: {message}"
+
+
+def test_only_a_listener_outside_any_channel_is_told_to_join_one():
+    listener_messages = [
+        error
+        for error, message in discord_call.JOIN_REFUSALS.items()
+        if JOIN_MESSAGE in message
+    ]
+    assert listener_messages == ["listener_not_in_allowed_voice_channel"]
+
+
+def test_a_join_that_never_shows_in_the_status_times_out_without_blaming_the_listener(
     monkeypatch, no_waiting
 ):
     install(monkeypatch, FakeDiscordVoice(joined_after_polls=10**9))
     monkeypatch.setattr(discord_call, "JOIN_WAIT_SECONDS", 0)
-    with pytest.raises(TimeoutError, match=JOIN_MESSAGE):
+    with pytest.raises(TimeoutError, match="did not join in time"):
         conversation_seat.prepare(Seat.DISCORD)
 
 
@@ -74,13 +112,21 @@ def test_a_call_never_joined_tells_the_user_to_join_a_voice_channel(
     "failure",
     [FileNotFoundError("discord-voice"), subprocess.TimeoutExpired("x", 1)],
 )
-def test_a_machine_without_a_working_bridge_fails_with_the_join_message(
+def test_a_machine_without_a_working_bridge_says_the_bridge_did_not_answer(
     monkeypatch, no_waiting, failure
 ):
     install(monkeypatch, Mock(side_effect=failure))
-    monkeypatch.setattr(discord_call, "JOIN_WAIT_SECONDS", 0)
-    with pytest.raises(TimeoutError, match=JOIN_MESSAGE):
+    with pytest.raises(RuntimeError, match="the Discord bridge did not answer"):
         conversation_seat.prepare(Seat.DISCORD)
+
+
+def test_the_join_is_bounded_by_its_own_wait(monkeypatch):
+    runner = status_reader(monkeypatch, json.dumps({"joined": True}))
+    discord_call.join()
+    assert runner.call_args_list[0].args[0] == [discord_call.DISCORD_VOICE, "join"]
+    assert (
+        runner.call_args_list[0].kwargs["timeout"] == discord_call.JOIN_TIMEOUT_SECONDS
+    )
 
 
 def test_a_status_that_is_not_json_is_not_a_call(monkeypatch):
