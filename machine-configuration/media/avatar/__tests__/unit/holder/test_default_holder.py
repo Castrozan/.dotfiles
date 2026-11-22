@@ -67,7 +67,6 @@ def open_discord_conversation(monkeypatch, directory, **options):
     monkeypatch.setattr(listener_session, "stop_listening", Mock())
     monkeypatch.setattr(listener_session, "start_unit", Mock())
     monkeypatch.setattr(conversation_effects.subprocess, "run", Mock())
-    monkeypatch.setattr(conversation_effects.voice_turns, "speak_on_seat", Mock())
     arguments = argparse.Namespace(
         language=None, character="darkness-shibu", seat="discord", **options
     )
