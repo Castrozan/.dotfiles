@@ -12,7 +12,9 @@
     "ytd-page-manager.ytd-app { margin-top: 45px !important; }",
     "html.ytweak-header-below-tabs ytd-app { --ytd-masthead-height: 0px !important; }",
     "html.ytweak-header-below-tabs ytd-page-manager.ytd-app { margin-top: 0 !important; }",
-    "html.ytweak-header-below-tabs #masthead-container.ytd-app { position: relative !important; inset: auto !important; width: 100% !important; margin: 8px auto 16px !important; transform: none !important; }",
+    "html.ytweak-header-below-tabs #masthead-container.ytd-app { visibility: hidden !important; position: relative !important; inset: auto !important; width: 100% !important; margin: 8px auto 16px !important; transform: none !important; }",
+    "html.ytweak-header-below-tabs #ytweak-tabs + #masthead-container.ytd-app { visibility: visible !important; }",
+    "html.ytweak-header-below-tabs #skip-navigation:not(:focus-within) { clip-path: inset(50%) !important; }",
     "ytd-watch-flexy[theater] #full-bleed-container { height: calc(100vh - 53px) !important; max-height: calc(100vh - 53px) !important; }",
     "html.ytweak-header-below-tabs ytd-watch-flexy[theater] #full-bleed-container { height: 100vh !important; max-height: 100vh !important; }",
     "ytd-watch-flexy[theater] #columns { display: flex !important; flex-direction: column !important; align-items: center !important; }",
@@ -64,10 +66,6 @@
       );
     }
 
-    document.documentElement.classList.toggle(
-      "ytweak-header-below-tabs",
-      belowTabs,
-    );
     return belowTabs;
   }
 
@@ -139,6 +137,10 @@
   }
 
   function apply() {
+    document.documentElement.classList.toggle(
+      "ytweak-header-below-tabs",
+      location.pathname === "/watch",
+    );
     ensureStyle();
 
     if (pollTimer) clearInterval(pollTimer);
@@ -150,12 +152,20 @@
 
     let attempts = 0;
 
-    pollTimer = setInterval(() => {
-      if ((mountTabs() && placeMasthead()) || ++attempts > 40) {
-        clearInterval(pollTimer);
-        pollTimer = null;
-      }
-    }, 250);
+    if (!(mountTabs() && placeMasthead())) {
+      pollTimer = setInterval(() => {
+        const mounted = mountTabs() && placeMasthead();
+        if (mounted || ++attempts > 40) {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          if (!mounted) {
+            document.documentElement.classList.remove(
+              "ytweak-header-below-tabs",
+            );
+          }
+        }
+      }, 250);
+    }
 
     scheduleRefit();
   }
