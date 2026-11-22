@@ -54,9 +54,9 @@ def bridge_owns_voice_state(identity, voice, record):
     }
 
 
-async def settle(condition, seconds=PRESENCE_SETTLE_SECONDS):
+async def settle(condition):
     loop = asyncio.get_running_loop()
-    deadline = loop.time() + seconds
+    deadline = loop.time() + PRESENCE_SETTLE_SECONDS
     while not condition():
         if loop.time() >= deadline:
             return False

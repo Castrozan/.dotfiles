@@ -148,6 +148,8 @@ class VoiceIdentityPool:
                 "ready": ready_identity(identity),
                 "error": identity.error,
                 "owned": identity.lease is not None,
+                "stale_voice_state": identity.lease is None
+                and self.bridge_owned_voice_state(identity, guild_id),
                 "unavailable_reason": self.eligibility(
                     identity, listener_user_id, guild_id
                 )[1],

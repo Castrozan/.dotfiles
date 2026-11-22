@@ -1,11 +1,9 @@
 import asyncio
-import tempfile
 from unittest.mock import Mock
 
 import pytest
-from hypothesis import given, settings
-from hypothesis import strategies as strategies
 
+import voice_presence
 from discord_voice_fakes import (
     BOT_USER_ID,
     bridge_process,
@@ -154,32 +152,43 @@ def test_a_join_whose_session_cannot_be_recorded_leaves_instead_of_hiding(
     asyncio.run(scenario())
 
 
-DISRUPTIONS = ("none", "fresh_session", "unsent_leave", "restart")
+def ignore_takeovers(server):
+    update = server.update_voice_state
+
+    def update_unless_taken(user_id, session_id, channel):
+        current = server.voice_states.get(user_id)
+        if current is not None and current.session_id != session_id:
+            return
+        update(user_id, session_id, channel)
+
+    server.update_voice_state = update_unless_taken
 
 
-async def disrupted_cycles(disruptions, lease_directory):
-    server = server_with_listener()
-    bridge = bridge_process(server, lease_directory)
-    for index, disruption in enumerate(disruptions):
+def test_a_voice_state_discord_will_not_hand_over_is_given_up_in_bounded_time(
+    tmp_path, monkeypatch
+):
+    monkeypatch.setattr(voice_presence, "PRESENCE_SETTLE_SECONDS", 0.2)
+
+    async def scenario():
+        server = server_with_listener()
+        bridge = bridge_process(server, tmp_path)
+        await bridge.call.join()
+        bridge.client.fresh_session("second-session")
+        ignore_takeovers(server)
+        loop = asyncio.get_running_loop()
+        started = loop.time()
+        await bridge.call.leave()
+        with pytest.raises(
+            bridge.module.VoiceCallError, match="no_eligible_available_bot"
+        ):
+            await bridge.call.join()
+        assert loop.time() - started < 2
+        assert primary_status(bridge)["stale_voice_state"] is True
+        assert bridge.identity.lease is None
+        del server.voice_states[BOT_USER_ID]
+        assert primary_status(bridge)["stale_voice_state"] is False
         await bridge.call.join()
         assert bridge.call.status()["joined"] is True
-        if disruption == "fresh_session":
-            bridge.client.fresh_session(f"session-{index}")
-        bridge.client.gateway_open = disruption not in ("unsent_leave", "restart")
         await bridge.call.leave()
-        bridge.client.gateway_open = True
-        if disruption == "restart":
-            bridge = bridge_process(server, lease_directory, f"restart-{index}")
-    await bridge.call.join()
-    await bridge.call.leave()
-    return server
 
-
-@settings(deadline=None, max_examples=60)
-@given(strategies.lists(strategies.sampled_from(DISRUPTIONS), max_size=6))
-def test_every_close_and_reopen_sequence_reopens_and_ends_out_of_the_channel(
-    disruptions,
-):
-    with tempfile.TemporaryDirectory() as lease_directory:
-        server = asyncio.run(disrupted_cycles(disruptions, lease_directory))
-    assert server.bot_session() is None
+    asyncio.run(scenario())

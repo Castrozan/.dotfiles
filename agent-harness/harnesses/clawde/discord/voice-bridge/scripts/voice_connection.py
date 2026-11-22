@@ -17,7 +17,7 @@ def retry_delay(consecutive_failures):
 
 @dataclass(frozen=True)
 class IdentityLogin:
-    claimed_bot_ids: dict
+    claimed_bot_ids: dict[int, str]
     client_factory: Callable[[], Any]
     permanent_failures: tuple[type[Exception], ...]
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep
