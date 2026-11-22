@@ -81,7 +81,7 @@ run_claude_go() {
 		CLAUDE_GO_LAUNCHER_PROXY_SERVICE_LABEL="com.dotfiles.claude-go-proxy.absent-under-test" \
 		CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE="$PROXY_UNAVAILABLE_MESSAGE" \
 		CLAUDE_GO_LAUNCHER_CLAUDE_BINARY="$FAKE_BINARY_DIRECTORY/claude" \
-		CLAUDE_GO_LAUNCHER_MODEL="deepseek-v4-flash" \
+		CLAUDE_GO_LAUNCHER_MODEL="deepseek-v4.1-flash" \
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
@@ -92,12 +92,12 @@ run_claude_go() {
 @test "starts claude on the pinned model when given no arguments" {
 	run_claude_go
 	[ "$status" -eq 0 ]
-	[[ "$output" == *'argv: <--model> <deepseek-v4-flash>'* ]]
+	[[ "$output" == *'argv: <--model> <deepseek-v4.1-flash>'* ]]
 }
 
 @test "passes caller arguments through after the pinned model" {
 	run_claude_go --resume "a prompt"
-	[[ "$output" == *'argv: <--model> <deepseek-v4-flash> <--resume> <a prompt>'* ]]
+	[[ "$output" == *'argv: <--model> <deepseek-v4.1-flash> <--resume> <a prompt>'* ]]
 }
 
 @test "removes the plan api key from the launched environment" {
@@ -126,7 +126,7 @@ run_claude_go() {
 @test "starts claude even when the proxy is down" {
 	run_claude_go
 	[ "$status" -eq 0 ]
-	[[ "$output" == *'argv: <--model> <deepseek-v4-flash>'* ]]
+	[[ "$output" == *'argv: <--model> <deepseek-v4.1-flash>'* ]]
 }
 
 @test "stays quiet when the proxy is listening" {
@@ -134,5 +134,5 @@ run_claude_go() {
 	run_claude_go
 	[ "$status" -eq 0 ]
 	[[ "$output" != *'is not listening'* ]]
-	[[ "$output" == *'argv: <--model> <deepseek-v4-flash>'* ]]
+	[[ "$output" == *'argv: <--model> <deepseek-v4.1-flash>'* ]]
 }

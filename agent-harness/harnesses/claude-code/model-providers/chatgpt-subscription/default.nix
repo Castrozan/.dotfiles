@@ -98,9 +98,10 @@ let
         ];
       };
 
-  gptModelForOpusTier = "gpt-6.1-sol(max)[1m]";
-  gptModelForSonnetTier = "gpt-6.1-sol(medium)";
-  gptModelForHaikuTier = "gpt-6.1-sol(low)";
+  gptModelForFableTier = "gpt-6.2-astra(max)[1m]";
+  gptModelForOpusTier = "gpt-6.2-sol(max)[1m]";
+  gptModelForSonnetTier = "gpt-6.2-sol(medium)";
+  gptModelForHaikuTier = "gpt-6.2-sol(low)";
 
   claudexLauncher = pkgs.writeShellApplication {
     name = "claudex";
@@ -108,9 +109,11 @@ let
     runtimeEnv = {
       ANTHROPIC_BASE_URL = "http://${proxyListenAddress}:${toString proxyListenPort}";
       ANTHROPIC_AUTH_TOKEN = "cli-proxy-api-local-loopback";
+      ANTHROPIC_DEFAULT_FABLE_MODEL = gptModelForFableTier;
       ANTHROPIC_DEFAULT_OPUS_MODEL = gptModelForOpusTier;
       ANTHROPIC_DEFAULT_SONNET_MODEL = gptModelForSonnetTier;
       ANTHROPIC_DEFAULT_HAIKU_MODEL = gptModelForHaikuTier;
+      CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = "1";
       CLAUDEX_LAUNCHER_PROXY_LISTEN_ADDRESS = proxyListenAddress;
       CLAUDEX_LAUNCHER_PROXY_LISTEN_PORT = toString proxyListenPort;
       CLAUDEX_LAUNCHER_PROXY_SERVICE_INSPECTION_COMMAND = proxyServiceInspectionCommand;

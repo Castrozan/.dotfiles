@@ -21,7 +21,7 @@ def main():
     ]
     assert configuration["model"] == {
         "provider": "openai-codex",
-        "model": "gpt-6.1-sol",
+        "model": "gpt-6.2-sol",
     }
     assert configuration["agent"] == {"reasoning_effort": "xhigh"}
     assert configuration["display"] == {"busy_input_mode": "steer"}

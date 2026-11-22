@@ -41,15 +41,16 @@ let
   );
 
   translatedModelNames = [
+    "kimi-k3.1-pro"
     "deepseek-v4-pro"
-    "deepseek-v4-flash"
+    "deepseek-v4.1-flash"
     "kimi-k3"
   ];
   translationProxyConfigurationText = import ../translation-proxy-configuration.nix {
     listenAddress = "127.0.0.1";
     listenPort = 8321;
     authenticationDirectory = "/home/test/.local/state/claude-go-proxy/auth";
-    upstreamBaseUrl = "https://opencode.ai/zen/go/v1";
+    upstreamBaseUrl = "https://opencode.ai/inference/go/v1";
     upstreamProviderName = "opencode-go";
     modelNames = translatedModelNames;
     apiKeyPlaceholder = "@OPENCODE_GO_API_KEY@";

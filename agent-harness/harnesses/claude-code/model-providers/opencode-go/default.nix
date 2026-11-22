@@ -93,9 +93,11 @@ let
     runtimeEnv = {
       ANTHROPIC_BASE_URL = "http://${translationProxyListenAddress}:${toString translationProxyListenPort}";
       ANTHROPIC_AUTH_TOKEN = "claude-go-local-loopback";
+      ANTHROPIC_DEFAULT_FABLE_MODEL = opencodeGo.models.fable;
       ANTHROPIC_DEFAULT_OPUS_MODEL = opencodeGo.models.opus;
       ANTHROPIC_DEFAULT_SONNET_MODEL = opencodeGo.models.sonnet;
       ANTHROPIC_DEFAULT_HAIKU_MODEL = opencodeGo.models.haiku;
+      CLAUDE_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY = "1";
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_ADDRESS = translationProxyListenAddress;
       CLAUDE_GO_LAUNCHER_PROXY_LISTEN_PORT = toString translationProxyListenPort;
       CLAUDE_GO_LAUNCHER_PROXY_INSPECTION_COMMAND = translationProxyInspectionCommand;

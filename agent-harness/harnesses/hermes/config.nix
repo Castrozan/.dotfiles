@@ -8,7 +8,7 @@ in
 pkgs.writeText "hermes-config.yaml" ''
   model:
     provider: openai-codex
-    model: gpt-6.1-sol
+    model: gpt-6.2-sol
   agent:
     reasoning_effort: xhigh
   display:

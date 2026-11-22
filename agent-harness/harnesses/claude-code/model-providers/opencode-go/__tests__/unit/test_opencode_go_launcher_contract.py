@@ -7,11 +7,12 @@ OPENCODE_GO_PROVIDER = OPENCODE_GO_MODULE.parents[3] / "opencode" / "go-provider
 TRANSLATION_PROXY_CONFIGURATION = (
     OPENCODE_GO_MODULE.parent / "translation-proxy-configuration.nix"
 )
-CONSOLE_GO_BASE_URL = "https://opencode.ai/zen/go"
+CONSOLE_GO_BASE_URL = "https://opencode.ai/inference/go"
 OPENCODE_GO_SECRET_PATH_FRAGMENT = ".secrets/opencode-api-key"
 CONSOLE_GO_MODELS = {
+    "fable": "kimi-k3.1-pro",
     "opus": "deepseek-v4-pro",
-    "sonnet": "deepseek-v4-flash",
+    "sonnet": "deepseek-v4.1-flash",
     "haiku": "kimi-k3",
 }
 API_KEY_PLACEHOLDER = "@OPENCODE_GO_API_KEY@"
@@ -163,9 +164,9 @@ def test_the_launcher_starts_and_releases_the_proxy_around_the_session():
 def test_the_module_explains_a_proxy_that_never_comes_up():
     source = module_source()
     assert "translationProxyUnavailableMessage" in source
-    assert (
-        "Inspect the service: ${translationProxyInspectionCommand}" in source
-    ), "the failure must name the service inspection command for the running platform"
+    assert "Inspect the service: ${translationProxyInspectionCommand}" in source, (
+        "the failure must name the service inspection command for the running platform"
+    )
     assert (
         "CLAUDE_GO_LAUNCHER_PROXY_UNAVAILABLE_MESSAGE = translationProxyUnavailableMessage;"
         in source

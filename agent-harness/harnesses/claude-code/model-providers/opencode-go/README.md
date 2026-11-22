@@ -15,10 +15,10 @@ key all succeed when the schema reaches Console Go already in OpenAI form, which
 the fault gets located:
 
 ```
-curl -X POST https://opencode.ai/zen/go/v1/chat/completions \
+curl -X POST https://opencode.ai/inference/go/v1/chat/completions \
   -H "Authorization: Bearer $(cat ~/.secrets/opencode-api-key)" \
   -H 'content-type: application/json' \
-  -d '{"model":"deepseek-v4-flash","messages":[{"role":"user","content":"weather in Rio?"}],
+  -d '{"model":"deepseek-v4.1-flash","messages":[{"role":"user","content":"weather in Rio?"}],
        "tools":[{"type":"function","function":{"name":"get_weather","parameters":{"type":"object"}}}]}'
 ```
 
