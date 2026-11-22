@@ -1,0 +1,32 @@
+name: avatar-rust-analysis
+description: >-
+  Research five fixed topics for the avatar Rust rewrite, one medium-tier researcher each, then assemble the reports
+  into one artifact. Reads the avatar checkout and writes only to the output directory. Five model calls, no retries.
+inputs:
+  avatar_root: { required: true }
+  standards_file: { required: true }
+  output_directory: { required: true }
+returns: report
+mutates_checkout: false
+worktree:
+  enabled: false
+nodes:
+  - id: topics
+    bash: '@python@ @workflowDirectory@/scripts/analysis_topics.py --avatar-root "$INPUTS_AVATAR_ROOT" --standards-file "$INPUTS_STANDARDS_FILE" --output-directory "$INPUTS_OUTPUT_DIRECTORY"'
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        topics: { type: array, maxItems: 5, items: { type: string } }
+        error: { type: string }
+      required: [topics, error]
+  - id: research
+    workflow: avatar-rust-analysis-topic
+    depends_on: [topics]
+    fan_out: { items: "$topics.output.topics", as: topic_path, max_parallel: 5, join: all_done }
+  - id: report
+    depends_on: [topics, research]
+    bash: |
+      reports=$research.output
+      printf '%s' "$reports" | @python@ @workflowDirectory@/scripts/analysis_report.py --output-directory "$INPUTS_OUTPUT_DIRECTORY"
+    mutates_checkout: false
