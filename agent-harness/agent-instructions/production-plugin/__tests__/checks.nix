@@ -2,11 +2,12 @@
   pkgs,
   lib,
   helpers,
+  inputs,
   ...
 }:
 let
   source = import ../. {
-    inherit pkgs lib;
+    inherit pkgs lib inputs;
     hostname = "test";
     homeDirectory = "/home/test";
     chromePackage = pkgs.google-chrome;
