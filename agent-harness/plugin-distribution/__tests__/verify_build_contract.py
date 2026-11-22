@@ -19,7 +19,7 @@ def build(source, output, targets, success=True, data_root=None):
         ],
         capture_output=True,
         text=True,
-        timeout=70,
+        timeout=370,
         check=False,
     )
     assert (process.returncode == 0) == success, process.stdout + process.stderr

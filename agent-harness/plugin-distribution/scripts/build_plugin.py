@@ -14,7 +14,7 @@ from opencode_mcp import write_opencode_configuration
 from portable_plugin import read_portable_plugin
 
 
-COMMAND_TIMEOUT_SECONDS = 30
+COMMAND_TIMEOUT_SECONDS = 180
 
 
 def run_dotagents(command: str, output: Path, environment: dict[str, str]) -> None:

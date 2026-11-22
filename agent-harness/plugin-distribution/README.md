@@ -41,7 +41,7 @@ The Nix entry point is `import ./default.nix { inherit pkgs; }`. Its `package` p
 `buildPlugin { source = pinnedPluginDirectory; opencodeDataRoot = persistentStateDirectory; }` produces an immutable
 bundle with all five discovery targets. Set
 `targets = [];` for only the complete package. Home Manager installs the builder on Darwin and Linux. Nix owns fetching
-and pinning; builds use local inputs. Upstream rendering commands have a 30-second timeout. Outside a sandbox, upstream
+and pinning; builds use local inputs. Upstream rendering commands have a bounded timeout. Outside a sandbox, upstream
 may attempt its bounded optional update check, which cannot change the pinned renderer.
 
 The Claude MCP bridge supplies native plugin variables and the portable working directory. Relative executables resolve
