@@ -1,9 +1,13 @@
-{ pkgs, lib }:
+{
+  pkgs,
+  lib,
+  inputs,
+}:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
   homeDirectory = "/home/instruction-fixture";
   moduleArguments = {
-    inherit pkgs lib;
+    inherit pkgs lib inputs;
     hostname = "test";
     config.home.homeDirectory = homeDirectory;
     config.agentPlugins.bundle = productionBundle;
@@ -17,7 +21,12 @@ let
     ../../harnesses/pi/global-instructions.nix
   ];
   productionSource = import ../production-plugin {
-    inherit pkgs lib homeDirectory;
+    inherit
+      pkgs
+      lib
+      inputs
+      homeDirectory
+      ;
     hostname = "test";
     chromePackage = pkgs.google-chrome;
   };

@@ -1,197 +1,45 @@
 {
   config,
-  pkgs,
   lib,
+  pkgs,
   inputs,
-  isNixOS,
   hostname,
   ...
 }:
 let
-  programs = import ./avatar-programs.nix {
-    inherit pkgs lib inputs;
-    inherit hostname;
-    userProfilePath = ":${config.home.profileDirectory}/bin";
-  };
-  characters = import ./cast/characters.nix { inherit pkgs; };
-  characterVoices = import ./cast/character-voices.nix { inherit pkgs; };
-  transcriptionModel = import ./home-manager/avatar-transcription-model.nix { inherit pkgs; };
-  tools = import ./home-manager/avatar-control-server-tools.nix { inherit pkgs lib programs; };
-  serviceUnit = {
-    PartOf = [ "avatar.target" ];
-    After = [ "avatar-audio.service" ];
-    Requires = [ "avatar-audio.service" ];
-  };
+  agentHarness = ../../../agent-harness;
+  agentToAgentClient = agentHarness + "/agent-to-agent-communication/client";
+  chromeForTesting = import ../../browsers/chrome/chrome-for-testing-package.nix { inherit pkgs; };
+  rebuildSafeLaunchAgentLibrary =
+    import ../../operating-system/launchd/rebuild-safe-launch-agent-library.nix
+      { inherit config lib pkgs; };
 in
 {
-  imports = [
-    ./avatar-wake-home-manager.nix
-    ./home-manager/avatar-remote-seat-home-manager.nix
-    ./home-manager/avatar-rebuild-home-manager.nix
-    ./home-manager/avatar-doctor-home-manager.nix
-    ./home-manager/avatar-voice-holder-home-manager.nix
-  ];
-  config = lib.mkIf isNixOS {
-    home.packages = with programs; [
-      audio
-      command
-      controls
-      floor
-      listen
-      start
-      stop
-      talk
-      transcribe
+  imports = [ inputs.avatar.homeManagerModules.default ];
+
+  services.avatar = {
+    enable = true;
+    hostName = hostname;
+    topology = {
+      host = "chise";
+      machines = [
+        "chise"
+        "kira"
+        "rin"
+      ];
+    };
+    servantRoster = agentHarness + "/servants/roster.txt";
+    herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
+    a2aPackage = import (agentToAgentClient + "/a2a-client-package.nix") { inherit pkgs; };
+    peerIdentityPythonPath = [
+      (agentToAgentClient + "/scripts")
+      (agentHarness + "/servants")
+      (agentHarness + "/hooks/runtime/common")
     ];
-    systemd.user = {
-      targets.avatar.Unit = {
-        Description = "Local avatar media";
-        Requires = [
-          "avatar-audio.service"
-          "avatar-control-server.service"
-          "avatar-renderer.service"
-          "avatar-browser.service"
-          "avatar-camera.service"
-        ];
-      };
-      targets.avatar-conversation.Unit = {
-        Description = "Avatar desktop conversation";
-        Requires = [
-          "avatar-audio.service"
-          "avatar-control-server.service"
-          "avatar-renderer.service"
-          "avatar-room-microphone.service"
-        ];
-        BindsTo = [ "avatar-browser.service" ];
-        After = [ "avatar-browser.service" ];
-      };
-      services = {
-        avatar-audio = {
-          Unit = {
-            Description = "Isolated avatar audio mix";
-            PartOf = [ "avatar.target" ];
-          };
-          Service = {
-            Type = "oneshot";
-            RemainAfterExit = true;
-            ExecStart = "${programs.audio}/bin/avatar-audio start";
-            ExecStop = "${programs.audio}/bin/avatar-audio stop";
-          };
-        };
-        avatar-control-server = {
-          Unit = serviceUnit // {
-            Description = "Avatar control server";
-          };
-          Service = {
-            ExecStart = "${pkgs.nodejs_22}/bin/node ${programs.control}/server.js";
-            Environment = [
-              "PATH=${tools}:${config.home.profileDirectory}/bin"
-              "AVATAR_CLOUD_VOICE=${(builtins.head characters).cloudVoice}"
-              "AVATAR_CHARACTER_VOICES=${characterVoices}"
-              "AVATAR_TTS_VOICE=pt_BR-faber-medium"
-              "AVATAR_TTS_VOICE_DIRECTORY=${import ./speech-voices.nix { inherit pkgs; }}"
-              "AVATAR_AUDIO_MONITOR=AvatarLipSync.monitor"
-              "XDG_RUNTIME_DIR=/run/user/%U"
-            ];
-            Restart = "on-failure";
-          };
-          Install.WantedBy = [ "avatar.target" ];
-        };
-        avatar-browser = {
-          Unit = {
-            Description = "Avatar output browser";
-            PartOf = [ "avatar.target" ];
-            After = [
-              "avatar-renderer.service"
-              "avatar-control-server.service"
-            ];
-            Requires = [
-              "avatar-renderer.service"
-              "avatar-control-server.service"
-            ];
-          };
-          Service = {
-            ExecStart = "${pkgs.python312}/bin/python3 ${programs.browserRuntime} supervise http://localhost:3000/?output=1";
-            ExecStopPost = "${pkgs.python312}/bin/python3 ${programs.browserRuntime} stop";
-            Environment = [ "PATH=${lib.makeBinPath [ pkgs.chromium ]}" ];
-            KillMode = "mixed";
-          };
-          Install.WantedBy = [ "avatar.target" ];
-        };
-        avatar-camera = {
-          Unit = {
-            Description = "Avatar virtual camera";
-            PartOf = [ "avatar.target" ];
-            After = [ "avatar-browser.service" ];
-            Requires = [ "avatar-browser.service" ];
-          };
-          Service = {
-            ExecStart = toString programs.camera;
-            Environment = [ "V4L2_DEVICE=/dev/video10" ];
-            Restart = "always";
-          };
-          Install.WantedBy = [ "avatar.target" ];
-        };
-        avatar-room-microphone = {
-          Unit = {
-            Description = "Avatar microphone with desktop audio cancelled";
-            PartOf = [ "avatar-conversation.target" ];
-          };
-          Service = {
-            ExecStart = "${pkgs.pipewire}/bin/pipewire -c ${./room-microphone.conf}";
-            Restart = "on-failure";
-          };
-        };
-        avatar-transcriber = {
-          Unit = {
-            Description = "Local avatar speech transcription";
-            StopWhenUnneeded = true;
-          };
-          Service = {
-            ExecStart = "${pkgs.whisper-cpp-vulkan}/bin/whisper-server --host 127.0.0.1 --port 8767 --model ${transcriptionModel} --language auto --threads 4";
-            Restart = "on-failure";
-          };
-        };
-        avatar-listener = {
-          Unit = {
-            Description = "Local avatar meeting listener";
-            PartOf = [ "avatar-conversation.target" ];
-            After = [ "hex.service" ];
-            Wants = [ "hex.service" ];
-          };
-          Service = {
-            ExecStart = toString programs.listener;
-            Restart = "on-failure";
-          };
-        };
-        avatar-live = {
-          Unit = {
-            Description = "Avatar live duplex voice";
-            PartOf = [ "avatar-conversation.target" ];
-            StartLimitIntervalSec = 120;
-            StartLimitBurst = 3;
-          };
-          Service = {
-            ExecStart = toString programs.live;
-            Environment = [
-              "AVATAR_CHARACTER_VOICES=${characterVoices}"
-              "AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}"
-            ];
-            Restart = "on-failure";
-            RestartSec = 5;
-          };
-        };
-        avatar-renderer = {
-          Unit = serviceUnit // {
-            Description = "Offline avatar renderer";
-          };
-          Service = {
-            ExecStart = toString programs.serve;
-            Restart = "on-failure";
-          };
-          Install.WantedBy = [ "avatar.target" ];
-        };
-      };
+    speechPackage = import ../media-generation/speech-package.nix { inherit pkgs; };
+    mac = {
+      browserApplication = "${chromeForTesting}/lib/Google Chrome for Testing.app";
+      launchAgent = rebuildSafeLaunchAgentLibrary.mkRebuildSafeLaunchAgent;
     };
   };
 }

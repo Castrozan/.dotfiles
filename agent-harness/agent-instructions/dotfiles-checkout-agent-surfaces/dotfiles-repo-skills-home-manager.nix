@@ -1,14 +1,14 @@
 {
   pkgs,
   hostname,
+  inputs,
   config,
   lib,
   ...
 }:
 let
   interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
-    inherit hostname;
-    inherit pkgs;
+    inherit hostname pkgs inputs;
   };
 
   harnessProjectSkillDirectories = [

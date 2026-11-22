@@ -2,6 +2,7 @@
   pkgs,
   lib,
   hostname,
+  inputs,
   homeDirectory,
   chromePackage,
   isDarwin ? pkgs.stdenv.isDarwin,
@@ -13,6 +14,7 @@ let
       pkgs
       lib
       hostname
+      inputs
       homeDirectory
       chromePackage
       isDarwin

@@ -3,6 +3,7 @@
   pkgs,
   lib,
   self,
+  inputs,
   ...
 }:
 let
@@ -39,6 +40,13 @@ let
   );
 in
 {
+  domain-hyprland-hides-the-avatar-browser =
+    mkEvalCheck "domain-hyprland-hides-the-avatar-browser"
+      (lib.hasInfix "match:class ^(${inputs.avatar.lib.browserWindowClass})$" (
+        builtins.readFile ../program-configuration/conf.d/windows.conf
+      ))
+      "windows.conf must send the window class the avatar flake exports as lib.browserWindowClass to special:avatar. The avatar's output browser announces that class while it renders for the virtual camera, and without the rule its window opens on the active workspace in front of whatever the user is doing";
+
   domain-hyprland-graphical-service-restart-is-time-bounded =
     mkEvalCheck "domain-hyprland-graphical-service-restart-is-time-bounded"
       (lib.hasInfix "/bin/timeout " startGraphicalServicesActivation)

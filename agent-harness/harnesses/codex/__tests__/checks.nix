@@ -3,6 +3,7 @@
   pkgs,
   lib,
   self,
+  inputs,
   ...
 }:
 let
@@ -12,7 +13,7 @@ let
       ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
         hostname = "test";
-        inherit pkgs;
+        inherit pkgs inputs;
       };
 
   cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];

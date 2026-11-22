@@ -1,5 +1,4 @@
 {
-  config,
   pkgs,
   lib,
   nixpkgs-version,
@@ -9,6 +8,7 @@
   imports = [
     ./audio.nix
     ../../../../media/video-production/shorts-notifications-nixos.nix
+    ../../../../media/avatar/avatar-virtual-camera-nixos.nix
     ./nvidia.nix
     ./libinput-quirks.nix
     ./keyboard-backlight.nix
@@ -27,12 +27,6 @@
       systemd-boot.enable = true;
       efi.canTouchEfiVariables = true;
     };
-
-    extraModulePackages = [ config.boot.kernelPackages.v4l2loopback ];
-    kernelModules = [ "v4l2loopback" ];
-    extraModprobeConfig = ''
-      options v4l2loopback devices=1 video_nr=10 card_label="Avatar Cam" exclusive_caps=1
-    '';
   };
 
   fileSystems = lib.mkForce {

@@ -2,6 +2,7 @@
   pkgs,
   config,
   hostname,
+  inputs,
   lib,
   ...
 }:
@@ -10,8 +11,7 @@ let
     import
       ../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
-        inherit hostname;
-        inherit pkgs;
+        inherit hostname pkgs inputs;
       };
 
   agentSkillSets = config.clawdeAgentSkillSets;

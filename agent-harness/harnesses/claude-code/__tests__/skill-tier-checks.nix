@@ -1,6 +1,7 @@
 {
   pkgs,
   lib,
+  inputs,
   mkEvalCheck,
   cfg,
   hasFilePrefix,
@@ -11,7 +12,7 @@ let
       ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
         hostname = "test";
-        inherit pkgs;
+        inherit pkgs inputs;
       };
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
@@ -56,7 +57,7 @@ let
           ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
           {
             hostname = machineName;
-            inherit pkgs;
+            inherit pkgs inputs;
           }
         ).allSkillNames;
     in

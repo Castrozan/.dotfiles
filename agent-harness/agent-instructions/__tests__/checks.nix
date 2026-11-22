@@ -3,6 +3,7 @@
   pkgs,
   lib,
   self,
+  inputs,
   ...
 }:
 let
@@ -24,7 +25,7 @@ let
 
   interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     hostname = "test";
-    inherit pkgs;
+    inherit pkgs inputs;
   };
 
   harnessProjectSkillDirectoriesInRepository = [
@@ -157,4 +158,4 @@ in
       )
       "core.md must contain only plain universal session-long policy below the global context budget, including conditionally triggered coding behavior; keep metadata, repository, harness, tool, and bounded procedure mechanics in their owning surfaces";
 }
-// import ./generated-instruction-checks.nix { inherit pkgs lib; }
+// import ./generated-instruction-checks.nix { inherit pkgs lib inputs; }

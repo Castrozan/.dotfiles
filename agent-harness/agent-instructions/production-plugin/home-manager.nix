@@ -2,6 +2,7 @@
   pkgs,
   lib,
   hostname,
+  inputs,
   isDarwin,
   config,
   latest,
@@ -15,6 +16,7 @@ let
       pkgs
       lib
       hostname
+      inputs
       isDarwin
       ;
     inherit (config.home) homeDirectory;

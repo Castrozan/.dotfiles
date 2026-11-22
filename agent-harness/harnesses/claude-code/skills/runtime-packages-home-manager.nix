@@ -1,10 +1,14 @@
-{ hostname, pkgs, ... }:
+{
+  hostname,
+  pkgs,
+  inputs,
+  ...
+}:
 let
   interactiveAgentSkills =
     import ../../../agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
-        inherit hostname;
-        inherit pkgs;
+        inherit hostname pkgs inputs;
       };
 
   skillInstallModuleDirectory =

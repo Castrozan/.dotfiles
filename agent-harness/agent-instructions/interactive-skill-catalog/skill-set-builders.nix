@@ -1,6 +1,7 @@
 {
   hostname,
   pkgs,
+  inputs,
   defaultInteractiveSkillNames,
 }:
 let
@@ -13,6 +14,7 @@ let
     ../skills/services
     ../skills/workstation
     ../skills/writing
+    inputs.avatar.skillSourceDirectory
   ];
   privateSharedSkillsDirectory = ../../../private-configuration/agent-harness/claude/skills;
   privateMachineSkillsDirectory = ../../../private-configuration/machines + "/${hostname}/skills";
