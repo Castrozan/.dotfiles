@@ -10,6 +10,7 @@ let
   skillsDirectory = ../agent-instructions/skills;
 
   workflowDefinitionDirectories = {
+    dotfiles-fix-loop = ./definitions/dotfiles-fix-loop;
     dotfiles-housekeeping = ./definitions/dotfiles-housekeeping;
     dotfiles-housekeeping-slice = ./definitions/dotfiles-housekeeping-slice;
     dotfiles-housekeeping-verify = ./definitions/dotfiles-housekeeping-verify;
@@ -25,6 +26,7 @@ let
       -e "s|@python@|${pkgs.python312}/bin/python3|g" \
       -e "s|@jq@|${pkgs.jq}/bin/jq|g" \
       -e "s|@instructionData@|${pkgs.python312}/bin/python3 ${./scripts}/instruction_data.py|g" \
+      -e "s|@decide@|${pkgs.python312}/bin/python3 ${./scripts}/workflow_decision.py|g" \
       -e "s|@workflowDirectory@|$out/${workflowName}|g" {} +
   '';
 
@@ -53,6 +55,8 @@ let
   workflowRuntimePath = lib.makeBinPath [
     archon
     pkgs.git
+    pkgs.nixfmt
+    pkgs.ruff
   ];
 
   mkWorkflowCommand =
@@ -81,6 +85,18 @@ in
     workflowWaitCommand
   ]
   ++ map mkWorkflowCommand [
+    {
+      commandName = "dotfiles-fix-loop";
+      workflowName = "dotfiles-fix-loop";
+      argumentNames = [
+        "root"
+        "task"
+        "test_command"
+        "commit_message"
+        "lint_command"
+        "upstream"
+      ];
+    }
     {
       commandName = "dotfiles-housekeeping";
       workflowName = "dotfiles-housekeeping";

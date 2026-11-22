@@ -7,3 +7,4 @@ sys.path.insert(0, str(WORKFLOWS_DIRECTORY / "scripts"))
 sys.path.insert(
     0, str(WORKFLOWS_DIRECTORY / "definitions/dotfiles-housekeeping/scripts")
 )
+sys.path.insert(0, str(WORKFLOWS_DIRECTORY / "definitions/dotfiles-fix-loop/scripts"))

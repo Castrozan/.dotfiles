@@ -1,0 +1,155 @@
+name: dotfiles-fix-loop
+description: >-
+  Fix a change that a failing scoped test reproduces. A small-tier fixer edits until the test, the formatters and the
+  lint gate pass; a medium-tier reviewer reads the diff once; a Decisions API step recommends merge or escalate; and a
+  person confirms before code commits, rebases and pushes fast-forward. Needs a clean checkout. Spends 2 to 10 model
+  calls: up to four fixes, one review and up to five decisions. Not for work without a reproducing test.
+inputs:
+  root: { required: true }
+  task: { required: true }
+  test_command: { required: true }
+  commit_message: { required: true }
+  lint_command: { default: dotfiles-lint }
+  upstream: { default: origin/main }
+returns: deliver
+worktree:
+  enabled: false
+nodes:
+  - id: context
+    bash: >-
+      @python@ @workflowDirectory@/scripts/fix_loop_context.py --root "$INPUTS_ROOT" --task "$INPUTS_TASK"
+      --test-command "$INPUTS_TEST_COMMAND" --artifacts "$ARTIFACTS_DIR/fix-loop"
+    output_format:
+      type: object
+      properties:
+        context_path: { type: string }
+        base_revision: { type: string }
+      required: [context_path, base_revision]
+  - id: fix_loop
+    depends_on: [context]
+    loop_group:
+      max_iterations: 4
+      fresh_context: true
+      until_bash: 'choice=$decide_next.output.choice; [ "$choice" = done ] || [ "$choice" = escalate ]'
+      nodes:
+        - id: fix
+          command: fix-defect
+          when: "$LOOP_PREV.decide_next.output.choice != 'retry-deeper'"
+          model: small
+          effort: low
+          output_format: &fix_summary
+            type: object
+            properties:
+              summary: { type: string }
+            required: [summary]
+        - id: fix_deeper
+          command: fix-defect
+          when: "$LOOP_PREV.decide_next.output.choice == 'retry-deeper'"
+          model: small
+          effort: medium
+          output_format: *fix_summary
+        - id: check
+          depends_on: [fix, fix_deeper]
+          trigger_rule: none_failed_min_one_success
+          bash: >-
+            @python@ @workflowDirectory@/scripts/fix_loop_check.py --root "$INPUTS_ROOT"
+            --test-command "$INPUTS_TEST_COMMAND" --lint-command "$INPUTS_LINT_COMMAND"
+            --artifacts "$ARTIFACTS_DIR/fix-loop"
+          output_format:
+            type: object
+            properties:
+              passed: { type: boolean }
+              tests_passed: { type: boolean }
+              gates_passed: { type: boolean }
+              failure_signature: { type: string }
+              changed_files: { type: array, items: { type: string } }
+            required: [passed, tests_passed, gates_passed, failure_signature, changed_files]
+        - id: decide_next
+          depends_on: [check]
+          bash: |
+            set -o pipefail
+            checked=$check.output
+            previous_signature=$LOOP_PREV.check.output.failure_signature
+            printf '%s' "$checked" \
+              | @python@ @workflowDirectory@/scripts/fix_loop_requests.py next --artifacts "$ARTIFACTS_DIR/fix-loop" \
+                --previous-signature "$previous_signature" --max-iterations 4 \
+              | @decide@ --record "$ARTIFACTS_DIR/fix-loop/decisions.jsonl"
+          output_format: &decision
+            type: object
+            properties:
+              choice: { type: string, enum: [done, retry, retry-deeper, merge, escalate] }
+              confidence: { type: number }
+              source: { type: string, enum: [model, only-option, guard, fallback] }
+              options: { type: array, items: { type: string } }
+              needs_human: { type: boolean }
+              recommendation:
+                type: object
+                properties:
+                  option: { type: string }
+                  why: { type: string }
+                  confidence: { type: string, enum: [low, medium, high] }
+                required: [option, why, confidence]
+              summary: { type: string }
+              metrics: { type: array, items: { type: object } }
+            required: [choice, confidence, source, options, needs_human, recommendation, summary, metrics]
+  - id: review
+    command: review-change
+    depends_on: [fix_loop]
+    context: fresh
+    model: medium
+    effort: high
+    mutates_checkout: false
+    output_format:
+      type: object
+      properties:
+        findings:
+          type: array
+          maxItems: 15
+          items:
+            type: object
+            properties:
+              severity: { type: string, enum: [critical, high, medium, low] }
+              file: { type: string }
+              line: { type: integer }
+              title: { type: string }
+              detail: { type: string }
+            required: [severity, file, line, title, detail]
+      required: [findings]
+  - id: decide_merge
+    depends_on: [fix_loop, review]
+    mutates_checkout: false
+    bash: |
+      set -o pipefail
+      looped=$fix_loop.output
+      reviewed=$review.output
+      printf '{"loop":%s,"review":%s}' "$looped" "$reviewed" \
+        | @python@ @workflowDirectory@/scripts/fix_loop_requests.py merge --artifacts "$ARTIFACTS_DIR/fix-loop" \
+        | @decide@ --record "$ARTIFACTS_DIR/fix-loop/decisions.jsonl"
+    output_format: *decision
+  - id: confirm
+    depends_on: [decide_merge]
+    wait:
+      attention: "$decide_merge.output.summary"
+      form: select
+      options:
+        - id: merge
+          label: Commit and push
+          does: Commits the changed files, rebases onto the upstream, reruns the scoped test and pushes fast-forward.
+        - id: escalate
+          label: Hold for a person
+          does: Leaves the change uncommitted in the checkout and pushes nothing.
+      recommendation: "$decide_merge.output.recommendation"
+  - id: deliver
+    depends_on: [confirm]
+    bash: |
+      answer=$confirm.output.decision
+      @python@ @workflowDirectory@/scripts/fix_loop_deliver.py --root "$INPUTS_ROOT" --answer "$answer" \
+        --test-command "$INPUTS_TEST_COMMAND" --commit-message "$INPUTS_COMMIT_MESSAGE" --upstream "$INPUTS_UPSTREAM"
+    output_format:
+      type: object
+      properties:
+        pushed: { type: boolean }
+        outcome: { type: string, enum: [pushed, held] }
+        detail: { type: string }
+        commit: { type: string }
+      required: [pushed, outcome, detail, commit]

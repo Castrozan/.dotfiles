@@ -7,8 +7,9 @@ does not become cheap because its calls run in parallel or happen behind one too
 ### Routine workflows
 
 Keep a mandatory or routine workflow at two model calls or fewer unless the owner explicitly accepts a larger fixed
-budget. Never launch one call per review dimension; let one reviewer apply all related lenses, then batch all candidate
-verification and synthesis into one independent pass.
+budget. The owner accepted ten per `dotfiles-fix-loop` run, capped by its loop's `max_iterations`. Never launch one call
+per review dimension; let one reviewer apply all related lenses, then batch all candidate verification and synthesis
+into one independent pass.
 
 Pin every supported per-call control, currently the model and the reasoning effort; an unpinned call inherits the
 caller's session, so the same workflow costs whatever its invoker happened to be set to. Confirm a cap in a transcript
