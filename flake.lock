@@ -108,6 +108,36 @@
         "url": "ssh://git@github.com/Castrozan/arr-stack"
       }
     },
+    "avatar": {
+      "inputs": {
+        "home-manager": [
+          "dependencies",
+          "home-manager"
+        ],
+        "nix-darwin": [
+          "dependencies",
+          "nix-darwin"
+        ],
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795385655,
+        "narHash": "sha256-1asZZUDlwH/6d6B9lw/QYez7bRy90daW9bnKBlZau4w=",
+        "owner": "Castrozan",
+        "repo": "avatar",
+        "rev": "98f1ec92b84f2640f2e5df37e40cb4a0722d9c45",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Castrozan",
+        "repo": "avatar",
+        "rev": "98f1ec92b84f2640f2e5df37e40cb4a0722d9c45",
+        "type": "github"
+      }
+    },
     "base16": {
       "inputs": {
         "fromYaml": "fromYaml"
@@ -356,6 +386,7 @@
         "agenix": "agenix",
         "agent-evals": "agent-evals",
         "arr-stack": "arr-stack",
+        "avatar": "avatar",
         "bluetui": "bluetui",
         "cbonsai": "cbonsai",
         "clawde": "clawde",

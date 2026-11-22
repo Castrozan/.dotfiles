@@ -37,6 +37,15 @@
     clawde.url = "github:Castrozan/clawde/d707cf1441140c49a3cd2d62387d51297dcfd9e8";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
+    avatar = {
+      url = "github:Castrozan/avatar/98f1ec92b84f2640f2e5df37e40cb4a0722d9c45";
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        home-manager.follows = "home-manager";
+        nix-darwin.follows = "nix-darwin";
+      };
+    };
+
     agent-evals.url = "github:Castrozan/agent-evals/dc8600fc5f8ec9adc16c5f39af5e15176bb630f5";
     agent-evals.inputs.nixpkgs.follows = "nixpkgs";
 
