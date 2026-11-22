@@ -6,7 +6,9 @@
 let
   runtime = import ./opencli-package.nix { inherit pkgs nodejs; };
   extension = import ./opencli-extension.nix { inherit pkgs; };
-  browser = import ./opencli-browser.nix { inherit pkgs; };
+  browser =
+    import ../../../../../../machine-configuration/browsers/chrome/chrome-for-testing-package.nix
+      { inherit pkgs; };
   jobBrowser =
     if muteAudio then
       pkgs.writeShellScriptBin "chromium" ''

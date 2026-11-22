@@ -69,4 +69,5 @@ def test_the_page_opens_headless_on_its_own_profile_after_clearing_the_old_one(
     assert "--app=http://localhost:8771/" in command
     assert mac_microphone.WAKE_PROFILE_FLAG in command
     assert local_seat.BROWSER_PROFILE_FLAG not in command
+    assert local_seat.BROWSER_APPLICATION in command
     assert not any(flag.startswith("--autoplay") for flag in command)

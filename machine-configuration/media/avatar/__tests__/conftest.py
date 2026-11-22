@@ -6,6 +6,9 @@ from unittest.mock import Mock
 import pytest
 
 os.environ["AVATAR_HOST"] = "chise"
+os.environ["AVATAR_BROWSER_APPLICATION"] = (
+    "/nix/store/browser/Google Chrome for Testing.app"
+)
 scripts = Path(__file__).resolve().parents[1] / "scripts"
 sys.path.insert(0, str(scripts))
 sys.path.insert(0, str(scripts / "listening"))

@@ -20,7 +20,7 @@ def open_window(page, port=local_seat.WINDOW_PORT):
             "/usr/bin/open",
             "-n",
             "-a",
-            local_seat.BROWSER,
+            local_seat.BROWSER_APPLICATION,
             "--args",
             local_seat.WINDOW_PROFILE_FLAG,
             f"--app=http://localhost:{port}/{page}",

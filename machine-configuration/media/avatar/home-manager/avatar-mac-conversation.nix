@@ -4,6 +4,7 @@
   programs,
   host,
   hostname,
+  browserApplication,
 }:
 let
   scripts = ../scripts;
@@ -29,6 +30,7 @@ let
     export AVATAR_HOST=${host}
     export AVATAR_AGENT_HOST=${hostname}
     export AVATAR_SEAT_PAGE=${scripts}/conversation/remote_seat/page
+    export AVATAR_BROWSER_APPLICATION="${browserApplication}"
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_TURN_MODEL=${import ./avatar-turn-model.nix { inherit pkgs; }}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}

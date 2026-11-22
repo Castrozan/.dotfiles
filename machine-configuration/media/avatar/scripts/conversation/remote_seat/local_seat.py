@@ -39,7 +39,8 @@ TUNNEL_COMMAND = [
     AVATAR_HOST,
     WAIT_WHILE_SEAT_SERVES,
 ]
-BROWSER = "Google Chrome"
+BROWSER_APPLICATION = os.environ["AVATAR_BROWSER_APPLICATION"]
+BROWSER = pathlib.Path(BROWSER_APPLICATION).stem
 BROWSER_PROFILE = pathlib.Path.home() / ".local/share/avatar/seat-browser"
 BROWSER_PROFILE_FLAG = f"--user-data-dir={BROWSER_PROFILE}"
 WINDOW_PROFILE = pathlib.Path.home() / ".local/share/avatar/window-browser"
@@ -151,7 +152,7 @@ def open_headless_browser(profile_flag, port, *extra_flags, query=""):
             "-g",
             "-n",
             "-a",
-            BROWSER,
+            BROWSER_APPLICATION,
             "--args",
             "--headless=new",
             profile_flag,

@@ -82,6 +82,7 @@ def test_showing_replaces_an_older_window_with_a_viewer_of_the_avatar(monkeypatc
     assert "--app=http://localhost:8770/?viewer" in command
     assert local_seat.WINDOW_PROFILE_FLAG in command
     assert local_seat.WINDOW_PROFILE_FLAG != local_seat.BROWSER_PROFILE_FLAG
+    assert local_seat.BROWSER_APPLICATION in command
 
 
 def test_the_seat_page_runs_without_any_window(monkeypatch):
@@ -92,6 +93,7 @@ def test_the_seat_page_runs_without_any_window(monkeypatch):
     assert "--headless=new" in command
     assert "--app=http://localhost:8769/" in command
     assert local_seat.BROWSER_PROFILE_FLAG in command
+    assert local_seat.BROWSER_APPLICATION in command
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is unavailable")

@@ -109,6 +109,17 @@ def test_the_avatar_host_is_named_once_and_every_mac_command_reads_it():
     assert "export AVATAR_HOST=${host}" in MAC_CONVERSATION
 
 
+def test_mac_browser_pages_open_in_a_bundle_apart_from_the_default_browser():
+    assert "import ../../browsers/chrome/chrome-for-testing-package.nix" in MAC_COMMANDS
+    assert (
+        MAC_COMMANDS.count('export AVATAR_BROWSER_APPLICATION="${browserApplication}"')
+        == 1
+    )
+    assert (
+        'export AVATAR_BROWSER_APPLICATION="${browserApplication}"' in MAC_CONVERSATION
+    )
+
+
 def test_every_machine_gets_the_doctor():
     assert "import ./home-manager/avatar-doctor-package.nix" in MAC_COMMANDS
     assert 'arguments = "--seat-of ${topology.host}";' in MAC_COMMANDS

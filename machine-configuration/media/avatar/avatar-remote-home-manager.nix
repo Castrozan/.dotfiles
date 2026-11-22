@@ -14,12 +14,16 @@ let
       {
         inherit config lib pkgs;
       };
+  browserApplication = "${
+    import ../../browsers/chrome/chrome-for-testing-package.nix { inherit pkgs; }
+  }/lib/Google Chrome for Testing.app";
   conversation = import ./home-manager/avatar-mac-conversation.nix {
     inherit
       pkgs
       lib
       programs
       hostname
+      browserApplication
       ;
     inherit (topology) host;
   };
@@ -41,6 +45,7 @@ let
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
+    export AVATAR_BROWSER_APPLICATION="${browserApplication}"
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
     export PYTHONPATH=${conversation.modules}:${programs.a2aLibrary}
     exec ${websocketPython}/bin/python3 ${./scripts/wake}/wake_listener.py "$@"

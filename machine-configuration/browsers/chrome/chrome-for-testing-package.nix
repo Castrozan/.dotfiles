@@ -17,7 +17,7 @@ else
       .${pkgs.stdenv.hostPlatform.system};
   in
   pkgs.stdenvNoCC.mkDerivation {
-    pname = "opencli-chromium";
+    pname = "chrome-for-testing";
     version = "155.0.8059.84";
     src = pkgs.fetchurl {
       url = "https://storage.googleapis.com/chrome-for-testing-public/155.0.8059.84/${release.platform}/chrome-${release.platform}.zip";
@@ -36,7 +36,7 @@ else
       makeWrapper "$out/lib/Google Chrome for Testing.app/Contents/MacOS/Google Chrome for Testing" "$out/bin/chromium"
     '';
     meta = {
-      description = "Chromium browser for isolated OpenCLI jobs";
+      description = "Pinned Chrome for Testing, a browser bundle separate from the default Google Chrome";
       homepage = "https://googlechromelabs.github.io/chrome-for-testing/";
       platforms = pkgs.lib.platforms.darwin;
       mainProgram = "chromium";
