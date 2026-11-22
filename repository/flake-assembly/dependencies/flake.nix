@@ -40,7 +40,7 @@
     agent-evals.url = "github:Castrozan/agent-evals/dc8600fc5f8ec9adc16c5f39af5e15176bb630f5";
     agent-evals.inputs.nixpkgs.follows = "nixpkgs";
 
-    hermes.url = "github:NousResearch/hermes-agent/caafe5389ae585ef77387a962aee05b1bcf17029";
+    hermes.url = "github:NousResearch/hermes-agent/2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19";
 
     # Tag-pinned — keep own nixpkgs (incompatible or untested with ours)
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";

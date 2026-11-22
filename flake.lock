@@ -895,22 +895,23 @@
         "flake-parts": "flake-parts_2",
         "home-manager": "home-manager_2",
         "nixpkgs": "nixpkgs_6",
+        "npm-lockfile-fix": "npm-lockfile-fix",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1795121475,
-        "narHash": "sha256-V6cmGKvPKv76bqACHbVZcStBrA3bjZeYfiqnlGoHGqI=",
+        "lastModified": 1793908658,
+        "narHash": "sha256-PzkocTi9jbkuht4cvpmXu/hTIAUNtE/xyivPoncNq8Y=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "caafe5389ae585ef77387a962aee05b1bcf17029",
+        "rev": "2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19",
         "type": "github"
       },
       "original": {
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "caafe5389ae585ef77387a962aee05b1bcf17029",
+        "rev": "2bd378ed1b8d6bf2192cb26e0a55ff3091e6bd19",
         "type": "github"
       }
     },
@@ -1762,6 +1763,28 @@
         "owner": "nixos",
         "ref": "nixos-26.05",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "npm-lockfile-fix": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "hermes",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1775903712,
+        "narHash": "sha256-2GV79U6iVH4gKAPWYrxUReB0S41ty/Y3dBLquU8AlaA=",
+        "owner": "jeslie0",
+        "repo": "npm-lockfile-fix",
+        "rev": "c6093acb0c0548e0f9b8b3d82918823721930fe8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "jeslie0",
+        "repo": "npm-lockfile-fix",
         "type": "github"
       }
     },
