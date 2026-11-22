@@ -8,14 +8,14 @@ class KokoroSpeechGenerator {
     this.language = language;
   }
 
-  async generate(text, voice) {
+  async generate(text, voice, language = this.language) {
     const result = await runMediaSpeech(
       [
         "generate",
         "--provider",
         "kokoro",
         "--language",
-        this.language,
+        language,
         "--voice",
         voice || this.defaultVoice,
         "--text",

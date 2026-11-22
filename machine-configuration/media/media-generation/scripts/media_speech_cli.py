@@ -51,7 +51,9 @@ def read_speech_request(args):
     if args.text_file is not None:
         with args.text_file.open(encoding="utf-8") as input_file:
             text = input_file.read(MAXIMUM_TEXT_CHARACTERS + 1)
-    text = direct_speech_text(text, args.provider, args.model, args.directions)
+    text = direct_speech_text(
+        text, args.provider, args.model, args.directions, args.language
+    )
     return SpeechRequest(text, args.voice, args.language)
 
 

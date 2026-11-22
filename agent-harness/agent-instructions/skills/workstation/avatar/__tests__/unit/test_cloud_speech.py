@@ -5,6 +5,8 @@ const { ResilientSpeechGenerator } = require("./speech/resilient-speech-generato
 const calls = [];
 const kokoro = { generate: async (...request) => { calls.push(["kokoro", ...request]); return { audioPath: "kokoro" }; } };
 const local = { generate: async (...request) => { calls.push(["local", ...request]); return { audioPath: "local" }; } };
+const voices = { "pt-br": { kokoro: "pf_dora", piper: "faber" }, "en-us": { kokoro: "af_heart", piper: "lessac" } };
+const resilient = (cloud, kokoroGenerator = kokoro) => new ResilientSpeechGenerator(cloud, kokoroGenerator, local, "pt-br", voices);
 """
 
 
@@ -14,13 +16,13 @@ def test_cloud_failure_falls_back_to_the_kokoro_default_voice():
         GENERATORS
         + """
         const cloud = { generate: async () => { throw new Error("offline"); } };
-        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
-          .generate("hello", "turn", "cloudVoice", "happy")
+        const result = resilient(cloud)
+          .generate("olá", "turn", "cloudVoice", "happy")
           .then((speech) => ({ audioPath: speech.audioPath, calls }));
         """
     )
     assert result["audioPath"] == "kokoro"
-    assert result["calls"] == [["kokoro", "hello", None]]
+    assert result["calls"] == [["kokoro", "olá", "pf_dora", "pt-br"]]
 
 
 @requires_node
@@ -30,13 +32,13 @@ def test_piper_speaks_only_when_cloud_and_kokoro_both_fail():
         + """
         const cloud = { generate: async () => { throw new Error("offline"); } };
         const failingKokoro = { generate: async () => { throw new Error("no model"); } };
-        const result = new ResilientSpeechGenerator(cloud, failingKokoro, local)
-          .generate("hello", "turn", "cloudVoice", "happy")
+        const result = resilient(cloud, failingKokoro)
+          .generate("olá", "turn", "cloudVoice", "happy")
           .then((speech) => ({ audioPath: speech.audioPath, calls }));
         """
     )
     assert result["audioPath"] == "local"
-    assert result["calls"] == [["local", "hello", "turn"]]
+    assert result["calls"] == [["local", "olá", "turn", "faber"]]
 
 
 @requires_node
@@ -45,7 +47,7 @@ def test_a_kokoro_voice_never_reaches_the_cloud():
         GENERATORS
         + """
         const cloud = { generate: async () => { calls.push(["cloud"]); return {}; } };
-        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
+        const result = resilient(cloud)
           .generate("olá", "turn", "pf_dora", "sad")
           .then(() => calls);
         """
@@ -59,7 +61,7 @@ def test_a_piper_voice_never_reaches_the_cloud():
         GENERATORS
         + """
         const cloud = { generate: async () => { calls.push(["cloud"]); return {}; } };
-        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
+        const result = resilient(cloud)
           .generate("olá", "turn", "pt_BR-faber-medium", "sad")
           .then(() => calls);
         """
@@ -73,12 +75,12 @@ def test_the_cloud_receives_the_voice_and_emotion():
         GENERATORS
         + """
         const cloud = { generate: async (...request) => { calls.push(request); return {}; } };
-        const result = new ResilientSpeechGenerator(cloud, kokoro, local)
+        const result = resilient(cloud)
           .generate("hi", "turn", undefined, "happy")
           .then(() => calls);
         """
     )
-    assert result == [["hi", None, "happy", None]]
+    assert result == [["hi", None, "happy", None, "en-us"]]
 
 
 @requires_node

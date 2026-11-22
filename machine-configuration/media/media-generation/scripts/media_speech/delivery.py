@@ -1,5 +1,7 @@
 from media_speech.contract import SpeechError
 
+REGIONAL_ACCENT_CUES = {"pt-br": "strong Brazilian Portuguese accent"}
+
 
 def speech_model_capabilities(provider_name):
     if provider_name == "elevenlabs":
@@ -38,13 +40,35 @@ def speech_model_capabilities(provider_name):
     raise SpeechError("unsupported_provider")
 
 
-def direct_speech_text(text, provider_name, model, directions):
-    if directions is None:
+def supports_audio_tags(provider_name, model):
+    return provider_name == "elevenlabs" and model == "eleven_v4"
+
+
+def direct_speech_text(text, provider_name, model, directions, language):
+    cues = [
+        *direction_cues(provider_name, model, directions),
+        *accent_cues(provider_name, model, language),
+    ]
+    if not cues:
         return text
-    if provider_name != "elevenlabs" or model != "eleven_v4":
+    return f"[{', '.join(cues)}] {text}"
+
+
+def direction_cues(provider_name, model, directions):
+    if directions is None:
+        return []
+    if not supports_audio_tags(provider_name, model):
         raise SpeechError("unsupported_delivery_instructions")
     validate_delivery_directions(directions)
-    return f"[{directions.strip()}] {text}"
+    return [directions.strip()]
+
+
+def accent_cues(provider_name, model, language):
+    if not supports_audio_tags(provider_name, model):
+        return []
+    if language not in REGIONAL_ACCENT_CUES:
+        return []
+    return [REGIONAL_ACCENT_CUES[language]]
 
 
 def validate_delivery_directions(directions):

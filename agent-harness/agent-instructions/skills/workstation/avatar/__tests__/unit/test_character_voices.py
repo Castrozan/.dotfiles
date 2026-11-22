@@ -59,6 +59,8 @@ def test_the_cloud_fallback_keeps_the_character_local_voice():
           { generate: async () => { throw new Error("offline"); } },
           { generate: async (text, voice) => { voices.push(voice); return { source: "kokoro" }; } },
           { generate: async () => ({ source: "piper" }) },
+          "pt-br",
+          { "pt-br": { kokoro: "pf_dora", piper: "faber" } },
         );
         const result = generator
           .generate("oi", "turn", "cloudVoice", "neutral", {localVoice: "pm_alex"})

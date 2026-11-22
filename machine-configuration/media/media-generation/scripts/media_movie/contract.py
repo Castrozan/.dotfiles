@@ -31,7 +31,13 @@ class NarrationSelection:
 
     def speech_request(self):
         return SpeechRequest(
-            direct_speech_text(self.text, self.provider, self.model, self.directions),
+            direct_speech_text(
+                self.text,
+                self.provider,
+                self.model,
+                self.directions,
+                self.language,
+            ),
             self.voice,
             self.language,
         )

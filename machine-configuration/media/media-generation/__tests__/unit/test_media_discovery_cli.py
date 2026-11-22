@@ -107,7 +107,7 @@ def test_validate_checks_credentials_without_job_state(tmp_path, monkeypatch, ca
 )
 def test_unsupported_direction_control_is_rejected(provider, model):
     with pytest.raises(SpeechError, match="unsupported_delivery_instructions"):
-        direct_speech_text("Hello", provider, model, "whispers")
+        direct_speech_text("Hello", provider, model, "whispers", "en-us")
 
 
 def test_movie_inspection_needs_no_provider_runtime(

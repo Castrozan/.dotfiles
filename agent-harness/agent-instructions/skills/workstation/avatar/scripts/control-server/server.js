@@ -17,16 +17,8 @@ const {
   pageOrigins,
 } = require("./avatar-session/page-origins");
 const {
-  CharacterVoicedSpeechGenerator,
-} = require("./speech/character-voiced-speech-generator");
-const { TextToSpeechGenerator } = require("./speech/text-to-speech-generator");
-const { KokoroSpeechGenerator } = require("./speech/kokoro-speech-generator");
-const {
-  ElevenLabsSpeechGenerator,
-} = require("./speech/elevenlabs-speech-generator");
-const {
-  ResilientSpeechGenerator,
-} = require("./speech/resilient-speech-generator");
+  assembleSpeechGenerator,
+} = require("./speech/assemble-speech-generator");
 const { SpeechFloor } = require("./speech/speech-floor");
 const { agentChannelFor } = require("./speech/agent-channel-gate");
 
@@ -46,6 +38,8 @@ const CONFIG = {
   CLOUD_VOICE: process.env.AVATAR_CLOUD_VOICE,
   CHARACTER_VOICES_PATH: process.env.AVATAR_CHARACTER_VOICES,
   KOKORO_VOICE: "pf_dora",
+  KOKORO_ENGLISH_VOICE: "af_heart",
+  TTS_ENGLISH_VOICE: "en_US-lessac-medium",
   CLOUD_VOICE_LANGUAGE: process.env.AVATAR_CLOUD_VOICE_LANGUAGE || "pt-br",
   TTS_DIR: require("node:path").join(
     require("node:os").homedir(),
@@ -127,28 +121,7 @@ async function main() {
   const avatarState = new AvatarStateStore();
   const clientRegistry = new ConnectedClientRegistry();
   const sendVoiceLevel = (level) => clientRegistry.sendVoiceLevel(level);
-  const localSpeechGenerator = new TextToSpeechGenerator(
-    CONFIG.TTS_DIR,
-    CONFIG.TTS_VOICE,
-    CONFIG.TTS_VOICE_DIRECTORY,
-  );
-  await localSpeechGenerator.prepareOutputRootDirectory();
-  const textToSpeechGenerator = new CharacterVoicedSpeechGenerator(
-    new ResilientSpeechGenerator(
-      new ElevenLabsSpeechGenerator(
-        CONFIG.CLOUD_VOICE,
-        CONFIG.CLOUD_VOICE_LANGUAGE,
-      ),
-      new KokoroSpeechGenerator(
-        CONFIG.KOKORO_VOICE,
-        CONFIG.CLOUD_VOICE_LANGUAGE,
-      ),
-      localSpeechGenerator,
-    ),
-    JSON.parse(
-      require("node:fs").readFileSync(CONFIG.CHARACTER_VOICES_PATH, "utf8"),
-    ),
-  );
+  const textToSpeechGenerator = await assembleSpeechGenerator(CONFIG);
 
   const context = {
     avatarState,
