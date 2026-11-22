@@ -1,4 +1,4 @@
-(function () {
+(() => {
   "use strict";
 
   const TABS_ID = "ytweak-tabs";
@@ -8,13 +8,26 @@
     window.dispatchEvent(new Event("resize"));
   }
 
+  function restoreMasthead(masthead) {
+    if (masthead.parentNode === mastheadOrigin.parent) return;
+
+    const nextSibling = mastheadOrigin.nextSibling;
+    mastheadOrigin.parent.insertBefore(
+      masthead,
+      nextSibling?.parentNode === mastheadOrigin.parent ? nextSibling : null,
+    );
+  }
+
+  function isWatchMetadataConnected(metadata) {
+    return location.pathname === "/watch" && Boolean(metadata?.isConnected);
+  }
+
   function placeMasthead() {
     const masthead = document.getElementById("masthead-container");
     const metadata = document.querySelector(
       "ytd-watch-flexy ytd-watch-metadata",
     );
-    const belowVideo =
-      location.pathname === "/watch" && Boolean(metadata?.isConnected);
+    const belowVideo = isWatchMetadataConnected(metadata);
 
     if (!masthead) return false;
 
@@ -26,12 +39,8 @@
     if (belowVideo) {
       if (metadata.previousElementSibling !== masthead)
         metadata.before(masthead);
-    } else if (masthead.parentNode !== mastheadOrigin.parent) {
-      const nextSibling = mastheadOrigin.nextSibling;
-      mastheadOrigin.parent.insertBefore(
-        masthead,
-        nextSibling?.parentNode === mastheadOrigin.parent ? nextSibling : null,
-      );
+    } else {
+      restoreMasthead(masthead);
     }
 
     return belowVideo;
@@ -104,6 +113,22 @@
     }, 1600);
   }
 
+  function pollForLayout() {
+    let attempts = 0;
+    pollTimer = setInterval(() => {
+      const mounted = mountTabs() && placeMasthead();
+      if (mounted || ++attempts > 40) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+        if (!mounted) {
+          document.documentElement.classList.remove(
+            "ytweak-header-below-video",
+          );
+        }
+      }
+    }, 250);
+  }
+
   function apply() {
     document.documentElement.classList.toggle(
       "ytweak-header-below-video",
@@ -117,21 +142,8 @@
       return;
     }
 
-    let attempts = 0;
-
     if (!(mountTabs() && placeMasthead())) {
-      pollTimer = setInterval(() => {
-        const mounted = mountTabs() && placeMasthead();
-        if (mounted || ++attempts > 40) {
-          clearInterval(pollTimer);
-          pollTimer = null;
-          if (!mounted) {
-            document.documentElement.classList.remove(
-              "ytweak-header-below-video",
-            );
-          }
-        }
-      }, 250);
+      pollForLayout();
     }
 
     scheduleRefit();

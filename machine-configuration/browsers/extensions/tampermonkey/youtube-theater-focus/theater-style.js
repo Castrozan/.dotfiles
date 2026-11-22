@@ -1,6 +1,4 @@
-(function () {
-  "use strict";
-
+(() => {
   const STYLE_ID = "ytweak-style";
 
   const cssRules = [
