@@ -3,13 +3,18 @@
 
   const STYLE_ID = "ytweak-style";
   const TABS_ID = "ytweak-tabs";
+  let mastheadOrigin = null;
 
   const cssRules = [
     "ytd-watch-flexy { --ytweak-col: min(1600px, 92vw); }",
     "ytd-app { --ytd-masthead-height: 45px !important; }",
     "#masthead-container.ytd-app, ytd-masthead#masthead, ytd-masthead #background.ytd-masthead, ytd-masthead #container.ytd-masthead { height: 45px !important; min-height: 45px !important; }",
     "ytd-page-manager.ytd-app { margin-top: 45px !important; }",
+    "html.ytweak-header-below-tabs ytd-app { --ytd-masthead-height: 0px !important; }",
+    "html.ytweak-header-below-tabs ytd-page-manager.ytd-app { margin-top: 0 !important; }",
+    "html.ytweak-header-below-tabs #masthead-container.ytd-app { position: relative !important; inset: auto !important; width: 100% !important; margin: 8px auto 16px !important; transform: none !important; }",
     "ytd-watch-flexy[theater] #full-bleed-container { height: calc(100vh - 53px) !important; max-height: calc(100vh - 53px) !important; }",
+    "html.ytweak-header-below-tabs ytd-watch-flexy[theater] #full-bleed-container { height: 100vh !important; max-height: 100vh !important; }",
     "ytd-watch-flexy[theater] #columns { display: flex !important; flex-direction: column !important; align-items: center !important; }",
     "ytd-watch-flexy[theater] #primary, ytd-watch-flexy[theater] #primary-inner { width: 100% !important; max-width: var(--ytweak-col) !important; margin: 0 auto !important; }",
     "ytd-watch-flexy[theater] #secondary { width: 100% !important; max-width: var(--ytweak-col) !important; margin: 12px auto 0 !important; padding: 0 !important; }",
@@ -36,6 +41,36 @@
     window.dispatchEvent(new Event("resize"));
   }
 
+  function placeMasthead() {
+    const masthead = document.getElementById("masthead-container");
+    const tabs = document.getElementById(TABS_ID);
+    const belowTabs =
+      location.pathname === "/watch" && Boolean(tabs?.isConnected);
+
+    if (!masthead) return false;
+
+    mastheadOrigin ??= {
+      parent: masthead.parentNode,
+      nextSibling: masthead.nextSibling,
+    };
+
+    if (belowTabs) {
+      if (tabs.nextElementSibling !== masthead) tabs.after(masthead);
+    } else if (masthead.parentNode !== mastheadOrigin.parent) {
+      const nextSibling = mastheadOrigin.nextSibling;
+      mastheadOrigin.parent.insertBefore(
+        masthead,
+        nextSibling?.parentNode === mastheadOrigin.parent ? nextSibling : null,
+      );
+    }
+
+    document.documentElement.classList.toggle(
+      "ytweak-header-below-tabs",
+      belowTabs,
+    );
+    return belowTabs;
+  }
+
   function mountTabs() {
     const flexy = document.querySelector("ytd-watch-flexy");
     const comments = document.querySelector("#comments");
@@ -44,7 +79,7 @@
 
     const existing = document.getElementById(TABS_ID);
 
-    if (existing?.nextElementSibling === comments) {
+    if (existing?.parentElement === comments.parentElement) {
       return true;
     }
 
@@ -108,10 +143,15 @@
 
     if (pollTimer) clearInterval(pollTimer);
 
+    if (location.pathname !== "/watch") {
+      placeMasthead();
+      return;
+    }
+
     let attempts = 0;
 
     pollTimer = setInterval(() => {
-      if (mountTabs() || ++attempts > 40) {
+      if ((mountTabs() && placeMasthead()) || ++attempts > 40) {
         clearInterval(pollTimer);
         pollTimer = null;
       }
