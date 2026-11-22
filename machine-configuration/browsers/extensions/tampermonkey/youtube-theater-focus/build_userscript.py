@@ -7,6 +7,7 @@ def build_userscript():
     sources = [
         "userscript-metadata.js",
         "hold-playback-until-focused.js",
+        "theater-style.js",
         "theater-layout.js",
     ]
     return "\n".join((source_directory / name).read_text() for name in sources)
