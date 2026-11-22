@@ -216,7 +216,10 @@ During a conversation the wake reads that conversation's transcript instead of t
 Servant by the first or last word of a turn, with or without a greeting, hands the room to it: `addressee.json` in the
 avatar runtime directory names the session now addressed, its `avatar-talk follow` starts after the words that named it,
 and the previous session's `follow` prints that the room turned and exits. Only lines from the room's own microphone
-prompt a session; a voice from a meeting moves the room without prompting anyone.
+prompt a session; a voice from a meeting moves the room without prompting anyone. The wake judges a turn once it ends:
+at a line Smart Turn marks finished, or, after an unfinished line, once the same 2.5 seconds that hold the reply pass
+with no newer line and no speech in progress, so a sentence left unfinished before silence is still judged, once. A Mac
+following chise's conversation leaves that quiet ending to chise's wake, which sees the listener's speech marker.
 
 Parakeet cannot be told the names, so the wake also accepts a misheard one, such as "chise hresnade" for Scheherazade,
 but only from words that are not ordinary speech: a window of words matches loosely only when none of them is among

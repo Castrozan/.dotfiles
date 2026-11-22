@@ -8,6 +8,7 @@ import sys
 import time
 
 import conversation_addressee
+import listener
 import listener_runtime
 import listener_session
 import local_seat
@@ -180,6 +181,11 @@ def mac_boundaries():
             listening_here,
             lambda: listener_session.quiet_seconds(directory),
             lambda: 0.0,
+        ),
+        "speech_in_progress": here_or_at_the_host(
+            lately_listening_here,
+            lambda: (directory / listener.SPEECH_IN_PROGRESS_MARKER).exists(),
+            lambda: True,
         ),
         "hand_to": here_or_at_the_host(
             listening_here,

@@ -51,6 +51,7 @@ def boundaries(heard="hey Voyager, check the build", sessions=(VOYAGER,), **chan
         now=Mock(return_value=0.0),
         pause=Mock(),
         transcript_entries=Mock(return_value=[]),
+        speech_in_progress=Mock(return_value=False),
         listening_purpose=Mock(return_value=ListenerPurpose.CONVERSATION),
         addressee=Mock(return_value=None),
         hand_to=Mock(),

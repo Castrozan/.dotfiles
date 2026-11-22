@@ -1,5 +1,6 @@
 import time
 
+import utterances
 from conversation_seat import Seat
 from listener_session import ListenerPurpose
 
@@ -23,6 +24,8 @@ class ConversationTranscript:
         self.text = ""
         self.source = None
         self.speaker = None
+        self.last_fragment = None
+        self.turn_ends_in_quiet_at = None
 
     def new_entries(self, entries):
         if not entries or entries[-1]["sequence"] < self.read_through:
@@ -43,7 +46,7 @@ class ConversationTranscript:
         joined = f"{self.text} {fragment}" if self.text else fragment
         self.text = joined if len(joined) <= MAX_TURN_CHARACTERS else None
 
-    def extend_turn(self, entry):
+    def extend_turn(self, entry, heard_at):
         source = entry.get("source")
         speaker = entry.get("speaker")
         if self.spoken_by_another_voice(source, speaker):
@@ -51,14 +54,28 @@ class ConversationTranscript:
         self.source = source
         self.speaker = speaker or self.speaker
         self.append(entry["text"])
+        self.last_fragment = entry
+        self.turn_ends_in_quiet_at = (
+            heard_at + utterances.UNFINISHED_TURN_SETTLE_SECONDS
+        )
 
-    def completed_turn(self, entry):
+    def completed_turn(self, entry, heard_at):
         if entry.get("speaker") == "avatar":
             return None
-        self.extend_turn(entry)
+        self.extend_turn(entry, heard_at)
         if not entry.get("turn_finished", True):
             return None
-        text = self.text
+        return self.finished_turn()
+
+    def turn_ended_in_quiet(self, now, speech_in_progress):
+        if self.last_fragment is None or now < self.turn_ends_in_quiet_at:
+            return None
+        if speech_in_progress():
+            return None
+        return self.finished_turn()
+
+    def finished_turn(self):
+        entry, text = self.last_fragment, self.text
         self.reset_turn()
         return None if text is None else entry | {"text": text}
 

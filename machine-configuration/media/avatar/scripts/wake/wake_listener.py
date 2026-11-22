@@ -111,20 +111,29 @@ class WakeListener:
             self.boundaries.transcript_entries()
         ):
             self.turn_to(entry)
+        self.decide_whom_it_addresses(
+            self.conversation.turn_ended_in_quiet(
+                self.boundaries.now(), self.boundaries.speech_in_progress
+            )
+        )
 
     def turn_to(self, entry):
         transcript_log.report_conversation(self.boundaries.report, entry)
-        entry = self.conversation.completed_turn(entry)
-        if entry is None:
+        self.decide_whom_it_addresses(
+            self.conversation.completed_turn(entry, self.boundaries.now())
+        )
+
+    def decide_whom_it_addresses(self, turn):
+        if turn is None:
             return
-        match = self.addressing.conversation_match(entry)
+        match = self.addressing.conversation_match(turn)
         if match is None:
             return
         if not self.dry_run:
             self.boundaries.hand_to(
-                room_holder.addressee_of(match.session, entry["sequence"])
+                room_holder.addressee_of(match.session, turn["sequence"])
             )
-        self.deliver_to_the_listening_purpose(match, entry)
+        self.deliver_to_the_listening_purpose(match, turn)
 
     def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()

@@ -5,12 +5,14 @@ from unittest.mock import Mock
 import listener_session
 import pytest
 import quiet_conversation
+import utterances
 import wake_boundaries
 import wake_listener
 from conversation_seat import Seat
 from listener_session import ListenerPurpose
 
 LONG_QUIET = quiet_conversation.QUIET_CLOSE_SECONDS + 1
+TURN_QUIET = utterances.UNFINISHED_TURN_SETTLE_SECONDS
 
 
 def boundaries(
@@ -130,19 +132,19 @@ def test_avatar_speech_does_not_change_the_pending_human_turn():
     opening = {"source": "human", "text": "hey", "turn_finished": False}
     echo = {"source": "human", "speaker": "avatar", "text": "Ibaraki"}
     ending = {"sequence": 3, "source": "human", "speaker": "Lucas", "text": "Voyager"}
-    assert transcript.completed_turn(opening) is None
-    assert transcript.completed_turn(echo) is None
-    assert transcript.completed_turn(ending) == ending | {"text": "hey Voyager"}
+    assert transcript.completed_turn(opening, 0.0) is None
+    assert transcript.completed_turn(echo, 0.0) is None
+    assert transcript.completed_turn(ending, 0.0) == ending | {"text": "hey Voyager"}
 
 
 def test_starting_to_read_a_conversation_discards_an_old_partial_turn():
     transcript = quiet_conversation.ConversationTranscript()
     opening = {"sequence": 1, "text": "hey", "turn_finished": False}
     ending = {"sequence": 2, "text": "Ibaraki"}
-    assert transcript.completed_turn(opening) is None
+    assert transcript.completed_turn(opening, 0.0) is None
     transcript.start([opening])
     assert list(transcript.new_entries([opening, ending])) == [ending]
-    assert transcript.completed_turn(ending) == ending
+    assert transcript.completed_turn(ending, 0.0) == ending
 
 
 @pytest.mark.parametrize("changed", [{"source": "meeting"}, {"speaker": "Lucas"}])
@@ -155,8 +157,8 @@ def test_fragments_from_different_sources_or_speakers_are_not_joined(changed):
         "turn_finished": False,
     }
     ending = {"source": "human", "speaker": "Ana", "text": "Ibaraki"} | changed
-    assert transcript.completed_turn(opening) is None
-    assert transcript.completed_turn(ending) == ending
+    assert transcript.completed_turn(opening, 0.0) is None
+    assert transcript.completed_turn(ending, 0.0) == ending
 
 
 def test_a_turn_over_the_character_limit_does_not_route_its_suffix(monkeypatch):
@@ -168,5 +170,24 @@ def test_a_turn_over_the_character_limit_does_not_route_its_suffix(monkeypatch):
         {"text": "hey Ibaraki"},
     ]
     for entry in fragments:
-        assert transcript.completed_turn(entry) is None
-    assert transcript.completed_turn(fragments[-1]) == fragments[-1]
+        assert transcript.completed_turn(entry, 0.0) is None
+    assert transcript.completed_turn(fragments[-1], 0.0) == fragments[-1]
+
+
+def test_an_unfinished_turn_ends_once_after_the_quiet_interval_and_not_before():
+    transcript = quiet_conversation.ConversationTranscript()
+    opening = {"sequence": 7, "text": "Tamamo, how is it going", "turn_finished": False}
+    speaking = Mock(return_value=False)
+    assert transcript.completed_turn(opening, 10.0) is None
+    assert transcript.turn_ended_in_quiet(10.0 + TURN_QUIET - 0.01, speaking) is None
+    speaking.assert_not_called()
+    assert transcript.turn_ended_in_quiet(10.0 + TURN_QUIET, speaking) == opening
+    assert transcript.turn_ended_in_quiet(10.0 + 2 * TURN_QUIET, speaking) is None
+
+
+def test_a_fragment_after_a_quiet_end_starts_a_new_turn():
+    transcript = quiet_conversation.ConversationTranscript()
+    transcript.completed_turn({"text": "Hã, bom", "turn_finished": False}, 0.0)
+    assert transcript.turn_ended_in_quiet(TURN_QUIET, Mock(return_value=False))
+    later = {"sequence": 2, "text": "Okay, Tamamo"}
+    assert transcript.completed_turn(later, TURN_QUIET + 1) == later

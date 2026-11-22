@@ -9,6 +9,7 @@ import conversation_addressee
 import conversation_seat
 import decisions_api
 import discord_call
+import listener
 import listener_runtime
 import listener_session
 import peer_sessions
@@ -72,6 +73,12 @@ def transcript_entries():
     return transcript_log.read_since(
         listener_runtime.runtime_directory() / "transcript.jsonl", 0
     )
+
+
+def speech_in_progress():
+    return (
+        listener_runtime.runtime_directory() / listener.SPEECH_IN_PROGRESS_MARKER
+    ).exists()
 
 
 def prompt_now(pane, text, host=None):
@@ -156,6 +163,7 @@ class Boundaries:
     prompt_now: object = prompt_now
     notify_at_idle: object = notify_at_idle
     transcript_entries: object = transcript_entries
+    speech_in_progress: object = speech_in_progress
     listening_purpose: object = lambda: listener_session.live_purpose(
         listener_runtime.runtime_directory()
     )

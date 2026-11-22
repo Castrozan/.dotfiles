@@ -2,8 +2,11 @@ import json
 import subprocess
 from unittest.mock import Mock
 
+import listener
+import listener_runtime
 import mac_wake_boundaries
 import pytest
+import wake_boundaries
 from avatar_host_runner import ran, remote_command
 from listener_session import ListenerPurpose
 from wake_phrase import LiveSession
@@ -49,6 +52,26 @@ def test_entries_come_back_in_the_shape_the_avatar_host_logs_them(
 def test_an_empty_transcript_is_no_entries(monkeypatch, on_a_mac):
     ran(monkeypatch, "")
     assert on_a_mac.transcript_entries() == []
+
+
+def test_the_avatar_host_wake_alone_ends_its_turns_in_quiet(monkeypatch, on_a_mac):
+    runner = ran(monkeypatch, "")
+    assert on_a_mac.speech_in_progress() is True
+    runner.assert_not_called()
+
+
+def test_a_mac_listening_itself_reads_its_marker_without_asking_launchd_again(
+    monkeypatch, tmp_path, on_a_mac
+):
+    monkeypatch.setattr(listener_runtime, "runtime_directory", lambda: tmp_path)
+    listening_here = Mock(return_value=True)
+    monkeypatch.setattr(listener_runtime, "listening", listening_here)
+    here = wake_boundaries.for_this_machine()
+    assert here.transcript_entries() == []
+    assert here.speech_in_progress() is False
+    (tmp_path / listener.SPEECH_IN_PROGRESS_MARKER).touch()
+    assert here.speech_in_progress() is True
+    assert listening_here.call_count == 1
 
 
 def test_ticks_inside_the_reuse_window_share_one_remote_read(
