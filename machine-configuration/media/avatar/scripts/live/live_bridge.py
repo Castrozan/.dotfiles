@@ -1,4 +1,5 @@
 import asyncio
+import itertools
 import json
 import signal
 import statistics
@@ -39,6 +40,7 @@ class LiveConversation:
         self.speaker = speaker
         self.turns = TurnAssembler(TURN_SETTLE_SECONDS)
         self.handoffs = set()
+        self.answer_numbers = itertools.count(1)
         self.last_user_text_at = None
         self.waiting_for_first_audio = False
         self.answer_latencies = []
@@ -121,12 +123,10 @@ class LiveConversation:
             await self.voice.deliver(task.task_id, NOBODY_HOLDS_THE_ROOM, True)
             return
         print(f"task for {holder.servant} at {holder.pane}: {task.request}", flush=True)
-        answer = await ask_agent(holder, task.request)
-        await self.voice.deliver(task.task_id, answer.text, True)
-        print(
-            f"{holder.servant} answered in {answer.seconds} s: {answer.text}",
-            flush=True,
-        )
+        number = next(self.answer_numbers)
+        async for report in ask_agent(holder, task.request, number):
+            await self.voice.deliver(task.task_id, report.text, report.final)
+            print(f"{holder.servant}, {report.seconds} s: {report.text}", flush=True)
 
     def summary(self):
         latencies = sorted(self.answer_latencies)

@@ -56,18 +56,29 @@ def test_the_servant_is_read_from_the_sessions_of_the_agent_host(
 
 def test_a_task_for_an_agent_on_another_machine_crosses_as_one_quoted_command():
     holder = Addressee("w4A:p1", "Sasaki Kojirou", 0, "kira")
-    command = agent_route.ask_command(holder, "is it clean; rm -rf ~?")
+    command = agent_route.send_command(
+        holder, "is it clean; rm -rf ~?", "LIVE-ANSWER-1"
+    )
     assert command[0] == "ssh"
     assert command[-2] == "kira"
     crossed = shlex.split(command[-1])
-    assert crossed[:2] == ["a2a", "ask"]
+    assert crossed[:2] == ["a2a", "send"]
     assert crossed[-2] == "w4A:p1"
     assert "is it clean; rm -rf ~?" in crossed[-1]
 
 
 def test_a_task_for_an_agent_on_this_machine_stays_local():
-    command = agent_route.ask_command(Addressee("wW:pQZ", "Suzuka", 0), "anything")
-    assert command[:2] == ["a2a", "ask"]
+    holder = Addressee("wW:pQZ", "Suzuka", 0)
+    assert agent_route.send_command(holder, "anything", "LIVE-ANSWER-1")[:2] == [
+        "a2a",
+        "send",
+    ]
+    assert agent_route.status_command(holder, "task-7") == [
+        "a2a",
+        "status",
+        "wW:pQZ",
+        "task-7",
+    ]
 
 
 @pytest.mark.parametrize(

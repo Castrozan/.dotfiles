@@ -1,9 +1,11 @@
 import asyncio
 
+import agent_route
 import conversation_addressee
 import live_bridge
 import transcript_log
-from agent_route import AgentAnswer
+from a2a_fakes import install_a2a, pane_reports
+from agent_route import AgentReport
 from conversation_addressee import Addressee
 from live_events import AssistantSaid, Audio, Failed, TaskRequested, Usage, UserSaid
 
@@ -42,12 +44,16 @@ def conversation(tmp_path, voice):
     return live_bridge.LiveConversation(voice, tmp_path, SilentSpeaker(), "microphone")
 
 
-def asked_agents(monkeypatch):
+MAIN_IS_CLEAN = (AgentReport("Main is clean.", 1.0, True),)
+
+
+def asked_agents(monkeypatch, reports=MAIN_IS_CLEAN):
     asked = []
 
-    async def ask_agent(holder, request):
-        asked.append((holder.pane, request))
-        return AgentAnswer("Main is clean.", 1.0, True)
+    async def ask_agent(holder, request, number):
+        asked.append((holder.pane, request, number))
+        for report in reports:
+            yield report
 
     monkeypatch.setattr(live_bridge, "ask_agent", ask_agent)
     monkeypatch.setattr(live_bridge, "WAKE_HANDOVER_SECONDS", 0)
@@ -63,7 +69,7 @@ def test_a_task_goes_to_whoever_holds_the_floor_and_its_answer_is_spoken(
     asyncio.run(
         conversation(tmp_path, voice).hand_off(TaskRequested("task-1", "is it clean?"))
     )
-    assert asked == [("wW:pQZ", "is it clean?")]
+    assert asked == [("wW:pQZ", "is it clean?", 1)]
     assert voice.delivered == [("task-1", "Main is clean.", True)]
 
 
@@ -116,5 +122,52 @@ def test_every_event_kind_reaches_its_handler(tmp_path, monkeypatch, capsys):
     assert live.speaker.played == [b"\x00\x00"]
     assert live.usage == {"tokens": 3}
     assert "error: boom" in capsys.readouterr().out
-    assert asked == [("wW:pQZ", "is it clean?")]
+    assert asked == [("wW:pQZ", "is it clean?", 1)]
     assert voice.delivered == [("task-3", "Main is clean.", True)]
+
+
+def test_each_task_carries_its_own_answer_number_and_every_report_is_relayed(
+    tmp_path, monkeypatch
+):
+    still_working = AgentReport(agent_route.STILL_WORKING, 30.0, False)
+    answered = AgentReport("Sim, chegou.", 31.0, True)
+    asked = asked_agents(monkeypatch, (still_working, answered))
+    conversation_addressee.write(tmp_path, Addressee("wW:pSP", "Anastasia", 0))
+    voice = FakeVoice()
+    live = conversation(tmp_path, voice)
+
+    async def two_tasks():
+        await live.hand_off(TaskRequested("task-4", "first"))
+        await live.hand_off(TaskRequested("task-5", "second"))
+
+    asyncio.run(two_tasks())
+    assert [number for _, _, number in asked] == [1, 2]
+    assert voice.delivered[:2] == [
+        ("task-4", agent_route.STILL_WORKING, False),
+        ("task-4", "Sim, chegou.", True),
+    ]
+
+
+def test_a_busy_agent_pane_answers_the_live_voice_before_its_turn_ends(
+    tmp_path, monkeypatch
+):
+    install_a2a(tmp_path, monkeypatch)
+    monkeypatch.setattr(live_bridge, "WAKE_HANDOVER_SECONDS", 0)
+    pane_reports(tmp_path, "working", "⏺ Agent(build)\n⏺ LIVE-ANSWER-1: Sim, chegou.")
+    conversation_addressee.write(tmp_path, Addressee("wW:pSP", "Anastasia", 0))
+    voice = FakeVoice()
+    asyncio.run(conversation(tmp_path, voice).hand_off(TaskRequested("task-6", "oi")))
+    assert voice.delivered == [("task-6", "Sim, chegou.", True)]
+
+
+def test_an_agent_that_never_answers_is_reported_to_the_owner_by_voice(
+    tmp_path, monkeypatch
+):
+    install_a2a(tmp_path, monkeypatch)
+    monkeypatch.setattr(live_bridge, "WAKE_HANDOVER_SECONDS", 0)
+    pane_reports(tmp_path, "working", "⏺ Agent(build)")
+    conversation_addressee.write(tmp_path, Addressee("wW:pSP", "Anastasia", 0))
+    voice = FakeVoice()
+    asyncio.run(conversation(tmp_path, voice).hand_off(TaskRequested("task-8", "oi")))
+    assert voice.delivered[-1] == ("task-8", agent_route.NO_ANSWER_IN_TIME, True)
+    assert ("task-8", agent_route.STILL_WORKING, False) in voice.delivered
