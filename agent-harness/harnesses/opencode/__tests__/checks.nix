@@ -81,6 +81,7 @@ in
         !(opencodeGoProvider ? claudeCodeModels)
         &&
           builtins.attrNames opencodeGoProvider.models == [
+            "fable"
             "haiku"
             "opus"
             "sonnet"
