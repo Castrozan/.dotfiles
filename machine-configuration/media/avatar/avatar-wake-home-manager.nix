@@ -27,7 +27,7 @@ let
     export AVATAR_PEER_HOSTS="${lib.concatStringsSep " " peerHosts}"
     export AVATAR_SERVANT_CHARACTERS=${programs.servantCharacters}
     export AVATAR_ORDINARY_WORDS=${programs.ordinaryWords}
-    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}:${programs.a2aLibrary}
+    export PYTHONPATH=${./scripts/listening}:${./scripts/echo}:${./scripts/conversation}:${./scripts/wake}:${./scripts/addressing}:${programs.a2aLibrary}
     exec ${pkgs.python312}/bin/python3 ${./scripts/wake/wake_listener.py} "$@"
   '';
 in

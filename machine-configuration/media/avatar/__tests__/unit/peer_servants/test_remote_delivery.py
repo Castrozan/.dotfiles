@@ -5,9 +5,9 @@ from unittest.mock import Mock
 import peer_sessions
 import pytest
 import wake_boundaries
-import wake_listener
 from conversation_addressee import Addressee
 from listener_session import ListenerPurpose
+from voice_addressing import holds_the_floor
 from wake_fakes import armed_listener, boundaries
 from wake_phrase import LiveSession
 from wake_prompts import spoken_prompt
@@ -166,17 +166,10 @@ def test_waking_a_local_session_hands_it_the_room_without_a_host():
     ("held_host", "holds"), [("rin", True), (None, False), ("kira", False)]
 )
 def test_the_floor_is_held_only_by_the_same_pane_on_the_same_host(held_host, holds):
-    fakes = boundaries(
-        addressee=Mock(return_value=Addressee("w9:p4", "Medea", 3, held_host))
-    )
-    listener = wake_listener.WakeListener(fakes, dry_run=False)
-    match = SimpleNamespace(session=REMOTE_MEDEA)
-    assert listener.already_holds_the_floor(match) is holds
+    holder = Addressee("w9:p4", "Medea", 3, held_host)
+    assert holds_the_floor(holder, REMOTE_MEDEA) is holds
 
 
 def test_the_same_pane_number_on_two_machines_is_two_sessions():
-    fakes = boundaries(
-        addressee=Mock(return_value=Addressee("w1:p1", "Medea", 3, "rin"))
-    )
-    listener = wake_listener.WakeListener(fakes, dry_run=False)
-    assert not listener.already_holds_the_floor(SimpleNamespace(session=LOCAL_MEDEA))
+    holder = Addressee("w1:p1", "Medea", 3, "rin")
+    assert not holds_the_floor(holder, LOCAL_MEDEA)

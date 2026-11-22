@@ -74,6 +74,16 @@ def heard_among(windows, candidates):
     )
 
 
+def sessions_heard_anywhere(text, sessions):
+    texts = [folded(word.group()) for word in WORD.finditer(text)]
+    candidates = sessions_by_spoken_name(sessions)
+    heard = (
+        heard_among(leading_windows(texts, start), candidates)
+        for start in range(len(texts))
+    )
+    return list(dict.fromkeys(candidates[name] for name, _ in filter(None, heard)))
+
+
 def vocative_session(text, sessions):
     words = list(WORD.finditer(text))
     greetings = leading_greetings(words)

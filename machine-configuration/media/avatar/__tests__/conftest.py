@@ -18,6 +18,7 @@ sys.path.insert(0, str(scripts / "conversation" / "remote_seat"))
 sys.path.insert(0, str(scripts / "conversation" / "mac_conversation"))
 sys.path.insert(0, str(scripts / "wake"))
 sys.path.insert(0, str(scripts / "wake" / "mac"))
+sys.path.insert(0, str(scripts / "addressing"))
 sys.path.insert(0, str(scripts / "holder"))
 sys.path.insert(0, str(scripts / "live"))
 sys.path.insert(0, str(scripts / "doctor"))
@@ -31,6 +32,12 @@ sys.path.append(str(agent_harness / "hooks/runtime/common"))
 @pytest.fixture(autouse=True)
 def on_the_avatar_host_system(monkeypatch):
     monkeypatch.setattr(sys, "platform", "linux")
+
+
+@pytest.fixture(autouse=True)
+def no_decisions_api_key(monkeypatch, tmp_path_factory):
+    missing = tmp_path_factory.getbasetemp() / "no-openai-api-key"
+    monkeypatch.setattr("decisions_api.KEY_FILE", missing)
 
 
 @pytest.fixture(autouse=True)

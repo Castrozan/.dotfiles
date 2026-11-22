@@ -55,12 +55,11 @@ def report_to_log(line):
     logger.info(line)
 
 
-def _report(report, phase, text, **details):
+def _report(report, phase, **details):
     record = {
         "timestamp": datetime.now(UTC).isoformat(),
         "phase": phase,
         "room": os.environ.get(remote_agent.HOST_ENVIRONMENT_VARIABLE),
-        "text": text,
         **details,
     }
     report(json.dumps(record, ensure_ascii=False))
@@ -70,7 +69,7 @@ def report_wake(report, text, segment):
     _report(
         report,
         "wake",
-        text,
+        text=text,
         audio_seconds=len(segment) / (2 * speech_segmenter.SAMPLE_RATE),
     )
 
@@ -79,11 +78,15 @@ def report_conversation(report, entry):
     _report(
         report,
         "conversation",
-        entry["text"],
+        text=entry["text"],
         sequence=entry["sequence"],
         source=entry.get("source"),
         speaker=entry.get("speaker"),
     )
+
+
+def report_addressing(report, phase, **decision):
+    _report(report, phase, decision="addressing", **decision)
 
 
 def read_since(path, sequence):

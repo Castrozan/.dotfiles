@@ -3,16 +3,22 @@ import pathlib
 from hypothesis import given
 from hypothesis import strategies as st
 
-from wake_phrase import LiveSession, addressed_session, vocative_session
+from wake_phrase import (
+    LiveSession,
+    addressed_session,
+    sessions_heard_anywhere,
+    vocative_session,
+)
 
 IBARAKI = LiveSession("Ibaraki-dōji", "wW:pPY")
 VOYAGER = LiveSession("Voyager", "wW:pPZ")
 EDMOND = LiveSession("Edmond Dantès", "wW:pMX")
 LIVE = [IBARAKI, VOYAGER, EDMOND]
 ORDINARY_WORDS_FILE = pathlib.Path(__file__).parents[1] / "wake/ordinary-words.txt"
+MESSAGE_WORDS = ["check", "the", "build", "roda", "os", "testes", "agora"]
 
 message_words = st.lists(
-    st.sampled_from(["check", "the", "build", "roda", "os", "testes", "agora"]),
+    st.sampled_from(MESSAGE_WORDS),
     min_size=1,
     max_size=8,
 ).map(" ".join)
@@ -86,3 +92,27 @@ def test_a_name_inside_a_line_addresses_nobody(session, message):
 def test_a_bare_greeting_addresses_nobody():
     assert vocative_session("hey", LIVE) is None
     assert vocative_session("", LIVE) is None
+
+
+@given(
+    session=st.sampled_from(LIVE),
+    before=st.lists(st.sampled_from(MESSAGE_WORDS), max_size=6),
+    after=st.lists(st.sampled_from(MESSAGE_WORDS), max_size=6),
+)
+def test_a_live_name_is_heard_at_any_position_of_a_line(session, before, after):
+    line = " ".join([*before, first_name(session), *after])
+    assert sessions_heard_anywhere(line, LIVE) == [session]
+
+
+@given(pair=st.permutations(LIVE).map(lambda sessions: sessions[:2]))
+def test_every_live_name_in_a_line_is_heard_once_in_spoken_order(pair):
+    first, second = (first_name(session) for session in pair)
+    line = f"ask {first} to tell {second} the build broke, {first}"
+    assert sessions_heard_anywhere(line, LIVE) == pair
+
+
+def test_a_line_without_a_unique_live_name_hears_nobody():
+    twins = [LiveSession("Orion", "wW:p1"), LiveSession("Orion Prime", "wW:p2")]
+    assert sessions_heard_anywhere("tell Orion to check the build", twins) == []
+    assert sessions_heard_anywhere("roda os testes agora", LIVE) == []
+    assert sessions_heard_anywhere("", LIVE) == []

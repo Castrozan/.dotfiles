@@ -7,6 +7,7 @@ import time
 
 import conversation_addressee
 import conversation_seat
+import decisions_api
 import discord_call
 import listener_runtime
 import listener_session
@@ -149,6 +150,7 @@ class Boundaries:
     discord_call_ended: object = discord_call.listener_left_the_call
     conversation_listening: object = listener_runtime.listening
     transcribe: object = transcriber.transcribe
+    decide: object = decisions_api.answers
     open_conversation: object = conversation_opened
     claim_wake: object = claim_wake
     prompt_now: object = prompt_now

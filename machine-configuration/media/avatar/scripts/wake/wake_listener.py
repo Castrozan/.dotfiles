@@ -13,8 +13,8 @@ from quiet_conversation import (
     ConversationTranscript,
     follow_conversation,
 )
+from voice_addressing import VoiceAddressing
 from wake_boundaries import for_this_machine, microphone_frames
-from wake_phrase import addressed_session, opens_with_greeting
 
 FLEET_REFRESH_SECONDS = 60
 TRANSCRIBER_ATTEMPTS = 5
@@ -31,10 +31,14 @@ class WakeListener:
         self.sessions = []
         self.sessions_read_at = None
         self.conversation = ConversationTranscript()
+        self.addressing = VoiceAddressing(
+            boundaries, self.known_sessions, self.refresh_sessions
+        )
 
     def refresh_sessions(self):
         self.sessions = self.boundaries.sessions()
         self.sessions_read_at = self.boundaries.now()
+        return self.sessions
 
     def sessions_stale(self):
         return (
@@ -42,10 +46,15 @@ class WakeListener:
             or self.boundaries.now() - self.sessions_read_at >= FLEET_REFRESH_SECONDS
         )
 
-    def armed(self):
+    def known_sessions(self):
         if self.sessions_stale():
             self.refresh_sessions()
-        return bool(self.sessions) and not self.boundaries.conversation_listening()
+        return self.sessions
+
+    def armed(self):
+        return (
+            bool(self.known_sessions()) and not self.boundaries.conversation_listening()
+        )
 
     def transcribed(self, segment):
         for _ in range(TRANSCRIBER_ATTEMPTS - 1):
@@ -60,16 +69,6 @@ class WakeListener:
             self.answer(segment)
         except (OSError, ValueError, subprocess.SubprocessError) as error:
             self.boundaries.report(f"Dropped an utterance: {error}")
-
-    def addressed(self, heard):
-        if not opens_with_greeting(heard):
-            self.boundaries.report("Ignored wake: no opening greeting")
-            return None
-        self.refresh_sessions()
-        match = addressed_session(heard, self.sessions)
-        if match is None:
-            self.boundaries.report("Ignored wake: no unique live servant")
-        return match
 
     def holds_the_room(self, session):
         discord_host = self.boundaries.discord_call_host()
@@ -89,7 +88,7 @@ class WakeListener:
         if not heard:
             self.boundaries.report("Ignored wake: empty transcript")
             return
-        match = self.addressed(heard)
+        match = self.addressing.wake_match(heard)
         if match is None or not self.holds_the_room(match.session):
             return
         if not wake_prompts.deliver(self.boundaries, self.dry_run, match, purpose=None):
@@ -99,6 +98,7 @@ class WakeListener:
 
     def start_reading_conversation(self):
         self.conversation.start(self.boundaries.transcript_entries())
+        self.addressing.forget_turns()
 
     def read_conversation(self):
         try:
@@ -112,32 +112,19 @@ class WakeListener:
         ):
             self.turn_to(entry)
 
-    def named_in_conversation(self, text):
-        if not opens_with_greeting(text):
-            return None
-        self.refresh_sessions()
-        return addressed_session(text, self.sessions)
-
     def turn_to(self, entry):
         transcript_log.report_conversation(self.boundaries.report, entry)
         entry = self.conversation.completed_turn(entry)
         if entry is None:
             return
-        match = self.named_in_conversation(entry["text"])
-        if match is None or self.already_holds_the_floor(match):
+        match = self.addressing.conversation_match(entry)
+        if match is None:
             return
         if not self.dry_run:
             self.boundaries.hand_to(
                 room_holder.addressee_of(match.session, entry["sequence"])
             )
         self.deliver_to_the_listening_purpose(match, entry)
-
-    def already_holds_the_floor(self, match):
-        addressee = self.boundaries.addressee()
-        return bool(addressee) and (addressee.pane, addressee.host) == (
-            match.session.pane,
-            match.session.host,
-        )
 
     def deliver_to_the_listening_purpose(self, match, entry):
         purpose = self.boundaries.listening_purpose()

@@ -47,7 +47,7 @@ let
     export AVATAR_WAKE_PAGE=${./scripts/wake/page}
     export AVATAR_BROWSER_APPLICATION="${browserApplication}"
     export AVATAR_SEAT_PAGE=${./scripts/conversation/remote_seat/page}
-    export PYTHONPATH=${conversation.modules}:${programs.a2aLibrary}
+    export PYTHONPATH=${conversation.modules}:${./scripts/addressing}:${programs.a2aLibrary}
     exec ${websocketPython}/bin/python3 ${./scripts/wake}/wake_listener.py "$@"
   '';
   doctor = import ./home-manager/avatar-doctor-package.nix {

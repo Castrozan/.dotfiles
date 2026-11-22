@@ -9,7 +9,7 @@ import speech_segmenter
 import wake_listener
 from hypothesis import given
 from hypothesis import strategies as st
-from wake_fakes import VOYAGER, armed_listener, boundaries
+from wake_fakes import UNREACHABLE, VOYAGER, answered, armed_listener, boundaries
 from wake_phrase import LiveSession
 
 FRAME_SAMPLES = int(speech_segmenter.SAMPLE_RATE * speech_segmenter.FRAME_SECONDS)
@@ -68,19 +68,22 @@ def test_a_dry_run_reports_the_match_and_reaches_nobody():
 
 
 @pytest.mark.parametrize(
-    ("heard", "reason"),
+    ("heard", "reason", "decided"),
     [
-        ("", "empty transcript"),
-        ("I think Voyager broke it", "no opening greeting"),
-        ("hey Zeno, check the build", "no unique live servant"),
+        ("", "empty transcript", answered("nobody")),
+        ("I think Voyager broke it", "no opening greeting", UNREACHABLE),
+        ("I think Voyager broke it", "no live servant addressed", answered("nobody")),
+        ("hey Zeno, check the build", "no unique live servant", answered("nobody")),
     ],
 )
-def test_rejected_wake_speech_is_logged_and_reaches_nobody(monkeypatch, heard, reason):
+def test_rejected_wake_speech_is_logged_and_reaches_nobody(
+    monkeypatch, heard, reason, decided
+):
     monkeypatch.setenv("AVATAR_AGENT_HOST", "kira")
-    fakes = boundaries(heard=heard)
+    fakes = boundaries(heard=heard, decide=Mock(side_effect=[decided]))
     segment = frames(4000, 1)[0]
     armed_listener(fakes).hear(segment)
-    transcript, rejection = [call.args[0] for call in fakes.report.call_args_list]
+    transcript, *_, rejection = [call.args[0] for call in fakes.report.call_args_list]
     record = json.loads(transcript)
     assert record["text"] == heard
     assert record["phase"] == "wake"
@@ -171,7 +174,7 @@ def test_a_busy_transcriber_is_asked_again_until_it_answers():
         (wake_listener.TRANSCRIBER_RETRY_SECONDS,)
     ] * 2
     assert fakes.prompt_now.call_args.args[0] == VOYAGER.pane
-    transcript, wake = [call.args[0] for call in fakes.report.call_args_list]
+    transcript, _, wake = [call.args[0] for call in fakes.report.call_args_list]
     assert json.loads(transcript)["text"] == busy[-1]
     assert wake == f"wake Voyager at {VOYAGER.pane}"
 

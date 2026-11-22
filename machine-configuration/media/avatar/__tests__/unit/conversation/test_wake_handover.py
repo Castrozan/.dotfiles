@@ -5,7 +5,7 @@ from unittest.mock import Mock
 import wake_listener
 from conversation_addressee import Addressee
 from listener_session import ListenerPurpose
-from wake_fakes import IBARAKI, VOYAGER, armed_listener, boundaries
+from wake_fakes import IBARAKI, UNREACHABLE, VOYAGER, armed_listener, boundaries
 from wake_phrase import LiveSession
 
 
@@ -70,7 +70,8 @@ def test_each_conversation_turn_is_logged_and_matched_once():
     listener.read_conversation()
     fakes.addressee.return_value = Addressee(VOYAGER.pane, VOYAGER.servant, 0)
     listener.read_conversation()
-    transcript, wake = [call.args[0] for call in fakes.report.call_args_list]
+    transcript, decision, wake = [call.args[0] for call in fakes.report.call_args_list]
+    assert json.loads(decision)["candidates"] == ["Ibaraki"]
     assert "\n" not in transcript and "\r" not in transcript
     assert "revisão" in transcript
     record = json.loads(transcript)
@@ -96,6 +97,7 @@ def test_turns_spoken_before_the_wake_joined_are_not_replayed():
 
 def test_a_restarted_conversation_discards_pending_speech_and_reads_new_turns():
     fakes, listener = conversation_with(None)
+    fakes.decide.side_effect = UNREACHABLE
     entries = said("one", "two", "hey")
     entries[-1]["turn_finished"] = False
     fakes.transcript_entries.return_value = entries
@@ -129,13 +131,13 @@ def test_a_name_mention_in_the_last_fragment_keeps_the_current_servant():
     )
 
 
-def test_a_bare_name_opening_or_ending_a_turn_keeps_the_floor():
+def test_without_the_decisions_api_a_bare_name_opening_or_ending_a_turn_keeps_the_floor():
     fakes, listener = conversation_with(Addressee(VOYAGER.pane, VOYAGER.servant, 0))
+    fakes.decide.side_effect = UNREACHABLE
     fakes.transcript_entries.return_value = said(
         "Ibaraki, status", "check the build, Ibaraki"
     )
     listener.read_conversation()
-    fakes.sessions.assert_not_called()
     fakes.hand_to.assert_not_called()
     fakes.prompt_now.assert_not_called()
 

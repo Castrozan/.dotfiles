@@ -93,6 +93,16 @@ def test_naming_a_session_of_this_mac_hands_it_the_floor_at_the_heard_entry(
     )
     monkeypatch.setattr(mac_wake_boundaries.subprocess, "run", runner)
     on_a_mac.sessions = Mock(return_value=[VOYAGER])
+    on_a_mac.decide = Mock(
+        return_value=[
+            {
+                "type": "choice",
+                "name": "addressee",
+                "choice": "Voyager",
+                "confidence": 0.97,
+            }
+        ]
+    )
     on_a_mac.report = Mock()
     on_a_mac.prompt_now = Mock(return_value=True)
     wake = wake_listener.WakeListener(on_a_mac, dry_run=False)
@@ -104,3 +114,4 @@ def test_naming_a_session_of_this_mac_hands_it_the_floor_at_the_heard_entry(
         "avatar-listen status",
     ]
     on_a_mac.prompt_now.assert_called_once()
+    on_a_mac.decide.assert_called_once()
