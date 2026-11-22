@@ -1,6 +1,8 @@
 const {
   playAudioFileToSink,
 } = require("../audio-playback/pulse-audio-sink-player");
+const { playSpeechChunks } = require("../audio-playback/speech-chunk-sequence");
+const { speechChunks } = require("../speech/speech-chunks");
 const {
   sendResponse,
   sendError,
@@ -57,29 +59,46 @@ function playerFor(output, context) {
 function performSpeech(command, context, delivery) {
   const { text, emotion, output, voice, model, id } = command;
   const { clientRegistry, textToSpeechGenerator } = context;
-  return async (holdsFloor) => {
-    delivery.timing.synthesisStarted = Date.now();
-    const speech = await textToSpeechGenerator.generate(
-      text,
-      id,
-      voice,
-      emotion,
-      model,
-    );
-    delivery.source = speech.source;
-    delivery.timing.synthesized = Date.now();
-    if (!holdsFloor()) {
-      return { finished: Promise.resolve(), stop: () => {} };
-    }
-    announceSpeechToRenderer(clientRegistry, command, speech);
-    const playback = playerFor(output, context)(
-      speech.audioPath,
-      output,
-      context,
-    );
-    delivery.timing.playing = Date.now();
-    return playback;
-  };
+  const chunks = speechChunks(text).filter((chunk) => chunk.trim());
+  return (holdsFloor) =>
+    playSpeechChunks(chunks.length, {
+      holdsFloor,
+      synthesizeChunk: async (index) => {
+        delivery.timing.synthesisStarted ??= Date.now();
+        const speech = await textToSpeechGenerator.generate(
+          chunks[index],
+          `${id}-${index}`,
+          voice,
+          emotion,
+          model,
+        );
+        delivery.sources.add(speech.source);
+        delivery.timing.synthesized ??= Date.now();
+        return speech;
+      },
+      playChunk: (speech, index) => {
+        announceSpeechToRenderer(
+          clientRegistry,
+          { id, emotion, text: chunks[index] },
+          speech,
+        );
+        const playback = playerFor(output, context)(
+          speech.audioPath,
+          output,
+          context,
+        );
+        delivery.timing.playing ??= Date.now();
+        return playback;
+      },
+    });
+}
+
+function isSpeakable(text) {
+  return typeof text === "string" && text.trim() !== "";
+}
+
+function spokenSources(sources) {
+  return [...sources].join("+") || undefined;
 }
 
 async function handleSpeakCommand(command, connection, context) {
@@ -92,13 +111,13 @@ async function handleSpeakCommand(command, connection, context) {
     id = Date.now().toString(),
   } = command;
 
-  if (!text) {
+  if (!isSpeakable(text)) {
     sendError(connection, "Missing required field: text");
     return;
   }
 
   const usesAgentChannel = output === "mic" || output === "both";
-  const delivery = { timing: { received: Date.now() } };
+  const delivery = { sources: new Set(), timing: { received: Date.now() } };
   const speech = performSpeech(
     { text, emotion, output, voice, model, id },
     context,
@@ -115,7 +134,7 @@ async function handleSpeakCommand(command, connection, context) {
       id,
       output,
       status,
-      source: delivery.source,
+      source: spokenSources(delivery.sources),
       timing: delivery.timing,
     });
   } catch (error) {
