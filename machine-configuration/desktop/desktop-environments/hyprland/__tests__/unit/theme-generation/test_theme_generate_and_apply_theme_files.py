@@ -71,6 +71,17 @@ class TestCreatePreviewImageFromSource:
 
         assert preview.read_bytes() == b"fake-png-data"
 
+    def test_replaces_a_read_only_preview(self, tmp_path):
+        source = tmp_path / "wall.png"
+        source.write_bytes(b"new-png-data")
+        preview = tmp_path / "preview.png"
+        preview.write_bytes(b"old-png-data")
+        preview.chmod(0o444)
+
+        theme_generate_and_apply.create_preview_image_from_source(source, preview)
+
+        assert preview.read_bytes() == b"new-png-data"
+
     def test_extracts_first_frame_from_gif_via_ffmpeg(self, tmp_path):
         source = tmp_path / "anim.gif"
         source.write_bytes(b"fake-gif")
@@ -105,7 +116,25 @@ class TestCreatePreviewImageFromSource:
             mock_run.assert_called_once()
 
 
-class TestSymlinkWallpaperIntoBackgroundsDirectory:
+class TestPlaceWallpaperInBackgroundsDirectory:
+    def test_copies_a_wallpaper_that_lives_in_the_nix_store(self, tmp_path):
+        store = tmp_path / "store"
+        source = store / "package" / "wall.png"
+        source.parent.mkdir(parents=True)
+        source.write_bytes(b"img")
+        source.chmod(0o444)
+        backgrounds = tmp_path / "backgrounds"
+        backgrounds.mkdir()
+
+        with patch.object(theme_generate_and_apply, "NIX_STORE_PATH", store):
+            theme_generate_and_apply.place_wallpaper_in_backgrounds_directory(
+                source, backgrounds
+            )
+
+        wallpaper = backgrounds / "wall.png"
+        assert not wallpaper.is_symlink()
+        assert wallpaper.read_bytes() == b"img"
+
     def test_creates_symlink_to_source_image(self, tmp_path):
         source = tmp_path / "source" / "wall.png"
         source.parent.mkdir()
@@ -113,7 +142,7 @@ class TestSymlinkWallpaperIntoBackgroundsDirectory:
         backgrounds = tmp_path / "backgrounds"
         backgrounds.mkdir()
 
-        theme_generate_and_apply.symlink_wallpaper_into_backgrounds_directory(
+        theme_generate_and_apply.place_wallpaper_in_backgrounds_directory(
             source, backgrounds
         )
 
@@ -131,7 +160,7 @@ class TestSymlinkWallpaperIntoBackgroundsDirectory:
         backgrounds.mkdir()
         (backgrounds / "new.png").symlink_to(old_target)
 
-        theme_generate_and_apply.symlink_wallpaper_into_backgrounds_directory(
+        theme_generate_and_apply.place_wallpaper_in_backgrounds_directory(
             source, backgrounds
         )
 
@@ -146,7 +175,7 @@ class TestSymlinkWallpaperIntoBackgroundsDirectory:
         backgrounds.mkdir()
         (backgrounds / "wall.png").symlink_to(tmp_path / "moved-away.png")
 
-        theme_generate_and_apply.symlink_wallpaper_into_backgrounds_directory(
+        theme_generate_and_apply.place_wallpaper_in_backgrounds_directory(
             source, backgrounds
         )
 

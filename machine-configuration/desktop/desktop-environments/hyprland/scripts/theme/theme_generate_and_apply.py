@@ -4,6 +4,7 @@ import sys
 from pathlib import Path
 
 HYPR_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
+NIX_STORE_PATH = Path("/nix/store")
 
 NEOVIM_KANAGAWA_COLORSCHEME = """\
 return {
@@ -67,16 +68,21 @@ def create_preview_image_from_source(
             capture_output=True,
         )
     else:
-        shutil.copy2(source_image_path, preview_destination)
+        preview_destination.unlink(missing_ok=True)
+        shutil.copyfile(source_image_path, preview_destination)
 
 
-def symlink_wallpaper_into_backgrounds_directory(
+def place_wallpaper_in_backgrounds_directory(
     source_image_path: Path, backgrounds_directory: Path
 ) -> None:
-    link_path = backgrounds_directory / source_image_path.name
-    if link_path.exists() or link_path.is_symlink():
-        link_path.unlink()
-    link_path.symlink_to(source_image_path.resolve())
+    wallpaper_path = backgrounds_directory / source_image_path.name
+    if wallpaper_path.exists() or wallpaper_path.is_symlink():
+        wallpaper_path.unlink()
+    resolved_source_path = source_image_path.resolve()
+    if resolved_source_path.is_relative_to(NIX_STORE_PATH):
+        shutil.copyfile(resolved_source_path, wallpaper_path)
+        return
+    wallpaper_path.symlink_to(resolved_source_path)
 
 
 def write_theme_configuration_files(
@@ -89,7 +95,7 @@ def write_theme_configuration_files(
     (theme_directory / "neovim.lua").write_text(NEOVIM_KANAGAWA_COLORSCHEME)
     (theme_directory / "vscode.json").write_text(VSCODE_TOKYO_NIGHT_THEME)
     create_preview_image_from_source(source_image_path, theme_directory / "preview.png")
-    symlink_wallpaper_into_backgrounds_directory(
+    place_wallpaper_in_backgrounds_directory(
         source_image_path, theme_directory / "backgrounds"
     )
 
