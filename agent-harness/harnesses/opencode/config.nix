@@ -9,7 +9,8 @@ let
   titleGenerationModel = "opencode/deepseek-v4.1-flash-free";
 
   opencodePluginSettings = pkgs.runCommand "opencode-plugin-settings.json" { } ''
-    ${pkgs.jq}/bin/jq -r '
+    ${pkgs.jq}/bin/jq -r --arg avatarSkills "${config.agentPlugins.avatarPlugin}/skills" '
+      .skills.paths += [$avatarSkills] |
       tojson |
       gsub("\\{env:"; "\\u007benv:") |
       gsub("\\{file:"; "\\u007bfile:")

@@ -68,3 +68,55 @@ for (const malformed of [false, true]) {
     assert.ok(configured.mcpServers.dotfiles__probe);
   }
 }
+
+const avatar = join(root, "avatar");
+mkdirSync(join(avatar, "skills/avatar"), { recursive: true });
+writeFileSync(
+  join(avatar, "plugin.json"),
+  JSON.stringify({
+    $schema: "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+    name: "avatar",
+    version: "0.1.0",
+  }),
+);
+writeFileSync(
+  join(avatar, "skills/avatar/SKILL.md"),
+  "---\nname: avatar\ndescription: Probe skill.\n---\n",
+);
+for (const linkedRoot of [avatar, plugin]) {
+  const profile = join(
+    root,
+    `avatar-linked-to-${linkedRoot === avatar ? "itself" : "another-root"}`,
+  );
+  const agent = join(profile, "agent");
+  mkdirSync(join(agent, "plugins"), { recursive: true });
+  symlinkSync(plugin, join(agent, "plugins/dotfiles"));
+  symlinkSync(linkedRoot, join(agent, "plugins/avatar"));
+  const result = spawnSync(process.execPath, [registration, modules, avatar], {
+    cwd: profile,
+    env: {
+      ...process.env,
+      HOME: profile,
+      PI_AGENT_DIR: agent,
+      PI_CODING_AGENT_DIR: agent,
+    },
+    timeout: 30000,
+    encoding: "utf8",
+  });
+  assert.ifError(result.error);
+  if (linkedRoot === avatar) {
+    assert.equal(result.status, 0, result.stderr);
+    const state = JSON.parse(
+      readFileSync(join(agent, "agent-plugins/state.json"), "utf8"),
+    );
+    assert.ok(state.trusted.includes("user:avatar"));
+    assert.ok(!state.disabled.includes("user:avatar"));
+    assert.ok(!state.trusted.includes("user:dotfiles"));
+  } else {
+    assert.notEqual(
+      result.status,
+      0,
+      "A plugin linked to another root was registered under its declared name",
+    );
+  }
+}

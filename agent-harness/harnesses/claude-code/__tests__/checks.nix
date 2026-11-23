@@ -135,8 +135,12 @@ in
     self
     ;
 }
+// import ./avatar-plugin-checks.nix {
+  inherit pkgs lib;
+  inherit mkEvalCheck cfg;
+}
 // import ./skill-tier-checks.nix {
-  inherit pkgs lib inputs;
+  inherit pkgs lib;
   inherit mkEvalCheck cfg hasFilePrefix;
 }
 // import ./mcp-server-injection-checks.nix {

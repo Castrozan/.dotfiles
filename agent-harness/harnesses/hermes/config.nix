@@ -31,6 +31,7 @@ pkgs.writeText "hermes-config.yaml" ''
     enabled:
       - herdr-agent-state
       - dotfiles
+      - avatar
   hooks_auto_accept: true
   hooks:
     pre_tool_call:

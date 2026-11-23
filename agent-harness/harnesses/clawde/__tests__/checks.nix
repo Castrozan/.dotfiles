@@ -3,7 +3,6 @@
   pkgs,
   lib,
   self,
-  inputs,
   ...
 }:
 let
@@ -48,7 +47,6 @@ import ./service-checks.nix {
 // import ./harness/harness-checks.nix {
   inherit
     pkgs
-    inputs
     mkEvalCheck
     helpers
     self

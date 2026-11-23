@@ -2,7 +2,6 @@
   pkgs,
   lib,
   hostname,
-  inputs,
   homeDirectory,
   chromePackage,
   isDarwin ? pkgs.stdenv.isDarwin,
@@ -16,7 +15,7 @@ let
     nodejs = pkgs.nodejs_22;
   };
   skillCatalog = import ../interactive-skill-catalog/interactive-agent-skills.nix {
-    inherit pkgs hostname inputs;
+    inherit pkgs hostname;
   };
   interactiveSkillNames = skillCatalog.effectiveInteractiveSkillNames { };
   skillPath =

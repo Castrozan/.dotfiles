@@ -7,7 +7,7 @@
 }:
 let
   source = import ../. {
-    inherit pkgs lib inputs;
+    inherit pkgs lib;
     hostname = "test";
     homeDirectory = "/home/test";
     chromePackage = pkgs.google-chrome;
@@ -21,6 +21,19 @@ let
     inherit pkgs;
   };
   desktopPackages = (import ../../skills/workstation/desktop/install { inherit pkgs; }).packages;
+  skillCatalog = import ../../interactive-skill-catalog/interactive-agent-skills.nix {
+    inherit pkgs;
+    hostname = "test";
+  };
+  avatarPluginShipsItsSkillOnce =
+    builtins.all (manifest: builtins.pathExists "${inputs.avatar}/${manifest}") [
+      "plugin.json"
+      ".claude-plugin/plugin.json"
+      ".claude-plugin/marketplace.json"
+      ".codex-plugin/plugin.json"
+      "skills/avatar/SKILL.md"
+    ]
+    && !(builtins.elem "avatar" skillCatalog.allSkillNames);
 in
 {
   production-plugin-desktop-platform =
@@ -35,6 +48,11 @@ in
           ${pkgs.python312}/bin/python3 ${./verify-wellput-consumption.py} ${bundle}
           touch "$out"
       '';
+
+  production-plugin-leaves-avatar-to-its-own-plugin =
+    helpers.mkEvalCheck "production-plugin-leaves-avatar-to-its-own-plugin"
+      avatarPluginShipsItsSkillOnce
+      "The avatar skill reaches every harness as the avatar flake's own plugin, so the pinned source must carry its Agent Plugins, Claude and Codex manifests and the skill, and the dotfiles catalog must not carry a second copy";
 
   production-plugin-artifact-preservation =
     pkgs.runCommand "production-plugin-artifact-preservation" { }

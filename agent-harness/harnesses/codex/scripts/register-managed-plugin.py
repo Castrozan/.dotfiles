@@ -6,10 +6,16 @@ import tomllib
 from pathlib import Path
 
 CODEX_EXECUTABLE = "@codex@"
+MARKETPLACE_CATALOG_PATHS = (
+    Path(".agents/plugins/marketplace.json"),
+    Path(".claude-plugin/marketplace.json"),
+)
 
 
-def register_plugin(bundle: Path, home: Path) -> None:
-    marketplace_name = "dotagents-local"
+def register_plugin(marketplace_root: Path, home: Path) -> None:
+    catalog = read_marketplace_catalog(marketplace_root)
+    marketplace_name = catalog["name"]
+    plugin_names = catalog_plugin_names(catalog)
     configuration_path = home / "config.toml"
     configuration = (
         tomllib.loads(configuration_path.read_text())
@@ -27,30 +33,47 @@ def register_plugin(bundle: Path, home: Path) -> None:
             timeout=60,
         )
 
-    _remove_previous_managed_marketplace(marketplace, bundle, marketplace_name, run)
-    run("marketplace", "add", "--json", "--", str(bundle.resolve()))
-    run("add", "--json", "--", f"dotfiles@{marketplace_name}")
+    _remove_previous_managed_marketplace(
+        marketplace, marketplace_root, marketplace_name, plugin_names, run
+    )
+    run("marketplace", "add", "--json", "--", str(marketplace_root.resolve()))
+    for plugin_name in plugin_names:
+        run("add", "--json", "--", f"{plugin_name}@{marketplace_name}")
 
 
-def _remove_previous_managed_marketplace(marketplace, bundle, marketplace_name, run):
-    if not marketplace or marketplace.get("source") == str(bundle.resolve()):
+def read_marketplace_catalog(marketplace_root: Path) -> dict:
+    for catalog_path in MARKETPLACE_CATALOG_PATHS:
+        candidate = marketplace_root / catalog_path
+        if candidate.is_file():
+            return json.loads(candidate.read_text())
+    raise ValueError(f"No marketplace catalog in {marketplace_root}")
+
+
+def catalog_plugin_names(catalog: dict) -> list[str]:
+    return [plugin["name"] for plugin in catalog["plugins"]]
+
+
+def _remove_previous_managed_marketplace(
+    marketplace, marketplace_root, marketplace_name, plugin_names, run
+):
+    if not marketplace or marketplace.get("source") == str(marketplace_root.resolve()):
         return
-    previous = Path(marketplace["source"]) / ".agents/plugins/marketplace.json"
-    catalog = json.loads(previous.read_text())
-    if not _is_dotfiles_marketplace(marketplace, catalog):
+    previous_catalog = read_marketplace_catalog(Path(marketplace["source"]))
+    if not _is_same_managed_marketplace(marketplace, previous_catalog, plugin_names):
         raise ValueError("The managed marketplace name belongs to another source")
     run("marketplace", "remove", "--json", "--", marketplace_name)
 
 
-def _is_dotfiles_marketplace(marketplace, catalog):
-    return marketplace.get("source_type") == "local" and [
-        plugin["name"] for plugin in catalog["plugins"]
-    ] == ["dotfiles"]
+def _is_same_managed_marketplace(marketplace, previous_catalog, plugin_names):
+    return (
+        marketplace.get("source_type") == "local"
+        and catalog_plugin_names(previous_catalog) == plugin_names
+    )
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("bundle", type=Path)
+    parser.add_argument("marketplace_root", type=Path)
     parser.add_argument("home", type=Path)
     arguments = parser.parse_args()
-    register_plugin(arguments.bundle, arguments.home)
+    register_plugin(arguments.marketplace_root, arguments.home)

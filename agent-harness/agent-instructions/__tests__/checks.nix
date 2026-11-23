@@ -25,7 +25,7 @@ let
 
   interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     hostname = "test";
-    inherit pkgs inputs;
+    inherit pkgs;
   };
 
   harnessProjectSkillDirectoriesInRepository = [

@@ -3,7 +3,6 @@
   pkgs,
   lib,
   self,
-  inputs,
   ...
 }:
 let
@@ -13,7 +12,7 @@ let
       ../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
         hostname = "test";
-        inherit pkgs inputs;
+        inherit pkgs;
       };
 
   cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];
@@ -84,6 +83,15 @@ in
         && !(hasFilePrefix ".codex/skills/")
       )
       "Codex must register the complete production package without duplicate managed global skill projections";
+
+  codex-avatar-plugin-registration =
+    mkEvalCheck "codex-avatar-plugin-registration"
+      (
+        toString cfg.home.file.".local/share/agent-plugins/avatar".source
+        == toString cfg.agentPlugins.avatarPlugin
+        && lib.hasInfix "${cfg.home.homeDirectory}/.local/share/agent-plugins/avatar" cfg.home.activation.installAvatarCodexPlugin.data
+      )
+      "Codex must register the pinned avatar plugin directory as a local marketplace and add avatar@avatar from it, so the skill and the runtime move with one pin";
 
   codex-global-agents-instructions =
     mkEvalCheck "codex-global-agents-instructions" (builtins.hasAttr ".codex/AGENTS.md" cfg.home.file)

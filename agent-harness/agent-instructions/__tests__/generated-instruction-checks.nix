@@ -24,7 +24,6 @@ let
     inherit
       pkgs
       lib
-      inputs
       homeDirectory
       ;
     hostname = "test";

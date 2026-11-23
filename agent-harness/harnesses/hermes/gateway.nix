@@ -10,6 +10,8 @@ let
   botProfileFiles = name: _bot: {
     "${botProfileDirectory name}/plugins/dotfiles".source =
       config.home.file.".hermes/plugins/dotfiles".source;
+    "${botProfileDirectory name}/plugins/avatar".source =
+      config.home.file.".hermes/plugins/avatar".source;
     "${botProfileDirectory name}/plugins/claude-subscription-directsdk".source =
       config.home.file.".hermes/plugins/claude-subscription-directsdk".source;
     "${botProfileDirectory name}/.no-bundled-skills".text = "";

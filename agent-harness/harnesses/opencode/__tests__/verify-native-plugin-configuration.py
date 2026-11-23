@@ -7,7 +7,9 @@ from native_opencode_server import native_server
 from pathlib import Path
 
 
-def verify_configuration(executable, settings, plugin_settings, bundle, data_root):
+def verify_configuration(
+    executable, settings, plugin_settings, bundle, data_root, avatar_plugin
+):
     global_configuration = json.loads(settings.read_text())
     emitted_configuration = json.loads(
         (bundle / ".opencode/opencode.jsonc").read_text()
@@ -23,7 +25,12 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
         )
         assert server["environment"]["PLUGIN_DATA"] == str(data_root / "dotfiles")
         assert not (data_root / "dotfiles").is_relative_to(bundle)
-    assert installed_configuration == emitted_configuration
+    expected_skill_paths = emitted_configuration["skills"]["paths"] + [
+        str(avatar_plugin / "skills")
+    ]
+    assert installed_configuration == emitted_configuration | {
+        "skills": emitted_configuration["skills"] | {"paths": expected_skill_paths}
+    }
 
     with tempfile.TemporaryDirectory(
         prefix="opencode-native-configuration-"
@@ -72,9 +79,10 @@ def verify_configuration(executable, settings, plugin_settings, bundle, data_roo
             skills = server.request("/api/skill", location=True)["data"]
             expected_skills = {
                 path.parent.name
-                for directory in emitted_configuration["skills"]["paths"]
+                for directory in expected_skill_paths
                 for path in Path(directory).glob("*/SKILL.md")
             }
+            assert "avatar" in expected_skills
             assert expected_skills <= {skill["id"] for skill in skills}
             instructions = [
                 item

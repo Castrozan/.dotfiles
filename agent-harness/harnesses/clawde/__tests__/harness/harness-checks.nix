@@ -1,6 +1,5 @@
 {
   pkgs,
-  inputs,
   mkEvalCheck,
   helpers,
   self,
@@ -137,7 +136,7 @@ in
           ../../../../../agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
           {
             hostname = "test";
-            inherit pkgs inputs;
+            inherit pkgs;
           }
         ).defaultInteractiveSkillNames
       )
