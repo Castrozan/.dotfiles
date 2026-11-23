@@ -136,8 +136,7 @@ in
     ;
 }
 // import ./avatar-plugin-checks.nix {
-  inherit pkgs lib;
-  inherit mkEvalCheck cfg;
+  inherit lib mkEvalCheck cfg;
 }
 // import ./skill-tier-checks.nix {
   inherit pkgs lib;
