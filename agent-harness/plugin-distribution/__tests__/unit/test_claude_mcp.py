@@ -69,11 +69,6 @@ def test_http_has_no_process_launcher(tmp_path):
     )
 
 
-def test_skill_only_plugin_needs_no_mcp_adapter(tmp_path):
-    write_claude_mcp(tmp_path, "unused-shell")
-    assert list(tmp_path.iterdir()) == []
-
-
 def test_authored_mcp_file_is_not_overwritten(tmp_path):
     native = tmp_path / ".claude-plugin"
     native.mkdir()

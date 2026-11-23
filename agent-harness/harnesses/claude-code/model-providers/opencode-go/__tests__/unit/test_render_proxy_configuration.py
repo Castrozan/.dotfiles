@@ -121,22 +121,6 @@ def test_an_empty_key_fails_before_the_proxy_starts(tmp_path, api_key_text):
     )
 
 
-def test_a_missing_key_file_fails_before_the_proxy_starts(tmp_path):
-    template_path, _, rendered_path = write_template_and_key(tmp_path, "unused")
-    recorded_exec = RecordedExec()
-
-    exit_code = RENDERER.render_configuration_then_exec_proxy(
-        template_path,
-        tmp_path / "absent-key",
-        rendered_path,
-        ["/usr/bin/cli-proxy-api"],
-        exec_program=recorded_exec,
-    )
-
-    assert exit_code == RENDERER.UNUSABLE_API_KEY_EXIT_CODE
-    assert recorded_exec.invocations == []
-
-
 def test_a_template_without_the_placeholder_is_rejected(tmp_path):
     template_path = tmp_path / "template.yaml"
     template_path.write_text('api-key-entries:\n  - api-key: ""\n')

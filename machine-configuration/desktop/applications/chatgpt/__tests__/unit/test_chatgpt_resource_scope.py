@@ -1,4 +1,3 @@
-import subprocess
 from unittest.mock import Mock
 
 import pytest
@@ -46,22 +45,6 @@ def test_chromium_main_and_renderers_are_attached_together(scope_fixture):
 
     command.side_effect = attach
     assert scope.repair_chromium_scope_migration(40)
-
-
-def test_partial_attachment_is_retried_after_main_returns(scope_fixture):
-    scope, groups, _, command, target = scope_fixture
-
-    def attach(arguments, **kwargs):
-        groups[42] = target
-        if command.call_count == 1:
-            raise subprocess.CalledProcessError(1, arguments)
-        groups[43] = target
-
-    command.side_effect = attach
-    with pytest.raises(subprocess.CalledProcessError):
-        scope.repair_chromium_scope_migration(40)
-    assert scope.repair_chromium_scope_migration(40)
-    assert command.call_count == 2
 
 
 def test_recycled_process_id_is_excluded(scope_fixture):

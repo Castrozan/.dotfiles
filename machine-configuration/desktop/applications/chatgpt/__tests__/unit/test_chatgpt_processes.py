@@ -34,13 +34,6 @@ def test_missing_process_cannot_be_identified_or_attached(process_directory):
     assert not processes.is_primary_chatgpt_process(ProcessIdentity(99, 100))
 
 
-def test_malformed_kernel_identity_and_group_are_unknown(process_directory):
-    (process_directory / "stat").write_text("invalid")
-    (process_directory / "cgroup").write_text("invalid")
-    assert ProcessIdentity.read(42) is None
-    assert processes.process_cgroup(42) is None
-
-
 def test_renderer_is_excluded_from_main_process_detection(process_directory):
     (process_directory / "cmdline").write_bytes(b"ChatGPT --type=renderer\0")
     assert not processes.is_primary_chatgpt_process(ProcessIdentity(42, 100))

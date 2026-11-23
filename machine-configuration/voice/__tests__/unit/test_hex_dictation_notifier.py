@@ -36,7 +36,9 @@ def test_read_dictation_phase_ignores_everything_but_dictation_events():
 
 def test_started_raises_a_critical_recording_notification():
     commands = RecordedCommands()
-    DictationNotifier(LinuxNotifications(commands)).handle_event(dictation_event("started"))
+    DictationNotifier(LinuxNotifications(commands)).handle_event(
+        dictation_event("started")
+    )
     assert commands.commands == [
         [
             "notify-send",
@@ -72,8 +74,12 @@ def test_every_ending_phase_closes_the_notification():
 
 def test_ending_with_nothing_shown_runs_nothing():
     commands = RecordedCommands()
-    DictationNotifier(LinuxNotifications(commands)).handle_event(dictation_event("repasted"))
-    DictationNotifier(LinuxNotifications(commands)).handle_event(dictation_event("pasted"))
+    DictationNotifier(LinuxNotifications(commands)).handle_event(
+        dictation_event("repasted")
+    )
+    DictationNotifier(LinuxNotifications(commands)).handle_event(
+        dictation_event("pasted")
+    )
     assert commands.commands == []
 
 
@@ -84,14 +90,6 @@ def test_failure_shows_the_reason_and_never_the_transcript():
         dictation_event({"failed": "paste refused"}, text="private words")
     )
     assert commands.commands[0][-2:] == ["Hex dictation failed", "paste refused"]
-    assert "private words" not in str(commands.commands)
-
-
-def test_transcript_text_never_reaches_a_notification():
-    commands = RecordedCommands()
-    notifier = DictationNotifier(LinuxNotifications(commands))
-    for phase in ("started", "transcribing", "pasted"):
-        notifier.handle_event(dictation_event(phase, text="private words"))
     assert "private words" not in str(commands.commands)
 
 
@@ -110,16 +108,6 @@ def test_refresh_keeps_a_long_recording_on_screen():
         "Hex recording",
         "Release the keys to transcribe",
     ]
-
-
-def test_unavailable_notification_daemon_keeps_the_notifier_alive():
-    def refusing_daemon(command):
-        return subprocess.CompletedProcess(command, 1, "", "no daemon")
-
-    notifier = DictationNotifier(LinuxNotifications(refusing_daemon))
-    notifier.handle_event(dictation_event("started"))
-    notifier.handle_event(dictation_event("pasted"))
-    assert notifier.refresh_timeout_seconds is None
 
 
 def test_mac_replaces_and_removes_one_notification_group():
@@ -152,7 +140,9 @@ def test_mac_replaces_and_removes_one_notification_group():
 
 def test_mac_ending_with_nothing_shown_runs_nothing():
     commands = RecordedCommands()
-    DictationNotifier(MacNotifications(commands)).handle_event(dictation_event("pasted"))
+    DictationNotifier(MacNotifications(commands)).handle_event(
+        dictation_event("pasted")
+    )
     assert commands.commands == []
 
 

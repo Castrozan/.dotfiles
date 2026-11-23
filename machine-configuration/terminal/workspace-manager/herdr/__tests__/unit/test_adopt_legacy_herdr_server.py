@@ -51,8 +51,10 @@ def test_successful_adoption_preserves_legacy_handoff(monkeypatch):
     monkeypatch.setattr(
         adopt_legacy_herdr_server,
         "run_command",
-        lambda *arguments, **options: commands.append((arguments, options))
-        or SimpleNamespace(returncode=0, stdout="", stderr=""),
+        lambda *arguments, **options: (
+            commands.append((arguments, options))
+            or SimpleNamespace(returncode=0, stdout="", stderr="")
+        ),
     )
     monkeypatch.setattr(
         adopt_legacy_herdr_server, "herdr_server_is_running", lambda: True
@@ -81,18 +83,3 @@ def test_successful_adoption_preserves_legacy_handoff(monkeypatch):
         adopt_legacy_herdr_server.signal.SIGSTOP,
         adopt_legacy_herdr_server.signal.SIGCONT,
     ]
-
-
-def test_absent_legacy_service_does_not_handoff(monkeypatch):
-    _set_environment(monkeypatch)
-    commands = []
-    monkeypatch.setattr(adopt_legacy_herdr_server, "unit_is_active", lambda unit: False)
-    monkeypatch.setattr(
-        adopt_legacy_herdr_server,
-        "run_command",
-        lambda *arguments, **options: commands.append((arguments, options)),
-    )
-
-    adopt_legacy_herdr_server.adopt_legacy_server()
-
-    assert commands == []

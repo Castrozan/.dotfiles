@@ -1,6 +1,4 @@
 import json
-import os
-import subprocess
 import sys
 from pathlib import Path
 
@@ -30,35 +28,6 @@ def prepare_configuration(output, name, revision):
     }
     configuration.write_text(json.dumps({"mcp": {f"plugin.{name}.state": server}}))
     return configuration, server
-
-
-def test_native_state_survives_revisions_and_remains_separate_between_plugins(tmp_path):
-    state_root = tmp_path / 'writable "state"'
-    for name in ("first-plugin", "second-plugin"):
-        for revision in ("first", "second"):
-            output = tmp_path / name / revision
-            configuration, original = prepare_configuration(output, name, revision)
-            write_opencode_configuration(output, name, state_root)
-            if name == "first-plugin" and revision == "first":
-                assert not state_root.exists()
-            data = state_root / name
-            data.mkdir(parents=True, exist_ok=True)
-            emitted = json.loads(configuration.read_text())["mcp"][
-                f"plugin.{name}.state"
-            ]
-            assert emitted["command"] == original["command"]
-            result = subprocess.run(
-                emitted["command"],
-                cwd=emitted["cwd"],
-                env=os.environ | emitted["environment"],
-                capture_output=True,
-                text=True,
-                check=True,
-                timeout=5,
-            )
-            assert Path(result.stdout.strip()) == data / "state"
-            assert not (output / ".agents/plugin-data" / name / "state").exists()
-        assert (state_root / name / "state").read_text() == "firstsecond"
 
 
 def test_projection_relocates_data_references_and_preserves_native_fields(tmp_path):

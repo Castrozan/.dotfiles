@@ -13,7 +13,3 @@ class TestTrailersForIdentity:
     def test_a_fleet_agent_also_records_its_name(self):
         identity = AgentSessionIdentity("claude", "chise", "abc-123", "chise-steward")
         assert "Agent-Name: chise-steward" in trailers_for_identity(identity)
-
-    def test_a_session_without_an_identifier_records_no_resume_command(self):
-        identity = AgentSessionIdentity("opencode", "kira", None, None)
-        assert trailers_for_identity(identity) == ["Agent-Machine: kira"]

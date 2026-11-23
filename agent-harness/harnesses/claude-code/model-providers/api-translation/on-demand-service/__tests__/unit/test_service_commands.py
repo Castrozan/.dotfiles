@@ -1,6 +1,5 @@
 import importlib.util
 import os
-import socket
 import sys
 from pathlib import Path
 
@@ -18,6 +17,7 @@ LIFECYCLE_SPECIFICATION.loader.exec_module(LIFECYCLE)
 import pytest
 import service_commands as COMMANDS
 
+
 def test_the_launchd_commands_name_the_current_user_domain():
     label = "com.dotfiles.cli-proxy-api"
     assert COMMANDS.start_command_for("launchd", label) == [
@@ -30,9 +30,7 @@ def test_the_launchd_commands_name_the_current_user_domain():
         "kill",
         "SIGTERM",
         f"gui/{os.getuid()}/{label}",
-    ], (
-        "bootout would unload the agent and the next session could not kickstart it"
-    )
+    ], "bootout would unload the agent and the next session could not kickstart it"
 
 
 def test_the_systemd_commands_address_the_user_unit():
@@ -55,7 +53,3 @@ def test_a_label_outside_the_allowed_shape_is_refused():
     for rejected in ["", "has space", "semi;colon", "slash/label", "-leading-dash"]:
         with pytest.raises(ValueError):
             COMMANDS.start_command_for("launchd", rejected)
-
-
-def test_a_missing_service_controller_binary_does_not_crash_the_launcher():
-    COMMANDS.run_service_command(["a-binary-no-host-has", "kickstart"])

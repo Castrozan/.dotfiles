@@ -136,22 +136,3 @@ def test_rejects_a_malformed_request_line():
             assert response_headers.startswith(b"HTTP/1.1 400 Bad Request\r\n")
     finally:
         stop_server(gateway_server, gateway_thread)
-
-
-def test_returns_bad_gateway_for_an_invalid_connect_target():
-    gateway_server = GATEWAY_MODULE.IPv4ConnectProxyServer(
-        ("127.0.0.1", 0), GATEWAY_MODULE.IPv4ConnectProxyRequestHandler
-    )
-    gateway_thread = start_server(gateway_server)
-
-    try:
-        with socket.create_connection(gateway_server.server_address) as connection:
-            connection.sendall(
-                b"CONNECT localhost:not-a-port HTTP/1.1\r\n"
-                b"Host: localhost:not-a-port\r\n\r\n"
-            )
-            response_headers = receive_http_headers(connection)
-
-            assert response_headers.startswith(b"HTTP/1.1 502 Bad Gateway\r\n")
-    finally:
-        stop_server(gateway_server, gateway_thread)

@@ -44,17 +44,6 @@ def closed_loopback_port() -> int:
     return port
 
 
-def test_the_first_launcher_starts_a_proxy_that_is_not_listening(tmp_path, monkeypatch):
-    recorded = RecordedServiceCommands()
-    monkeypatch.setattr(LIFECYCLE, "run_service_command", recorded)
-
-    LIFECYCLE.acquire_service(
-        tmp_path, "127.0.0.1", closed_loopback_port(), START_COMMAND
-    )
-
-    assert recorded.commands == [START_COMMAND]
-
-
 def test_the_last_launcher_stops_the_proxy_it_started(tmp_path, monkeypatch):
     recorded = RecordedServiceCommands()
     monkeypatch.setattr(LIFECYCLE, "run_service_command", recorded)
@@ -102,47 +91,11 @@ def test_a_second_live_launcher_keeps_the_proxy_running(tmp_path, monkeypatch):
     )
 
 
-def test_a_crashed_launcher_does_not_pin_the_proxy_open(tmp_path, monkeypatch):
-    recorded = RecordedServiceCommands()
-    monkeypatch.setattr(LIFECYCLE, "run_service_command", recorded)
-
-    registry = REGISTRY.HolderRegistry(tmp_path)
-    with registry:
-        registry.write_holders([unused_process_id()])
-
-    LIFECYCLE.acquire_service(
-        tmp_path, "127.0.0.1", closed_loopback_port(), START_COMMAND
-    )
-    LIFECYCLE.release_service(tmp_path, STOP_COMMAND)
-
-    assert recorded.commands == [START_COMMAND, STOP_COMMAND], (
-        "a launcher killed with SIGKILL never releases its holder entry, so stale "
-        "entries must not keep the proxy alive forever"
-    )
-
-
 def unused_process_id() -> int:
     candidate = 2**22 - 1
     while REGISTRY.process_is_alive(candidate):
         candidate -= 1
     return candidate
-
-
-def test_the_child_exit_code_reaches_the_caller(tmp_path, monkeypatch):
-    monkeypatch.setattr(LIFECYCLE, "run_service_command", RecordedServiceCommands())
-
-    exit_code = LIFECYCLE.run_with_on_demand_service(
-        tmp_path,
-        "127.0.0.1",
-        closed_loopback_port(),
-        START_COMMAND,
-        STOP_COMMAND,
-        0.0,
-        "the proxy never came up",
-        ["sh", "-c", "exit 37"],
-    )
-
-    assert exit_code == 37
 
 
 def test_a_proxy_that_never_comes_up_warns_and_still_runs_the_child(

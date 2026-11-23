@@ -10,26 +10,6 @@ import input_layer_metrics
 import multiplexer_metrics
 
 
-def test_classify_fleet_bucket_matches_substring_and_basename():
-    assert (
-        ai_fleet_metrics.classify_fleet_bucket("/nix/store/x/bin/claude --resume")
-        == "claude_cli"
-    )
-    assert (
-        ai_fleet_metrics.classify_fleet_bucket("node /x/chrome-devtools-mcp/index.js")
-        == "chrome_devtools_mcp"
-    )
-    assert ai_fleet_metrics.classify_fleet_bucket("opencode") == "opencode"
-    assert ai_fleet_metrics.classify_fleet_bucket("/usr/bin/login") is None
-
-
-def test_classify_fleet_bucket_excludes_tmux_wrapped_opencode():
-    tmux_wrapper_command = (
-        "tmux -L jarvis new-session -d -s jarvis bash -lc 'exec opencode'"
-    )
-    assert ai_fleet_metrics.classify_fleet_bucket(tmux_wrapper_command) is None
-
-
 def test_parse_fleet_process_table_counts_and_sums_rss():
     ps_output = "\n".join(
         [

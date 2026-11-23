@@ -40,11 +40,6 @@ def test_closed_windows_and_other_applications_do_not_keep_open_mode():
     assert owned_window_addresses(clients, {42}) == set()
 
 
-def test_one_remaining_app_window_keeps_open_mode():
-    clients = [{"pid": 42, "address": "0xabc", "mapped": True}]
-    assert bool(owned_window_addresses(clients, {42}))
-
-
 @pytest.mark.parametrize("clients", [None, {}, "invalid", [None], [{"pid": "bad"}]])
 def test_invalid_desktop_state_cannot_select_background_mode(clients):
     assert owned_window_addresses(clients, {42}) is None

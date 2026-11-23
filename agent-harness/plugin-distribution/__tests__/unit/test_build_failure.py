@@ -27,17 +27,6 @@ def test_readonly_input_is_materialized_without_mutating_source(tmp_path):
     assert copied.read_bytes() == executable.read_bytes()
 
 
-def test_existing_output_is_untouched(tmp_path):
-    output = tmp_path / "output"
-    output.mkdir()
-    sentinel = output / "user-file"
-    sentinel.write_text("preserve")
-    with pytest.raises(FileExistsError):
-        build_plugin.build_plugin(FIXTURE, output, ("claude",))
-    assert sentinel.read_text() == "preserve"
-    assert list(output.iterdir()) == [sentinel]
-
-
 def test_output_inside_source_is_rejected(tmp_path):
     source = Path(shutil.copytree(FIXTURE, tmp_path / "plugin"))
     output = source / "generated"

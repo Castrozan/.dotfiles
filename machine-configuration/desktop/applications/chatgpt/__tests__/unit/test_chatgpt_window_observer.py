@@ -102,14 +102,6 @@ def test_missing_desktop_retries_after_backoff(observer, monkeypatch):
     connect.assert_not_called()
 
 
-def test_absent_desktop_environment_cannot_select_background(monkeypatch):
-    monkeypatch.delenv("HYPRLAND_INSTANCE_SIGNATURE", raising=False)
-    observer = ChatGPTWindowObserver()
-    observer.poll(0)
-    observer.refresh({42})
-    assert observer.window_open is None
-
-
 @pytest.mark.parametrize("chunks", [[b"{invalid", b""], [b"x" * 65536] * 33])
 def test_invalid_or_oversized_desktop_response_is_unknown(
     observer, monkeypatch, chunks

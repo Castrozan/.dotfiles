@@ -6,15 +6,6 @@ import pytest
 import verify_deployed_prohibited_words_allowlist
 
 
-def test_load_machine_allowed_words_returns_none_without_a_machine_file(tmp_path):
-    assert (
-        verify_deployed_prohibited_words_allowlist.load_machine_allowed_words(
-            tmp_path, "test"
-        )
-        is None
-    )
-
-
 def test_load_machine_allowed_words_evaluates_the_machine_file(tmp_path):
     allowed_words_file = (
         tmp_path

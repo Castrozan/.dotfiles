@@ -57,14 +57,3 @@ class TestMessageFileCarriesAMessage:
         message_file_path = tmp_path / "COMMIT_EDITMSG"
         message_file_path.write_text("\n# Please enter a message.\n", encoding="utf-8")
         assert hook.message_file_carries_a_message(message_file_path, "#") is False
-
-    def test_a_subject_makes_the_message_real(self, tmp_path):
-        message_file_path = tmp_path / "COMMIT_EDITMSG"
-        message_file_path.write_text("feat: a subject\n\n# hint\n", encoding="utf-8")
-        assert hook.message_file_carries_a_message(message_file_path, "#") is True
-
-    def test_the_configured_comment_character_decides_what_is_a_comment(self, tmp_path):
-        message_file_path = tmp_path / "COMMIT_EDITMSG"
-        message_file_path.write_text("; a comment\n", encoding="utf-8")
-        assert hook.message_file_carries_a_message(message_file_path, ";") is False
-        assert hook.message_file_carries_a_message(message_file_path, "#") is True

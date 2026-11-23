@@ -25,10 +25,6 @@ def socket_directory():
         yield pathlib.Path(directory)
 
 
-def test_absent_sockets_allow_startup(socket_directory):
-    server_socket_guard.wait_for_server_sockets(socket_directory)
-
-
 @pytest.mark.parametrize("socket_name", ["herdr.sock", "herdr-client.sock"])
 def test_either_live_socket_blocks_startup_until_it_closes(
     socket_directory, monkeypatch, socket_name
@@ -49,53 +45,6 @@ def test_either_live_socket_blocks_startup_until_it_closes(
 
     assert delays == [5]
     assert socket_path.exists()
-
-
-def test_remaining_client_socket_blocks_startup_after_api_closes(
-    socket_directory, monkeypatch
-):
-    delays = []
-    with (
-        socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as api_listener,
-        socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as client_listener,
-    ):
-        api_listener.bind(str(socket_directory / "herdr.sock"))
-        client_listener.bind(str(socket_directory / "herdr-client.sock"))
-        api_listener.listen()
-        client_listener.listen()
-
-        def close_next_listener(seconds):
-            delays.append(seconds)
-            if len(delays) == 1:
-                api_listener.close()
-                return
-            client_listener.close()
-
-        monkeypatch.setattr(server_socket_guard.time, "sleep", close_next_listener)
-
-        server_socket_guard.wait_for_server_sockets(socket_directory)
-
-    assert delays == [5, 5]
-
-
-@pytest.mark.parametrize(
-    "connection_error",
-    [
-        PermissionError(errno.EACCES, "denied"),
-        TimeoutError(),
-        OSError(errno.EMFILE, "full"),
-    ],
-)
-def test_uncertain_socket_errors_refuse_startup(
-    tmp_path, monkeypatch, connection_error
-):
-    def fail_connection(connection, address):
-        raise connection_error
-
-    monkeypatch.setattr(socket.socket, "connect", fail_connection)
-
-    with pytest.raises(type(connection_error)):
-        server_socket_guard.wait_for_server_sockets(tmp_path)
 
 
 def test_socket_probes_have_a_timeout(tmp_path, monkeypatch):

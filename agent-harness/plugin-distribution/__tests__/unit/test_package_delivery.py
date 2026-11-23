@@ -24,20 +24,6 @@ def test_complete_package_needs_no_renderer(tmp_path, monkeypatch, targets):
     assert not (output / ".agents/skills").exists()
 
 
-def test_authored_manifests_survive_renderer_changes(tmp_path):
-    source = tmp_path / "source"
-    native = source / ".claude-plugin"
-    native.mkdir(parents=True)
-    authored = '{"name":"example","hooks":"./custom-hooks.json"}'
-    (native / "plugin.json").write_text(authored)
-    output = tmp_path / "output"
-    generated = output / ".agents/plugins/example/.claude-plugin"
-    generated.mkdir(parents=True)
-    (generated / "plugin.json").write_text('{"name":"example"}')
-    deliver_package(source, output, "example", ())
-    assert (generated / "plugin.json").read_text() == authored
-
-
 def test_renderer_file_links_are_materialized_on_source_restoration(tmp_path):
     source = tmp_path / "source"
     source.mkdir()

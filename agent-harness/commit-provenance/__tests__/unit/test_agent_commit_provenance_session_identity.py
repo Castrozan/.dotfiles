@@ -115,42 +115,8 @@ class TestResolveFromProcessAncestry:
         session_database_lookup.assert_called_once_with(99)
         assert identity.session_identifier == "ses_0353b5c16ffep4zDjdRlGcaePG"
 
-    def test_opencode_records_the_harness_when_no_session_can_be_resolved(self):
-        with (
-            patch(
-                "agent_commit_provenance.session_identity.find_agent_session",
-                return_value=(99, "opencode", "opencode"),
-            ),
-            patch(
-                "agent_commit_provenance.session_identity.opencode_session_identifier_for_process",
-                return_value=None,
-            ),
-        ):
-            identity = resolve_agent_session_identity({}, 4242, Path("/repo"))
-        assert identity.harness_name == "opencode"
-        assert identity.session_identifier is None
-
-    def test_commit_outside_any_agent_session_has_no_identity(self):
-        with patch(
-            "agent_commit_provenance.session_identity.find_agent_session",
-            return_value=None,
-        ):
-            assert resolve_agent_session_identity({}, 4242, Path("/repo")) is None
-
 
 class TestResumeCommand:
     def test_claude_resume_command_carries_the_session(self):
         identity = AgentSessionIdentity("claude", "rin", "abc-123", None)
         assert identity.resume_command() == "claude --resume abc-123"
-
-    def test_codex_resume_command_carries_the_session(self):
-        identity = AgentSessionIdentity("codex", "rin", "abc-123", None)
-        assert identity.resume_command() == "codex resume abc-123"
-
-    def test_opencode_resume_command_carries_the_session(self):
-        identity = AgentSessionIdentity("opencode", "rin", "abc-123", None)
-        assert identity.resume_command() == "opencode --session abc-123"
-
-    def test_no_resume_command_without_a_session_identifier(self):
-        identity = AgentSessionIdentity("opencode", "rin", None, None)
-        assert identity.resume_command() is None

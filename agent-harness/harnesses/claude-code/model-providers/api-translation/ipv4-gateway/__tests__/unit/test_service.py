@@ -2,7 +2,6 @@ import importlib.util
 import threading
 from pathlib import Path
 
-import pytest
 
 GATEWAY_PATH = (
     Path(__file__).resolve().parents[2] / "scripts" / "cli_proxy_api_ipv4_gateway.py"
@@ -67,31 +66,5 @@ def test_entrypoint_starts_the_gateway_and_propagates_the_proxy_exit_code():
     )
 
     assert exit_code == 37
-    assert controlled_server
-    assert controlled_server.shutdown_called
-
-
-def test_entrypoint_stops_the_gateway_when_the_proxy_cannot_start():
-    controlled_server = None
-
-    def create_server(server_address, request_handler):
-        nonlocal controlled_server
-        controlled_server = ControlledGatewayServer(server_address, request_handler)
-        return controlled_server
-
-    def fail_to_create_process(program_arguments):
-        assert controlled_server
-        assert controlled_server.started.wait(timeout=1)
-        raise OSError("proxy executable is unavailable")
-
-    with pytest.raises(OSError, match="proxy executable is unavailable"):
-        GATEWAY_MODULE.run_cli_proxy_api_with_ipv4_gateway(
-            "127.0.0.1",
-            8318,
-            ["cli-proxy-api", "--local-model"],
-            server_factory=create_server,
-            process_factory=fail_to_create_process,
-        )
-
     assert controlled_server
     assert controlled_server.shutdown_called

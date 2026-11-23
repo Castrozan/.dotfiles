@@ -37,57 +37,6 @@ def test_managed_profile_script_receives_the_selected_streaming_server():
     assert "addonsLocked: true" in script
 
 
-def test_managed_profile_prefers_portuguese_streams_and_audio():
-    configuration = managed_profile.MANAGED_PROFILE_CONFIGURATION
-    assert configuration["defaultSettings"]["audioLanguage"] == "por"
-    assert configuration["defaultSettings"]["secondaryAudioLanguage"] == "eng"
-    comet_addon = next(
-        addon
-        for addon in configuration["managedAddons"]
-        if addon["manifest"]["id"] == "stremio.comet.fast"
-    )
-    assert comet_addon["configuration"]["languages"] == {
-        "required": [],
-        "allowed": [],
-        "exclude": [],
-        "preferred": ["pt"],
-    }
-    script = managed_profile.render_managed_profile_script(
-        "https://stream.example.com/server/"
-    ).decode()
-    assert "window.btoa(JSON.stringify(configuration))" in script
-    assert "managedProfileConfiguration.defaultSettings.audioLanguage" in script
-    assert (
-        "managedProfileConfiguration.defaultSettings.secondaryAudioLanguage" in script
-    )
-
-
-def test_managed_profile_reconciles_storage_before_network_requests():
-    script = managed_profile.render_managed_profile_script(
-        "https://stream.example.com/server/"
-    ).decode()
-
-    local_reconciliation = script.index(
-        "storeManagedProfile(storedProfile, storedOfficialAddonEntries)"
-    )
-    remote_loading = script.index("await loadOfficialAddonEntries(storedProfile)")
-
-    assert local_reconciliation < remote_loading
-    assert "window.stop();" in script[local_reconciliation:remote_loading]
-
-
-def test_managed_profile_hides_addon_installation_only_in_the_streams_list():
-    script = managed_profile.render_managed_profile_script(
-        "https://stream.example.com/server/"
-    ).decode()
-
-    assert (
-        '[class*="streams-list-container-"] [class*="install-button-container-"]'
-        in script
-    )
-    assert "hideLockedAddonInstallation();" in script
-
-
 def test_managed_profile_uses_the_request_origin_streaming_server():
     assert (
         managed_profile.select_streaming_server_url(

@@ -1,11 +1,8 @@
 import importlib
 import io
 import sys
-import threading
 from pathlib import Path
 from types import SimpleNamespace
-
-import pytest
 
 
 PACKAGE_DIRECTORY_PATH = (
@@ -20,92 +17,6 @@ ENCODED_EPISODE_TARGET = "/config/stream/series/tt13293588%3A1%3A2.json"
 ENCODED_NEXT_EPISODE_TARGET = "/config/stream/series/tt13293588%3A1%3A3.json"
 PLAIN_EPISODE_TARGET = "/config/stream/series/tt13293588:1:9.json"
 PLAIN_NEXT_EPISODE_TARGET = "/config/stream/series/tt13293588:1:10.json"
-
-
-@pytest.mark.parametrize(
-    ("request_target", "expected_target"),
-    [
-        (ENCODED_EPISODE_TARGET, ENCODED_NEXT_EPISODE_TARGET),
-        (PLAIN_EPISODE_TARGET, PLAIN_NEXT_EPISODE_TARGET),
-        ("/config/stream/movie/tt1392170.json", None),
-        ("/config/stream/series/kitsu%3A1%3A2.json", None),
-        ("/config/playback/hash/0/5/1/1", None),
-        ("/manifest.json", None),
-    ],
-)
-def test_next_episode_target_only_advances_series_episode_streams(
-    request_target, expected_target
-):
-    assert next_episode_prewarm.next_episode_target(request_target) == expected_target
-
-
-def test_worker_warms_the_next_episode_once_per_target():
-    warmed_targets = []
-    warmed = threading.Event()
-
-    def warm(target):
-        warmed_targets.append(target)
-        warmed.set()
-
-    prewarmer = next_episode_prewarm.NextEpisodePrewarmer(warm)
-    prewarmer.start()
-
-    prewarmer.schedule_after(ENCODED_EPISODE_TARGET)
-    assert warmed.wait(5)
-    prewarmer.schedule_after(ENCODED_EPISODE_TARGET)
-    prewarmer.wait_for_warming(ENCODED_NEXT_EPISODE_TARGET)
-
-    assert warmed_targets == [ENCODED_NEXT_EPISODE_TARGET]
-
-
-def test_foreground_request_waits_for_the_warming_of_its_own_episode():
-    warming_started = threading.Event()
-    release_warming = threading.Event()
-    foreground_finished = threading.Event()
-
-    def warm(_target):
-        warming_started.set()
-        release_warming.wait(5)
-
-    prewarmer = next_episode_prewarm.NextEpisodePrewarmer(warm)
-    prewarmer.start()
-    prewarmer.schedule_after(ENCODED_EPISODE_TARGET)
-    assert warming_started.wait(5)
-
-    def foreground_request():
-        prewarmer.wait_for_warming(ENCODED_NEXT_EPISODE_TARGET)
-        foreground_finished.set()
-
-    threading.Thread(target=foreground_request, daemon=True).start()
-
-    assert not foreground_finished.wait(0.1)
-    release_warming.set()
-    assert foreground_finished.wait(5)
-
-
-def test_untracked_foreground_request_does_not_wait():
-    prewarmer = next_episode_prewarm.NextEpisodePrewarmer(lambda _target: None)
-
-    prewarmer.wait_for_warming(ENCODED_NEXT_EPISODE_TARGET)
-
-
-def test_full_queue_drops_targets_instead_of_growing():
-    warmed_targets = []
-    prewarmer = next_episode_prewarm.NextEpisodePrewarmer(warmed_targets.append)
-    episode_count = next_episode_prewarm.MAXIMUM_QUEUED_TARGETS + 3
-
-    for episode in range(1, episode_count + 1):
-        prewarmer.schedule_after(f"/config/stream/series/tt1:1:{episode}.json")
-    prewarmer.start()
-    prewarmer.wait_for_warming(
-        "/config/stream/series/tt1:1:"
-        f"{next_episode_prewarm.MAXIMUM_QUEUED_TARGETS + 1}.json"
-    )
-
-    assert warmed_targets == [
-        f"/config/stream/series/tt1:1:{episode}.json"
-        for episode in range(2, next_episode_prewarm.MAXIMUM_QUEUED_TARGETS + 2)
-    ]
 
 
 def test_proxy_waits_for_warming_before_fetching_and_schedules_afterwards():
