@@ -8,6 +8,7 @@
     ./hyprland-command-packages-home-manager.nix
     ./session/wlogout.nix
     ./session/wayland-electron.nix
+    ../quickshell/desktop-shell-selection-home-manager.nix
     ../quickshell/bar/quickshell-bar-home-manager.nix
 
     ./wlr-which-key.nix

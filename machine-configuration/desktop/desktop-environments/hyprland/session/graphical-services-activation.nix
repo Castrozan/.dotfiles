@@ -1,14 +1,20 @@
-{ lib, pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   systemctl = "${pkgs.systemd}/bin/systemctl";
   timeout = "${pkgs.coreutils}/bin/timeout";
   graphicalServiceRestartTimeoutSeconds = 60;
-  graphicalServices = [
-    "mako.service"
-    "xdg-desktop-portal-hyprland.service"
-    "hypr-focus-daemon.service"
-    "clipse.service"
-  ];
+  graphicalServices =
+    lib.optional (config.custom.desktopShell.active == "quickshell-bar") "mako.service"
+    ++ [
+      "xdg-desktop-portal-hyprland.service"
+      "hypr-focus-daemon.service"
+      "clipse.service"
+    ];
 in
 {
   home.activation.startGraphicalServices = lib.hm.dag.entryAfter [ "reloadSystemd" ] ''

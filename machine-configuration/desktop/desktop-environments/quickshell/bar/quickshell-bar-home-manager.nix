@@ -1,4 +1,6 @@
 {
+  config,
+  lib,
   pkgs,
   inputs,
   isNixOS,
@@ -13,19 +15,33 @@ let
     package = pkgs.quickshell;
     binaries = [ "quickshell" ];
   };
+
+  barIsActive = config.custom.desktopShell.active == "quickshell-bar";
 in
 {
-  home.packages = [
-    quickshellPackage
-    pkgs.cava
-  ];
+  home.packages = [ quickshellPackage ] ++ lib.optional barIsActive pkgs.cava;
 
-  xdg.configFile."quickshell/bar" = {
+  custom.desktopShell = lib.mkIf barIsActive {
+    hyprlandBindings = ''
+      bindd = SUPER, J, Toggle left bar, exec, qs -c bar ipc --any-display call -- bar toggle
+      bindd = SUPER, M, Media dashboard, exec, qs -c bar ipc --any-display call dashboard toggle
+      # ipc --any-display is required on upstream-master quickshell: the service registers display as "wayland,wayland-1"
+      # while the Hyprland exec sees only "wayland-1", so the default display filter rejects the match.
+      bindd = SUPER, Q, Launcher, exec, qs -c bar ipc --any-display call launcher toggle
+      bindd = SUPER, A, Notifications, exec, qs -c bar ipc --any-display call sidebar toggle
+    '';
+    sessionServices = [
+      "quickshell-bar.service"
+      "mako.service"
+    ];
+  };
+
+  xdg.configFile."quickshell/bar" = lib.mkIf barIsActive {
     source = ./program-configuration;
     recursive = true;
   };
 
-  systemd.user.services.quickshell-bar = {
+  systemd.user.services.quickshell-bar = lib.mkIf barIsActive {
     Unit = {
       Description = "Quickshell vertical bar";
       After = [ "graphical-session.target" ];

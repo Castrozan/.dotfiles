@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 let
   makoStart = pkgs.writeShellScript "mako-start" ''
     THEME_CONFIG="$HOME/.config/hypr-theme/current/theme/mako.conf"
@@ -17,7 +22,7 @@ in
 {
   home.packages = [ makoctl-without-dbus-activation ];
 
-  systemd.user.services.mako = {
+  systemd.user.services.mako = lib.mkIf (config.custom.desktopShell.active == "quickshell-bar") {
     Unit = {
       Description = "Mako notification daemon";
       Documentation = "https://github.com/emersion/mako";
