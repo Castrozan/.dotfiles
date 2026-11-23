@@ -53,8 +53,9 @@ in
     mkEvalCheck "domain-pi-avatar-plugin"
       (
         toString cfg.home.file.".pi/agent/plugins/avatar".source == toString cfg.agentPlugins.avatarPlugin
-        && lib.hasInfix "${cfg.agentPlugins.avatarPlugin
-        }" cfg.home.activation."registerProductionPiPlugin-.pi/agent".data
+        &&
+          lib.hasInfix (builtins.unsafeDiscardStringContext cfg.agentPlugins.avatarPlugin)
+            cfg.home.activation."registerProductionPiPlugin-.pi/agent".data
       )
       "Pi must load the pinned avatar plugin from its own plugin directory and enable and trust it at activation";
 
