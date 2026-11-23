@@ -25,9 +25,9 @@ Relevant post-v0.2.1 commits:
 
 ## Current mitigations
 
-1. **Release containing the fixes**: all three service modules consume `pkgs.quickshell`, which is `v0.3.0` or later and therefore contains every commit listed above. It substitutes from cache.nixos.org instead of compiling against Qt on each host.
-2. **`QS_DROP_EXPENSIVE_FONTS=1`** in the systemd Environment of every quickshell service. This is upstream's own workaround for font-related scene-graph crashes.
-3. **`Restart=always`, `RestartSec=1s`** on all three services so tmux / Hyprland does not notice a user-visible gap when the in-process restarter fails.
+1. **Release containing the fixes**: the overview and window switcher modules consume `pkgs.quickshell`, which is `v0.3.0` or later and therefore contains every commit listed above. It substitutes from cache.nixos.org instead of compiling against Qt on each host.
+2. **`QS_DROP_EXPENSIVE_FONTS=1`** in the systemd Environment of the overview and window switcher services; `impasto-shell` runs without it. This is upstream's own workaround for font-related scene-graph crashes.
+3. **`Restart=always`, `RestartSec=1s`** on every quickshell service, `impasto-shell` included, so tmux / Hyprland does not notice a user-visible gap when the in-process restarter fails.
 
 ## Monitoring
 

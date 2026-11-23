@@ -35,7 +35,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 20 | Tray: recoloured icons, left click activates, menu in a popout | Tray on the bar, left activates, right opens the menu in the island, middle is the second action (`bar/widgets/TrayWidget.qml:19,104-112`, `bar/island/TrayMenuPanel.qml`) | migrated | Icons come from Papirus panel icons where named (`components/TrayIcon.qml`), patched to the Nix store path in the fork package. |
 | 21 | Clock: HH, MM, day, month stacked | Island rest shows the time; `clock` module and `clockShowsDate`, `clockShowsSeconds`, `clockFormat` (`bar/island/IslandRest.qml`, `bar/modules/ClockModule.qml`) | migrated | Horizontal; set `clockShowsDate` to keep the date visible. |
 | 22 | Status icon: VPN (polls `openvpn-proton-paraguay.service`, click runs `vpn-py`/`vpn-off`) | `vpn` module and control centre tile (fork: `services/VpnService.qml`, `bar/modules/VpnModule.qml`) | migrated | The unit and both commands are Impasto settings (`vpnUnit`, `vpnConnectCommand`, `vpnDisconnectCommand`), seeded for chise. |
-| 23 | Status icon: notification sound toggle (`hypr-notification-sound-toggle`) | Focus (do not disturb) toggle only (`services/ControlsService.qml:269-271`); per-app `notificationRules` | dropped | The helper toggled mako's sound; mako is off while Impasto is active and Impasto has no sound-only toggle. |
+| 23 | Status icon: notification sound toggle (`hypr-notification-sound-toggle`) | Focus (do not disturb) toggle only (`services/ControlsService.qml:269-271`); per-app `notificationRules` | dropped | The helper toggled mako's sound; mako is removed and Impasto has no sound-only toggle. |
 | 24 | Status icon: output device glyph, click toggles mute | `volume` module with detail, device list and mute (`bar/modules/VolumeModule.qml`, `bar/island/SoundDetail.qml`) | migrated | Native through Quickshell's Pipewire service. |
 | 25 | Status icon: microphone, click runs `hypr-microphone-toggle` | Microphone tile and detail (`services/ControlsService.qml:275-279`, `bar/island/MicrophoneDetail.qml`); privacy indicator on the island | migrated | Mute through Pipewire; the old helper is no longer called by the shell. |
 | 26 | Status icon: network, hover popout, click runs `hypr-network` | `network` module and Wi-Fi detail with connect, disconnect, password entry, scan (`bar/modules/NetworkModule.qml`, `bar/island/NetworkDetail.qml`) | migrated | Richer than the old read-only list. |
@@ -101,7 +101,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 66 | OSD volume tinted when no music plays | None | dropped | Bespoke cue. |
 | 67 | OSD on every screen | OSD on the island of the live screen; brightness names the screen that changed (`services/OsdService.qml:92-104`) | migrated differently | One island is live at a time. |
 | 68 | Session menu: fullscreen toggle, lock, exit, suspend, reboot, poweroff | `services/SessionService.qml:24-28,111-131` | migrated differently | No fullscreen toggle (SUPER+F stays in Hyprland). Lock runs hyprlock through `IMPASTO_LOCK_COMMAND` (fork, `services/LockService.qml`). Log out uses the fork's hyprlang `exit`. |
-| 69 | Notification sidebar backed by mako (list, history, dismiss one, dismiss all) | Notification server in the shell with history (`services/NotificationService.qml:43`, `bar/island/controls/NotificationList.qml`, `bar/island/NotificationLayer.qml`, `bar/modules/NotificationsModule.qml`) | migrated | Impasto owns `org.freedesktop.Notifications`; mako is off while Impasto is active. Arrivals show on the island with their buttons. |
+| 69 | Notification sidebar backed by mako (list, history, dismiss one, dismiss all) | Notification server in the shell with history (`services/NotificationService.qml:43`, `bar/island/controls/NotificationList.qml`, `bar/island/NotificationLayer.qml`, `bar/modules/NotificationsModule.qml`) | migrated | Impasto owns `org.freedesktop.Notifications`; mako is removed. Arrivals show on the island with their buttons. |
 | 70 | Sidebar keyboard: j/k, Enter, d, Esc | Not verified in `NotificationList.qml` | needs work | Check live; if absent, a small fork change adds the keys. |
 | 71 | Utilities: Wi-Fi toggle | `services/ControlsService.qml:245` | migrated | Toggles block. |
 | 72 | Utilities: Bluetooth power | `services/ControlsService.qml:252` | migrated | Toggles block. |
@@ -114,7 +114,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
-| 77 | Colours from `quickshell-bar-colors.json`, rendered by the hypr-theme pipeline | Adaptive palette sampled from the wallpaper, or one of nine fixed palettes (`services/ThemeService.qml`, `scripts/theme_manager.py`) | migrated differently | Impasto colours itself from the wallpaper it set; `themeTargets: []` stops it writing other programs. The template stays because the overview reads it. |
+| 77 | Colours from `quickshell-bar-colors.json`, rendered by the hypr-theme pipeline | Adaptive palette sampled from the wallpaper, or one of nine fixed palettes (`services/ThemeService.qml`, `scripts/theme_manager.py`) | migrated differently | hypr-theme renders `impasto-palette.json`, which Impasto reads through `paletteFile`; `themeTargets: []` stops it writing other programs. The overview reads its own `quickshell-overview-colors.json`. |
 | 78 | Font hardcoded to JetBrainsMono Nerd Font | `fontFamily` Inter, `fontMono` JetBrainsMono Nerd Font Mono (`services/SettingsService.qml`) | migrated differently | Configurable; set `fontFamily` to keep the old face. |
 | 79 | `bar toggle` on SUPER+J | `bar peek` (fork, `Commands.qml`), `bar pin`, `bar toggle` (zen) | migrated | SUPER+J shows the hidden bar for three seconds; pressing again hides it. |
 | 80 | `dashboard toggle` on SUPER+M | Global shortcut `quickshell:media` (`shell.qml`, `services/ShortcutService.qml:39-79`) | migrated differently | Opens the media panel rather than a tabbed dashboard. |
@@ -126,13 +126,13 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 86 | `popout toggle/show/hide` (no caller) | `panel open <name>` with wifi, bluetooth, sound, microphone, brightness, nightlight, power (`Commands.qml:252`) | migrated | Same idea, named panels. |
 | 87 | SUPER+O overview and SUPER+TAB switcher services | Unchanged; Impasto's own overview panel (`bar/island/OverviewPanel.qml`) stays unbound | migrated | Lucas's services keep running beside Impasto. |
 | 88 | SUPER+SPACE fuzzel | Unchanged | migrated | Not part of the shell. |
-| 89 | Tests and probes that name `quickshell-bar` (`runtime.bats`, `perf-runtime.bats`, desktop benchmarks, bar QML tests) | `runtime.bats` reads the active shell's units from `~/.config/hypr-shell/autostart.conf` | migrated differently | The bar's perf tests skip while the bar is not the active shell; its QML tests stay while the previous bar is kept. No perf tests cover Impasto yet. |
+| 89 | Tests and probes that name `quickshell-bar` (`runtime.bats`, `perf-runtime.bats`, desktop benchmarks, bar QML tests) | `runtime.bats` reads the active shell's units from `~/.config/hypr-shell/autostart.conf` | migrated differently | The bar's perf and QML tests left with the bar. No perf tests cover Impasto yet. |
 
 ## Gaps that remain
 
 - User card (row 38): the package count reads pacman, so it stays empty on NixOS.
 - Notification list keyboard keys (row 70): not checked live.
-- Notification sound toggle (row 23): `hypr-notification-sound-toggle` and `makoctl` do nothing while mako is off;
+- Notification sound toggle (row 23): no control in Impasto runs `hypr-notification-sound-toggle`;
   Focus is the single switch.
 - Impasto's Settings pages for keys, compositor look and monitor arrangement do nothing on a hyprlang config; the
   dotfiles own those.
