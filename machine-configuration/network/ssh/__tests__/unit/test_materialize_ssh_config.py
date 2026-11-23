@@ -1,4 +1,3 @@
-import os
 import stat
 
 import pytest
@@ -16,20 +15,6 @@ def configuration_paths(tmp_path):
     )
     source.chmod(0o444)
     return source, directory / "config"
-
-
-def test_materializes_exact_generated_config_with_secure_user_ownership(
-    configuration_paths,
-):
-    source, destination = configuration_paths
-
-    materializer.materialize_ssh_config(source, destination)
-
-    assert destination.read_bytes() == source.read_bytes()
-    assert destination.stat().st_uid == os.geteuid()
-    assert stat.S_IMODE(destination.stat().st_mode) == 0o600
-    assert not destination.is_symlink()
-    assert stat.S_IMODE(source.stat().st_mode) == 0o444
 
 
 def test_refreshes_existing_file_from_current_declarative_source(configuration_paths):

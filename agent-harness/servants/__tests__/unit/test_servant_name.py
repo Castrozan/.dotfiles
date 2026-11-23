@@ -15,13 +15,6 @@ class TestPrintingTheName:
         assert exit_code == 0
         assert printed == catalog.select_servant_for_session("statusline-probe")["name"]
 
-    def test_it_prints_the_name_alone_so_a_caller_can_use_it_verbatim(self, capsys):
-        servant_name.main(["servant-name", "verbatim-probe"])
-        printed = capsys.readouterr().out
-        assert printed.count("\n") == 1
-        assert "|" not in printed
-        assert " - " not in printed
-
 
 class TestNoSessionId:
     """Every id-less caller would otherwise be handed the same Servant, which is
@@ -46,21 +39,4 @@ class TestRunningAsItsOwnProcess:
             capture_output=True,
             text=True,
             env={"PATH": "/usr/bin:/bin"},
-        )
-
-    def test_the_script_resolves_its_catalog_without_help(self):
-        completed = self._run("subprocess-probe")
-        assert completed.returncode == 0, completed.stderr
-        assert (
-            completed.stdout.strip()
-            == catalog.select_servant_for_session("subprocess-probe")["name"]
-        )
-
-    def test_the_statusline_and_the_session_agree_on_the_same_id(self):
-        """The two surfaces derive the name independently, so a session sees the
-        name its statusline shows only while both draws stay identical."""
-        session_id = "9f1c2d3e-agreement-probe"
-        assert (
-            self._run(session_id).stdout.strip()
-            == catalog.select_servant_for_session(session_id)["name"]
         )

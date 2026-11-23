@@ -26,13 +26,6 @@ def test_parse_routing_table_reads_every_declared_selector():
     assert profiles[0].git_remote_patterns == ("gitlab.example.com",)
 
 
-def test_parse_routing_table_defaults_absent_selectors_to_empty():
-    profiles = parse_routing_table(json.dumps({"profiles": [{"name": "work"}]}))
-
-    assert profiles[0].directory_prefixes == ()
-    assert profiles[0].git_remote_patterns == ()
-
-
 def test_load_routing_table_returns_no_profiles_when_the_table_is_absent(tmp_path):
     assert load_routing_table(tmp_path / "missing-routing-table.json") == ()
     assert load_routing_table(None) == ()

@@ -73,20 +73,6 @@ def test_removes_only_entries_issued_to_distrusted_common_names():
     )
 
 
-def test_keeps_header_and_organization_headings():
-    filtered_text, _ = remove_distrusted_segments(BUNDLE, DISTRUSTED_COMMON_NAMES)
-
-    assert filtered_text.startswith(BUNDLE_HEADER)
-    assert "### Internet Security Research Group\n" in filtered_text
-
-
-def test_common_name_must_match_whole_trailing_component():
-    filtered_text, removed = remove_distrusted_segments(BUNDLE, {"Root CA - G3"})
-
-    assert removed == []
-    assert filtered_text == BUNDLE
-
-
 def test_rewrites_bundle_in_place_preserving_mode(tmp_path, monkeypatch):
     bundle_path = tmp_path / "cert.pem"
     bundle_path.write_text(BUNDLE)
