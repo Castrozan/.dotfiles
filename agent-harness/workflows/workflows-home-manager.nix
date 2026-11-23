@@ -78,13 +78,7 @@ let
     export PATH="${workflowRuntimePath}:$PATH"
     exec ${pkgs.python312}/bin/python3 ${./scripts}/wait_for_dotfiles_workflow.py "$@"
   '';
-in
-{
-  home.packages = [
-    archon
-    workflowWaitCommand
-  ]
-  ++ map mkWorkflowCommand [
+  workflowCommands = [
     {
       commandName = "dotfiles-fix-loop";
       workflowName = "dotfiles-fix-loop";
@@ -125,9 +119,43 @@ in
     }
   ];
 
+  workflowCommandCatalogEntry = workflowCommand: ''
+    yq --output-format=json --indent=0 \
+      '{"command": "${workflowCommand.commandName}", "purpose": (.description | split(". ") | .[0] | sub("\.\s*$", ""))}' \
+      ${dotfilesWorkflowPack}/${workflowCommand.workflowName}/${workflowCommand.workflowName}.yaml
+  '';
+
+  workflowCommandCatalog =
+    pkgs.runCommand "dotfiles-workflow-commands.json"
+      {
+        nativeBuildInputs = [
+          pkgs.yq-go
+          pkgs.jq
+        ];
+      }
+      ''
+        {
+        ${lib.concatMapStrings workflowCommandCatalogEntry workflowCommands}
+        } | jq --slurp . > "$out"
+      '';
+
+  workflowListCommand = pkgs.writeShellScriptBin "dotfiles-workflows" ''
+    exec ${pkgs.jq}/bin/jq --raw-output '.[] | "\(.command)\t\(.purpose)"' ${workflowCommandCatalog}
+  '';
+in
+{
+  home.packages = [
+    archon
+    workflowWaitCommand
+    workflowListCommand
+  ]
+  ++ map mkWorkflowCommand workflowCommands;
+
   home.file = {
     ".archon/config.yaml".source = archonConfiguration;
     ".archon/plugins".source = "${archon}/share/archon/plugins";
     ".archon/workflows/dotfiles".source = dotfilesWorkflowPack;
   };
+
+  xdg.dataFile."dotfiles/workflow-commands.json".source = workflowCommandCatalog;
 }

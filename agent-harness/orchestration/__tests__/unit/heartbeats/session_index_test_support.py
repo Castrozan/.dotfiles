@@ -21,6 +21,10 @@ Lucas's avatar on chise; results stay in the dotfiles repo.
 
 - The wake word reaches the avatar
 
+## Process
+
+None: one-off removal with no repeatable shape
+
 ## Constraints
 
 - Leave the microphone settings alone.

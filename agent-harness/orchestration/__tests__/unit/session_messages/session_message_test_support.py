@@ -11,6 +11,7 @@ def brief(
     done_when="- Rehearsal evidence comes from GitLab on the VPN",
     words="",
     context="Lucas's rehearsal on kira; results stay on the work GitLab.",
+    process="None: one-off discovery of what the sandbox blocks",
 ):
     return f"""# Brief: GitLab evidence for the rehearsal
 
@@ -25,6 +26,10 @@ The rehearsal reads the work GitLab without glab inside its sandbox.
 ## Done when
 
 {done_when}
+
+## Process
+
+{process}
 
 ## Constraints
 

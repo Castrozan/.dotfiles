@@ -15,15 +15,18 @@ Tidy only what you launched: closing a pane kills the agent in it, and one you d
 
 ### Brief template
 
-Write every brief as a file with these headings in this order: Goal, Context, Done when, Constraints, Workspace and
-worktree, Lucas's words, Contract. Goal and Done when state outcomes, and the session plans the work. Context says whose
-work it is, where its results may be published, and which requirements are hard and which are open, since a session
-missing them builds a sound answer to the wrong problem. Lucas's words carries what he said verbatim, never a summary.
-The peer shares none of your context, so the Contract section always states the rules below.
+Write every brief as a file with these headings in this order: Goal, Context, Done when, Process, Constraints,
+Workspace and worktree, Lucas's words, Contract. Goal and Done when state outcomes, and the session plans the work.
+Context says whose work it is, where its results may be published, and which requirements are hard and which are open,
+since a session missing them builds a sound answer to the wrong problem. Lucas's words carries what he said verbatim,
+never a summary. The peer shares none of your context, so the Contract section always states the rules below.
+
+Process holds one line: `Workflow: <command>` from `dotfiles-workflows` when the work is repeatable and checkable,
+`Design: <where the designed process lives>`, or `None: <why no workflow fits>` for discovery.
 
 Send it with `orchestrator dispatch <target> --brief <file>`, adding `--host <ssh alias>` for another machine. It copies
-the brief there and refuses one missing a heading or its Context, ordering steps outside Lucas's words, or lacking the
-contract commands.
+the brief there and refuses one missing a heading, its Context or its Process line, ordering steps outside Lucas's
+words, or lacking the contract commands.
 
 The peer files each decision it cannot make with `orchestrator decision file --to <your name>` instead of asking in its
 pane or through a question tool, and keeps working on whatever the decision does not block. It keeps the

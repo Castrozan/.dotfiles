@@ -25,6 +25,7 @@ from ..peer_messenger import (
 from ..record_store import all_records, record_path, state_directory
 from ..releases.released_sessions import SessionReleased, require_unreleased_target
 from .brief_template import brief_goal, brief_problems
+from .workflow_catalog import installed_workflow_purposes
 
 FACT_CHARACTERS = 200
 FACT_ADVICE = "relay one fact and let the session work out what follows from it"
@@ -108,7 +109,7 @@ def dispatched_entry(arguments, brief: Path, goal: str, orchestrator: str) -> di
 def command_dispatch(arguments: argparse.Namespace) -> int:
     brief = Path(arguments.brief).expanduser().resolve()
     text = brief.read_text(encoding="utf-8")
-    problems = brief_problems(text, arguments.host)
+    problems = brief_problems(text, arguments.host, installed_workflow_purposes())
     for problem in problems:
         print(f"orchestrator dispatch: {brief}: {problem}", file=sys.stderr)
     if problems:

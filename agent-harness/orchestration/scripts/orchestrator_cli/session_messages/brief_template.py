@@ -3,10 +3,13 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
+from .process_declaration import process_problems
+
 TEMPLATE_HEADINGS = (
     "Goal",
     "Context",
     "Done when",
+    "Process",
     "Constraints",
     "Workspace and worktree",
     "Lucas's words",
@@ -25,6 +28,7 @@ CONTRACT_COMMANDS = (
     "orchestrator decision file --to",
     "orchestrator heartbeat file --to",
 )
+PROCESS_HEADING = "Process"
 SECTION_HEADING = re.compile(r"^##\s+(?P<title>.+?)\s*$")
 FENCE_MARKER = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})")
 ORDERED_STEPS = re.compile(
@@ -107,14 +111,18 @@ def ordered_step_problems(sections: list[BriefSection]) -> list[str]:
     ]
 
 
-def section_prose(sections: list[BriefSection], title: str) -> str:
-    return " ".join(
+def section_lines(sections: list[BriefSection], title: str) -> list[str]:
+    return [
         line.strip()
         for section in sections
         if heading_key(section.title) == heading_key(title)
         for _, line in section.prose_lines
         if line.strip()
-    )
+    ]
+
+
+def section_prose(sections: list[BriefSection], title: str) -> str:
+    return " ".join(section_lines(sections, title))
 
 
 def brief_goal(text: str) -> str:
@@ -146,11 +154,14 @@ def contract_problems(
     ]
 
 
-def brief_problems(text: str, reply_host: str | None) -> list[str]:
+def brief_problems(
+    text: str, reply_host: str | None, workflow_purposes: dict[str, str]
+) -> list[str]:
     sections = brief_sections(text)
     return [
         *heading_problems(sections),
         *presence_problems(sections),
+        *process_problems(section_lines(sections, PROCESS_HEADING), workflow_purposes),
         *ordered_step_problems(sections),
         *contract_problems(sections, reply_host),
     ]
