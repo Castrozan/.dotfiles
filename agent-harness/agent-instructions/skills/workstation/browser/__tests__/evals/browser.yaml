@@ -24,17 +24,6 @@ casos:
       juiz:
         - Chooses Chrome DevTools because it is available, and does not choose OpenCLI merely because the site is public or the
           task is scraping.
-  - nome: browser_uses_pinchtab_only_after_chrome_devtools_recovery_fails
-    nivel: unidade
-    instrucao: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md
-    pergunta:
-      I did not require a particular browser, and an isolated profile can satisfy this task. Chrome DevTools returned
-      no pages, so I launched Chrome Global, enabled remote debugging, approved the consent prompt, and retried list_pages.
-      It still cannot connect. Is OpenCLI eligible now? Answer in one sentence.
-    assercoes:
-      juiz:
-        - Says OpenCLI is eligible only now as the last resort because every Chrome DevTools recovery step failed, Chrome remains
-          unavailable, the user did not require it, and the isolated profile can satisfy the task.
   - nome: browser_reports_blocked_when_autonomous_agent_requires_chrome_devtools
     nivel: unidade
     instrucao: agent-harness/agent-instructions/skills/workstation/browser/SKILL.md

@@ -69,8 +69,8 @@ class TestCiOwnedSuiteRunBlocking:
     @pytest.mark.parametrize(
         "command",
         [
-            "pytest agent-harness/quality/evaluations/__tests__/unit/suites/test_adversarial_suite_is_enforced.py",
-            "pytest agent-harness/quality/evaluations/__tests__/unit/suites/test_adversarial_suite_is_enforced.py -k hooks",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/suites/test_skill_routing_suite.py",
+            "pytest agent-harness/quality/evaluations/__tests__/unit/suites/test_skill_routing_suite.py -k hooks",
             "pytest -q machine-configuration/desktop/appearance/screensaver/ambient-canvas/__tests__/unit/scenes/test_ambient_canvas_media_arguments.py",
             "pytest -q agent-harness/hooks/runtime/__tests__/unit/test_example.py",
             "pytest -k 'test_name or other_name' -m slow --rootdir . -q a.py",

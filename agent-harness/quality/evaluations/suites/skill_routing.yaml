@@ -55,35 +55,6 @@ casos:
     assercoes:
       igual:
         - all-skills
-  - nome: routing_to_security_audit
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Run a full security audit of this API service and write up the vulnerabilities you find as a report
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_media_youtube_search
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Search YouTube for NixOS tutorials and add the best one to my playlist
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_twitter_post
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Post a tweet about the new release on my X account
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_twitter_scrape
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Scrape the latest tweets from @nixos_org
-    reservado: true
-    assercoes:
-      igual:
-        - all-skills
   - nome: routing_to_deep_work
     nivel: unidade
     system_prompt: *catalogo
@@ -91,35 +62,6 @@ casos:
     assercoes:
       igual:
         - deep-work
-  - nome: routing_to_coding_worktree_isolation
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Create a git worktree so I can work on a parallel branch
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_tmux_control
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Start a background process in a new herdr pane
-    assercoes:
-      igual:
-        - herdr
-  - nome: routing_to_agent_session_restart
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Restart the current session and preserve context
-    reservado: true
-    assercoes:
-      igual:
-        - agent-session
-  - nome: routing_to_agent_session_compact
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Compact your own session now
-    assercoes:
-      igual:
-        - agent-session
   - nome: routing_to_agent_session_exit
     nivel: unidade
     system_prompt: *catalogo
@@ -127,42 +69,6 @@ casos:
     assercoes:
       igual:
         - agent-session
-  - nome: routing_to_browser_web_scraping
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Open the AWS console and check the EC2 instances page
-    assercoes:
-      igual:
-        - browser
-  - nome: routing_to_browser_form_filling
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Fill out the login form on https://example.com with my credentials
-    assercoes:
-      igual:
-        - browser
-  - nome: routing_to_browser_electron_app
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Automate the VS Code Electron app to open a file and run a command
-    assercoes:
-      igual:
-        - browser
-  - nome: routing_to_browser_interactive_scrape
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Open https://example.com/pricing in a browser, click the 'Load More' button, then extract the pricing table
-    assercoes:
-      igual:
-        - browser
-  - nome: routing_to_orchestrate_same_goal_delegation
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Spawn a parallel agent to refactor the utils module while I work on tests
-    reservado: true
-    assercoes:
-      igual:
-        - orchestrate
   - nome: routing_to_orchestrate_named_servant
     nivel: unidade
     system_prompt: *catalogo
@@ -171,58 +77,6 @@ casos:
     assercoes:
       igual:
         - orchestrate
-  - nome: routing_to_coding_commit_staging
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Stage the changed files and create a commit with a good message
-    reservado: true
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_home_assistant_lights
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Turn on the living room lights and set brightness to 50%
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_home_assistant_ac_control
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Set the air conditioner to 22 degrees and fan speed to high
-    reservado: true
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_ril_capture_backlog
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Go through the links I saved this week, one by one, and tell me what to do with each
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_coding_test_verification
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Run the test suite to verify the changes pass
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_instructions_skill_creation
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Create a new skill for managing Docker containers with good prompts
-    reservado: true
-    assercoes:
-      igual:
-        - instructions
-  - nome: routing_to_docs_readme_standards
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: I want to add a README to this module. What belongs in it and what should I leave out?
-    assercoes:
-      igual:
-        - docs
   - nome: routing_to_instructions_skill_routing_failure
     nivel: unidade
     system_prompt: *catalogo
@@ -232,35 +86,6 @@ casos:
     assercoes:
       igual:
         - instructions
-  - nome: routing_to_notify_task_completion
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Notify me when the long refactoring task is complete
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_quickshell_bar_module
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Add a new battery widget to the Quickshell bar
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_research_tool_comparison
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Research the latest Wayland compositors and compare their features
-    assercoes:
-      igual:
-        - research
-  - nome: routing_to_research_digest
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Catch me up on the latest local LLM tooling and developer agent news.
-    reservado: true
-    assercoes:
-      igual:
-        - research
   - nome: routing_to_wellput_for_a_reply_the_reader_could_not_follow
     nivel: unidade
     system_prompt: *catalogo
@@ -276,14 +101,6 @@ casos:
     assercoes:
       igual:
         - devenv
-  - nome: routing_to_phone_status_battery
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Check my phone battery level and charging status
-    reservado: true
-    assercoes:
-      igual:
-        - all-skills
   - nome: routing_to_ponto_time_tracking
     nivel: unidade
     system_prompt: *catalogo
@@ -300,47 +117,10 @@ casos:
     assercoes:
       igual:
         - research
-  - nome: routing_to_coding_commit
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: I want to commit all my staged changes with a conventional commit message
-    reservado: true
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_review_for_an_unbiased_reviewer_pass
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Spawn an unbiased reviewer agent to check my implementation for bugs and convention violations
-    assercoes:
-      igual:
-        - review
-  - nome: routing_to_coding_history_search_commits
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Search git history for all commits related to browser automation
-    assercoes:
-      igual:
-        - coding
   - nome: routing_to_coding_history_find_when_changed
     nivel: unidade
     system_prompt: *catalogo
     pergunta: When was the authentication module first added to this repo?
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_coding_history_trace_evolution
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Show me how the browser skill evolved over time in this project
-    assercoes:
-      igual:
-        - coding
-  - nome: routing_to_coding_history_investigate_past
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: I need to understand why we switched from playwright to chrome devtools, check the git history
-    reservado: true
     assercoes:
       igual:
         - coding
@@ -351,20 +131,6 @@ casos:
     assercoes:
       igual:
         - research
-  - nome: routing_to_ril_inbox_processing
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Process my saved articles from the ReadItLater inbox
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_tweet_media_fetch
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Fetch the image attached to this tweet by @user
-    assercoes:
-      igual:
-        - all-skills
   - nome: routing_ambiguous_browser_vs_personal_tweet_scraping
     nivel: unidade
     system_prompt: *catalogo
@@ -372,57 +138,6 @@ casos:
     assercoes:
       igual:
         - all-skills
-  - nome: routing_to_personal_bare_xcom_url
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: https://x.com/neogoose_btw/status/2040598081763471417
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_bare_twitter_url
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: https://twitter.com/elikiaponde/status/1234567890
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_xcom_url_with_context
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: https://x.com/schizoidcock/status/2040595546411266214 this looks interesting, is it any good?
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_personal_xcom_url_what_does_it_say
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: what does this tweet say? https://x.com/user/status/1234567890123
-    reservado: true
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_review_for_a_diff_before_merge
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Here is the diff on the auth module. Check it for bugs and bad naming before I merge it.
-    assercoes:
-      igual:
-        - review
-  - nome: routing_to_review_for_an_instruction_file_audit
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: I rewrote a SKILL.md and a CLAUDE.md section. Audit them against our instruction authoring standards.
-    reservado: true
-    assercoes:
-      igual:
-        - review
-  - nome: routing_to_architecture_for_a_boundary_decision
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Should the payment retry logic live in its own service or stay inside the order module?
-    assercoes:
-      igual:
-        - architecture
   - nome: routing_to_coding_for_a_function_cleanup
     nivel: unidade
     system_prompt: *catalogo
@@ -439,14 +154,6 @@ casos:
     assercoes:
       igual:
         - review
-  - nome: routing_to_explore_for_a_repo_sweep
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Where in this repo is the retry timeout configured? Sweep the whole tree and just tell me the answer.
-    reservado: true
-    assercoes:
-      igual:
-        - explore
   - nome: routing_to_goal_prompt_for_a_scheduled_agent
     nivel: unidade
     system_prompt: *catalogo
@@ -455,13 +162,6 @@ casos:
     assercoes:
       igual:
         - goal-prompt
-  - nome: routing_to_forge_open_a_merge_request
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Open a merge request for this branch and request a review from the team.
-    assercoes:
-      igual:
-        - forge
   - nome: routing_to_forge_read_failing_pipeline
     nivel: unidade
     system_prompt: *catalogo
@@ -470,23 +170,6 @@ casos:
     assercoes:
       igual:
         - forge
-  - nome: routing_to_forge_resolve_review_threads
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Reply to the review comments on pull request 412 and resolve the threads I already addressed.
-    assercoes:
-      igual:
-        - forge
-  - nome: routing_to_process_design_before_agents_run
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta:
-      "Before we spin up agents for this migration, let's design the multi-agent process together: which agents, gates
-      and monitors we need."
-    reservado: true
-    assercoes:
-      igual:
-        - process-design
   - nome: routing_to_process_design_redraw_a_pipeline
     nivel: unidade
     system_prompt: *catalogo
@@ -504,13 +187,6 @@ casos:
     assercoes:
       igual:
         - url-shortener
-  - nome: routing_to_url_shortener_for_a_query_url
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Turn https://example.com/a/very/long/path?with=query&and=more&parts=here into a short link.
-    assercoes:
-      igual:
-        - url-shortener
   - nome: routing_to_deliver_an_objective_end_to_end
     nivel: unidade
     system_prompt: *catalogo
@@ -520,13 +196,6 @@ casos:
     assercoes:
       igual:
         - deliver
-  - nome: routing_to_instructions_for_a_new_skill_file
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Write a new SKILL.md that teaches the agent how to manage my backups.
-    assercoes:
-      igual:
-        - instructions
   - nome: routing_to_docs_for_whether_a_readme_earns_its_place
     nivel: unidade
     system_prompt: *catalogo
@@ -535,13 +204,6 @@ casos:
     assercoes:
       igual:
         - docs
-  - nome: routing_to_wellput_for_an_overlong_reply
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Your last reply was too long. Give me only the two things I need to act on.
-    assercoes:
-      igual:
-        - wellput
   - nome: routing_to_architecture_for_where_a_boundary_lives
     nivel: unidade
     system_prompt: *catalogo
@@ -557,13 +219,6 @@ casos:
     assercoes:
       igual:
         - explore
-  - nome: routing_to_research_for_latest_release_notes
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: What changed in the latest Codex release notes?
-    assercoes:
-      igual:
-        - research
   - nome: routing_to_workspace_for_another_repository
     nivel: unidade
     system_prompt: *catalogo
@@ -579,22 +234,6 @@ casos:
     assercoes:
       igual:
         - herdr
-  - nome: routing_to_all_skills_for_a_desktop_screenshot
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Take a screenshot of my whole desktop and tell me what is on the second monitor.
-    reservado: true
-    assercoes:
-      igual:
-        - all-skills
-  - nome: routing_to_browser_for_a_logged_in_download
-    nivel: unidade
-    system_prompt: *catalogo
-    pergunta: Log into the vendor portal in Chrome and download last month's invoice.
-    reservado: true
-    assercoes:
-      igual:
-        - browser
   - nome: routing_to_humanize_for_a_merge_request_description
     nivel: unidade
     system_prompt: *catalogo

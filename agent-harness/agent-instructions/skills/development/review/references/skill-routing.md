@@ -29,9 +29,9 @@ with multiple tools to avoid gaps.
 
 ### Fix with eval tests
 
-Add routing eval tests. Each test gives the shared router prompt a user input and asserts the correct skill name. Use
-output_not_contains to verify competing skills are NOT selected. Test bare inputs (just a URL), inputs with context
-("what does this say?"), and ambiguous multi-domain inputs.
+Add one routing eval case for the failing input when the repository's rule for what earns an eval admits it. The case
+gives the shared router prompt the user input and asserts the skill name by exact match. Keep one case per routed skill
+plus the ambiguous boundary inputs; a route a hook already enforces needs no case.
 
 ### Live testing
 

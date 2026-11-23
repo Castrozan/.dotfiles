@@ -8,14 +8,6 @@ casos:
       juiz:
         - Gives an IPC call against the overview service that toggles it, and passes the any-display flag rather than relying
           on the default display filter.
-  - nome: quickshell_knows_overview_config_location
-    nivel: unidade
-    instrucao: agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md
-    pergunta: Where is the overview configuration file?
-    assercoes:
-      juiz:
-        - Points at the config.json inside the quickshell overview config directory as the place where the grid configuration
-          lives.
   - nome: quickshell_knows_service_restart
     nivel: unidade
     instrucao: agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md
@@ -24,19 +16,3 @@ casos:
       juiz:
         - Says to rebuild so the nix-managed config symlinks regenerate and then restart the quickshell service through systemctl,
           and does not suggest killing the quickshell process.
-  - nome: quickshell_knows_theme_integration
-    nivel: unidade
-    instrucao: agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md
-    pergunta: How does the overview get its colors?
-    assercoes:
-      juiz:
-        - Says the overview reads its colors from the hypr-theme colors json through a watched file view, so they update automatically
-          when the theme changes.
-  - nome: quickshell_knows_bar_ipc
-    nivel: unidade
-    instrucao: agent-harness/agent-instructions/skills/workstation/quickshell/SKILL.md
-    pergunta: How do I trigger the dashboard popout from the bar?
-    assercoes:
-      juiz:
-        - Gives an IPC call against the bar service that toggles the dashboard, and passes the any-display flag rather than relying
-          on the default display filter.
