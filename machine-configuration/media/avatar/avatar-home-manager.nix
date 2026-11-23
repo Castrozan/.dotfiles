@@ -20,6 +20,11 @@ in
   services.avatar = {
     enable = true;
     hostName = hostname;
+    rustSlices = lib.optionals (hostname == "chise") [
+      "doctor"
+      "audio"
+      "transcribe"
+    ];
     topology = {
       host = "chise";
       machines = [
