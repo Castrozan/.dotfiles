@@ -20,10 +20,6 @@ _run_configure() {
 	run bash "$SCRIPT_UNDER_TEST"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "creates a native install-method file when .claude.json is absent" {
 	_run_configure
 	[ "$status" -eq 0 ]

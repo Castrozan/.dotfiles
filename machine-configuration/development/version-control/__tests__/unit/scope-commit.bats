@@ -29,14 +29,6 @@ run_hook_after_staging_path_with_message() {
 	return "$hook_status"
 }
 
-@test "is executable" {
-	assert_is_executable
-}
-
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "prefixes subject with machine scope for system module changes" {
 	run run_hook_after_staging_path_with_message "machine-configuration/machines/kira/system/default.nix" "fix: invert scroll"
 	[ "$status" -eq 0 ]

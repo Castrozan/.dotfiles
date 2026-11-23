@@ -96,7 +96,7 @@ While editing, run the exact file instead of a tier — the loop is faster and t
 failure stays local to what you changed:
 
 ```bash
-bats machine-configuration/operating-system/power-management/__tests__/unit/setup-lid-switch-ignore.bats
+bats machine-configuration/development/development-utilities/__tests__/integration/killport.bats
 pytest machine-configuration/development/testing/__tests__/unit/test_dotfiles_perf.py
 ```
 
@@ -233,121 +233,83 @@ the number of `../` segments is the module's nesting depth (a test in
 script under test through a `conftest.py` at the module's `__tests__/` level, which
 applies to all three subdirectories.
 
-## Writing Bin Script Tests
+## What earns a test
 
-Test filename must match script name: a `scripts/foo` under a capability is covered by `<capability>/__tests__/unit/foo.bats` (or `integration/` / `e2e/` for the heavier tiers).
+A test costs runtime on every push and attention on every change it breaks for. One enters the suite, and stays in it,
+only while all seven conditions hold. This is the line for a new test and the cut for an old one.
 
-The shared helper at `repository/verification/helpers/bash-script-assertions.bash` auto-resolves the script path from the test filename, searching the `scripts/` directories under `machine-configuration/` and then under `agent-harness/agent-instructions/skills/`.
+1. **It discriminates.** Break the behavior it names and it fails. A test that still passes with the behavior broken
+   leaves; prove it by breaking the code once before keeping the test.
+2. **It guards a cost.** The regression would lose data, break a rebuild or a deployed command, corrupt state another
+   tool reads, or cost a debugging session to rediscover. Wording, layout and incidental structure do not pay.
+3. **It does not repeat another gate.** What shellcheck, a linter, a type checker, the Nix evaluation or the build
+   already proves needs no test, and neither does an assertion that the source contains a given text: it passes exactly
+   while the text is there and says nothing about behavior. A rule over source text belongs in lint. Whoever deletes
+   such a test names the gate that covers it.
+4. **It charges one behavior.** The name states it and every assertion serves it.
+5. **It runs at its own level.** `unit/` decides one behavior with no system state; anything that needs a process, a
+   service or a container is `integration/`; a live machine is `e2e/`.
+6. **It is unique.** No other test charges the same behavior. Of two, the one that discriminates better stays; a
+   small finite input space is one exhaustive test and an open one is one property test.
+7. **It fits the budget.** `repository/verification/quality/test-budget/budget.json` holds the number of pytest,
+   bats and QML tests. A new test over the budget removes another that pays less; the budget never rises, and it is
+   lowered in the same change that removes a test.
 
-### Minimal template
+A test that fails intermittently has its cause fixed in the change that notices it, or leaves; splitting it or
+retrying it is not a fix. A test that always fails has the test or the code wrong: correct that one, never skip it.
+Code with no test that pays stays without one and shows as uncovered; never write a test to raise coverage.
+
+`dotfiles-lint` enforces the budget and runs shellcheck over every tracked shell script, with or without an extension.
+Conditions 1 to 6 are checked in review of the change, against this section.
+
+## What earns an eval
+
+Each eval case costs model tokens and minutes on every measurement. The same seven conditions apply to a case of an AI
+instruction, read this way:
+
+1. **It discriminates.** Without the instruction the agent would get it wrong; a case that passes a paired control run
+   (`dotfiles-evals run --pareado`) leaves. In its wording the question does not carry the deciding fact, does not
+   offer the act as a yes or no, and does not charge practice any model follows unprompted.
+2. **It guards a costly decision.** A gate that waits for a person, a routing choice, or an external or irreversible
+   write. Style, wording and justification do not pay.
+3. **It does not repeat code.** A rule a hook, a lint or a test already enforces leaves the suite, and the deletion
+   names that check.
+4. **It charges one behavior.** At most two judge criteria, each one claim about the observable act, with no clause
+   that grades an explanation, no text copied from the instruction and no negative about something the question did
+   not provoke. A required substring is one exact token; a forbidden one is the specific wrong answer.
+5. **It runs at its own level.** A unit case charges one decision in one answer; an act or an artifact needs an
+   integration case with a staged environment.
+6. **It is unique.** No other case charges the same act.
+7. **It fits the budget.** A full measurement stays within the execution budget. A new case over it removes another
+   or lowers a level's executions; the budget never rises.
+
+A case that passes between 20% and 93% of its runs in two measurements has its cause fixed in the same change or
+leaves. A case that always fails has the case or the instruction wrong: correct that one, never the floor. An
+instruction with no case that pays stays unmeasured; never invent a case to cover it. The only case of a critical
+category is rewritten to one criterion before it is deleted.
+
+`agent-harness/quality/evaluations/__tests__/unit/suites/test_every_case_pays_for_its_execution.py` enforces the
+criteria ceiling, the justification and substring rules, and the execution budget. The other conditions are checked
+in review of the change, against this section.
+
+## Writing script tests
+
+A `scripts/foo` under a capability is tested by `<capability>/__tests__/<tier>/foo.bats`.
+`repository/verification/helpers/bash-script-assertions.bash` resolves the script from the test filename and provides
+`run_script_under_test [args...]`, `assert_fails_with "pattern" [args...]` and
+`assert_succeeds_with "pattern" [args...]`; all three execute the script.
 
 ```bash
 #!/usr/bin/env bats
 
 load '../../../../../repository/verification/helpers/bash-script-assertions'
-
-@test "is executable" {
-    assert_is_executable
-}
-
-@test "passes shellcheck" {
-    assert_passes_shellcheck
-}
-```
-
-### Available assertions
-
-**Quality gates** — every script test should include these:
-
-| Assertion                           | Checks                                     |
-| ----------------------------------- | ------------------------------------------ |
-| `assert_is_executable`              | +x permission bit                          |
-| `assert_passes_shellcheck`          | shellcheck passes (skips if not installed) |
-| `assert_uses_strict_error_handling` | `set -euo pipefail` in first 5 lines       |
-
-**Behavioral** — test script execution:
-
-| Assertion                                  | Usage                                               |
-| ------------------------------------------ | --------------------------------------------------- |
-| `run_script_under_test [args...]`          | Run script under test, sets `$status` and `$output` |
-| `assert_fails_with "pattern" [args...]`    | Exits non-zero, output contains pattern             |
-| `assert_succeeds_with "pattern" [args...]` | Exits zero, output contains pattern                 |
-
-**Static analysis** — test script content without executing:
-
-| Assertion                                            | Usage                                                |
-| ---------------------------------------------------- | ---------------------------------------------------- |
-| `assert_script_source_matches "regex"`               | Script source matches regex                          |
-| `assert_script_source_does_not_match "regex"`        | Script source does not match regex                   |
-| `assert_script_source_matches_all "a" "b" "c"`       | Script source matches all regexes                    |
-| `assert_pattern_appears_before "first" "second"`     | First pattern appears before second                  |
-| `assert_installs_apt_packages pkg1 pkg2`             | `apt-get install` lines for each package             |
-| `assert_writes_config_to_path "/path" "val1" "val2"` | Config path and values in source                     |
-| `assert_activates_systemd_service name`              | `activate_service` or `systemctl enable` for service |
-
-### Example: behavioral test
-
-```bash
-#!/usr/bin/env bats
-
-load '../../../../../repository/verification/helpers/bash-script-assertions'
-
-@test "is executable"     { assert_is_executable; }
-@test "passes shellcheck" { assert_passes_shellcheck; }
 
 @test "shows usage with no args" {
     assert_fails_with "Usage:"
 }
-
-@test "processes valid input" {
-    assert_succeeds_with "Done" --flag value
-}
 ```
 
-### Example: setup script (static analysis)
-
-```bash
-#!/usr/bin/env bats
-
-load '../../../../../repository/verification/helpers/bash-script-assertions'
-
-@test "is executable"              { assert_is_executable; }
-@test "passes shellcheck"          { assert_passes_shellcheck; }
-@test "uses strict error handling"  { assert_uses_strict_error_handling; }
-
-@test "installs required packages" {
-    assert_installs_apt_packages foo bar
-}
-
-@test "configures service" {
-    assert_writes_config_to_path "/etc/foo.conf" "KEY=value"
-    assert_activates_systemd_service foo
-}
-```
-
-### When setup/teardown is needed
-
-Override `setup()` and `teardown()` for tests that need temp files or state. The helper assertions still work because they resolve the script path from the test filename, not from a variable.
-
-```bash
-setup() {
-    TEST_DIR=$(mktemp -d)
-    cd "$TEST_DIR" || return 1
-}
-
-teardown() {
-    rm -rf "$TEST_DIR"
-}
-```
-
-## Policies
-
-1. **Every capability script gets a test file.** At minimum: `assert_is_executable` + `assert_passes_shellcheck`.
-2. **Test filename = script name, category = directory.** `<capability>/scripts/foo` → `<capability>/__tests__/unit/foo.bats`. The helper auto-resolves the script path from the filename regardless of which tier directory the test lives in.
-3. **Static over execution for setup scripts.** Scripts requiring sudo/root are tested via content analysis, not execution. Verify configs, packages, and service activation are declared correctly.
-4. **Behavioral tests for CLI scripts.** Scripts that take user input should test error paths (missing args, bad input) and success paths.
-5. **Containerized integration tests go in `integration/`.** Place docker-backed tests under `<domain>/__tests__/integration/`; they run via `--integration-scripts` (alias `--docker`) and stay out of the quick gate by directory, not by filename. Build and drive the container through `repository/verification/helpers/docker-container-assertions.bash`, which builds `repository/verification/Dockerfile` (Ubuntu with nix) and skips the test when no docker daemon is reachable, rather than shelling out to `docker` by hand.
-6. **No external test libraries.** `repository/verification/helpers/bash-script-assertions.bash` covers common assertions. Avoid adding bats-assert/bats-file/bats-mock unless a concrete need arises.
-7. **Shellcheck is mandatory.** All bash scripts must pass shellcheck. The `assert_passes_shellcheck` assertion handles environments where shellcheck isn't installed by skipping.
-8. **Names mean things.** Test directories mirror source directories. File and function names describe what they test, not how. Follow `agent-harness/agent-instructions/core-rules/core.md` naming and script conventions.
-9. **Canonical script pattern.** All shell scripts under `__tests__/` follow the repository's script conventions: `set -Eeuo pipefail`, `readonly` constants, `main()` at bottom, `_` prefixed private functions, no comments. `machine-configuration/development/system-rebuild/scripts/rebuild/rebuild` and `repository/verification/run.sh` are the worked examples.
+Docker-backed tests go under `integration/` and drive the container through
+`repository/verification/helpers/docker-container-assertions.bash`, which skips when no docker daemon is reachable.
+Shell files under `__tests__/` follow the repository's script conventions, with
+`machine-configuration/development/system-rebuild/scripts/rebuild/rebuild` as the worked example.

@@ -85,10 +85,6 @@ run_claude_go() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "starts claude on the pinned model when given no arguments" {
 	run_claude_go
 	[ "$status" -eq 0 ]

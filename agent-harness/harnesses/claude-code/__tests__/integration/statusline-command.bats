@@ -112,14 +112,6 @@ _full_json_input() {
 	echo '{"model":{"display_name":"Opus 4.7"},"cwd":"/tmp","session_id":"bb823787-e6ea-467c-b0ce-d90b8b92fc36","context_window":{"used_percentage":38},"rate_limits":{"five_hour":{"used_percentage":11,"resets_at":'"$resets_at_epoch"'}}}'
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
-@test "uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
 @test "renders exactly one line" {
 	_run_statusline_with_json "$(_full_json_input)"
 	[ "$status" -eq 0 ]

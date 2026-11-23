@@ -32,6 +32,14 @@ def repository_failures(repository):
             ),
         ],
         [
+            sys.executable,
+            str(repository / "repository/verification/quality/shell-scripts/check.py"),
+        ],
+        [
+            sys.executable,
+            str(repository / "repository/verification/quality/test-budget/check.py"),
+        ],
+        [
             "ast-grep",
             "test",
             "--config",

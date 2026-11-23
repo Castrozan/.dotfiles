@@ -104,14 +104,6 @@ run_twikit_cli() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
-@test "uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
 @test "runs the cli without reinstalling when the pinned version is already installed" {
 	run_twikit_cli FAKE_INSTALLED_TWIKIT_VERSION="2.3.3" timeline
 	[ "$status" -eq 0 ]

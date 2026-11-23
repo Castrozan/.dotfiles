@@ -85,10 +85,6 @@ run_claudex() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "starts claude on the pinned opus tier model when given no arguments" {
 	run_claudex
 	[ "$status" -eq 0 ]

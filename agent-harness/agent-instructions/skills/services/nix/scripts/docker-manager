@@ -10,8 +10,6 @@ set -euo pipefail
 #   - Data safety (volume backups before deletion, orphan detection)
 #   - Debugging (logs, inspect, exec with state validation)
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-skill_dir="$(dirname "$script_dir")"
 
 show_help() {
   cat << 'HELP'
@@ -250,6 +248,7 @@ cmd_logs() {
 
   [[ -z "$container" ]] && { echo "Usage: docker-manager logs <container> [--tail N] [--since DURATION] [--follow]" >&2; return 1; }
 
+  # shellcheck disable=SC2086
   docker logs $tail $since $follow "$container"
 }
 
@@ -402,6 +401,7 @@ cmd_cleanup_images() {
   if [[ $dry_run -eq 1 ]]; then
     echo "(--dry-run: would remove above)"
   else
+    # shellcheck disable=SC2086
     docker rmi $dangling
   fi
 
@@ -514,6 +514,7 @@ cmd_events() {
     esac
   done
 
+  # shellcheck disable=SC2086
   docker events $since $filter
 }
 

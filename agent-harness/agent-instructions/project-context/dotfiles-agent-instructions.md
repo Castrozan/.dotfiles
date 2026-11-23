@@ -113,6 +113,10 @@ Use the smallest checks that verify the change; a formatting-only edit needs non
 
 Test every Neovim change live in a new Herdr pane; automated and headless checks do not replace this manual test.
 
+Before adding, keeping or deleting a test or an eval case, read what earns a test and what earns an eval in
+`repository/verification/TESTING.md`. Each one stays only while it discriminates, guards a cost, repeats no other gate
+and fits a budget that never rises. A new one over budget removes another.
+
 ### Change review scope
 
 Before pushing a substantive change, load the `review` skill and follow its dotfiles-change procedure over the exact

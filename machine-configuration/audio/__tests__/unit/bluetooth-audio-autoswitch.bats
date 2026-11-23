@@ -48,14 +48,6 @@ announce_sink() {
 	echo "$1	$2	module-bluez5-device.c	s16le 2ch 48000Hz	RUNNING" >>"$PACTL_SINK_TABLE"
 }
 
-@test "is executable" {
-	assert_is_executable
-}
-
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "makes a newly appeared bluetooth sink the default and moves streams onto it" {
 	require_perl_compatible_grep
 	announce_sink 42 bluez_output.AA_BB_CC.1

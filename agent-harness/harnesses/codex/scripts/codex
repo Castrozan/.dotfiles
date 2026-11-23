@@ -28,6 +28,7 @@ done
 case "$codexCommand" in
 agents | exec | e | review | login | logout | mcp | plugin | app-server | remote-control | app | completion | update | doctor | sandbox | debug | apply | a | queue | archive | delete | migrate-rollouts | unarchive | cloud | exec-server | features | help) ;;
 *)
+	# shellcheck source=/dev/null
 	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
 	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")

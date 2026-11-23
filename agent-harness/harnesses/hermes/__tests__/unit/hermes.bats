@@ -37,10 +37,6 @@ run_hermes() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "runs the launch script through the pinned bash when given no arguments" {
 	run_hermes
 	[ "$status" -eq 0 ]

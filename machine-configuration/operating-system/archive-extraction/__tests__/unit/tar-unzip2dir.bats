@@ -16,18 +16,6 @@ teardown() {
     rm -rf "$TEST_DIR"
 }
 
-@test "is executable" {
-    assert_is_executable
-}
-
-@test "passes shellcheck" {
-    assert_passes_shellcheck
-}
-
-@test "uses strict error handling" {
-    assert_uses_strict_error_handling
-}
-
 @test "shows usage when no file provided" {
     assert_fails_with "Usage:"
 }

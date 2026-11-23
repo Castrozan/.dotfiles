@@ -25,18 +25,6 @@ readonly BACKEND_CONTRACT=(
 	backend_after_switch
 )
 
-@test "rebuild script is executable" {
-	assert_is_executable
-}
-
-@test "rebuild script uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
-@test "rebuild script passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "every backend passes shellcheck" {
 	if ! command -v shellcheck &>/dev/null; then
 		skip "shellcheck not installed"

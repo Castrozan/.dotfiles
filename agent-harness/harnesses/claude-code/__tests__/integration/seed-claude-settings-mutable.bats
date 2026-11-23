@@ -19,14 +19,6 @@ _run_seed() {
 	run bash "$SCRIPT_UNDER_TEST"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
-@test "uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
 @test "creates settings from nix-source when the mutable file is absent" {
 	echo '{"effortLevel":"max"}' >"$NIX_SOURCE"
 	_run_seed

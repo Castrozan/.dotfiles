@@ -36,14 +36,6 @@ announce_stream() {
 	echo "$1	${2:-14}	4	s16le 2ch 48000Hz	RUNNING" >>"$PACTL_SINK_INPUT_TABLE"
 }
 
-@test "is executable" {
-	assert_is_executable
-}
-
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "moves every playing stream onto the default sink index" {
 	announce_sink 7 alsa_output.pci-0000_00_1f.3.analog-stereo
 	announce_sink 42 "$PACTL_DEFAULT_SINK_NAME"

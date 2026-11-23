@@ -10,6 +10,7 @@ fi
 
 cd "$RESURRECT_DIR"
 
+# shellcheck disable=SC2012
 selected=$(ls -t tmux_resurrect_*.txt 2>/dev/null | fzf --height=40% --reverse --prompt="Select backup: ")
 
 if [[ -z "$selected" ]]; then

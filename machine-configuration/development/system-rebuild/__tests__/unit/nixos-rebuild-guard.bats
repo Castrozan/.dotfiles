@@ -9,18 +9,6 @@ setup() {
 	chmod +x "$SYSTEM_REBUILD_LOCK_GUARD"
 }
 
-@test "nixos-rebuild guard is executable" {
-	assert_is_executable
-}
-
-@test "nixos-rebuild guard uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
-@test "nixos-rebuild guard passes shellcheck" {
-	assert_passes_shellcheck
-}
-
 @test "nixos-rebuild guard blocks switch without the rebuild sentinel" {
 	run env -u DOTFILES_REBUILD_WRAPPER REAL_NIXOS_REBUILD=true bash "$SCRIPT_UNDER_TEST" switch
 	[ "$status" -ne 0 ]

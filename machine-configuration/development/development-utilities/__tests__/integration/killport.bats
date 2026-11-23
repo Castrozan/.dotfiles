@@ -2,14 +2,6 @@
 
 load '../../../../../repository/verification/helpers/bash-script-assertions'
 
-@test "is executable" {
-    assert_is_executable
-}
-
-@test "passes shellcheck" {
-    assert_passes_shellcheck
-}
-
 @test "shows usage when no port provided" {
     assert_fails_with "Usage:"
 }

@@ -75,6 +75,7 @@ generate_frames() {
 	TEMP_DIR=$(mktemp -d)
 	ffmpeg -i "$VIDEO_FILE" -vf "fps=${FPS}" "$TEMP_DIR/frame_%04d.png" -hide_banner -loglevel error
 
+	# shellcheck disable=SC2012
 	total=$(ls "$TEMP_DIR"/frame_*.png | wc -l)
 	count=0
 	prev_txt="$TEMP_DIR/prev.txt"

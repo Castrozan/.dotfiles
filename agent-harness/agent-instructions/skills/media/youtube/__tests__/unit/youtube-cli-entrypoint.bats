@@ -71,14 +71,6 @@ run_youtube_cli() {
 		"$WRAPPER_SHELL" "$SCRIPT_UNDER_TEST" "$@"
 }
 
-@test "passes shellcheck" {
-	assert_passes_shellcheck
-}
-
-@test "uses strict error handling" {
-	assert_uses_strict_error_handling
-}
-
 @test "hands the setup subcommand to the setup script without touching the virtualenv" {
 	run_youtube_cli setup
 	[ "$status" -eq 0 ]
