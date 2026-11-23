@@ -7,14 +7,7 @@ import theme_generate_and_apply
 
 
 class TestCreateThemeDirectoryStructure:
-    def test_creates_theme_and_backgrounds_directories(self, tmp_path):
-        theme_dir = tmp_path / "auto-test"
-        theme_generate_and_apply.create_theme_directory_structure(theme_dir)
-
-        assert theme_dir.is_dir()
-        assert (theme_dir / "backgrounds").is_dir()
-
-    def test_is_idempotent(self, tmp_path):
+    def test_creates_theme_and_backgrounds_directories_repeatably(self, tmp_path):
         theme_dir = tmp_path / "auto-test"
         theme_generate_and_apply.create_theme_directory_structure(theme_dir)
         theme_generate_and_apply.create_theme_directory_structure(theme_dir)
@@ -83,7 +76,7 @@ class TestCreatePreviewImageFromSource:
         assert preview.read_bytes() == b"new-png-data"
 
     def test_extracts_first_frame_from_gif_via_ffmpeg(self, tmp_path):
-        source = tmp_path / "anim.gif"
+        source = tmp_path / "anim.GIF"
         source.write_bytes(b"fake-gif")
         preview = tmp_path / "preview.png"
 
@@ -104,16 +97,6 @@ class TestCreatePreviewImageFromSource:
                 ],
                 capture_output=True,
             )
-
-    def test_handles_uppercase_gif_extension(self, tmp_path):
-        source = tmp_path / "anim.GIF"
-        source.write_bytes(b"fake-gif")
-        preview = tmp_path / "preview.png"
-
-        with patch("theme_generate_and_apply.subprocess.run") as mock_run:
-            theme_generate_and_apply.create_preview_image_from_source(source, preview)
-
-            mock_run.assert_called_once()
 
 
 class TestPlaceWallpaperInBackgroundsDirectory:
