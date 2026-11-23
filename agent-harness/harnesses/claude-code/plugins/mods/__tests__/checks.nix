@@ -13,6 +13,34 @@ let
     (builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".source.baseSettings.text)
     .enabledPlugins;
 
+  avatarPluginRoot = cfg.agentPlugins.avatarPlugin;
+  avatarClaudeManifest = builtins.fromJSON (
+    builtins.readFile "${avatarPluginRoot}/.claude-plugin/plugin.json"
+  );
+  avatarPluginCarriesOnlySkills =
+    builtins.all (
+      key:
+      builtins.elem key [
+        "name"
+        "description"
+        "version"
+        "license"
+        "repository"
+        "homepage"
+        "keywords"
+        "author"
+        "skills"
+      ]
+    ) (builtins.attrNames avatarClaudeManifest)
+    && !(builtins.any (component: builtins.pathExists "${avatarPluginRoot}/${component}") [
+      "hooks"
+      "commands"
+      "agents"
+      "output-styles"
+      ".mcp.json"
+      ".lsp.json"
+    ]);
+
   interactiveLauncher = builtins.readFile "${cfg.claude.package}/bin/claude";
 
   retirementActivation = cfg.home.activation.removeRetiredClaudeMarketplaces;
@@ -21,14 +49,16 @@ let
     (import ../. { inherit pkgs; }).interactiveSessionModsDirectory;
 in
 {
-  claude-dotfiles-is-the-only-enabled-plugin =
-    mkEvalCheck "claude-dotfiles-is-the-only-enabled-plugin"
+  claude-user-settings-enable-no-interactive-mod =
+    mkEvalCheck "claude-user-settings-enable-no-interactive-mod"
       (
         userSettingsEnabledPlugins == {
           "dotfiles@dotagents" = true;
+          "avatar@avatar" = true;
         }
+        && avatarPluginCarriesOnlySkills
       )
-      "user settings reach every Claude process, including clawde agents that launch the unwrapped binary; the compaction brief travels inside the dotfiles plugin, and an interactive mod enabled there would send keep-warm pings, hold channel messages, or rewrite prompts in fleet sessions nobody is watching";
+      "user settings reach every Claude process, including clawde agents that launch the unwrapped binary, so they enable only the dotfiles plugin and the avatar plugin, which may carry nothing but skills; the compaction brief travels inside the dotfiles plugin, and an interactive mod enabled there would send keep-warm pings, hold channel messages, or rewrite prompts in fleet sessions nobody is watching";
 
   claude-interactive-launcher-loads-the-mods-directory =
     mkEvalCheck "claude-interactive-launcher-loads-the-mods-directory"
