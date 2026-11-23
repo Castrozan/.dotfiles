@@ -1,6 +1,6 @@
 ---
 name: quickshell
-description: Implement, debug, and test the Quickshell bar, OSD, switcher, popouts, dashboard, and launcher. Use for QML changes, rendering failures, IPC calls, or live visual verification.
+description: Implement, debug, and test the Impasto shell integration and the Quickshell window switcher and workspace overview. Use for QML changes, rendering failures, IPC calls, or live visual verification.
 ---
 
 ### Silent failure traps
@@ -26,35 +26,30 @@ like missing packages but are just registration. Check existing qmldir files in 
 Config directories are nix-managed symlinks. After changes: use the nix skill's rebuild capability to regenerate
 symlinks, then restart the service via systemctl. Never use pkill on quickshell processes.
 
-Discover IPC targets dynamically with `qs ipc --any-display -c bar show`. Call with `qs ipc --any-display -c bar call
-TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing: more reliable than mouse simulation. Always pass `ipc
---any-display`: the systemd service registers its display as `wayland,wayland-1` while callers see only `wayland-1`, so
-the default display filter rejects the match and the call fails with "No running instances".
+Discover IPC targets dynamically with `qs ipc --any-display -c switcher show`. Call with `qs ipc --any-display -c
+switcher call TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing: more reliable than mouse simulation.
+Always pass `ipc --any-display`: the systemd service registers its display as `wayland,wayland-1` while callers see only
+`wayland-1`, so the default display filter rejects the match and the call fails with "No running instances".
 
 ### Active desktop shell
 
-The desktop shell is whichever `custom.desktopShell.active` selects. On chise that is Impasto, built from the
-`impasto` flake input (the Castrozan/impasto fork, edited in its own clone) and run as `impasto-shell.service`; call it
-with `impasto-shell ipc --any-display call TARGET FUNCTION`. Its notes, the way back to the previous bar and the feature
-map live in `machine-configuration/desktop/desktop-environments/quickshell/impasto/README.md`. The `bar` config below
-runs only when the selection is `quickshell-bar`; the switcher and overview run with either shell.
+Impasto is the only desktop shell on chise. It is built from the `impasto` flake input (the Castrozan/impasto fork,
+edited in its own clone) and runs as `impasto-shell.service`; call it with `impasto-shell ipc --any-display call TARGET
+FUNCTION`. It shows its own bar, notifications, launcher, volume and brightness OSD. Its notes and feature map live in
+`machine-configuration/desktop/desktop-environments/quickshell/impasto/README.md`.
 
 ### Quickshell services
 
-Three quickshell services run independently:
-
-`quickshell-bar.service`: vertical bar (dashboard, launcher, sidebar via IPC: `qs -p
-~/.dotfiles/machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration ipc --any-display
-call dashboard toggle`)
+Two quickshell services run beside Impasto, independently of it:
 
 `quickshell-switcher.service`: window switcher (`qs -c switcher ipc --any-display call switcher
 open/next/prev/confirm/cancel`)
 
 `quickshell-overview.service`: workspace overview (`qs -c overview ipc --any-display call overview toggle/open/close`)
-The overview reads colors from `~/.config/hypr-theme/current/theme/quickshell-bar-colors.json` via FileView with live
-file watching. Colors auto-update on theme change. Grid config (rows, columns, scale, effects) lives in
+The overview reads colors from `~/.config/hypr-theme/current/theme/quickshell-overview-colors.json` via FileView with
+live file watching. Colors auto-update on theme change. Grid config (rows, columns, scale, effects) lives in
 `machine-configuration/desktop/desktop-environments/quickshell/overview/program-configuration/config.json`. Theme-to-M3
-mapping is in `Appearance.qml:applyHyprTheme()`.
+mapping is in `Appearance.qml:applyHyprTheme()`. The switcher reads `quickshell-switcher-colors.json` the same way.
 
 ### Visual verification
 

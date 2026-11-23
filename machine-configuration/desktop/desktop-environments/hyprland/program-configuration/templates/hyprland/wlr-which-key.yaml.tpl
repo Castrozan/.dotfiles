@@ -28,19 +28,6 @@ menu:
         desc: Video record
         cmd: pkill wf-recorder || wf-recorder -g "$(slurp)" -f ~/Videos/recording-$(date +%Y%m%d-%H%M%S).mp4
 
-  - key: n
-    desc: Notifications
-    submenu:
-      - key: d
-        desc: Dismiss one
-        cmd: makoctl dismiss
-      - key: a
-        desc: Clear all
-        cmd: makoctl dismiss --all
-      - key: n
-        desc: Toggle DND
-        cmd: makoctl set-mode -t do-not-disturb
-
   - key: t
     desc: Tools
     submenu:

@@ -6,18 +6,15 @@ upstream's Arch installer cannot give NixOS: a flake package, classic hyprlang d
 `bar pin` command and the `IMPASTO_LOCK_COMMAND` hand-off to hyprlock. It also carries the pieces of the previous bar
 Impasto lacked: GPU stats, the VPN and keyboard backlight modules and the Bluetooth audio profile picker.
 
-## Going back to the previous shell
+## The previous shell
 
-Set `custom.desktopShell.active = "quickshell-bar";` in `machine-configuration/machines/chise/home/desktop-shell.nix`
-and run `rebuild`. That one option restores the Caelestia-based bar, mako and their four key bindings, and removes the
-Impasto unit. The previous shell's code stays in `../bar` until Lucas says Impasto is good.
+The previous bar and mako were removed; git history holds them.
 
-## What the selector moves
+## What the module writes
 
-`custom.desktopShell.active` decides which shell module contributes the unit list in
-`~/.config/hypr-shell/autostart.conf` and the bindings in `~/.config/hypr-shell/bindings.conf`.
-Impasto owns notifications, so mako exists only with the
-previous shell. The overview and window switcher are separate services and run with either shell.
+The module starts its unit from `~/.config/hypr-shell/autostart.conf` and binds its keys in
+`~/.config/hypr-shell/bindings.conf`, both sourced by `hyprland.conf`. Impasto owns notifications, so no other
+notification daemon runs. The overview and window switcher are separate services.
 
 ## State and first run
 

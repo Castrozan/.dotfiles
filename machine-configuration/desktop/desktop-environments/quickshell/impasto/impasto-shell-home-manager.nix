@@ -43,15 +43,12 @@ in
     description = "Machine-specific Impasto settings merged into the file seeded on its first run.";
   };
 
-  config = lib.mkIf (config.custom.desktopShell.active == "impasto") {
+  config = {
     home.packages = [
       impastoShellPackage
       pkgs.inter
       pkgs.whitesur-icon-theme
     ];
-
-    xdg.configFile."quickshell/${quickshellConfigurationName}".source =
-      "${impastoShellPackage}/${impastoShellPackage.quickshellConfigurationDirectory}";
 
     xdg.dataFile = {
       "impasto/palette-board.json".source =
@@ -72,13 +69,17 @@ in
           fi
         '';
 
-    custom.desktopShell = {
-      sessionServices = [ "impasto-shell.service" ];
-      hyprlandBindings = ''
+    xdg.configFile = {
+      "quickshell/${quickshellConfigurationName}".source =
+        "${impastoShellPackage}/${impastoShellPackage.quickshellConfigurationDirectory}";
+      "hypr-shell/bindings.conf".text = ''
         bindd = SUPER, J, Show the bar for a moment, exec, ${callImpastoCommand "bar" "peek"}
         bindd = SUPER, M, Media, global, quickshell:media
         bindd = SUPER, Q, Launcher, global, quickshell:launcher
         bindd = SUPER, A, Notifications and controls, global, quickshell:controls
+      '';
+      "hypr-shell/autostart.conf".text = ''
+        exec-once = sleep 2 && systemctl --user start impasto-shell.service
       '';
     };
 

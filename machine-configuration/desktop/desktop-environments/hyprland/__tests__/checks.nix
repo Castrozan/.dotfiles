@@ -25,27 +25,15 @@ let
     (lib.findFirst (entry: entry.label == "logout") null wlogoutConfiguration.programs.wlogout.layout)
     .action;
 
-  cfg = helpers.homeManagerTestConfiguration [
-    ../../quickshell/desktop-shell-selection-home-manager.nix
-    ../session/graphical-services-activation.nix
-  ];
+  cfg = helpers.homeManagerTestConfiguration [ ../session/graphical-services-activation.nix ];
 
   startGraphicalServicesActivation = cfg.home.activation.startGraphicalServices.data;
 
-  defaultDesktopShellConfiguration = helpers.homeManagerTestConfiguration [
-    ../../quickshell/desktop-shell-selection-home-manager.nix
-    ../../quickshell/bar/quickshell-bar-home-manager.nix
-  ];
-
-  defaultDesktopShellFiles = defaultDesktopShellConfiguration.xdg.configFile;
-
   impastoDesktopShellConfiguration = helpers.homeManagerTestConfiguration [
-    ../../quickshell/desktop-shell-selection-home-manager.nix
-    ../../quickshell/bar/quickshell-bar-home-manager.nix
     ../../quickshell/impasto/impasto-shell-home-manager.nix
-    ../mako.nix
-    { custom.desktopShell.active = "impasto"; }
   ];
+
+  chiseUserServices = chiseSystem.home-manager.users.zanoni.systemd.user.services;
 
   commandPackagesConfiguration = helpers.homeManagerTestConfiguration [
     ../hyprland-command-packages-home-manager.nix
@@ -73,7 +61,7 @@ in
   domain-hyprland-graphical-service-restart-tolerates-its-own-failure =
     mkEvalCheck "domain-hyprland-graphical-service-restart-tolerates-its-own-failure"
       (lib.hasInfix "|| true" startGraphicalServicesActivation)
-      "The graphical service restart must end in `|| true`. Restarting mako, the hyprland portal and the focus daemon is a best-effort desktop nicety: nothing downstream in the activation consumes it and the machine keeps running without it, since a failed restart leaves the already-running instance in place. This check guards a DIFFERENT failure mode from the timeout check above and neither substitutes for the other: `timeout` bounds a hang, `|| true` absorbs a non-zero exit under set -e, and a wedged systemd manager hangs rather than exits";
+      "The graphical service restart must end in `|| true`. Restarting the hyprland portal, the focus daemon and the clipboard history is a best-effort desktop nicety: nothing downstream in the activation consumes it and the machine keeps running without it, since a failed restart leaves the already-running instance in place. This check guards a DIFFERENT failure mode from the timeout check above and neither substitutes for the other: `timeout` bounds a hang, `|| true` absorbs a non-zero exit under set -e, and a wedged systemd manager hangs rather than exits";
 
   domain-hyprland-summon-chrome-global-uses-hardware-video-decoding-workaround =
     mkEvalCheck "domain-hyprland-summon-chrome-global-uses-hardware-video-decoding-workaround"
@@ -125,30 +113,11 @@ in
       (chiseSessionServicesNotStoppedWithTheSession == [ ])
       "Every user service wanted by graphical-session.target must also be PartOf it, so `uwsm stop` and compositor crashes stop it with the session. Otherwise it outlives Hyprland, crashes on the vanished Wayland socket and Restart= loops it into a failed unit, because automatic restarts skip ConditionEnvironment. Offending services: ${toString chiseSessionServicesNotStoppedWithTheSession}";
 
-  domain-hyprland-default-desktop-shell-is-the-quickshell-bar =
-    mkEvalCheck "domain-hyprland-default-desktop-shell-is-the-quickshell-bar"
+  domain-hyprland-impasto-is-the-only-desktop-shell =
+    mkEvalCheck "domain-hyprland-impasto-is-the-only-desktop-shell"
       (
-        defaultDesktopShellConfiguration.custom.desktopShell.active == "quickshell-bar"
-        &&
-          lib.all (binding: lib.hasInfix binding defaultDesktopShellFiles."hypr-shell/bindings.conf".text)
-            [
-              "bindd = SUPER, J, Toggle left bar, exec, qs -c bar ipc --any-display call -- bar toggle"
-              "bindd = SUPER, M, Media dashboard, exec, qs -c bar ipc --any-display call dashboard toggle"
-              "bindd = SUPER, Q, Launcher, exec, qs -c bar ipc --any-display call launcher toggle"
-              "bindd = SUPER, A, Notifications, exec, qs -c bar ipc --any-display call sidebar toggle"
-            ]
-        &&
-          lib.hasInfix "systemctl --user start quickshell-bar.service mako.service\n"
-            defaultDesktopShellFiles."hypr-shell/autostart.conf".text
-        && defaultDesktopShellConfiguration.systemd.user.services ? quickshell-bar
-      )
-      "With the default selection the Hyprland session must keep today's behaviour: the four quickshell bar binds in hypr-shell/bindings.conf and a hypr-shell/autostart.conf that starts quickshell-bar.service and mako.service. Those binds and units left the static conf.d files when the shell became selectable, so losing them here leaves the session without a bar, launcher or notification daemon";
-
-  domain-hyprland-impasto-desktop-shell-replaces-the-quickshell-bar-and-mako =
-    mkEvalCheck "domain-hyprland-impasto-desktop-shell-replaces-the-quickshell-bar-and-mako"
-      (
-        !(impastoDesktopShellConfiguration.systemd.user.services ? quickshell-bar)
-        && !(impastoDesktopShellConfiguration.systemd.user.services ? mako)
+        !(chiseUserServices ? quickshell-bar)
+        && !(chiseUserServices ? mako)
         && impastoDesktopShellConfiguration.systemd.user.services ? impasto-shell
         &&
           lib.all
@@ -166,7 +135,7 @@ in
           impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/autostart.conf".text
           == "exec-once = sleep 2 && systemctl --user start impasto-shell.service\n"
       )
-      "Selecting impasto must leave exactly one desktop shell: the impasto unit started by hypr-shell/autostart.conf with the launcher, controls, media and bar binds Lucas already uses, no quickshell bar unit, and no mako unit because impasto owns org.freedesktop.Notifications itself. Two shells running together fight over layer-shell surfaces and the notification bus name";
+      "Impasto must be the one desktop shell on chise: its unit started by hypr-shell/autostart.conf, the launcher, controls, media and bar binds in hypr-shell/bindings.conf, and no quickshell-bar or mako unit, because Impasto owns org.freedesktop.Notifications itself. A second shell would fight it over layer-shell surfaces and the notification bus name";
 
   domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend =
     mkEvalCheck "domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend"

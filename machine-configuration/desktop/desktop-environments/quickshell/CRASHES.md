@@ -4,7 +4,7 @@ Ongoing log of segfaults observed in the quickshell runtime, current mitigations
 
 ## Symptom
 
-Random segfaults inside `libQt6Quick.so.6.10.x` while the bar is running. The in-process crash handler catches the fault, writes a minidump under `~/.cache/quickshell/crashes/`, and relaunches the shell automatically. Systemd (`quickshell-bar`, `quickshell-overview`, `quickshell-switcher`) also has `Restart=always` as a secondary safety net.
+Random segfaults inside `libQt6Quick.so.6.10.x` while a quickshell service is running. The in-process crash handler catches the fault, writes a minidump under `~/.cache/quickshell/crashes/`, and relaunches the shell automatically. Systemd (`impasto-shell`, `quickshell-overview`, `quickshell-switcher`) also has `Restart=always` as a secondary safety net.
 
 Kernel log signature:
 ```
@@ -45,7 +45,7 @@ file ~/.cache/quickshell/crashes/<run-id>/minidump.dmp # needs minidump_stackwal
 
 Running service state:
 ```sh
-systemctl --user status quickshell-bar quickshell-overview quickshell-switcher
+systemctl --user status impasto-shell quickshell-overview quickshell-switcher
 ```
 
 ## Incident log
@@ -68,4 +68,4 @@ Append to the top when a new crash cluster shows up. Keep entries terse.
 If crashes return on the nixpkgs release:
 1. Decode the minidump with `minidump_stackwalk` to see which QML object triggered it.
 2. File upstream at https://git.outfoxxed.me/quickshell/quickshell/issues with the stack trace and the QML path.
-3. If a specific module is implicated, disable that module in `machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration/Bar.qml` to confirm, then report.
+3. If a specific module is implicated, disable that module in the implicated service's QML under `machine-configuration/desktop/desktop-environments/quickshell/` to confirm, then report.

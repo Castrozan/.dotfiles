@@ -8,12 +8,9 @@
     ./hyprland-command-packages-home-manager.nix
     ./session/wlogout.nix
     ./session/wayland-electron.nix
-    ../quickshell/desktop-shell-selection-home-manager.nix
-    ../quickshell/bar/quickshell-bar-home-manager.nix
     ../quickshell/impasto/impasto-shell-home-manager.nix
 
     ./wlr-which-key.nix
-    ./mako.nix
     ../quickshell/window-switcher/quickshell-window-switcher-home-manager.nix
     ../quickshell/overview/quickshell-overview-home-manager.nix
     ../../screen-capture/satty-home-manager.nix
