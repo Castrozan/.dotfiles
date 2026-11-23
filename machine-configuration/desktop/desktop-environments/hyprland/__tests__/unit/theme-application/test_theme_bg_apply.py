@@ -34,6 +34,7 @@ class TestApplyCurrentBackground:
         bg_link = tmp_path / "background"
         bg_link.symlink_to(bg_file)
         monkeypatch.setattr(theme_bg_apply, "CURRENT_BACKGROUND_LINK", bg_link)
+        monkeypatch.setattr(theme_bg_apply.shutil, "which", lambda command: None)
 
         with patch("theme_bg_apply.subprocess.run") as mock_run:
             theme_bg_apply.apply_current_background()
@@ -50,6 +51,31 @@ class TestApplyCurrentBackground:
                 ],
                 capture_output=True,
             )
+
+    def test_hands_the_resolved_background_to_impasto_when_it_is_installed(
+        self, tmp_path, monkeypatch
+    ):
+        bg_file = tmp_path / "wallpaper.png"
+        bg_file.write_bytes(b"fake-png")
+        bg_link = tmp_path / "background"
+        bg_link.symlink_to(bg_file)
+        monkeypatch.setattr(theme_bg_apply, "CURRENT_BACKGROUND_LINK", bg_link)
+        monkeypatch.setattr(
+            theme_bg_apply.shutil, "which", lambda command: f"/bin/{command}"
+        )
+
+        with patch("theme_bg_apply.subprocess.run") as mock_run:
+            theme_bg_apply.apply_current_background()
+
+            assert mock_run.call_args_list[-1].args[0] == [
+                "impasto-shell",
+                "ipc",
+                "--any-display",
+                "call",
+                "wallpaper",
+                "set",
+                str(bg_file),
+            ]
 
     def test_notifies_when_no_symlink(self, tmp_path, monkeypatch):
         monkeypatch.setattr(

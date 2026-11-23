@@ -1,9 +1,11 @@
+import shutil
 import subprocess
 from pathlib import Path
 
 CURRENT_BACKGROUND_LINK = (
     Path.home() / ".config" / "hypr-theme" / "current" / "background"
 )
+IMPASTO_SHELL_COMMAND = "impasto-shell"
 
 
 def apply_current_background() -> None:
@@ -25,9 +27,32 @@ def apply_current_background() -> None:
 
     subprocess.run(
         [
-            "awww", "img", str(CURRENT_BACKGROUND_LINK),
-            "--resize", "crop",
-            "--transition-type", "none",
+            "awww",
+            "img",
+            str(CURRENT_BACKGROUND_LINK),
+            "--resize",
+            "crop",
+            "--transition-type",
+            "none",
+        ],
+        capture_output=True,
+    )
+    hand_background_to_impasto_shell(resolved_background)
+
+
+def hand_background_to_impasto_shell(background: Path) -> None:
+    if shutil.which(IMPASTO_SHELL_COMMAND) is None:
+        return
+
+    subprocess.run(
+        [
+            IMPASTO_SHELL_COMMAND,
+            "ipc",
+            "--any-display",
+            "call",
+            "wallpaper",
+            "set",
+            str(background),
         ],
         capture_output=True,
     )
