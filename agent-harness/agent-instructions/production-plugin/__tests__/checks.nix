@@ -34,6 +34,55 @@ let
       "skills/avatar/SKILL.md"
     ]
     && !(builtins.elem "avatar" skillCatalog.allSkillNames);
+  avatarPluginRoot = inputs.avatar.outPath;
+  readAvatarManifest =
+    manifest: builtins.fromJSON (builtins.readFile "${avatarPluginRoot}/${manifest}");
+  onlyKeysFrom =
+    allowedKeys: attributes:
+    builtins.all (key: builtins.elem key allowedKeys) (builtins.attrNames attributes);
+  manifestMetadataKeys = [
+    "name"
+    "description"
+    "version"
+    "license"
+    "repository"
+    "homepage"
+    "keywords"
+    "author"
+  ];
+  componentLocationsAnyHarnessLoads = [
+    "commands"
+    "agents"
+    "hooks"
+    "themes"
+    "output-styles"
+    "monitors"
+    "workflows"
+    ".mcp.json"
+    "mcp.json"
+    ".lsp.json"
+  ];
+  avatarPluginCarriesOnlySkills =
+    !(builtins.any (
+      location: builtins.pathExists "${avatarPluginRoot}/${location}"
+    ) componentLocationsAnyHarnessLoads)
+    && onlyKeysFrom (manifestMetadataKeys ++ [ "$schema" ]) (readAvatarManifest "plugin.json")
+    && onlyKeysFrom (manifestMetadataKeys ++ [ "skills" ]) (
+      readAvatarManifest ".claude-plugin/plugin.json"
+    )
+    && onlyKeysFrom (
+      manifestMetadataKeys
+      ++ [
+        "skills"
+        "interface"
+      ]
+    ) (readAvatarManifest ".codex-plugin/plugin.json")
+    && builtins.all (onlyKeysFrom [
+      "name"
+      "description"
+      "source"
+      "version"
+    ]) (readAvatarManifest ".claude-plugin/marketplace.json").plugins;
 in
 {
   production-plugin-desktop-platform =
@@ -53,6 +102,10 @@ in
     helpers.mkEvalCheck "production-plugin-leaves-avatar-to-its-own-plugin"
       avatarPluginShipsItsSkillOnce
       "The avatar skill reaches every harness as the avatar flake's own plugin, so the pinned source must carry its Agent Plugins, Claude and Codex manifests and the skill, and the dotfiles catalog must not carry a second copy";
+
+  production-plugin-avatar-carries-only-skills =
+    helpers.mkEvalCheck "production-plugin-avatar-carries-only-skills" avatarPluginCarriesOnlySkills
+      "Claude, Codex, OpenCode, Pi and Hermes enable the avatar plugin in every session, unattended clawde agents and Discord bot profiles included, so its pinned source may ship skills alone: no hook, command, agent, theme, output style, monitor, workflow, MCP or LSP location at its root, and no component key in its Agent Plugins, Claude, Codex or marketplace manifests";
 
   production-plugin-artifact-preservation =
     pkgs.runCommand "production-plugin-artifact-preservation" { }
