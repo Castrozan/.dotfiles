@@ -27,9 +27,6 @@ to other programs, because the hypr-theme pipeline owns those. A machine adds it
 through `custom.desktopShell.impastoFirstRunSettings`. Delete the file and rebuild to get the seed again; a seed change
 never reaches a settings file that already exists.
 
-Impasto has no interface size setting of its own, so `custom.desktopShell.impastoInterfaceScale` enlarges the whole
-shell, the Settings window included, by starting it with that `QT_SCALE_FACTOR`; chise uses 1.25.
-
 ## Working on the fork
 
 Clone the fork, commit, push, then pin the new revision in `repository/flake-assembly/dependencies/flake.nix` and run
