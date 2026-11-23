@@ -1,5 +1,6 @@
 import os
-import time
+
+import pytest
 
 import theme_set
 
@@ -76,25 +77,27 @@ class TestSetBackgroundSymlinkFromCurrentTheme:
         assert not background_link.exists()
 
 
-class TestTouchQuickshellBarThemeColorsIfPresent:
-    def test_touches_file_when_exists(self, tmp_path, monkeypatch):
+class TestTouchShellWatchedThemeFilesIfPresent:
+    @pytest.mark.parametrize(
+        "file_name", ["quickshell-bar-colors.json", "impasto-palette.json"]
+    )
+    def test_touches_file_when_exists(self, tmp_path, monkeypatch, file_name):
         theme_path = tmp_path / "theme"
         theme_path.mkdir()
-        colors_file = theme_path / "quickshell-bar-colors.json"
-        colors_file.write_text("{}")
+        watched_file = theme_path / file_name
+        watched_file.write_text("{}")
+        os.utime(watched_file, (0, 0))
 
         monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
 
-        old_mtime = os.path.getmtime(colors_file)
+        theme_set.touch_shell_watched_theme_files_if_present()
 
-        time.sleep(0.01)
-        theme_set.touch_quickshell_bar_theme_colors_if_present()
+        assert os.path.getmtime(watched_file) > 0
 
-        new_mtime = os.path.getmtime(colors_file)
-        assert new_mtime >= old_mtime
-
-    def test_does_nothing_when_file_missing(self, tmp_path, monkeypatch):
+    def test_does_nothing_when_files_missing(self, tmp_path, monkeypatch):
         theme_path = tmp_path / "theme"
         theme_path.mkdir()
         monkeypatch.setattr(theme_set, "CURRENT_THEME_PATH", theme_path)
-        theme_set.touch_quickshell_bar_theme_colors_if_present()
+        theme_set.touch_shell_watched_theme_files_if_present()
+
+        assert list(theme_path.iterdir()) == []

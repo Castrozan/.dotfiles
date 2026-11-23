@@ -78,10 +78,14 @@ def set_background_symlink_from_current_theme() -> None:
     background_link.symlink_to(backgrounds[0])
 
 
-def touch_quickshell_bar_theme_colors_if_present() -> None:
-    quickshell_bar_colors = CURRENT_THEME_PATH / "quickshell-bar-colors.json"
-    if quickshell_bar_colors.is_file():
-        quickshell_bar_colors.touch()
+SHELL_WATCHED_THEME_FILE_NAMES = ("quickshell-bar-colors.json", "impasto-palette.json")
+
+
+def touch_shell_watched_theme_files_if_present() -> None:
+    for file_name in SHELL_WATCHED_THEME_FILE_NAMES:
+        watched_file = CURRENT_THEME_PATH / file_name
+        if watched_file.is_file():
+            watched_file.touch()
 
 
 def find_catppuccin_plugin_run_shell_path() -> str | None:
@@ -163,7 +167,7 @@ def main() -> None:
     subprocess.run(["hypr-theme-set-templates"])
     rotate_current_theme_with_next()
     THEME_NAME_FILE.write_text(theme_name + "\n")
-    touch_quickshell_bar_theme_colors_if_present()
+    touch_shell_watched_theme_files_if_present()
     set_background_symlink_from_current_theme()
     subprocess.run(["hypr-theme-bg-apply"])
     subprocess.run(["hypr-restart-hyprctl"])
