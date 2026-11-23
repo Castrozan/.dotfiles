@@ -1,6 +1,6 @@
 # Agent prompting tweets: codebase ownership, ID audit and settings trim
 
-**Bundle goal:** Decide what the five saved Claude prompting and agent-code tweets change for Lucas's own repositories: check the claimed Anthropic guide finding and, if it holds, add the codebase-ownership sentence where Lucas's repository context is defined, keep the canonical-ID audit prompt, the prune-tests criteria and the Landmines test-honesty lint rules as references beside the implicit state machines prompt, and drop the settings-trim prompt that fights his current setup.
+**Bundle goal:** Decide what the five saved Claude prompting and agent-code tweets change for Lucas's own repositories: check the claimed Anthropic guide finding and, if it holds, add the codebase-ownership sentence where Lucas's repository context is defined, keep the canonical-ID audit prompt, the prune-tests criteria and the Landmines test-honesty lint rules as references beside the implicit state machines prompt, and drop the settings-trim prompt that fights his current setup, and drop one promotional cost-cutting guide tweet whose article body could not be read.
 
 | # | Capture | TL;DR | Action | Why | Already covered | Second Brain direction | Systems | Local | Lucas's note |
 |---|---|---|---|---|---|---|---|---|---|
@@ -9,6 +9,7 @@
 | 3 | [Tweet from Aaron Delasy (2026-11-08 08-05-51)](https://x.com/aarondelasy/status/2119024883971891207) | A prompt that sets disableBundledSkills, disableWorkflows, disableRemoteControl, disableClaudeAiConnectors and disableArtifact to true in ~/.claude/settings.json to cut Claude Code usage. | drop | two of the five keys are already handled or deliberately kept off, disableWorkflows contradicts his workflows direction, and the usage saving is unmeasured in the tweet; settings here are declared in nix, not hand-edited | agent-harness/harnesses/claude-code/__tests__/remove-claude-managed-settings-nix-darwin-checks.nix:34 requires disableClaudeAiConnectors to stay off because it would drop wanted connectors such as Claude Docs; agent-harness/harnesses/claude-code/settings/global-settings.nix:92 already denies the Artifact tool | [[Lucas Zanoni - Workflows as the direction for agent work]] | dotfiles | yes | - |
 | 4 | [Tweet from Maze (2026-11-18 08-44-50)](https://x.com/mazeincoding/status/2122718134679298058) | A /prune-tests command that finds and removes tests that change whenever the code does, check that deleted features are gone, or can never fail; the quoted tweet jokes about an agent adding 4000 lines of tests asserting a removed thing no longer exists. | file → Maze - Prune-tests command (Engineering MOC) | the command's prompt is only in a video, so only its three criteria are readable; they are a reusable audit lens that pairs with the other code-audit prompts in this group, and there is nothing concrete to build until a prompt text exists | agent-harness/agent-instructions/skills/development/coding/references/testing.md covers reproducers, coverage and execution order but has no guidance on removing change-detector, deleted-feature or never-failing tests | - | - | yes | - |
 | 5 | [Tweet from Luke Shiels (2026-11-18 12-38-34)](https://x.com/lukeshiels/status/2122782710414336458) | Landmines, a set of Oxlint plugins from Interfere that fail on agent shortcuts in tests (module mocks, fixed sleeps, retries and raised timeouts, unsignaled polls) plus no prose comments, colocated tests and no explicit return types; the tweet claims it took the team from 100 to over 1200 PRs a week. | file → Luke Shiels - Landmines Oxlint rules (Developer Tooling MOC) | it enforces test honesty with deterministic lint, which matches his rule-enforcement-in-code direction and the test-pruning card in this group, but it is JavaScript-only and none of the repositories gather found use Oxlint, so there is nothing to adopt until a TypeScript project needs it | Inspiration/Developer Tooling/Dillon Mulroy - anti-slop oxlint rules.md is the same kind of agent-honesty lint, already filed, and the Landmines README names anti-slop as its pair; no oxlint configuration exists in ~/.dotfiles, and the rules only apply to TypeScript projects with Oxlint 1.81 or later | [[Lucas Zanoni - Workflows as the direction for agent work]] | - | yes | - |
+| 6 | [Tweet from Trackmind (2026-11-23 00-06-39)](https://x.com/0xTrackmind/status/2124536568291479834) | A promotional tweet for an X article titled Harness Engineering: How to Fix Your Agent Without Changing the Model. It claims five token leaks, five fixes and two copy-paste configs cut Claude costs, and that one caching line makes the repeated part of a request 95% cheaper. | drop | Gather holds only the tweet and the article's opening preview, and I could not read the article body: Chrome had remote debugging off during this run. The tweet gives no concrete step and the cost figures are unverified marketing claims, so I propose a drop. Overturn it if you want the article read first. The same group already dropped a settings-trim prompt that fights the current nix-declared setup. | - | [[Lucas Zanoni - Workflows as the direction for agent work]] | - | no | - |
 
 ## Session on chise
 
@@ -31,7 +32,7 @@ Answer on the pull request in plain language: approve the table as it stands, ch
 {
   "topic_slug": "agent-prompting-tweets",
   "title": "Agent prompting tweets: codebase ownership, ID audit and settings trim",
-  "bundle_goal": "Decide what the five saved Claude prompting and agent-code tweets change for Lucas's own repositories: check the claimed Anthropic guide finding and, if it holds, add the codebase-ownership sentence where Lucas's repository context is defined, keep the canonical-ID audit prompt, the prune-tests criteria and the Landmines test-honesty lint rules as references beside the implicit state machines prompt, and drop the settings-trim prompt that fights his current setup.",
+  "bundle_goal": "Decide what the five saved Claude prompting and agent-code tweets change for Lucas's own repositories: check the claimed Anthropic guide finding and, if it holds, add the codebase-ownership sentence where Lucas's repository context is defined, keep the canonical-ID audit prompt, the prune-tests criteria and the Landmines test-honesty lint rules as references beside the implicit state machines prompt, and drop the settings-trim prompt that fights his current setup, and drop one promotional cost-cutting guide tweet whose article body could not be read.",
   "session": {
     "host": "chise",
     "done_when": [
@@ -184,6 +185,24 @@ Answer on the pull request in plain language: approve the table as it stands, ch
         "platform": "X"
       },
       "added_at": "2026-11-18T16:00:28+00:00"
+    },
+    {
+      "linked_urls": [
+        "https://x.com/i/article/2123519916913373184"
+      ],
+      "covered_evidence": [],
+      "second_brain_direction": [
+        "[[Lucas Zanoni - Workflows as the direction for agent work]]"
+      ],
+      "systems": [],
+      "runs_locally_on_chise": false,
+      "capture": "Tweet from Trackmind (2026-11-23 00-06-39).md",
+      "tldr": "A promotional tweet for an X article titled Harness Engineering: How to Fix Your Agent Without Changing the Model. It claims five token leaks, five fixes and two copy-paste configs cut Claude costs, and that one caching line makes the repeated part of a request 95% cheaper.",
+      "origin_url": "https://x.com/0xTrackmind/status/2124536568291479834",
+      "lucas_note": "",
+      "action": "drop",
+      "reason": "Gather holds only the tweet and the article's opening preview, and I could not read the article body: Chrome had remote debugging off during this run. The tweet gives no concrete step and the cost figures are unverified marketing claims, so I propose a drop. Overturn it if you want the article read first. The same group already dropped a settings-trim prompt that fights the current nix-declared setup.",
+      "added_at": "2026-11-23T22:12:55+00:00"
     }
   ]
 }
