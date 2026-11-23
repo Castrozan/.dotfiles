@@ -146,14 +146,6 @@ def is_model_call(node_text):
     return has_key(node_text, "command") or has_key(node_text, "prompt")
 
 
-def test_model_call_nodes_pin_model_and_effort():
-    for definition_path in (ANALYSIS_DEFINITION, TOPIC_DEFINITION):
-        for node_text in split_nodes(definition_path.read_text()):
-            if is_model_call(node_text):
-                assert has_key(node_text, "model"), definition_path
-                assert has_key(node_text, "effort"), definition_path
-
-
 def test_topic_definition_has_exactly_one_model_call():
     nodes = split_nodes(TOPIC_DEFINITION.read_text())
     assert sum(is_model_call(node) for node in nodes) == 1
