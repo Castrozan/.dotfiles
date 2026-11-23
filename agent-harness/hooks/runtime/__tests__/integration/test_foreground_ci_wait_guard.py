@@ -28,8 +28,6 @@ COMMANDS_THAT_MUST_STAY_ALLOWED_IN_THE_FOREGROUND = [
     "rg 'gh run watch' --files-with-matches",
     "gh api repos/Castrozan/.dotfiles/actions/runs",
     "for sha in a1 b2; do gh run list --commit $sha --json conclusion; done",
-    "for i in $(seq 1 5); do curl -sS localhost:8080/health; sleep 5; done",
-    "gh run list --json conclusion && sleep 5 && gh run list --json conclusion",
 ]
 
 COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
@@ -40,6 +38,9 @@ COMMANDS_THAT_MUST_BE_DENIED_IN_THE_FOREGROUND = [
     "gh pr checks --watch --fail-fast",
     "cd /tmp && gh run watch 123",
     "gh run watch 123 >/dev/null 2>&1; echo done",
+]
+
+CI_POLLING_LOOPS_DENIED_IN_EVERY_CONTEXT = [
     (
         "for i in $(seq 1 25); do out=$(gh run list --commit abc --json conclusion); "
         'if [ -n "$out" ]; then echo "$out"; exit 0; fi; sleep 40; done'
@@ -82,6 +83,12 @@ def test_reading_about_a_run_is_not_waiting_on_one(command_string):
 )
 def test_waiting_on_ci_in_the_foreground_is_denied(command_string):
     assert run_pre_tool_use(command_string, run_in_background=True) != "deny"
+    assert run_pre_tool_use(command_string, run_in_background=False) == "deny"
+
+
+@pytest.mark.parametrize("command_string", CI_POLLING_LOOPS_DENIED_IN_EVERY_CONTEXT)
+def test_a_ci_polling_loop_is_denied_in_both_contexts(command_string):
+    assert run_pre_tool_use(command_string, run_in_background=True) == "deny"
     assert run_pre_tool_use(command_string, run_in_background=False) == "deny"
 
 

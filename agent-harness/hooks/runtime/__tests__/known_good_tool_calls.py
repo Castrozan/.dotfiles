@@ -41,6 +41,16 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "gh pr view 124 --json state,mergeStateStatus",
     "gh api repos/Castrozan/.dotfiles/actions/runs",
     "rebuild",
+    "xdotool mousedown 1; sleep 0.15; xdotool mouseup 1",
+    "for point in '900 500' '1000 560'; do xdotool mousemove $point; sleep 0.4; done",
+    "timeout 30 make test",
+    "curl --retry 30 --retry-connrefused --retry-delay 1 -sf http://localhost:8080/health",
+    "git commit -m 'stop agents from using sleep 30 to wait'",
+    "grep -rn 'sleep [0-9]' agent-harness/hooks",
+    "cat > /tmp/poll.sh <<'EOF'\nwhile true; do sleep 5; done\nEOF",
+    "python3 - <<'PY'\nimport time\nfor attempt in range(3):\n    time.sleep(1)\nPY",
+    "docker run -d --name keep alpine sleep infinity",
+    "nvidia-smi --query-gpu=utilization.gpu --format=csv --loop=10",
     "launch-command-detached-into-new-session /tmp/rebuild.log rebuild",
     "git commit -F- -- agent-harness/hooks/runtime <<'MESSAGE'\n"
     "fix(hooks): explain what the guard forbids\n"
@@ -58,30 +68,19 @@ KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "agent-session exit --print-target > /tmp/status.txt 2>&1",
     "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
     "herdr agent wait w4E:p6 --until done --until blocked --timeout 3600000",
-    "until ! pgrep -f darwin-rebuild >/dev/null; do sleep 15; done; echo rebuild-exited",
-    "until grep -q 'REBUILD-EXIT=' /tmp/rebuild.log 2>/dev/null; do sleep 5; done; "
-    "tail -3 /tmp/rebuild.log",
-    "for attempt in $(seq 1 45); do "
-    "verdict=$(gh run view 30957498339 --json conclusion --jq .conclusion); "
-    '[ -n "$verdict" ] && break; sleep 20; done; echo "verdict: $verdict"',
     "for i in $(seq 1 120); do "
     "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
     '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"',
-    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    "until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); "
-    '[ "$cur" != "$first" ]; } || ! herdr pane get w4E:p6 >/dev/null 2>&1 '
-    "|| [ $n -ge 240 ]; do sleep 45; n=$((n+1)); done; "
-    'herdr pane get w4E:p6 >/dev/null 2>&1 || echo "PEER-GONE: pane w4E:p6 closed"; '
-    "orchestrator heartbeat show Reviewer-w4E-p6",
+    "wait-for-event process $(pgrep -f darwin-rebuild) --timeout-seconds 3600",
+    "ci-watcher 30957498339 --timeout 3600",
 )
 
 KNOWN_GOOD_MONITOR_COMMANDS = (
     "orchestrator watch --workspace w4E --pane w4E:p6 --timeout-minutes 10",
     "tail -f /var/log/app.log | grep --line-buffered ERROR",
-    "until herdr agent read w4E:p6 --source visible 2>/dev/null "
-    "| python3 -u -c 'import sys; sys.exit(0 if \"REVIEW-DONE\" in sys.stdin.read() else 1)' "
-    "|| ! herdr pane get w4E:p6 >/dev/null 2>&1; do sleep 5; done; "
-    "if herdr pane get w4E:p6 >/dev/null 2>&1; then echo MARKER-SEEN; else echo PEER-GONE; fi",
+    "wait-for-event file /tmp/rebuild.log --match 'REBUILD_EXIT='",
+    "herdr pane wait-output w4E:p6 --match REVIEW-DONE --timeout 600000",
+    "hypruse wait_for window_open --match Steam --timeout 30",
 )
 
 KNOWN_GOOD_FILE_WRITES = (

@@ -52,6 +52,10 @@ PRE_TOOL_USE_HANDLERS = [
         surfaces=(CLAUDE_SURFACE,),
     ),
     HookHandler(
+        handler_module_name="delay_wait_guard_handler",
+        tool_matcher="Bash|Monitor",
+    ),
+    HookHandler(
         handler_module_name="background_bash_anti_pattern_validator_handler",
         tool_matcher="Bash",
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),

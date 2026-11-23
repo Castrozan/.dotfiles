@@ -75,7 +75,7 @@ INVOCATIONS_UNDER_BUDGET = {
             "tool_name": "Bash",
             "tool_input": {"command": "ls -la"},
         },
-        74,
+        75,
     ),
     "pre-tool-use/Edit": (
         "pre-tool-use-dispatcher",

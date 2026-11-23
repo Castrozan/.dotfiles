@@ -1,7 +1,6 @@
-import itertools
-
 import background_wait_shape_classifier as sut
 import pytest
+import wait_target_event_replacements as replacements
 
 INCIDENT_PEER_REPORT_POLL = (
     "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
@@ -10,166 +9,118 @@ INCIDENT_PEER_REPORT_POLL = (
     "do sleep 45; n=$((n+1)); done; orchestrator heartbeat show Reviewer-w4E-p6"
 )
 
-INCIDENT_POLL_WITH_PANE_LIVENESS_EXIT = (
-    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    'until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ]; } '
-    "|| ! herdr pane get w4E:p6 >/dev/null 2>&1 || [ $n -ge 240 ]; "
-    "do sleep 45; n=$((n+1)); done; "
-    'herdr pane get w4E:p6 >/dev/null 2>&1 || echo "PEER-GONE: pane w4E:p6 closed"; '
-    "orchestrator heartbeat show Reviewer-w4E-p6"
+CAPPED_MERGE_REQUEST_POLL = (
+    "for i in $(seq 1 120); do "
+    "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
+    '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"'
 )
-
-PEER_STATE_READS = (
-    "orchestrator heartbeat show Reviewer-w4E-p6",
-    "orchestrator status",
-    "herdr agent read w4E:p6 --source visible",
-    "herdr pane read w4E:p6 --lines 40",
-    "a2a status reviewer 7e790558",
-    "a2a inbox",
-)
-
-PEER_LIVENESS_PROBES = (
-    "herdr pane get w4E:p6",
-    "herdr pane list",
-    "herdr pane process-info --pane w4E:p6",
-    "herdr agent get w4E:p6",
-    "herdr agent list",
-    "a2a list",
-    "kill -0 $peer_pid",
-    "pgrep -f peer-agent",
-    "ps -p $peer_pid",
-)
-
-PEER_POLL_LOOP_TEMPLATES = (
-    "until {read} | grep -q DONE{exit}; do sleep 30; done",
-    "while ! {read} | grep -q DONE{exit}; do sleep 30; done",
-    "for i in $(seq 1 60); do {read} | grep -q DONE && break{exit}; sleep 30; done",
-    "n=0\nuntil {read} | grep -q DONE{exit}\ndo\n  sleep 30\ndone",
+UNCAPPED_MERGE_REQUEST_POLL = (
+    "until [ \"$(glab api 'projects/group%2Fplugin/merge_requests/118' "
+    '| jq -r .state)" = merged ]; do sleep 30; done'
 )
 
 
-def unlisted_rules(command, tool_name="Bash"):
-    return sut.find_unlisted_background_wait_rules(command, tool_name)
+def denied(command, tool_name="Bash", runs_in_background=False):
+    return sut.find_denied_delay_wait(command, tool_name, runs_in_background)
 
 
-class TestIncidentPeerReportPoll:
-    def test_the_incident_poll_is_denied_for_lacking_a_liveness_exit(self):
-        assert unlisted_rules(INCIDENT_PEER_REPORT_POLL) == [
-            "peer-wait-without-liveness-exit"
-        ]
-
-    def test_the_incident_poll_is_denied_under_monitor_too(self):
-        assert unlisted_rules(INCIDENT_PEER_REPORT_POLL, "Monitor") == [
-            "peer-wait-without-liveness-exit"
-        ]
-
-    def test_the_same_poll_with_a_pane_liveness_exit_is_a_known_good_shape(self):
-        assert unlisted_rules(INCIDENT_POLL_WITH_PANE_LIVENESS_EXIT) == []
-        assert (
-            sut.known_good_background_wait_shape(
-                INCIDENT_POLL_WITH_PANE_LIVENESS_EXIT, "Bash"
-            )
-            == "peer-poll-with-liveness-exit"
-        )
-
-
-class TestEveryPeerPollNeedsALivenessProbeInsideItsLoop:
+class TestPeerPolls:
     @pytest.mark.parametrize(
-        ("loop_template", "peer_state_read"),
-        itertools.product(PEER_POLL_LOOP_TEMPLATES, PEER_STATE_READS),
+        ("tool_name", "runs_in_background"),
+        [("Bash", False), ("Bash", True), ("Monitor", False)],
     )
-    def test_a_peer_poll_without_a_probe_is_denied(
-        self, loop_template, peer_state_read
+    def test_the_incident_poll_is_denied_in_every_context(
+        self, tool_name, runs_in_background
     ):
-        command = loop_template.format(read=peer_state_read, exit="")
-        assert unlisted_rules(command) == ["peer-wait-without-liveness-exit"]
+        assert denied(INCIDENT_PEER_REPORT_POLL, tool_name, runs_in_background) == (
+            sut.DelayWait("sleep-paced-loop", "peer-agent")
+        )
 
+    def test_a_liveness_probe_no_longer_buys_a_peer_poll_its_place(self):
+        command = INCIDENT_PEER_REPORT_POLL.replace(
+            "|| [ $n -ge 240 ]", "|| ! herdr pane get w4E:p6 >/dev/null 2>&1"
+        )
+        assert denied(command, "Bash", True).target_name == "peer-agent"
+
+
+class TestRemoteStateSafetyNet:
     @pytest.mark.parametrize(
-        ("loop_template", "peer_state_read", "liveness_probe"),
-        itertools.product(
-            PEER_POLL_LOOP_TEMPLATES, PEER_STATE_READS, PEER_LIVENESS_PROBES
-        ),
+        ("tool_name", "runs_in_background"), [("Bash", True), ("Monitor", False)]
     )
-    def test_a_peer_poll_with_a_probe_in_the_loop_is_allowed(
-        self, loop_template, peer_state_read, liveness_probe
+    def test_a_capped_remote_poll_off_the_session_is_a_known_good_shape(
+        self, tool_name, runs_in_background
     ):
-        command = loop_template.format(
-            read=peer_state_read, exit=f" || ! {liveness_probe} >/dev/null 2>&1"
-        )
-        assert unlisted_rules(command) == []
+        assert denied(CAPPED_MERGE_REQUEST_POLL, tool_name, runs_in_background) is None
         assert (
-            sut.known_good_background_wait_shape(command, "Bash")
-            == "peer-poll-with-liveness-exit"
+            sut.known_good_background_wait_shape(CAPPED_MERGE_REQUEST_POLL, tool_name)
+            == "remote-state-safety-net"
         )
 
-    @pytest.mark.parametrize("liveness_probe", PEER_LIVENESS_PROBES)
-    def test_a_probe_that_runs_only_after_the_loop_is_not_an_exit(self, liveness_probe):
+    def test_the_same_poll_in_the_foreground_is_denied(self):
+        assert denied(CAPPED_MERGE_REQUEST_POLL) == sut.DelayWait(
+            "sleep-paced-loop", "forge-merge-request"
+        )
+
+    def test_an_uncapped_remote_poll_in_background_bash_needs_a_cap(self):
+        executed_text = UNCAPPED_MERGE_REQUEST_POLL
+        assert sut.find_unlisted_background_wait_rules(executed_text, "Bash") == [
+            "forge-poll-without-cap"
+        ]
+        assert sut.known_good_background_wait_shape(executed_text, "Bash") is None
+
+    def test_a_remote_poll_that_also_reads_a_local_file_has_an_event(self):
         command = (
-            "until herdr agent read w4E:p6 | grep -q DONE; do sleep 30; done; "
-            f"{liveness_probe}"
+            "until grep -q CHAIN-DONE /tmp/chain.log; do sleep 30; done; "
+            + UNCAPPED_MERGE_REQUEST_POLL
         )
-        assert unlisted_rules(command) == ["peer-wait-without-liveness-exit"]
+        assert denied(command, "Bash", True).target_name == "file-content"
 
 
 class TestPeerEventStream:
     def test_orchestrator_watch_in_backgrounded_bash_is_denied(self):
-        command = (
-            "orchestrator watch --workspace w4E --pane w4E:p6 --timeout-minutes 10"
-        )
-        assert unlisted_rules(command, "Bash") == ["peer-event-stream-outside-monitor"]
+        command = "orchestrator watch --workspace w4E --pane w4E:p6"
+        assert sut.find_unlisted_background_wait_rules(command, "Bash") == [
+            "peer-event-stream-outside-monitor"
+        ]
 
     def test_orchestrator_watch_under_monitor_is_a_known_good_shape(self):
-        command = (
-            "orchestrator watch --workspace w4E --pane w4E:p6 --timeout-minutes 10"
-        )
-        assert unlisted_rules(command, "Monitor") == []
+        command = "orchestrator watch --workspace w4E --pane w4E:p6"
+        assert sut.find_unlisted_background_wait_rules(command, "Monitor") == []
         assert (
             sut.known_good_background_wait_shape(command, "Monitor")
             == "peer-event-stream-under-monitor"
         )
 
 
-class TestCommandsOutsideThePeerWaitRules:
-    @pytest.mark.parametrize(
-        "command",
-        [
-            "until ! pgrep -f darwin-rebuild; do sleep 15; done",
-            "while ! curl -sf localhost:8767; do sleep 1; done",
-            "until grep -q 'REBUILD-EXIT=' /tmp/rebuild.log; do sleep 5; done; tail -3 /tmp/rebuild.log",
-            "for i in $(seq 1 45); do gh run list --commit abc123 --json conclusion | grep -q success && break; sleep 20; done",
-        ],
-    )
-    def test_a_poll_of_a_process_file_ci_run_or_endpoint_is_a_condition_poll(
-        self, command
-    ):
-        assert unlisted_rules(command) == []
-        assert sut.known_good_background_wait_shape(command, "Bash") == "condition-poll"
-
+class TestNativeWaitsAreNotDelays:
     @pytest.mark.parametrize(
         "command",
         [
             "herdr agent wait w4E:p6 --until done --until blocked --timeout 3600000",
-            "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
-            "pytest agent-harness/hooks/runtime/__tests__/unit/shell-commands/test_shell_heredoc_body.py",
+            "gh run watch 30957498339 --interval 10 --exit-status > /tmp/ci.log 2>&1",
+            "wait-for-event file /tmp/rebuild.log --match 'REBUILD_EXIT='",
             'for file in *.log; do gzip "$file"; done',
             'tail -f /var/log/app.log | while read -r line; do echo "$line"; done',
-            "herdr agent read w4E:p6 --source visible | tail -20",
         ],
     )
     def test_a_native_wait_or_one_shot_job_is_not_a_background_wait(self, command):
         assert not sut.command_is_a_background_wait(command)
-        assert unlisted_rules(command) == []
+        assert denied(command, "Bash", True) is None
 
-    def test_a_peer_read_after_a_file_poll_does_not_make_it_a_peer_poll(self):
-        command = (
-            "until [ -f /tmp/review.md ]; do sleep 10; done; "
-            "herdr agent read w4E:p6 --source visible | tail -12"
-        )
-        assert unlisted_rules(command) == []
 
-    def test_a_loop_keyword_inside_quoted_program_text_is_not_a_shell_loop(self):
-        command = (
-            "python3 -u -c \"\nwhile True:\n    poll('herdr agent read w4E:p6')\n\"; "
-            "echo ready; do_nothing"
+class TestDenyReason:
+    @pytest.mark.parametrize(
+        "target_name", sorted(replacements.EVENT_REPLACEMENT_BY_WAIT_TARGET)
+    )
+    def test_every_denial_fits_two_lines_and_ends_on_the_event_to_wait_on(
+        self, target_name
+    ):
+        reason = sut.build_delay_wait_deny_reason(
+            sut.DelayWait("sleep-paced-loop", target_name), "This Bash command"
         )
-        assert sut.shell_loop_span(command) is None
+        first_line, event_line = reason.split("\n")
+        assert target_name in first_line
+        assert event_line.endswith(
+            replacements.EVENT_REPLACEMENT_BY_WAIT_TARGET[target_name]
+        )
+        assert len(reason) <= 400

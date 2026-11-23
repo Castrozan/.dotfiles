@@ -64,7 +64,7 @@ If you want to suppress stderr entirely instead, use `2>/dev/null` — but only 
 
 ## rapid-bursts
 
-Lines arriving within 200ms of each other coalesce into a single event by design (documented). Test outputs from a tight loop like `for i in {1..100}; do echo $i; done` will collapse to one event. This is not a bug you can hook around; either space the output with `sleep`, or accept the batching for that command.
+Lines arriving within 200ms of each other coalesce into a single event by design (documented). Test outputs from a tight loop like `for i in {1..100}; do echo $i; done` will collapse to one event. This is not a bug you can hook around; emit fewer, larger lines, or accept the batching for that command.
 
 ---
 

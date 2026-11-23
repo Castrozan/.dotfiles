@@ -1,7 +1,7 @@
 KNOWN_SILENT_BACKGROUND_WAITS = (
     {
         "tool_name": "Bash",
-        "denied_by": "peer-wait-without-liveness-exit",
+        "denied_by": "sleep-paced-loop on peer-agent",
         "silent_minutes": 170,
         "command": (
             "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); "
@@ -14,7 +14,7 @@ KNOWN_SILENT_BACKGROUND_WAITS = (
     },
     {
         "tool_name": "Bash",
-        "denied_by": "peer-wait-without-liveness-exit",
+        "denied_by": "sleep-paced-loop on peer-agent",
         "silent_minutes": 37,
         "command": (
             "until herdr agent read w3A:p12P --source visible --lines 40 "

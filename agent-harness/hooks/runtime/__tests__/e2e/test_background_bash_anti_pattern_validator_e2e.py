@@ -48,7 +48,7 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
             {
                 "tool_name": "Bash",
                 "tool_input": {
-                    "command": 'until [ "$(gh run list --json status --jq length)" = "0" ]; do sleep 15; done',
+                    "command": 'until [ "$(curl -s https://api.example.com/runs | jq length)" = "0" ]; do sleep 15; done',
                     "run_in_background": True,
                 },
             }
@@ -73,12 +73,12 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
         )
         assert result.returncode == 0
         assert _permission_decision(result) == "deny"
-        assert "sleep-and-recheck loop" in result.stdout
+        assert "sleep-paced-loop on ci-run" in result.stdout
 
     def test_allows_background_bash_with_safe_polling_pattern(self):
         safe_command = (
             "for i in $(seq 1 60); do "
-            'matched=$(gh run list --json headSha --jq "[.[] | select(.headSha == \\"$SHA\\")] | length"); '
+            'matched=$(curl -s https://api.example.com/runs | jq "[.[] | select(.headSha == \\"$SHA\\")] | length"); '
             '[ "$matched" -gt 0 ] || { echo "no runs match"; exit 1; }; '
             "sleep 15; done"
         )

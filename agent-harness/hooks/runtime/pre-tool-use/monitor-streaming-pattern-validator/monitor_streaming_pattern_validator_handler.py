@@ -24,7 +24,6 @@ from shell_read_only_inspection_command import (  # noqa: E402
     command_text_the_shell_executes,
 )
 from streamed_command_anti_pattern_detectors import (  # noqa: E402
-    find_busy_wait_anti_patterns_in_command,
     find_hang_anti_patterns_in_command,
     find_streaming_anti_patterns_in_command,
 )
@@ -48,7 +47,6 @@ def command_runs_in_a_streamed_or_backgrounded_context(tool_name, tool_input):
 def build_deny_reason_message(
     triggered_streaming_rules,
     triggered_hang_rules,
-    triggered_busy_wait_rules,
     triggered_unlisted_background_wait_rules,
     streamed_execution_context_label,
 ):
@@ -59,18 +57,6 @@ def build_deny_reason_message(
                 triggered_unlisted_background_wait_rules,
                 streamed_execution_context_label,
             )
-        )
-    if triggered_busy_wait_rules:
-        busy_wait_rules_list_text = ", ".join(triggered_busy_wait_rules)
-        sentences.append(
-            f"{streamed_execution_context_label} matches: {busy_wait_rules_list_text}. "
-            f"A shell loop that calls sleep busy-waits and emits nothing until it "
-            f"exits, so it looks stuck and burns wall-clock polling. Wait on the "
-            f"actual condition with Monitor and an until-loop, or background the real "
-            f"work and let its completion notify you, instead of a for/while/until "
-            f"plus sleep poll. "
-            f"Read {HANG_PATTERNS_REFERENCE_FILE_PATH} for the correct invocation "
-            f"patterns, then retry."
         )
     if triggered_hang_rules:
         hang_rules_list_text = ", ".join(triggered_hang_rules)
@@ -101,16 +87,12 @@ def _handler_result_for_command(tool_name, command_string):
         command_text_outside_inert_heredoc_bodies(command_string)
     )
     triggered_hang_rules = find_hang_anti_patterns_in_command(executed_command_text)
-    triggered_busy_wait_rules = find_busy_wait_anti_patterns_in_command(
-        executed_command_text
-    )
     triggered_unlisted_background_wait_rules = find_unlisted_background_wait_rules(
         executed_command_text, tool_name
     )
     if not (
         triggered_streaming_rules
         or triggered_hang_rules
-        or triggered_busy_wait_rules
         or triggered_unlisted_background_wait_rules
     ):
         return None
@@ -120,7 +102,6 @@ def _handler_result_for_command(tool_name, command_string):
         reason=build_deny_reason_message(
             triggered_streaming_rules,
             triggered_hang_rules,
-            triggered_busy_wait_rules,
             triggered_unlisted_background_wait_rules,
             streamed_execution_context_label_for_tool(tool_name),
         ),

@@ -1,32 +1,29 @@
 from __future__ import annotations
 
 import re
+from collections import namedtuple
 
-from shell_command_segment_scanning import UNQUOTED_STATE, quote_state_by_offset
+from shell_data_heredoc_bodies import shell_text_outside_data_heredoc_bodies
+from shell_delay_commands import delays_in_shell_text
+from shell_loop_span import pattern_matches_inside_a_shell_loop
+from shell_read_only_inspection_command import command_text_the_shell_executes
+from wait_target_event_replacements import (
+    EVENT_REPLACEMENT_BY_WAIT_TARGET,
+    target_has_an_event_source,
+    waited_target,
+)
 
 MONITOR_TOOL_NAME = "Monitor"
-
-SHELL_LOOP_KEYWORD_PATTERN = re.compile(
-    r"(?:^|[;&|({\n]|\b(?:do|then|else)\s)\s*(until|while|for)(?=\s)"
+SLEEP_PACED_LOOP_RULE = "sleep-paced-loop"
+FIXED_DELAY_RULE = "fixed-delay"
+PEER_EVENT_STREAM_UNDER_MONITOR_SHAPE = "peer-event-stream-under-monitor"
+REMOTE_STATE_SAFETY_NET_SHAPE = "remote-state-safety-net"
+KNOWN_GOOD_WAIT_SHAPE_NAMES = (
+    PEER_EVENT_STREAM_UNDER_MONITOR_SHAPE,
+    REMOTE_STATE_SAFETY_NET_SHAPE,
 )
-SHELL_LOOP_BODY_OPENER_PATTERN = re.compile(r"[;\n]\s*do(?=\s|$)")
-SHELL_LOOP_CLOSER_PATTERN = re.compile(r"(?<![\w-])done(?![\w-])")
-PACING_SLEEP_PATTERN = re.compile(r"(?<![A-Za-z0-9_/.-])sleep\s+[\"']?[0-9.$]")
 
-PEER_STATE_READ_PATTERN = re.compile(
-    r"\borchestrator\s+(?:heartbeat\s+show|status)\b"
-    r"|\bherdr\s+(?:--\S+\s+\S+\s+)*(?:agent|pane)\s+read\b"
-    r"|\ba2a\s+(?:status|inbox)\b"
-)
 PEER_EVENT_STREAM_PATTERN = re.compile(r"\borchestrator\s+watch\b")
-PEER_LIVENESS_PROBE_PATTERN = re.compile(
-    r"\bherdr\s+(?:--\S+\s+\S+\s+)*pane\s+(?:get|list|process-info)\b"
-    r"|\bherdr\s+(?:--\S+\s+\S+\s+)*agent\s+(?:get|list)\b"
-    r"|\ba2a\s+list\b"
-    r"|\bkill\s+-0\b"
-    r"|\bpgrep\b"
-    r"|\bps\s+-p\b"
-)
 FORGE_STATE_READ_PATTERN = re.compile(r"(?<![\w-])(?:glab|gh)\s+\w")
 WAIT_CAP_PATTERN = re.compile(
     r"\bseq\s"
@@ -38,47 +35,45 @@ WAIT_CAP_PATTERN = re.compile(
 )
 
 
-def shell_loop_span(command_string):
-    quote_states = quote_state_by_offset(command_string)
-    unquoted_loop_keyword_offsets = [
-        loop_keyword.start(1)
-        for loop_keyword in SHELL_LOOP_KEYWORD_PATTERN.finditer(command_string)
-        if quote_states[loop_keyword.start(1)] == UNQUOTED_STATE
+DelayWait = namedtuple("DelayWait", "rule_name target_name")
+
+
+def delay_wait_in(command_string):
+    shell_text = shell_text_outside_data_heredoc_bodies(command_string)
+    waiting_delays = [
+        delay for delay in delays_in_shell_text(shell_text) if not delay.paces_input
     ]
-    if not unquoted_loop_keyword_offsets:
+    if not waiting_delays:
         return None
-    loop_start = unquoted_loop_keyword_offsets[0]
-    if not SHELL_LOOP_BODY_OPENER_PATTERN.search(command_string, loop_start):
+    sleeps_in_a_loop = any(delay.loop is not None for delay in waiting_delays)
+    rule_name = SLEEP_PACED_LOOP_RULE if sleeps_in_a_loop else FIXED_DELAY_RULE
+    return DelayWait(rule_name, waited_target(shell_text))
+
+
+def delay_wait_runs_as_a_safety_net(delay_wait, tool_name, runs_in_background):
+    runs_off_the_session = tool_name == MONITOR_TOOL_NAME or runs_in_background
+    return runs_off_the_session and not target_has_an_event_source(
+        delay_wait.target_name
+    )
+
+
+def find_denied_delay_wait(command_string, tool_name, runs_in_background):
+    delay_wait = delay_wait_in(command_string)
+    if delay_wait is None:
         return None
-    loop_closers = list(SHELL_LOOP_CLOSER_PATTERN.finditer(command_string, loop_start))
-    loop_end = loop_closers[-1].end() if loop_closers else len(command_string)
-    return loop_start, loop_end
-
-
-def pattern_matches_inside_a_shell_loop(pattern, command_string):
-    loop_span = shell_loop_span(command_string)
-    if loop_span is None:
-        return False
-    loop_start, loop_end = loop_span
-    return bool(pattern.search(command_string, loop_start, loop_end))
-
-
-def command_polls_peer_state_in_a_loop(command_string):
-    return pattern_matches_inside_a_shell_loop(PEER_STATE_READ_PATTERN, command_string)
+    if delay_wait_runs_as_a_safety_net(delay_wait, tool_name, runs_in_background):
+        return None
+    return delay_wait
 
 
 def command_streams_peer_events(command_string):
     return bool(PEER_EVENT_STREAM_PATTERN.search(command_string))
 
 
-def command_polls_in_a_sleep_paced_loop(command_string):
-    return pattern_matches_inside_a_shell_loop(PACING_SLEEP_PATTERN, command_string)
-
-
 def command_polls_a_forge_without_a_cap(command_string, tool_name):
     return (
         tool_name != MONITOR_TOOL_NAME
-        and command_polls_in_a_sleep_paced_loop(command_string)
+        and delay_wait_in(command_string) is not None
         and pattern_matches_inside_a_shell_loop(
             FORGE_STATE_READ_PATTERN, command_string
         )
@@ -87,62 +82,41 @@ def command_polls_a_forge_without_a_cap(command_string, tool_name):
 
 
 def command_is_a_background_wait(command_string):
-    return (
-        command_streams_peer_events(command_string)
-        or command_polls_peer_state_in_a_loop(command_string)
-        or command_polls_in_a_sleep_paced_loop(command_string)
+    return command_streams_peer_events(command_string) or (
+        delay_wait_in(command_string) is not None
     )
-
-
-def _is_a_peer_event_stream_under_monitor(command_string, tool_name):
-    return tool_name == MONITOR_TOOL_NAME and command_streams_peer_events(
-        command_string
-    )
-
-
-def _is_a_peer_poll_with_a_liveness_exit(command_string, tool_name):
-    return (
-        command_polls_peer_state_in_a_loop(command_string)
-        and not command_streams_peer_events(command_string)
-        and pattern_matches_inside_a_shell_loop(
-            PEER_LIVENESS_PROBE_PATTERN, command_string
-        )
-    )
-
-
-def _is_a_condition_poll(command_string, tool_name):
-    return (
-        command_polls_in_a_sleep_paced_loop(command_string)
-        and not command_polls_peer_state_in_a_loop(command_string)
-        and not command_streams_peer_events(command_string)
-        and not command_polls_a_forge_without_a_cap(command_string, tool_name)
-    )
-
-
-KNOWN_GOOD_WAIT_SHAPE_MATCHERS_BY_NAME = {
-    "peer-event-stream-under-monitor": _is_a_peer_event_stream_under_monitor,
-    "peer-poll-with-liveness-exit": _is_a_peer_poll_with_a_liveness_exit,
-    "condition-poll": _is_a_condition_poll,
-}
 
 
 def known_good_background_wait_shape(command_string, tool_name):
-    for shape_name, matches in KNOWN_GOOD_WAIT_SHAPE_MATCHERS_BY_NAME.items():
-        if matches(command_string, tool_name):
-            return shape_name
+    executed_command_text = command_text_the_shell_executes(command_string)
+    if tool_name == MONITOR_TOOL_NAME and command_streams_peer_events(
+        executed_command_text
+    ):
+        return PEER_EVENT_STREAM_UNDER_MONITOR_SHAPE
+    if _runs_as_a_remote_state_safety_net(
+        command_string, executed_command_text, tool_name
+    ):
+        return REMOTE_STATE_SAFETY_NET_SHAPE
     return None
 
 
+def _runs_as_a_remote_state_safety_net(
+    command_string, executed_command_text, tool_name
+):
+    delay_wait = delay_wait_in(command_string)
+    return (
+        delay_wait is not None
+        and not find_unlisted_background_wait_rules(executed_command_text, tool_name)
+        and delay_wait_runs_as_a_safety_net(delay_wait, tool_name, True)
+    )
+
+
 def find_unlisted_background_wait_rules(command_string, tool_name):
-    if not command_is_a_background_wait(command_string):
-        return []
-    if known_good_background_wait_shape(command_string, tool_name):
-        return []
-    if command_streams_peer_events(command_string):
+    if tool_name != MONITOR_TOOL_NAME and command_streams_peer_events(command_string):
         return ["peer-event-stream-outside-monitor"]
     if command_polls_a_forge_without_a_cap(command_string, tool_name):
         return ["forge-poll-without-cap"]
-    return ["peer-wait-without-liveness-exit"]
+    return []
 
 
 BACKGROUND_WAIT_SHAPES_REFERENCE_FILE_PATH = (
@@ -150,14 +124,6 @@ BACKGROUND_WAIT_SHAPES_REFERENCE_FILE_PATH = (
 )
 
 UNLISTED_BACKGROUND_WAIT_EXPLANATIONS_BY_RULE_NAME = {
-    "peer-wait-without-liveness-exit": (
-        "It polls a peer agent's state in a loop and never checks that the peer "
-        "is still there, so once the peer's pane closes the state it reads is "
-        "frozen and the loop stays silent until its cap, or forever. Make the "
-        "loop also exit, printing why, when the peer is gone: add "
-        "'|| ! herdr pane get <pane> >/dev/null 2>&1' to the exit condition and "
-        "echo PEER-GONE after the loop when that probe fails."
-    ),
     "forge-poll-without-cap": (
         "It polls a merge request, pipeline or job in a sleep-paced loop with "
         "no cap, and forge state can park forever where the loop never looks: "
@@ -172,6 +138,11 @@ UNLISTED_BACKGROUND_WAIT_EXPLANATIONS_BY_RULE_NAME = {
     ),
 }
 
+DELAY_PHRASE_BY_RULE_NAME = {
+    SLEEP_PACED_LOOP_RULE: "sleeping in a loop",
+    FIXED_DELAY_RULE: "sleeping a fixed time",
+}
+
 
 def build_unlisted_background_wait_deny_reason(
     triggered_rule_names, execution_context_label
@@ -181,11 +152,22 @@ def build_unlisted_background_wait_deny_reason(
         UNLISTED_BACKGROUND_WAIT_EXPLANATIONS_BY_RULE_NAME[rule_name]
         for rule_name in triggered_rule_names
     )
-    known_good_shapes_text = ", ".join(KNOWN_GOOD_WAIT_SHAPE_MATCHERS_BY_NAME)
+    known_good_shapes_text = ", ".join(KNOWN_GOOD_WAIT_SHAPE_NAMES)
     return (
         f"{execution_context_label} is a background wait outside the known-good "
         f"shapes: {rules_list_text}. {explanations_text} Allowed waits: a native "
         f"blocking wait such as 'herdr agent wait <pane> --until done --timeout "
-        f"<ms>', or a loop matching {known_good_shapes_text}. Read "
+        f"<ms>', or a wait matching {known_good_shapes_text}. Read "
         f"{BACKGROUND_WAIT_SHAPES_REFERENCE_FILE_PATH} for each shape, then retry."
+    )
+
+
+def build_delay_wait_deny_reason(delay_wait, execution_context_label):
+    delay_phrase = DELAY_PHRASE_BY_RULE_NAME[delay_wait.rule_name]
+    return (
+        f"{execution_context_label} waits by {delay_phrase} ({delay_wait.rule_name} "
+        f"on {delay_wait.target_name}) instead of on an event. See "
+        f"{BACKGROUND_WAIT_SHAPES_REFERENCE_FILE_PATH}.\n"
+        "Wait on the event instead: "
+        f"{EVENT_REPLACEMENT_BY_WAIT_TARGET[delay_wait.target_name]}"
     )
