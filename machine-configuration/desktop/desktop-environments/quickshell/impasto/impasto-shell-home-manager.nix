@@ -42,7 +42,7 @@ lib.mkIf (config.custom.desktopShell.active == "impasto") {
     };
   };
 
-  home.activation.seedImpastoFirstRunSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
+  home.activation.seedImpastoFirstRunSettings = lib.hm.dag.entryBetween [ "reloadSystemd" ] [ "writeBoundary" ] ''
     impastoSettingsFile="''${XDG_STATE_HOME:-$HOME/.local/state}/quickshell/settings.json"
     if [ ! -e "$impastoSettingsFile" ]; then
       $DRY_RUN_CMD install -D -m 644 ${firstRunSettings} "$impastoSettingsFile"
