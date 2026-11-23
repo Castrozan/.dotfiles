@@ -50,14 +50,13 @@ setup() {
     [ "$errorCount" -eq 0 ]
 }
 
-@test "systemd: quickshell-bar service is active" {
-    run systemctl --user is-active quickshell-bar.service
-    [ "$output" = "active" ]
-}
-
-@test "systemd: mako service is active" {
-    run systemctl --user is-active mako.service
-    [ "$output" = "active" ]
+@test "systemd: every service of the active desktop shell is active" {
+    activeShellServices=$(grep -oE '[A-Za-z0-9@_-]+\.service' ~/.config/hypr-shell/autostart.conf)
+    [ -n "$activeShellServices" ]
+    for activeShellService in $activeShellServices; do
+        run systemctl --user is-active "$activeShellService"
+        [ "$output" = "active" ]
+    done
 }
 
 @test "systemd: quickshell-switcher service is active" {

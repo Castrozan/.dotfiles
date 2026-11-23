@@ -399,6 +399,7 @@
         "hex": "hex",
         "home-manager": "home-manager_3",
         "hyprland": "hyprland",
+        "impasto": "impasto",
         "install-nothing": "install-nothing",
         "lazygit": "lazygit",
         "nix-darwin": "nix-darwin",
@@ -1386,6 +1387,28 @@
       "original": {
         "owner": "hyprwm",
         "repo": "hyprwire",
+        "type": "github"
+      }
+    },
+    "impasto": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs-unstable"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795394054,
+        "narHash": "sha256-+KlSSS4u7avin9MKCVTLCHE6jriI3eH94LQYiDIRTsc=",
+        "owner": "Castrozan",
+        "repo": "impasto",
+        "rev": "9c87efa9b237a621bfc494e7add0d0a73d15045f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Castrozan",
+        "repo": "impasto",
+        "rev": "9c87efa9b237a621bfc494e7add0d0a73d15045f",
         "type": "github"
       }
     },

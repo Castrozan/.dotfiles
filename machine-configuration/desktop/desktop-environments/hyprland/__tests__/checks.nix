@@ -42,6 +42,7 @@ let
   impastoDesktopShellConfiguration = helpers.homeManagerTestConfiguration [
     ../../quickshell/desktop-shell-selection-home-manager.nix
     ../../quickshell/bar/quickshell-bar-home-manager.nix
+    ../../quickshell/impasto/impasto-shell-home-manager.nix
     ../mako.nix
     { custom.desktopShell.active = "impasto"; }
   ];
@@ -148,10 +149,24 @@ in
       (
         !(impastoDesktopShellConfiguration.systemd.user.services ? quickshell-bar)
         && !(impastoDesktopShellConfiguration.systemd.user.services ? mako)
-        && impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/bindings.conf".text == ""
-        && impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/autostart.conf".text == ""
+        && impastoDesktopShellConfiguration.systemd.user.services ? impasto-shell
+        &&
+          lib.all
+            (
+              binding:
+              lib.hasInfix binding impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/bindings.conf".text
+            )
+            [
+              "bindd = SUPER, J, "
+              "bindd = SUPER, M, Media, global, quickshell:media"
+              "bindd = SUPER, Q, Launcher, global, quickshell:launcher"
+              "bindd = SUPER, A, Notifications and controls, global, quickshell:controls"
+            ]
+        &&
+          impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/autostart.conf".text
+          == "exec-once = sleep 2 && systemctl --user start impasto-shell.service\n"
       )
-      "Selecting impasto must leave exactly one desktop shell: no quickshell bar unit, and no mako unit because the selected shell owns org.freedesktop.Notifications itself. Two shells running together fight over layer-shell surfaces and the notification bus name";
+      "Selecting impasto must leave exactly one desktop shell: the impasto unit started by hypr-shell/autostart.conf with the launcher, controls, media and bar binds Lucas already uses, no quickshell bar unit, and no mako unit because impasto owns org.freedesktop.Notifications itself. Two shells running together fight over layer-shell surfaces and the notification bus name";
 
   domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend =
     mkEvalCheck "domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend"

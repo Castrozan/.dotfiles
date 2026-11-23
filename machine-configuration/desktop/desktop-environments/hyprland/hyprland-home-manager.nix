@@ -10,6 +10,7 @@
     ./session/wayland-electron.nix
     ../quickshell/desktop-shell-selection-home-manager.nix
     ../quickshell/bar/quickshell-bar-home-manager.nix
+    ../quickshell/impasto/impasto-shell-home-manager.nix
 
     ./wlr-which-key.nix
     ./mako.nix

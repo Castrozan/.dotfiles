@@ -9,6 +9,7 @@ in
   imports = [
     ./home/git.nix
     ./home/hyprland.nix
+    ./home/desktop-shell.nix
     ./home/session-vars.nix
     ./home/chrome-default-browser.nix
     ../../../agent-harness/harnesses/clawde/agents/steward.nix
