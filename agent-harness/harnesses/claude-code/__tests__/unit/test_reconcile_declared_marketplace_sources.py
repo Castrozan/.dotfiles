@@ -1,5 +1,6 @@
 import copy
 import json
+import subprocess
 import sys
 
 from hypothesis import given
@@ -132,3 +133,38 @@ def test_leaves_files_untouched_when_sources_already_match(tmp_path, monkeypatch
     assert main() == 0
 
     assert known_marketplaces_path.read_text() == known_marketplaces_text
+
+
+def test_points_the_clone_origin_at_the_declared_url_once(tmp_path, monkeypatch, capsys):
+    clone_path = tmp_path / "clone"
+    subprocess.run(["git", "init", "-q", str(clone_path)], check=True)
+    subprocess.run(
+        ["git", "-C", str(clone_path), "remote", "add", "origin", "https://old.example/repo.git"],
+        check=True,
+    )
+    new_source = {"source": "git", "url": "https://new.example/repo.git", "ref": "marketplace"}
+    known_marketplaces_path = write_json(
+        tmp_path / "known_marketplaces.json",
+        {"betha-agent-marketplace": {"source": new_source, "installLocation": str(clone_path)}},
+    )
+    overlay_path = write_json(
+        tmp_path / "overlay.json",
+        {"extraKnownMarketplaces": {"betha-agent-marketplace": {"source": new_source}}},
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["reconcile", str(known_marketplaces_path), str(tmp_path / "absent-settings.json"), str(overlay_path)],
+    )
+
+    assert main() == 0
+    assert main() == 0
+
+    origin_url = subprocess.run(
+        ["git", "-C", str(clone_path), "remote", "get-url", "origin"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    assert origin_url == "https://new.example/repo.git"
+    assert capsys.readouterr().out.count("clone origin moved") == 1

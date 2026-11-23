@@ -1,5 +1,6 @@
 import json
 import pathlib
+import subprocess
 import sys
 
 
@@ -65,6 +66,42 @@ def reconcile_file(
     return rewritten_marketplace_names
 
 
+def read_clone_origin_url(clone_path: pathlib.Path) -> str | None:
+    completed_process = subprocess.run(
+        ["git", "-C", str(clone_path), "remote", "get-url", "origin"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if completed_process.returncode != 0:
+        return None
+    return completed_process.stdout.strip()
+
+
+def point_clone_origins_at_declared_urls(
+    known_marketplaces_path: pathlib.Path, declared_sources: dict
+) -> list[str]:
+    marketplace_records = read_json_object(known_marketplaces_path) or {}
+    repointed_marketplace_names = []
+    for marketplace_name, declared_source in declared_sources.items():
+        record = marketplace_records.get(marketplace_name)
+        declared_url = declared_source.get("url")
+        if not isinstance(record, dict) or declared_source.get("source") != "git" or not declared_url:
+            continue
+        clone_path = pathlib.Path(record.get("installLocation") or "")
+        if not (clone_path / ".git").exists():
+            continue
+        origin_url = read_clone_origin_url(clone_path)
+        if origin_url is None or origin_url == declared_url:
+            continue
+        subprocess.run(
+            ["git", "-C", str(clone_path), "remote", "set-url", "origin", declared_url],
+            check=True,
+        )
+        repointed_marketplace_names.append(marketplace_name)
+    return repointed_marketplace_names
+
+
 def main() -> int:
     known_marketplaces_path = pathlib.Path(sys.argv[1])
     user_settings_path = pathlib.Path(sys.argv[2])
@@ -78,6 +115,10 @@ def main() -> int:
             print(
                 f"marketplace {marketplace_name}: source moved to the declared one in {path}"
             )
+    for marketplace_name in point_clone_origins_at_declared_urls(
+        known_marketplaces_path, declared_sources
+    ):
+        print(f"marketplace {marketplace_name}: clone origin moved to the declared url")
     return 0
 
 
