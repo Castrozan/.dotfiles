@@ -4,6 +4,7 @@ import sys
 
 import pytest
 from hook_module_loader import (
+    HOOK_SUBPROCESS_TIMEOUT_SECONDS,
     environment_isolated_from_the_machine_workspace_switch,
     find_hook_module_path,
 )
@@ -28,7 +29,7 @@ def pre_tool_use_output(tool_call, surface="claude"):
         input=json.dumps(payload),
         capture_output=True,
         text=True,
-        timeout=30,
+        timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS,
         env=environment_isolated_from_the_machine_workspace_switch(),
     )
     assert completed.returncode == 0, completed.stderr
