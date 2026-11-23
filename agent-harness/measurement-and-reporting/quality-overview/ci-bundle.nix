@@ -12,6 +12,7 @@ let
   source = import "${repository}/agent-harness/agent-instructions/production-plugin" {
     inherit pkgs;
     inherit (pkgs) lib;
+    inputs = dependencies;
     hostname = "ci";
     homeDirectory = "/var/empty/verdr-ci";
     chromePackage = pkgs.google-chrome;
