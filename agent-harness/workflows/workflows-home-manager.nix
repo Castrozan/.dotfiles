@@ -14,6 +14,7 @@ let
     dotfiles-housekeeping = ./definitions/dotfiles-housekeeping;
     dotfiles-housekeeping-slice = ./definitions/dotfiles-housekeeping-slice;
     dotfiles-housekeeping-verify = ./definitions/dotfiles-housekeeping-verify;
+    dotfiles-test-cut = ./definitions/dotfiles-test-cut;
     compose-page = skillsDirectory + "/writing/page-composer/workflow/compose-page";
     research-pulse = skillsDirectory + "/knowledge/research/workflow/research-pulse";
     research-pulse-fetch = skillsDirectory + "/knowledge/research/workflow/research-pulse-fetch";
@@ -94,6 +95,14 @@ let
     {
       commandName = "dotfiles-housekeeping";
       workflowName = "dotfiles-housekeeping";
+      argumentNames = [
+        "root"
+        "subtree"
+      ];
+    }
+    {
+      commandName = "dotfiles-test-cut";
+      workflowName = "dotfiles-test-cut";
       argumentNames = [
         "root"
         "subtree"

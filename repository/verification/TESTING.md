@@ -262,6 +262,10 @@ Code with no test that pays stays without one and shows as uncovered; never writ
 `dotfiles-lint` enforces the budget and runs shellcheck over every tracked shell script, with or without an extension.
 Conditions 1 to 6 are checked in review of the change, against this section.
 
+`dotfiles-test-cut` measures condition 1 for the Python unit tests of one subtree. It mutates the sources beside them,
+lists the tests that fail for no mutant, and returns the ones that also fail a condition on reading as a patch, kept
+only when every mutant caught before the cut is still caught after it.
+
 ## What earns an eval
 
 Each eval case costs model tokens and minutes on every measurement. The same seven conditions apply to a case of an AI
