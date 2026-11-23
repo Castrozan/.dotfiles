@@ -48,8 +48,8 @@ def test_repository_checks_report_all_failures_after_a_timeout(monkeypatch, tmp_
         return subprocess.CompletedProcess(command, 1, stdout="", stderr="16 entries")
 
     monkeypatch.setattr(repository_checks.subprocess, "run", run)
-    assert len(repository_checks.repository_failures(tmp_path)) == 3
-    assert len(calls) == 3
+    assert len(repository_checks.repository_failures(tmp_path)) == 5
+    assert len(calls) == 5
     assert "--skip-snapshot-tests" in calls[-1]
 
 
