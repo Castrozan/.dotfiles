@@ -38,7 +38,7 @@
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 
     avatar = {
-      url = "github:Castrozan/avatar/2a4af9e91bd7376b68864232944f29582b12aa1e";
+      url = "github:Castrozan/avatar/44dd2d243aa0156ff916ff4d7781c01ce94a039a";
       inputs = {
         nixpkgs.follows = "nixpkgs";
         home-manager.follows = "home-manager";
