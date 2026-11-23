@@ -56,6 +56,7 @@ def test_denies_the_spawn_that_passes_the_ceiling_without_a_declaration(
     assert result is not None
     assert result.decision == "deny"
     assert "orchestrated:" in result.system_message
+    assert "`dotfiles-workflows` lists the installed ones" in result.reason
 
 
 def test_a_denied_spawn_does_not_count_against_the_budget(
