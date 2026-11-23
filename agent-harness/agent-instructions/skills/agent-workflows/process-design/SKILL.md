@@ -33,8 +33,9 @@ autonomously, run the same loop alone and record the evidence behind each change
 Climb the complexity ladder only as far as evidence forces: a deterministic script, one model call, one agent with
 tools, a fixed workflow, then multiple agents. Multi-agent designs win on decomposable breadth, lose on sequential,
 tightly coupled, or tool-heavy work, and multiply token cost; tune a single agent's brief before adding topology. Read
-[topology selection](references/topology-selection.md) to classify the task and pick the shape. An installed workflow
-that `dotfiles-workflows` lists outranks composing a new one, and free sessions stay for discovery.
+[topology selection](references/topology-selection.md) to classify the task and pick the shape. Run `dotfiles-workflows`
+to list the installed workflows before repeatable work by hand; one that fits outranks composing a new one, and free
+sessions stay for discovery.
 
 ### Compose from the toolbox
 

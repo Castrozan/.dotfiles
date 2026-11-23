@@ -35,8 +35,7 @@ architecture, judgment, verification, and synthesis. Treat delegated output as e
 Hand a decided change splitting into disjoint, script-checkable files to parallel `software-engineer` subagents on a
 cheaper model, per the `coding` skill's swarm procedure.
 
-Before doing repeatable, checkable work by hand, run `dotfiles-workflows` and use the installed workflow that fits;
-design other multi-agent work with `process-design`.
+Check installed workflows before repeatable work by hand; design other multi-agent work with `process-design`.
 
 ### Context
 
