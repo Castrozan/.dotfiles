@@ -41,7 +41,7 @@ def add_parser(subcommands) -> None:
         help="how long each session may stay quiet before and between TIMEOUT lines",
     )
     watch.add_argument(
-        "--reports-dir", default=str(state_directory("orchestrator-reports"))
+        "--heartbeats-dir", default=str(state_directory("orchestrator-heartbeats"))
     )
     watch.add_argument(
         "--decisions-dir", default=str(state_directory("orchestrator-decisions"))
@@ -57,7 +57,7 @@ def command_watch(arguments: argparse.Namespace) -> int:
     workspace_watch = WorkspaceWatch(
         WatchConfiguration(
             arguments.workspace,
-            Path(arguments.reports_dir),
+            Path(arguments.heartbeats_dir),
             Path(arguments.decisions_dir),
             arguments.timeout_minutes,
             frozenset(arguments.panes),

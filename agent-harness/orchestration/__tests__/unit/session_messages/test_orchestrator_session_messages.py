@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from orchestration_test_support import run_orchestrator
+from orchestration_test_support import heartbeat_text, run_orchestrator
 from orchestrator_cli.session_messages import cli as session_message_cli
 from session_message_test_support import brief
 
@@ -49,22 +49,26 @@ def test_dispatch_sends_nothing_when_the_brief_dictates_steps(
     assert notifications == [] and copied_briefs == []
 
 
-def file_remote_report(monkeypatch, reports):
+def file_remote_heartbeat(monkeypatch, reports):
     monkeypatch.delenv("HERDR_PANE_ID", raising=False)
     report = {
         "goal": "rehearsal reads GitLab",
         "state": "working",
-        "done_check": "one rehearsal on the VPN",
-        "progress": "gate script pushed",
-        "next_step": "rehearse",
+        "done_when": "one rehearsal on the VPN",
+        "doing": "gate script pushed",
+        "next": "rehearse",
     }
     filing = ["file", "--to", "Ibaraki", "--sender", "Mozart", "--reply-host", "kira"]
     run_orchestrator(
-        monkeypatch, reports, *filing, stdin_text=json.dumps(report), command="report"
+        monkeypatch,
+        reports,
+        *filing,
+        stdin_text=heartbeat_text(**report),
+        command="heartbeat",
     )
 
 
-def copy_report(reports, source, **fields):
+def copy_heartbeat(reports, source, **fields):
     record = {**json.loads((reports / f"{source}.json").read_text()), **fields}
     (reports / f"{record['name']}.json").write_text(json.dumps(record))
 
@@ -76,14 +80,14 @@ def relay(monkeypatch, reports, session, *content):
         session,
         *content,
         command="relay",
-        location_flag="--reports-dir",
+        location_flag="--heartbeats-dir",
     )
 
 
 def test_relay_quotes_lucas_to_the_session_on_the_host_its_report_named(
     monkeypatch, tmp_path, notifications
 ):
-    file_remote_report(monkeypatch, tmp_path)
+    file_remote_heartbeat(monkeypatch, tmp_path)
     words = "vpn is already\nconnected"
     assert relay(monkeypatch, tmp_path, "Mozart", "--words", words) == 0
     assert notifications[-1][0] == "kira:Mozart"
@@ -96,14 +100,14 @@ def test_relay_quotes_lucas_to_the_session_on_the_host_its_report_named(
 def test_relay_prefers_an_exact_session_and_refuses_an_ambiguous_one(
     monkeypatch, tmp_path, capsys, notifications
 ):
-    file_remote_report(monkeypatch, tmp_path)
+    file_remote_heartbeat(monkeypatch, tmp_path)
     local = {"requester_pane": "wW:pQN", "requester_host": None}
-    copy_report(tmp_path, "Mozart", name="Mozart-wW-pQN", **local)
+    copy_heartbeat(tmp_path, "Mozart", name="Mozart-wW-pQN", **local)
     assert relay(monkeypatch, tmp_path, "Mozart", "--status-check") == 0
     assert notifications[-1][0] == "kira:Mozart"
     assert relay(monkeypatch, tmp_path, "wW:pQN", "--status-check") == 0
     assert notifications[-1][0] == "wW:pQN"
-    copy_report(tmp_path, "Mozart", name="Mozart-kira")
+    copy_heartbeat(tmp_path, "Mozart", name="Mozart-kira")
     (tmp_path / "Mozart.json").unlink()
     assert relay(monkeypatch, tmp_path, "Mozart", "--status-check") == 1
     assert "Mozart matches several sessions" in capsys.readouterr().err

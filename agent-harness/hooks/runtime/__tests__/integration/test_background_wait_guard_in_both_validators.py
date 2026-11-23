@@ -13,10 +13,10 @@ monitor_validator = import_hyphenated_hook_module(
 )
 
 PEER_POLL_WITHOUT_LIVENESS_EXIT = (
-    'until [ -n "$(orchestrator report show Reviewer-w4E-p6)" ]; do sleep 45; done'
+    'until [ -n "$(orchestrator heartbeat show Reviewer-w4E-p6)" ]; do sleep 45; done'
 )
 PEER_POLL_WITH_LIVENESS_EXIT = (
-    'until [ -n "$(orchestrator report show Reviewer-w4E-p6)" ] '
+    'until [ -n "$(orchestrator heartbeat show Reviewer-w4E-p6)" ] '
     "|| ! herdr pane get w4E:p6 >/dev/null 2>&1; do sleep 45; done"
 )
 PEER_EVENT_STREAM = "orchestrator watch --workspace w4E --timeout-minutes 10"

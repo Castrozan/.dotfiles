@@ -4,24 +4,24 @@ import background_wait_shape_classifier as sut
 import pytest
 
 INCIDENT_PEER_REPORT_POLL = (
-    "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    'until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ] '
+    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
+    'until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ] '
     '&& echo "$cur" | grep -qE "· (done|blocked) · "; } || [ $n -ge 240 ]; '
-    "do sleep 45; n=$((n+1)); done; orchestrator report show Reviewer-w4E-p6"
+    "do sleep 45; n=$((n+1)); done; orchestrator heartbeat show Reviewer-w4E-p6"
 )
 
 INCIDENT_POLL_WITH_PANE_LIVENESS_EXIT = (
-    "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    'until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ]; } '
+    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
+    'until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ]; } '
     "|| ! herdr pane get w4E:p6 >/dev/null 2>&1 || [ $n -ge 240 ]; "
     "do sleep 45; n=$((n+1)); done; "
     'herdr pane get w4E:p6 >/dev/null 2>&1 || echo "PEER-GONE: pane w4E:p6 closed"; '
-    "orchestrator report show Reviewer-w4E-p6"
+    "orchestrator heartbeat show Reviewer-w4E-p6"
 )
 
 PEER_STATE_READS = (
-    "orchestrator report show Reviewer-w4E-p6",
-    "orchestrator report list",
+    "orchestrator heartbeat show Reviewer-w4E-p6",
+    "orchestrator status",
     "herdr agent read w4E:p6 --source visible",
     "herdr pane read w4E:p6 --lines 40",
     "a2a status reviewer 7e790558",

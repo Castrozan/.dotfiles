@@ -14,12 +14,17 @@ TEMPLATE_HEADINGS = (
 )
 QUOTED_HEADING = "Lucas's words"
 CONTEXT_HEADING = "Context"
+GOAL_HEADING = "Goal"
+GOAL_ADVICE = "the Goal section must state the outcome the session owns"
 CONTEXT_ADVICE = (
     "the Context section must say whose work this is, where its results may be "
     "published, and which requirements are hard and which are open"
 )
 CONTRACT_HEADING = "Contract"
-CONTRACT_COMMANDS = ("orchestrator decision file --to", "orchestrator report file --to")
+CONTRACT_COMMANDS = (
+    "orchestrator decision file --to",
+    "orchestrator heartbeat file --to",
+)
 SECTION_HEADING = re.compile(r"^##\s+(?P<title>.+?)\s*$")
 FENCE_MARKER = re.compile(r"^\s*(?P<fence>`{3,}|~{3,})")
 ORDERED_STEPS = re.compile(
@@ -102,15 +107,23 @@ def ordered_step_problems(sections: list[BriefSection]) -> list[str]:
     ]
 
 
-def context_problems(sections: list[BriefSection]) -> list[str]:
-    context = [
-        line
+def section_prose(sections: list[BriefSection], title: str) -> str:
+    return " ".join(
+        line.strip()
         for section in sections
-        if heading_key(section.title) == heading_key(CONTEXT_HEADING)
+        if heading_key(section.title) == heading_key(title)
         for _, line in section.prose_lines
         if line.strip()
-    ]
-    return [] if context else [CONTEXT_ADVICE]
+    )
+
+
+def brief_goal(text: str) -> str:
+    return section_prose(brief_sections(text), GOAL_HEADING)
+
+
+def presence_problems(sections: list[BriefSection]) -> list[str]:
+    required = ((GOAL_HEADING, GOAL_ADVICE), (CONTEXT_HEADING, CONTEXT_ADVICE))
+    return [advice for title, advice in required if not section_prose(sections, title)]
 
 
 def contract_problems(
@@ -137,7 +150,7 @@ def brief_problems(text: str, reply_host: str | None) -> list[str]:
     sections = brief_sections(text)
     return [
         *heading_problems(sections),
-        *context_problems(sections),
+        *presence_problems(sections),
         *ordered_step_problems(sections),
         *contract_problems(sections, reply_host),
     ]

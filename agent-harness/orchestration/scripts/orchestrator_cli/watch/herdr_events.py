@@ -8,6 +8,9 @@ from pathlib import Path
 
 HERDR_COMMAND_TIMEOUT_SECONDS = 5
 WORKSPACE_EVENT_TYPES = ("pane.agent_detected", "pane.exited", "pane.closed")
+PANE_NOT_FOUND = "pane_not_found"
+GONE_STATUS = "gone"
+UNKNOWN_STATUS = "unknown"
 
 
 class HerdrUnavailable(Exception):
@@ -44,6 +47,39 @@ def live_pane(pane_id: str) -> dict | None:
     except (OSError, subprocess.TimeoutExpired, ValueError, KeyError, TypeError):
         return None
     return pane if isinstance(pane, dict) else None
+
+
+def pane_reply(pane_id: str) -> dict:
+    try:
+        completed = subprocess.run(
+            ["herdr", "pane", "get", pane_id],
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=HERDR_COMMAND_TIMEOUT_SECONDS,
+        )
+        reply = json.loads(
+            completed.stdout if completed.returncode == 0 else completed.stderr
+        )
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return {}
+    return reply if isinstance(reply, dict) else {}
+
+
+def agent_status_of(pane) -> str:
+    if not isinstance(pane, dict):
+        return UNKNOWN_STATUS
+    if not pane.get("agent"):
+        return GONE_STATUS
+    return pane.get("agent_status") or UNKNOWN_STATUS
+
+
+def pane_agent_status(pane_id: str) -> str:
+    reply = pane_reply(pane_id)
+    error = reply.get("error") or {}
+    if error.get("code") == PANE_NOT_FOUND:
+        return GONE_STATUS
+    return agent_status_of((reply.get("result") or {}).get("pane"))
 
 
 def move_pane_to_new_tab(pane_id: str, label: str) -> str:

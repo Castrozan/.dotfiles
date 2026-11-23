@@ -5,8 +5,27 @@ import sys
 import pytest
 from orchestrator_cli import __main__ as orchestrator_main
 from orchestrator_cli import peer_messenger
+from orchestrator_cli.heartbeats.template import rendered_heartbeat
 
 PANE_SENDER_NAME = "worker-session"
+LIVE_PEERS = {
+    "Mozart": {"name": "Mozart", "servant": "Mozart", "paneId": "w1:p2"},
+    "Voyager": {"name": "avatar", "servant": "Voyager", "paneId": "wW:p4"},
+}
+
+
+def heartbeat_text(**overrides):
+    heartbeat = {
+        "goal": "drop the codex status line patch",
+        "done_when": "rebuild uses the binary cache for codex",
+        "state": "working",
+        "doing": "removing the patch from the overlay",
+        "next": "run rebuild",
+        "done": [{"claim": "overlay no longer patches codex", "evidence": "a1b2c3d"}],
+        "unverified": ["the binary cache already has this codex version"],
+        "open_decisions": [],
+    }
+    return rendered_heartbeat({**heartbeat, **overrides})
 
 
 def valid_card_document(**overrides):
@@ -46,6 +65,8 @@ def notifications(monkeypatch):
     def fake_a2a(command, *arguments, host=None):
         if command == "whoami":
             return arguments[1] if arguments else PANE_SENDER_NAME
+        if command == "list":
+            return json.dumps(LIVE_PEERS)
         target, text, _, sender = arguments
         sent.append((f"{host}:{target}" if host else target, sender, text))
         return ""

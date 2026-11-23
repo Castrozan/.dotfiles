@@ -67,12 +67,12 @@ KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "for i in $(seq 1 120); do "
     "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
     '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"',
-    "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    "until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); "
+    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
+    "until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); "
     '[ "$cur" != "$first" ]; } || ! herdr pane get w4E:p6 >/dev/null 2>&1 '
     "|| [ $n -ge 240 ]; do sleep 45; n=$((n+1)); done; "
     'herdr pane get w4E:p6 >/dev/null 2>&1 || echo "PEER-GONE: pane w4E:p6 closed"; '
-    "orchestrator report show Reviewer-w4E-p6",
+    "orchestrator heartbeat show Reviewer-w4E-p6",
 )
 
 KNOWN_GOOD_MONITOR_COMMANDS = (

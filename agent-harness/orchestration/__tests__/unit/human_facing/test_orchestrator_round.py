@@ -1,16 +1,19 @@
-import json
-
 import pytest
 from hypothesis import given
 from hypothesis import strategies as st
-from orchestration_test_support import file_card, run_orchestrator, valid_card_document
+from orchestration_test_support import (
+    file_card,
+    heartbeat_text,
+    run_orchestrator,
+    valid_card_document,
+)
 from orchestrator_cli.round.rendering import LINK_CHARACTERS, with_short_links
 from round_test_support import (
     ORCHESTRATOR,
     escalate,
-    file_report,
+    file_heartbeat,
+    heartbeat_fields,
     record_open_ask,
-    report_document,
     run_round,
 )
 
@@ -33,7 +36,7 @@ def test_the_round_shows_each_waiting_decision_with_every_option_and_every_sessi
     _, waiting = file_card(monkeypatch, cards, capsys)
     escalate(monkeypatch, cards, waiting)
     _, still_triaging = file_card(monkeypatch, cards, capsys)
-    assert file_report(monkeypatch, reports, "Voyager", report_document()) == 0
+    assert file_heartbeat(monkeypatch, reports, "Voyager", heartbeat_fields()) == 0
     output = run_round(monkeypatch, cards, reports, capsys)
     card = valid_card_document()
     for expected in (
@@ -44,7 +47,7 @@ def test_the_round_shows_each_waiting_decision_with_every_option_and_every_sessi
         *(option["consequence"] for option in card["options"]),
         card["reasoning"],
         "Voyager",
-        "blocked",
+        "working",
         "wait for the scope decision",
     ):
         assert " ".join(expected.split()) in output
@@ -81,8 +84,8 @@ def test_answered_cards_and_other_orchestrators_stay_out_of_the_round(
         "someone-else",
         "--sender",
         "Astolfo",
-        stdin_text=json.dumps(report_document()),
-        command="report",
+        stdin_text=heartbeat_text(**heartbeat_fields()),
+        command="heartbeat",
     )
     assert other == 0
     output = run_round(monkeypatch, cards, reports, capsys)
@@ -100,7 +103,7 @@ def test_the_round_runs_requests_then_sessions_then_decisions_and_ends_on_the_re
     cards, reports = directories
     _, waiting = file_card(monkeypatch, cards, capsys)
     escalate(monkeypatch, cards, waiting)
-    assert file_report(monkeypatch, reports, "Voyager", report_document()) == 0
+    assert file_heartbeat(monkeypatch, reports, "Voyager", heartbeat_fields()) == 0
     record_open_ask(tmp_path / "state", "L-20261110-000001", "merge these two mrs")
     output = run_round(monkeypatch, cards, reports, capsys)
     assert headings(output) == [
@@ -112,7 +115,7 @@ def test_the_round_runs_requests_then_sessions_then_decisions_and_ends_on_the_re
     assert output.rstrip().endswith(
         f"Reply with `{waiting}` and one option: drop, keep"
     )
-    assert "Full view" not in output and "orchestrator report show" not in output
+    assert "Full view" not in output and "orchestrator heartbeat show" not in output
 
 
 def test_a_round_with_nothing_to_show_says_so_under_sessions_then_decisions(
@@ -121,7 +124,7 @@ def test_a_round_with_nothing_to_show_says_so_under_sessions_then_decisions(
     cards, reports = directories
     assert run_round(monkeypatch, cards, reports, capsys) == (
         "### Sessions\n\n"
-        "No session has filed a report.\n\n"
+        "No session has published a heartbeat.\n\n"
         "### Decisions waiting for you\n\n"
         "No decision is waiting for you.\n"
     )
@@ -139,7 +142,7 @@ def test_the_requests_section_says_what_it_lists_and_what_makes_a_row_leave(
         f"{REQUESTS_HEADING}\n\n"
         f"Each row is something you asked {ORCHESTRATOR} for, in your words. "
         f"It leaves once {ORCHESTRATOR} has checked the real result, "
-        "not only a session's report.\n\n"
+        "not only a session's heartbeat.\n\n"
         "| # | You asked | Handled by | Asked |\n"
         "|---|---|---|---|\n"
         f"| 1 | merge these two mrs | {ORCHESTRATOR} | 0m ago |\n"

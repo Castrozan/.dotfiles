@@ -96,13 +96,13 @@ def test_a_silent_idle_session_keeps_timing_out_until_it_answers(harness):
     assert watch.watch.check_timeouts() == []
     watch.advance(1)
     assert watch.watch.next_lines() == [
-        "TIMEOUT wW:p1 idle quiet-minutes=15 report=none"
+        "TIMEOUT wW:p1 idle quiet-minutes=15 heartbeat=none"
     ]
     watch.advance(14)
     assert watch.watch.check_timeouts() == []
     watch.advance(1)
     assert watch.watch.next_lines() == [
-        "TIMEOUT wW:p1 idle quiet-minutes=30 report=none"
+        "TIMEOUT wW:p1 idle quiet-minutes=30 heartbeat=none"
     ]
     watch.write_report("wW:p1", "working")
     watch.advance(14)
@@ -115,11 +115,11 @@ def test_each_session_runs_its_own_clock(harness):
     assert watch.emit(STATUS_CHANGED, "wW:p2", agent_status="working") == []
     watch.advance(5)
     assert watch.watch.next_lines() == [
-        "TIMEOUT wW:p1 idle quiet-minutes=15 report=none"
+        "TIMEOUT wW:p1 idle quiet-minutes=15 heartbeat=none"
     ]
     watch.advance(10)
     assert watch.watch.next_lines() == [
-        "TIMEOUT wW:p2 working quiet-minutes=15 report=none"
+        "TIMEOUT wW:p2 working quiet-minutes=15 heartbeat=none"
     ]
 
 
@@ -131,7 +131,7 @@ def test_a_finished_session_stays_silent_until_it_is_given_more_work(harness):
     assert watch.emit(STATUS_CHANGED, "wW:p1", agent_status="working") == []
     watch.advance(15)
     assert watch.watch.next_lines() == [
-        "TIMEOUT wW:p1 working quiet-minutes=15 report=done"
+        "TIMEOUT wW:p1 working quiet-minutes=15 heartbeat=done"
     ]
 
 
@@ -153,7 +153,7 @@ def test_a_restarted_watch_resumes_from_the_durable_answer_time(harness):
     )
     restarted.start()
     assert restarted.next_lines() == [
-        "TIMEOUT wW:p1 idle quiet-minutes=40 report=working"
+        "TIMEOUT wW:p1 idle quiet-minutes=40 heartbeat=working"
     ]
 
 

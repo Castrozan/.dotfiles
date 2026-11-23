@@ -4,10 +4,10 @@ from datetime import datetime, timedelta, timezone
 LAUNCH_TIME = datetime(2026, 11, 16, 14, 22, 15, tzinfo=timezone.utc)
 
 INCIDENT_COMMAND = (
-    "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
-    'until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ]; } '
+    "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); n=0; "
+    'until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); [ "$cur" != "$first" ]; } '
     "|| [ $n -ge 240 ]; do sleep 45; n=$((n+1)); done; "
-    "orchestrator report show Reviewer-w4E-p6"
+    "orchestrator heartbeat show Reviewer-w4E-p6"
 )
 
 

@@ -32,7 +32,9 @@ def test_the_sender_comes_from_a2a_so_identity_rules_live_in_one_place(fake_a2a)
 
 def test_peer_pane_resolves_each_alias_case_insensitively(monkeypatch):
     directory = {"one": {"name": "Medea", "servant": "Caster", "paneId": "Pane-1"}}
-    monkeypatch.setattr(peer_messenger, "run_a2a", lambda *args: json.dumps(directory))
+    monkeypatch.setattr(
+        peer_messenger, "run_a2a", lambda *args, **options: json.dumps(directory)
+    )
 
     for alias in ("MEDEA", "caster", "pAnE-1"):
         assert peer_messenger.peer_pane(alias) == "Pane-1"

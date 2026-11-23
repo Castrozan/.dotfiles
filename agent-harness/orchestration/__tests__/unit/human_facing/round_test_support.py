@@ -1,23 +1,23 @@
 import json
 from datetime import datetime, timezone
 
-from orchestration_test_support import run_orchestrator
+from orchestration_test_support import heartbeat_text, run_orchestrator
 
 ORCHESTRATOR = "orchestrator-session"
 
 
-def report_document(**overrides):
+def heartbeat_fields(**overrides):
     return {
         "goal": "retire hey-bot into the avatar",
-        "state": "blocked",
-        "done_check": "hey-bot is gone from the repo and chise",
-        "progress": "inventory filed as a card",
-        "next_step": "wait for the scope decision",
+        "state": "working",
+        "done_when": "hey-bot is gone from the repo and chise",
+        "doing": "inventory filed as a card",
+        "next": "wait for the scope decision",
         **overrides,
     }
 
 
-def file_report(monkeypatch, reports, sender, document):
+def file_heartbeat(monkeypatch, reports, sender, document):
     return run_orchestrator(
         monkeypatch,
         reports,
@@ -26,8 +26,8 @@ def file_report(monkeypatch, reports, sender, document):
         ORCHESTRATOR,
         "--sender",
         sender,
-        stdin_text=json.dumps(document),
-        command="report",
+        stdin_text=heartbeat_text(**document),
+        command="heartbeat",
     )
 
 
@@ -43,7 +43,7 @@ def run_round(monkeypatch, cards, reports, capsys):
         cards,
         "--for",
         ORCHESTRATOR,
-        "--reports-dir",
+        "--heartbeats-dir",
         str(reports),
         command="round",
     )
