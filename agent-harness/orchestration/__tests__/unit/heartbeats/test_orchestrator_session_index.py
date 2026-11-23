@@ -5,6 +5,8 @@ import pytest
 from orchestration_test_support import run_orchestrator
 from orchestrator_cli.heartbeats.session_index import entries_of
 from orchestrator_cli.heartbeats.status import SessionStatus, pane_flags
+from orchestrator_cli.peer_messenger import PeerMessageFailure
+from orchestrator_cli.session_messages import cli as session_message_cli
 from orchestrator_cli.watch import herdr_events
 from session_index_test_support import (
     ORCHESTRATOR,
@@ -147,3 +149,14 @@ def test_a_closed_session_leaves_the_round(
     capsys.readouterr()
     run_orchestrator(monkeypatch, tmp_path / "cards", *round_arguments, **options)
     assert VOYAGER not in capsys.readouterr().out
+
+
+def test_a_brief_that_never_reached_the_session_leaves_no_index_entry(
+    monkeypatch, tmp_path, notifications
+):
+    def unreachable(*_):
+        raise PeerMessageFailure("a2a notify: no route")
+
+    monkeypatch.setattr(session_message_cli, "notify_peer", unreachable)
+    assert dispatch(monkeypatch, tmp_path, "Voyager") == 1
+    assert entries_of(ORCHESTRATOR) == []
