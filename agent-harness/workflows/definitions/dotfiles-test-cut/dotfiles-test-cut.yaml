@@ -19,7 +19,8 @@ nodes:
     mutates_checkout: false
     bash: |
       common=$(git -C "$INPUTS_ROOT" rev-parse --path-format=absolute --git-common-dir)
-      scratch="${common%/.git}/.worktrees/dotfiles-test-cut"
+      slug=$(printf '%s' "$INPUTS_SUBTREE" | tr -c 'A-Za-z0-9' '-')
+      scratch="${common%/.git}/.worktrees/dotfiles-test-cut-$slug"
       git -C "$INPUTS_ROOT" worktree remove --force "$scratch" >/dev/null 2>&1 || true
       git -C "$INPUTS_ROOT" worktree add --quiet --detach "$scratch" HEAD >&2
       @jq@ --null-input --arg root "$scratch" '{root: $root}'
