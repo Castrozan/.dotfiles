@@ -20,20 +20,6 @@ in
   services.avatar = {
     enable = true;
     hostName = hostname;
-    rustSlices = lib.optionals (hostname == "chise") [
-      "routing"
-      "floor"
-      "talk"
-      "command"
-      "start"
-      "stop"
-      "wake"
-      "holder"
-      "listen"
-      "doctor"
-      "audio"
-      "transcribe"
-    ];
     topology = {
       host = "chise";
       machines = [
@@ -45,11 +31,6 @@ in
     servantRoster = agentHarness + "/servants/roster.txt";
     herdrPackage = inputs.herdr.packages.${pkgs.stdenv.hostPlatform.system}.default;
     a2aPackage = import (agentToAgentClient + "/a2a-client-package.nix") { inherit pkgs; };
-    peerIdentityPythonPath = [
-      (agentToAgentClient + "/scripts")
-      (agentHarness + "/servants")
-      (agentHarness + "/hooks/runtime/common")
-    ];
     speechPackage = import ../media-generation/speech-package.nix { inherit pkgs; };
     mac = {
       browserApplication = "${chromeForTesting}/lib/Google Chrome for Testing.app";
