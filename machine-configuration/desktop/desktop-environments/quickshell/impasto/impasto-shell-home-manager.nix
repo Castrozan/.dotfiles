@@ -75,7 +75,7 @@ in
     custom.desktopShell = {
       sessionServices = [ "impasto-shell.service" ];
       hyprlandBindings = ''
-        bindd = SUPER, J, Pin or hide the bar, exec, ${callImpastoCommand "bar" "pin"}
+        bindd = SUPER, J, Show the bar for a moment, exec, ${callImpastoCommand "bar" "peek"}
         bindd = SUPER, M, Media, global, quickshell:media
         bindd = SUPER, Q, Launcher, global, quickshell:launcher
         bindd = SUPER, A, Notifications and controls, global, quickshell:controls
