@@ -12,6 +12,7 @@
     ./model-providers/opencode-go
     ./plugins/automatic-updates-home-manager.nix
     ./plugins/avatar-plugin-home-manager.nix
+    ./plugins/declared-marketplace-sources-home-manager.nix
     ./plugins/production-plugin-home-manager.nix
     ./plugins/retired-marketplaces-home-manager.nix
     ./private.nix
