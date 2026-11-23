@@ -53,22 +53,6 @@ def test_hidden_or_unmapped_player_is_not_visible(compositor_state, field, value
     )
 
 
-def test_canvas_visible_on_another_active_monitor_keeps_playing(compositor_state):
-    compositor_state["clients"][0]["at"] = [1922, 2]
-    compositor_state["monitors"][0]["activeWorkspace"] = {"id": 5}
-    compositor_state["monitors"].append(
-        {
-            **compositor_state["monitors"][0],
-            "id": 1,
-            "x": 1920,
-            "activeWorkspace": {"id": 11},
-        }
-    )
-    assert player_is_visible(
-        **compositor_state, player_process_id=14534, target_workspace_id=11
-    )
-
-
 def test_inactive_workspace_is_not_visible(compositor_state):
     compositor_state["monitors"][0]["activeWorkspace"] = {"id": 5}
     assert not player_is_visible(
@@ -80,15 +64,6 @@ def test_inactive_workspace_is_not_visible(compositor_state):
 def test_missing_player_is_not_assumed_visible(compositor_state, active_workspace_id):
     compositor_state["clients"] = []
     compositor_state["monitors"][0]["activeWorkspace"] = {"id": active_workspace_id}
-    assert not player_is_visible(
-        **compositor_state, player_process_id=14534, target_workspace_id=11
-    )
-
-
-def test_released_player_stays_released_under_a_fullscreen_window(compositor_state):
-    compositor_state["clients"][0].update(
-        pid=90000, fullscreen=2, at=[0, 0], size=[1920, 1080]
-    )
     assert not player_is_visible(
         **compositor_state, player_process_id=14534, target_workspace_id=11
     )

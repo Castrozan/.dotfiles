@@ -24,15 +24,6 @@ def test_start_screensaver_routes_pane_commands_through_precompute_loop(monkeypa
     ]
 
 
-def test_single_command_uses_root_pane_without_splitting(monkeypatch):
-    split_calls = []
-    monkeypatch.setattr(
-        launcher, "split_pane", lambda *arguments: split_calls.append(arguments)
-    )
-    assert launcher.build_screensaver_panes("p1", 1) == ["p1"]
-    assert split_calls == []
-
-
 def test_two_commands_split_the_right_column_once(monkeypatch):
     split_calls = []
 

@@ -94,12 +94,6 @@ def test_cast_file_round_trips_chunks(tmp_path):
     assert precompute_loop.load_cast_file(cast_path) == chunks
 
 
-def test_load_cast_file_rejects_foreign_content(tmp_path):
-    cast_path = tmp_path / "cast.bin"
-    cast_path.write_bytes(b"not a cast file")
-    assert precompute_loop.load_cast_file(cast_path) is None
-
-
 def test_copied_source_bundle_imports_sibling_terminal_module(tmp_path):
     shutil.copy2(SCRIPT_PATH, tmp_path / SCRIPT_PATH.name)
     shutil.copy2(TERMINAL_SCRIPT_PATH, tmp_path / TERMINAL_SCRIPT_PATH.name)

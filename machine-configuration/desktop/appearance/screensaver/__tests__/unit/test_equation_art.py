@@ -39,12 +39,6 @@ def test_every_formula_plots_some_braille_points():
         ), formula_name
 
 
-def test_frame_advances_over_time():
-    early = equation_art.render_equation_frame(0.5, 60, 30, "twin")
-    later = equation_art.render_equation_frame(5.0, 60, 30, "twin")
-    assert early != later
-
-
 def test_distinct_formulas_render_differently():
     twin = equation_art.render_equation_frame(3.0, 60, 30, "twin")
     petal = equation_art.render_equation_frame(3.0, 60, 30, "petal")

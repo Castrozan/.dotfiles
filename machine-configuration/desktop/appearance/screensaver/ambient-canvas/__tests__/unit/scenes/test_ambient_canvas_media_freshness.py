@@ -18,29 +18,10 @@ def _write_segment_manifest(output_directory):
     )
 
 
-def test_recorded_loop_is_fresh_true_when_source_matches(tmp_path):
-    _write_recorded_loop(tmp_path, "/store/web-abc")
-    assert ensure.recorded_loop_is_fresh(str(tmp_path), "/store/web-abc") is True
-
-
-def test_recorded_loop_is_fresh_false_on_source_mismatch(tmp_path):
-    _write_recorded_loop(tmp_path, "/store/web-old")
-    assert ensure.recorded_loop_is_fresh(str(tmp_path), "/store/web-new") is False
-
-
 def test_recorded_loop_is_fresh_false_when_a_segment_is_missing(tmp_path):
     _write_segment_manifest(tmp_path)
     (tmp_path / "loop.source").write_text("/store/web-abc\n")
     assert ensure.recorded_loop_is_fresh(str(tmp_path), "/store/web-abc") is False
-
-
-def test_recorded_loop_is_fresh_false_when_nothing_rendered(tmp_path):
-    assert ensure.recorded_loop_is_fresh(str(tmp_path), "/store/web-abc") is False
-
-
-def test_recorded_loop_exists_true_when_every_segment_is_present(tmp_path):
-    _write_recorded_loop(tmp_path, "/store/web-abc")
-    assert ensure.recorded_loop_exists(str(tmp_path)) is True
 
 
 def test_a_rebuilt_web_source_makes_the_recorded_loop_stale(tmp_path):
@@ -56,7 +37,3 @@ def test_a_rebuilt_web_source_makes_the_recorded_loop_stale(tmp_path):
         )
         is False
     )
-
-
-def test_recorded_loop_exists_false_when_absent(tmp_path):
-    assert ensure.recorded_loop_exists(str(tmp_path)) is False

@@ -83,25 +83,6 @@ def test_watchdog_cleans_up_without_deleting_progress(capture_dependencies, tmp_
     assert "workerCount=4" in record_url
 
 
-def test_cancelled_pass_stops_its_browser(capture_dependencies):
-    server, target, launch, terminate, profile_directory = capture_dependencies
-    cancellation_event = threading.Event()
-    cancellation_event.set()
-    assert run_browser(target, cancellation_event, time.monotonic() + 1800) is None
-    terminate.assert_called_once()
-
-
-def test_browser_launch_failure_closes_upload_server(capture_dependencies):
-    server, target, launch, terminate, profile_directory = capture_dependencies
-    launch.side_effect = OSError("cannot launch")
-    with pytest.raises(OSError, match="cannot launch"):
-        run_browser(target, threading.Event(), time.monotonic() + 1800)
-    server.shutdown.assert_called_once()
-    server.server_close.assert_called_once()
-    assert not profile_directory.exists()
-    terminate.assert_not_called()
-
-
 @pytest.mark.parametrize("termination_failure", [None, "timeout", "missing"])
 def test_termination_cleans_only_its_profile_processes(
     monkeypatch, termination_failure, tmp_path

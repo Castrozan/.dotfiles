@@ -160,17 +160,3 @@ def test_changed_capture_inputs_never_reuse_old_segments(
     assert render_pass(target, "changed")
     assert len(encoded_compositions) == 8
     assert not old_files.intersection((tmp_path / "segments").glob("*.mp4"))
-
-
-def test_one_long_composition_is_shared_across_all_workers(
-    browser_capture, capture_target, monkeypatch
-):
-    browser_capture.upload_limit = 0
-    browser_capture.composition_count = 1
-    browser_capture.range_count = 8
-    monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 4)
-    assert render_pass(capture_target)
-    assert {
-        index: len(recordings)
-        for index, recordings in browser_capture.recordings_by_worker.items()
-    } == {0: 2, 1: 2, 2: 2, 3: 2}

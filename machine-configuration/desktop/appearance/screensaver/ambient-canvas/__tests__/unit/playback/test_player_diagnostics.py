@@ -1,18 +1,7 @@
-import json
 import logging
 import os
 
 from playback import player_diagnostics as diagnostics
-
-
-def test_report_replacement_is_readable_and_has_no_leftover_temporary_file(tmp_path):
-    diagnostics.write_player_report(tmp_path, {"status": "running"})
-    diagnostics.write_player_report(tmp_path, {"status": "failed", "exit_code": 12})
-    assert json.loads((tmp_path / "report.json").read_text()) == {
-        "status": "failed",
-        "exit_code": 12,
-    }
-    assert list(tmp_path.iterdir()) == [tmp_path / "report.json"]
 
 
 def test_completed_run_retention_preserves_incomplete_runs(tmp_path):

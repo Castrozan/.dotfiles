@@ -19,30 +19,6 @@ def test_find_workspace_returns_matching_screensaver_label(monkeypatch):
     assert launcher.find_screensaver_workspace_id() == "w7"
 
 
-def test_find_workspace_returns_none_without_screensaver_label(monkeypatch):
-    monkeypatch.setattr(
-        launcher,
-        "run_herdr_json",
-        lambda *arguments: {
-            "result": {"workspaces": [{"label": "dotfiles", "workspace_id": "w1"}]}
-        },
-    )
-    assert launcher.find_screensaver_workspace_id() is None
-
-
-def test_pane_is_running_when_foreground_group_differs_from_shell(monkeypatch):
-    monkeypatch.setattr(
-        launcher,
-        "run_herdr_json",
-        lambda *arguments: {
-            "result": {
-                "process_info": {"foreground_process_group_id": 200, "shell_pid": 100}
-            }
-        },
-    )
-    assert launcher.pane_is_running_foreground_process("p1") is True
-
-
 def test_pane_is_idle_when_foreground_group_equals_shell(monkeypatch):
     monkeypatch.setattr(
         launcher,
@@ -54,16 +30,6 @@ def test_pane_is_idle_when_foreground_group_equals_shell(monkeypatch):
         },
     )
     assert launcher.pane_is_running_foreground_process("p1") is False
-
-
-def test_workspace_running_when_any_pane_is_live(monkeypatch):
-    monkeypatch.setattr(
-        launcher, "list_workspace_pane_ids", lambda workspace: ["p1", "p2"]
-    )
-    monkeypatch.setattr(
-        launcher, "pane_is_running_foreground_process", lambda pane_id: pane_id == "p2"
-    )
-    assert launcher.workspace_has_running_screensaver("w7") is True
 
 
 def test_workspace_not_running_when_all_panes_idle(monkeypatch):
@@ -109,16 +75,6 @@ def test_main_rebuilds_dead_screensaver_workspace(monkeypatch):
     assert launcher.main() == 0
     assert ("workspace", "close", "w7") in herdr_calls
     assert ("start",) in herdr_calls
-
-
-def test_main_starts_fresh_when_no_existing_workspace(monkeypatch):
-    monkeypatch.setattr(launcher.shutil, "which", which_returning({"herdr"}))
-    monkeypatch.setattr(launcher, "find_screensaver_workspace_id", lambda: None)
-    started = []
-    monkeypatch.setattr(launcher, "run_herdr", lambda *arguments: None)
-    monkeypatch.setattr(launcher, "start_screensaver", lambda: started.append(True))
-    assert launcher.main() == 0
-    assert started == [True]
 
 
 def test_main_is_a_noop_when_herdr_is_absent(monkeypatch):

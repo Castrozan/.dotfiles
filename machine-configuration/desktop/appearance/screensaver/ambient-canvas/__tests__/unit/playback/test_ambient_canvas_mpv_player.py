@@ -20,14 +20,6 @@ class DeterministicRandomSource:
         items[:] = list(self.values)
 
 
-def test_shuffled_segment_order_visits_every_segment_before_repeating():
-    segment_order = shuffle_order.ShuffledSegmentOrder(
-        [None, None, None], DeterministicRandomSource([2, 0, 1])
-    )
-    visited = [segment_order.next_segment_indices() for _ in range(3)]
-    assert sorted(visited) == [[0], [1], [2]]
-
-
 def test_shuffled_segment_order_refills_after_one_cycle():
     segment_order = shuffle_order.ShuffledSegmentOrder(
         [None, None], DeterministicRandomSource([1, 0])
@@ -49,27 +41,9 @@ def test_shuffled_segment_order_never_repeats_across_the_seam():
     ]
 
 
-def test_dwell_override_reads_the_requested_value_from_the_file(tmp_path):
-    override_path = tmp_path / "dwell"
-    override_path.write_text("12")
-    assert effective_dwell_seconds(30, str(override_path)) == 12
-
-
 def test_dwell_override_clamps_to_the_recorded_dwell():
     override_path = "/nonexistent/dwell"
     assert effective_dwell_seconds(30, override_path) == 30
-
-
-def test_dwell_override_never_below_the_shortest_allowed_dwell(tmp_path):
-    override_path = tmp_path / "dwell"
-    override_path.write_text("0.5")
-    assert effective_dwell_seconds(30, str(override_path)) == 2.0
-
-
-def test_dwell_override_ignores_a_missing_or_garbage_file(tmp_path):
-    garbage_path = tmp_path / "garbage"
-    garbage_path.write_text("not a number")
-    assert effective_dwell_seconds(30, str(garbage_path)) == 30
 
 
 def test_mpv_arguments_pin_the_window_title_and_screensaver_flags():

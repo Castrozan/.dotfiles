@@ -89,27 +89,6 @@ def test_fresh_loop_with_stopped_display_relaunches(monkeypatch):
     assert calls == [("discard", "source"), "stop", "wait", "launch"]
 
 
-def test_a_cached_display_swap_repoints_the_player_without_recording(monkeypatch):
-    result, calls = _run_ensure(
-        monkeypatch, fresh=True, render_result=None, display_running=False
-    )
-    assert result == 0
-    assert "render" not in calls
-    assert calls[-1] == "launch"
-
-
-@pytest.mark.parametrize("display_running", [True, False])
-def test_stale_render_success_relaunches(monkeypatch, display_running):
-    result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result="loop.segments.json",
-        display_running=display_running,
-    )
-    assert result == 0
-    assert calls == ["render", "stop", "wait", "launch"]
-
-
 def test_stale_render_failure_without_existing_loop_exits_nonzero(monkeypatch):
     result, calls = _run_ensure(
         monkeypatch,

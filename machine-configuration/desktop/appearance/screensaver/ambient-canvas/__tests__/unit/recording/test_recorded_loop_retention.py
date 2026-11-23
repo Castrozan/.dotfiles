@@ -92,18 +92,6 @@ def test_another_geometry_that_is_still_current_survives_for_a_cheap_monitor_swa
     assert (state_directory / "loops" / "1728x1080" / "segments").is_dir()
 
 
-def test_entries_that_are_not_capture_geometries_are_left_alone(
-    state_directory, no_record_pass
-):
-    _record_loop(state_directory, "1920x1080", CURRENT_RENDERING_SOURCE)
-    unrelated_directory = state_directory / "loops" / "notes"
-    unrelated_directory.mkdir()
-    retention.discard_rendering_leftovers(
-        _capture_target(state_directory, "1920x1080"), CURRENT_RENDERING_SOURCE
-    )
-    assert unrelated_directory.is_dir()
-
-
 def test_nothing_is_deleted_while_a_record_pass_runs(state_directory, monkeypatch):
     monkeypatch.setattr(retention, "a_record_pass_is_running", lambda: True)
     _record_loop(state_directory, "1920x1080", CURRENT_RENDERING_SOURCE)

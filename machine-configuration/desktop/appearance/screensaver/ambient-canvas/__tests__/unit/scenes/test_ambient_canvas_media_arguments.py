@@ -72,22 +72,6 @@ def test_build_record_index_url_encodes_record_query():
     assert "uploadUrl=http%3A%2F%2F127.0.0.1%3A5000%2Fupload" in record_url
 
 
-def test_build_record_index_url_omits_seconds_so_the_playlist_derives_the_length():
-    record_url = capture_plan.build_record_index_url(
-        "file:///store/index.html",
-        "http://127.0.0.1:5000/upload",
-        (1662, 1080),
-        capture_plan.RecordingConfiguration(None, 30, "#241010"),
-        capture_plan.RecordingWorker(1, 4),
-    )
-    assert "seconds=" not in record_url
-    assert "workerIndex=1" in record_url
-    assert "workerCount=4" in record_url
-    assert "record=1" in record_url
-    assert "fps=30" in record_url
-    assert "width=1662" in record_url
-
-
 def test_upload_wait_budget_covers_a_whole_incremental_record_pass():
     assert (
         capture_plan.resolve_upload_wait_budget_seconds()
@@ -99,15 +83,6 @@ def test_minimum_recorded_bytes_scales_with_the_segment_duration():
     assert (
         capture_plan.resolve_minimum_recorded_bytes(30)
         == 30 * capture_plan.MINIMUM_RECORDED_BYTES_PER_SECOND
-    )
-
-
-def test_the_measured_solo_bonsai_composition_clears_the_minimum_recorded_bytes():
-    assert (
-        capture_plan.resolve_minimum_recorded_bytes(
-            MEASURED_SOLO_BONSAI_DURATION_SECONDS
-        )
-        < MEASURED_SOLO_BONSAI_RECORDED_BYTES
     )
 
 

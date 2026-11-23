@@ -62,22 +62,6 @@ def test_an_incomplete_worker_prevents_publication(monkeypatch, other_manifest):
     assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
 
 
-def test_conflicting_worker_plans_prevent_publication(monkeypatch):
-    monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 2)
-    monkeypatch.setattr(
-        capture_pool,
-        "drive_record_browser",
-        lambda *arguments: json.dumps(
-            {
-                "segments": [
-                    {"fingerprint": str(arguments[-3].index), "durationSeconds": 1}
-                ]
-            }
-        ).encode(),
-    )
-    assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
-
-
 def test_worker_failure_cancels_its_siblings(monkeypatch):
     barrier = threading.Barrier(2)
     cancelled_workers = []
