@@ -30,17 +30,17 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 15 | Slot index 3 drawn in the warning colour | None | dropped | Bespoke marker with no counterpart. |
 | 16 | Scroll over workspaces switches workspace | None found in `bar/widgets/WorkspacesWidget.qml` | dropped | No wheel handler on the strip. |
 | 17 | Special workspaces not shown in the bar | A capsule for the special workspace open over the screen (`bar/widgets/WorkspacesWidget.qml:340-394`); scratchpads in the overview (`bar/island/OverviewPanel.qml:751-806`) | migrated | Gain: `special:avatar` and others show while open. |
-| 18 | CPU, RAM, GPU percentages every 3 s | `stats` module, CPU and memory, 3 s poll (`bar/modules/StatsModule.qml`, `services/StatsService.qml:28`) | needs work | CPU and RAM are native; GPU usage is absent (`scripts/stats.py` has no GPU read). Fork change: add a GPU sample to `stats.py` and the module. The module must also be placed on the bar (`barLeft`/`barRight`). |
+| 18 | CPU, RAM, GPU percentages every 3 s | `stats` module with CPU, memory and graphics, 3 s poll (`bar/modules/StatsModule.qml`, `services/StatsService.qml`, `scripts/stats.py`) | migrated | GPU usage and temperature were added in the fork as one more series; the chip is on the bar by the first-run settings. |
 | 19 | Running apps: icon per window class, focused marker, click focuses, +N overflow | Dock with pinned and running apps on every screen (`dock/Dock.qml`, `dock/DockItem.qml`, `services/DockService.qml`, `dockRunning`); optional app icons on the workspace strip (`workspaceApps`) | migrated differently | Lives in the bottom dock, not the bar. Focus uses the fork's hyprlang dispatch. |
 | 20 | Tray: recoloured icons, left click activates, menu in a popout | Tray on the bar, left activates, right opens the menu in the island, middle is the second action (`bar/widgets/TrayWidget.qml:19,104-112`, `bar/island/TrayMenuPanel.qml`) | migrated | Icons come from Papirus panel icons where named (`components/TrayIcon.qml`), patched to the Nix store path in the fork package. |
 | 21 | Clock: HH, MM, day, month stacked | Island rest shows the time; `clock` module and `clockShowsDate`, `clockShowsSeconds`, `clockFormat` (`bar/island/IslandRest.qml`, `bar/modules/ClockModule.qml`) | migrated | Horizontal; set `clockShowsDate` to keep the date visible. |
-| 22 | Status icon: VPN (polls `openvpn-proton-paraguay.service`, click runs `vpn-py`/`vpn-off`) | None (no VPN code in QML or scripts) | needs work | Fork change: a small VPN module, or dotfiles change: keep it as a keybind or launcher entry. Until then `vpn-py`/`vpn-off` run from a terminal. |
+| 22 | Status icon: VPN (polls `openvpn-proton-paraguay.service`, click runs `vpn-py`/`vpn-off`) | `vpn` module and control centre tile (fork: `services/VpnService.qml`, `bar/modules/VpnModule.qml`) | migrated | The unit and both commands are Impasto settings (`vpnUnit`, `vpnConnectCommand`, `vpnDisconnectCommand`), seeded for chise. |
 | 23 | Status icon: notification sound toggle (`hypr-notification-sound-toggle`) | Focus (do not disturb) toggle only (`services/ControlsService.qml:269-271`); per-app `notificationRules` | dropped | The helper toggled mako's sound; mako is off while Impasto is active and Impasto has no sound-only toggle. |
 | 24 | Status icon: output device glyph, click toggles mute | `volume` module with detail, device list and mute (`bar/modules/VolumeModule.qml`, `bar/island/SoundDetail.qml`) | migrated | Native through Quickshell's Pipewire service. |
 | 25 | Status icon: microphone, click runs `hypr-microphone-toggle` | Microphone tile and detail (`services/ControlsService.qml:275-279`, `bar/island/MicrophoneDetail.qml`); privacy indicator on the island | migrated | Mute through Pipewire; the old helper is no longer called by the shell. |
 | 26 | Status icon: network, hover popout, click runs `hypr-network` | `network` module and Wi-Fi detail with connect, disconnect, password entry, scan (`bar/modules/NetworkModule.qml`, `bar/island/NetworkDetail.qml`) | migrated | Richer than the old read-only list. |
 | 27 | Status icon: bluetooth, hover popout, click opens `bluetui` | `bluetooth` module and detail with pair, connect, disconnect (`bar/modules/BluetoothModule.qml`, `bar/island/BluetoothDetail.qml`) | migrated | `bluetui` stays available from the terminal. |
-| 28 | Status icon: keyboard backlight cycle (chise only) | None (matches for "backlight" are the screen backlight in `services/BrightnessService.qml`) | needs work | Fork change: a keyboard-backlight module, or dotfiles change: a keybind calling `set-keyboard-backlight-brightness`. |
+| 28 | Status icon: keyboard backlight cycle (chise only) | `keyboardlight` module and control centre tile (fork: `services/KeyboardBacklightService.qml`, `bar/modules/KeyboardBacklightModule.qml`) | migrated | Drives a sysfs keyboard led, or the command in `keyboardBacklightCommand`, which chise sets to `set-keyboard-backlight-brightness`. The tile cycles 0/5/25/50/100. |
 | 29 | Status icon: battery with popout (percent, status, watts) | `battery` module and `BatteryWidget`, power detail with profile picker (`bar/modules/BatteryModule.qml`, `bar/widgets/BatteryWidget.qml`, `bar/island/PowerDetail.qml`) | migrated | Uses UPower, so not tied to `BAT0`. Power profiles need power-profiles-daemon, which the trial log showed absent, so that tile reads "Unknown". |
 | 30 | Status icons collapse into a "⋯" popout when the bar is short | Tray fold (`bar/widgets/TrayWidget.qml:148`) and chip settings (`chipFigure`, `chipHover`) | migrated differently | Modules are chosen and arranged in Settings; there is no automatic overflow popout for modules. |
 | 31 | Power button runs `wlogout` | Session panel: lock, suspend, log out, restart, shut down (`services/SessionService.qml:24-28`, `bar/island/SessionPanel.qml`) | migrated differently | `wlogout` keeps its own keybinds; the session panel opens from the control centre, the launcher `>` list or `panel open session`. |
@@ -70,7 +70,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 45 | Media tab: seek slider and keyboard seek | `bar/island/MediaPanel.qml:42-43,110-135` | migrated | Left and Right seek 5 s, Space plays or pauses. |
 | 46 | Media tab: raise player and quit player buttons | Not found in `bar/island/MediaPanel.qml` | dropped | No raise or quit action in the panel. |
 | 47 | Performance tab: CPU card with temperature | `bar/island/StatsPanel.qml:48,155`, hwmon read in `scripts/stats.py:152` | migrated | One temperature series from hwmon. |
-| 48 | Performance tab: GPU card with usage and temperature | None | needs work | Same fork change as row 18. |
+| 48 | Performance tab: GPU card with usage and temperature | Graphics card in `bar/island/StatsPanel.qml` (fork) | migrated | Reads `nvidia-smi`, else `gpu_busy_percent`; absent on a machine with neither. |
 | 49 | Performance tab: memory and storage gauges | `bar/island/StatsPanel.qml:96,211` | migrated | Native. |
 | 50 | Performance tab: network sparkline | `bar/island/StatsPanel.qml:171`, `netspeed` module (`bar/modules/NetSpeedModule.qml`) | migrated | Native. |
 | 51 | Performance tab: battery tank | Battery module and widget (row 29) | migrated differently | Shown as a ring or figure, not a tank. |
@@ -79,7 +79,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 54 | Celsius and 24-hour clock | `weatherUnits: "m"`, `clockFormat: "HH:mm"` defaults | migrated | Defaults already match. |
 | 55 | Audio tab: output and input devices, default, volume, mute | `bar/island/SoundDetail.qml`, `bar/island/MicrophoneDetail.qml` | migrated | Through Pipewire instead of pactl. |
 | 56 | Audio tab: Bluetooth devices connect and disconnect | `bar/island/BluetoothDetail.qml` | migrated | Native. |
-| 57 | Audio tab: Bluetooth audio profile picker (`pactl set-card-profile`) | None (no card-profile code in `services/AudioService.qml` or `BluetoothService.qml`) | needs work | Fork change: profile chooser in `SoundDetail.qml`; until then `pactl` or `wiremix`, which the dotfiles already install. |
+| 57 | Audio tab: Bluetooth audio profile picker (`pactl set-card-profile`) | Profile rows per connected Bluetooth card in `bar/island/SoundDetail.qml` (fork, data in `services/AudioService.qml`) | migrated | Lists the available profiles as pactl names them, with the active one marked. |
 
 ### Launcher and wallpaper
 
@@ -87,7 +87,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 |---|---|---|---|---|
 | 58 | Launcher apps mode: desktop entries, prefix first, most recent first | Apps mode with history (`services/LauncherService.qml:53`, `launcherOrder: "recent"`, `scripts/applications.py`) | migrated | Opened by SUPER+Q. Apps start through `gtk-launch`; terminal apps follow the desktop entry, so wezterm handling should be checked live. |
 | 59 | Launcher `:` actions: Wallpaper, Next Wallpaper, Lock, Reboot, Shutdown | `>` desk list of control centre doors and modes (`services/LauncherService.qml:366-403`); session panel | migrated differently | Session actions through the session door; wallpaper through the appearance door. No "next wallpaper" entry; `wallpaper random` exists as IPC (`Commands.qml:515`). |
-| 60 | Launcher `:wallpaper` mode over `~/.config/hypr-theme/wallpapers`, applying through `hypr-theme-generate-and-apply` | Appearance panel and picker over `$XDG_DATA_HOME/wallpapers` (`scripts/theme_manager.py:42`, `bar/island/AppearancePanel.qml`, `desktop/Picker.qml`) | needs work | Impasto lists only `~/.local/share/wallpapers` and applies with `awww` itself, without running the hypr-theme pipeline. Dotfiles change: link the hypr-theme wallpapers into that folder and bridge the two (see gaps). |
+| 60 | Launcher `:wallpaper` mode over `~/.config/hypr-theme/wallpapers`, applying through `hypr-theme-generate-and-apply` | hypr-theme stays the picker; `theme_bg_apply.py` hands each applied wallpaper to Impasto (`wallpaper set`) | migrated differently | Pick wallpapers through hypr-theme as before; Impasto takes its palette from the wallpaper it is handed. Picking in Impasto's own appearance panel changes only Impasto and the wallpaper, not the hypr-theme programs. |
 | 61 | 3 s shrinking-circle wallpaper transition overlay | `awww` transitions chosen by `wallpaperTransition` (`services/WallpaperService.qml:254-271`) | migrated differently | Transition is drawn by `awww`, not by a shell overlay. `theme_bg_apply.py` currently passes `--transition-type none` because the old overlay animated it. |
 | 62 | Launcher size 520 px, 7 rows | `launcherResults: 9`, `launcherFits` | migrated differently | Sized by Impasto settings. |
 
@@ -128,13 +128,14 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 88 | SUPER+SPACE fuzzel | Unchanged | migrated | Not part of the shell. |
 | 89 | Tests and probes that name `quickshell-bar` (`runtime.bats`, `perf-runtime.bats`, desktop benchmarks, bar QML tests) | `runtime.bats` reads the active shell's units from `~/.config/hypr-shell/autostart.conf` | migrated differently | The bar's perf tests skip while the bar is not the active shell; its QML tests stay while the previous bar is kept. No perf tests cover Impasto yet. |
 
-### Gaps worth a decision
+### Gaps that remain
 
-- GPU usage and temperature (rows 18, 48): absent in Impasto. Cheapest close: add an `nvidia-smi` or `gpu_busy_percent` sample to `scripts/stats.py` and one row in `StatsPanel.qml` in the fork.
-- Wallpaper and theme flow (rows 60, 61, 77): Impasto picks from `~/.local/share/wallpapers` and never runs `hypr-theme-generate-and-apply`, so choosing a wallpaper in Impasto leaves terminals and the rest on the old theme, and choosing one through hypr-theme leaves Impasto on its old palette. Cheapest close: link the hypr-theme wallpapers into Impasto's folder and have `theme_bg_apply.py` call `impasto wallpaper set <path>`; decide which side is the picker.
-- VPN indicator and toggle (row 22) and keyboard backlight (row 28): no counterpart. Cheapest close: two keybinds or launcher entries in the dotfiles; a bar module in the fork if the glanceable state matters.
-- Bluetooth audio profile picker (row 57): missing. Cheapest close: keep using `wiremix`; a chooser in `SoundDetail.qml` is a contained fork change.
-- Notification sound toggle and mako-specific helpers (rows 23, 74): `hypr-notification-sound-toggle` and `makoctl` calls do nothing while mako is off. Cheapest close: accept Focus as the single switch and remove the dead keybinds, or keep mako and give up Impasto's notification centre.
+- User card (row 38): the package count reads pacman, so it stays empty on NixOS.
+- Notification list keyboard keys (row 70): not checked live.
+- Notification sound toggle (row 23): `hypr-notification-sound-toggle` and `makoctl` do nothing while mako is off;
+  Focus is the single switch.
+- Impasto's Settings pages for keys, compositor look and monitor arrangement do nothing on a hyprlang config; the
+  dotfiles own those.
 
 ### New things Impasto adds
 

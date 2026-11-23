@@ -3,7 +3,8 @@
 chise runs [Impasto](https://github.com/andreumassanet/impasto) (GPL-3.0, by Andreu Massanet) from the fork
 [Castrozan/impasto](https://github.com/Castrozan/impasto), pinned as the `impasto` flake input. The fork carries what
 upstream's Arch installer cannot give NixOS: a flake package, classic hyprlang dispatches beside the Lua ones, the
-`bar pin` command and the `IMPASTO_LOCK_COMMAND` hand-off to hyprlock.
+`bar pin` command and the `IMPASTO_LOCK_COMMAND` hand-off to hyprlock. It also carries the pieces of the previous bar
+Impasto lacked: GPU stats, the VPN and keyboard backlight modules and the Bluetooth audio profile picker.
 
 ### Going back to the previous shell
 
@@ -21,7 +22,9 @@ previous shell. The overview and window switcher are separate services and run w
 
 Impasto keeps its settings in `~/.local/state/quickshell/settings.json`, which stays writable so its Settings window
 works. Activation seeds that file once when it is missing: bar and dock hidden until pointed at, and no palette pushed
-to other programs, because the hypr-theme pipeline owns those. Delete the file and rebuild to get the seed again.
+to other programs, because the hypr-theme pipeline owns those. A machine adds its own values, such as the VPN unit,
+through `custom.desktopShell.impastoFirstRunSettings`. Delete the file and rebuild to get the seed again; a seed change
+never reaches a settings file that already exists.
 
 ### Working on the fork
 
