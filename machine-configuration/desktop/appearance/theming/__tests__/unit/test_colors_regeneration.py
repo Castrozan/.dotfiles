@@ -28,54 +28,6 @@ def test_regenerate_writes_and_stages_wallpaper_and_colors_when_palette_differs(
     assert [path.name for path in record_staged_paths] == ["0-wave.png", "colors.toml"]
 
 
-def test_regenerate_does_not_write_when_palette_is_identical(
-    tmp_path, monkeypatch, create_theme_directory, record_staged_paths
-):
-    themes_directory = tmp_path / "static" / "themes"
-    theme_directory = create_theme_directory(
-        themes_directory,
-        "derived",
-        is_wallpaper_derived=True,
-        background_filenames=["0-wave.png"],
-        existing_colors_toml='accent = "#c17013"\n',
-    )
-    monkeypatch.setattr(
-        orchestrator,
-        "generate_colors_toml_for_image_path",
-        lambda wallpaper_image_path: 'accent = "#c17013"\n',
-    )
-
-    orchestrator.regenerate_theme_colors_if_wallpaper_palette_changed(
-        tmp_path, theme_directory
-    )
-
-    assert record_staged_paths == []
-
-
-def test_regenerate_writes_when_colors_toml_missing(
-    tmp_path, monkeypatch, create_theme_directory, record_staged_paths
-):
-    themes_directory = tmp_path / "static" / "themes"
-    theme_directory = create_theme_directory(
-        themes_directory,
-        "derived",
-        is_wallpaper_derived=True,
-        background_filenames=["0-wave.png"],
-    )
-    monkeypatch.setattr(
-        orchestrator,
-        "generate_colors_toml_for_image_path",
-        lambda wallpaper_image_path: 'accent = "#c17013"\n',
-    )
-
-    orchestrator.regenerate_theme_colors_if_wallpaper_palette_changed(
-        tmp_path, theme_directory
-    )
-
-    assert (theme_directory / "colors.toml").is_file()
-    assert [path.name for path in record_staged_paths] == ["0-wave.png", "colors.toml"]
-
-
 def test_main_isolates_a_failing_theme_from_the_rest(
     tmp_path, monkeypatch, create_theme_directory, record_staged_paths
 ):

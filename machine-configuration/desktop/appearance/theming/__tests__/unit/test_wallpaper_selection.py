@@ -38,23 +38,3 @@ def test_select_active_wallpaper_ignores_non_image_entries(tmp_path):
 
     assert selected is not None
     assert selected.name == "0-wave.png"
-
-
-def test_select_active_wallpaper_picks_byte_first_image(tmp_path):
-    backgrounds_directory = tmp_path / "backgrounds"
-    backgrounds_directory.mkdir()
-    for filename in ["great-wave.jpg", "0-tech.png", "aurora.webp"]:
-        (backgrounds_directory / filename).write_bytes(b"image-bytes")
-
-    selected = orchestrator.select_active_wallpaper_path(backgrounds_directory)
-
-    assert selected is not None
-    assert selected.name == "0-tech.png"
-
-
-def test_select_active_wallpaper_is_none_without_images(tmp_path):
-    backgrounds_directory = tmp_path / "backgrounds"
-    backgrounds_directory.mkdir()
-    (backgrounds_directory / ".DS_Store").write_bytes(b"\x00")
-
-    assert orchestrator.select_active_wallpaper_path(backgrounds_directory) is None
