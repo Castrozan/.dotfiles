@@ -1,14 +1,12 @@
 {
   hostname,
   pkgs,
-  inputs,
 }:
 let
   skillSetBuilders = import ./skill-set-builders.nix {
     inherit
       hostname
       pkgs
-      inputs
       defaultInteractiveSkillNames
       ;
   };

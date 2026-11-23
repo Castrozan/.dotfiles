@@ -72,6 +72,11 @@ in
         touch "$out"
       '';
 
+  domain-hermes-avatar-plugin =
+    mkEvalCheck "domain-hermes-avatar-plugin"
+      (toString cfg.home.file.".hermes/plugins/avatar".source == toString cfg.agentPlugins.avatarPlugin)
+      "Hermes must load the pinned avatar plugin from its plugin directory, where the enabled plugin list names it";
+
   domain-hermes-launcher-survives-instruction-changes =
     pkgs.runCommand "domain-hermes-launcher-survives-instruction-changes"
       {
@@ -130,6 +135,7 @@ in
         lib.hasInfix "%h/.hermes/profiles/test-bot/.env %h/.secrets/discord-bot-token-test 42" discordBotProvisioning
         && lib.hasInfix "HERMES_HOME=%h/.hermes/profiles/test-bot " discordBotProvisioning
         && builtins.hasAttr ".hermes/profiles/test-bot/plugins/dotfiles" discordBotCfg.home.file
+        && builtins.hasAttr ".hermes/profiles/test-bot/plugins/avatar" discordBotCfg.home.file
         && builtins.hasAttr ".hermes/profiles/test-bot/.no-bundled-skills" discordBotCfg.home.file
         &&
           lib.hasInfix "\"gateway_restart_notification\":false"

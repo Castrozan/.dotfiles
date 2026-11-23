@@ -31,4 +31,16 @@ in
         ${pkgs.python312}/bin/python3 ${retirement} \
           codex "${config.home.homeDirectory}" ${config.agentPlugins.bundle}
       '';
+
+  home.activation.installAvatarCodexPlugin =
+    lib.hm.dag.entryAfter
+      [
+        "linkGeneration"
+        "seedCodexConfigAsMutableFile"
+      ]
+      ''
+        ${pkgs.python312}/bin/python3 ${registration} \
+          "${config.home.homeDirectory}/.local/share/agent-plugins/avatar" \
+          "${config.home.homeDirectory}/.codex"
+      '';
 }

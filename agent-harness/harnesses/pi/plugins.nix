@@ -14,6 +14,7 @@ in
 
   home.file = {
     "${profileDirectory}/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
+    "${profileDirectory}/plugins/avatar".source = config.agentPlugins.avatarPlugin;
     "${profileDirectory}/extensions/agent-plugins".source = "${loaders}/node_modules/pi-agent-plugins";
     "${profileDirectory}/extensions/mcp-adapter".source = "${loaders}/node_modules/pi-mcp-adapter";
     "${profileDirectory}/extensions/loop-guard".source = loopGuard;
@@ -28,5 +29,10 @@ in
         ${pkgs.nodejs_22}/bin/node ${./scripts/register-managed-plugin.mjs} \
           ${loaders}/node_modules \
           ${config.agentPlugins.bundle}/plugin
+        PI_AGENT_DIR=${lib.escapeShellArg "${config.home.homeDirectory}/${profileDirectory}"} \
+        PI_CODING_AGENT_DIR=${lib.escapeShellArg "${config.home.homeDirectory}/${profileDirectory}"} \
+        ${pkgs.nodejs_22}/bin/node ${./scripts/register-managed-plugin.mjs} \
+          ${loaders}/node_modules \
+          ${config.agentPlugins.avatarPlugin}
       '';
 }

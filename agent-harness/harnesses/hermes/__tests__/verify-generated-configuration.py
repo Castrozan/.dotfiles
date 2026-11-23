@@ -12,7 +12,11 @@ def main():
     configuration = yaml.safe_load(arguments.configuration.read_text())
     assert configuration["hooks_auto_accept"] is True
     assert configuration["security"]["allow_lazy_installs"] is False
-    assert configuration["plugins"]["enabled"] == ["herdr-agent-state", "dotfiles"]
+    assert configuration["plugins"]["enabled"] == [
+        "herdr-agent-state",
+        "dotfiles",
+        "avatar",
+    ]
     assert configuration["hooks"]["pre_tool_call"] == [
         {"command": arguments.hook_command, "timeout": 10}
     ]

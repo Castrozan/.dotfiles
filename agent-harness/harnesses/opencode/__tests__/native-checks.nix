@@ -26,7 +26,8 @@ in
           ${cfg.opencode.unwrappedPackage}/bin/opencode \
           ${cfg.home.file.".config/opencode/opencode.json".source} \
           ${cfg.home.file.".config/opencode/opencode.jsonc".source} \
-          ${cfg.agentPlugins.bundle} ${lib.escapeShellArg cfg.agentPlugins.opencodeDataRoot}
+          ${cfg.agentPlugins.bundle} ${lib.escapeShellArg cfg.agentPlugins.opencodeDataRoot} \
+          ${cfg.agentPlugins.avatarPlugin}
         touch "$out"
       '';
 

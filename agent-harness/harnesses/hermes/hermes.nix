@@ -75,6 +75,7 @@ in
         force = true;
       };
       ".hermes/plugins/dotfiles".source = "${config.agentPlugins.bundle}/plugin";
+      ".hermes/plugins/avatar".source = config.agentPlugins.avatarPlugin;
       ".hermes/plugins/claude-subscription-directsdk".source =
         "${hermesOfficialPlugins}/claude-subscription-directsdk";
       ".hermes/.no-bundled-skills".text = "";

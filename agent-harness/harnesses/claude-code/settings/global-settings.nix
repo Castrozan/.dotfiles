@@ -59,7 +59,10 @@ let
   claudeGlobalSettings = lib.recursiveUpdate {
     ultracode = false;
     enableWorkflows = true;
-    enabledPlugins."dotfiles@dotagents" = true;
+    enabledPlugins = {
+      "dotfiles@dotagents" = true;
+      "avatar@avatar" = true;
+    };
     skillOverrides = lib.genAttrs neverUsedSkills (_: "off");
     language = "english";
     spinnerTipsEnabled = false;
