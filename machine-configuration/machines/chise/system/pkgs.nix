@@ -19,7 +19,6 @@
       (import ../../../operating-system/resource-monitoring/btop-package.nix { inherit pkgs; })
       cacert
       curl
-      dbeaver-bin
       deno
       (discord.override {
         withOpenASAR = true;
@@ -65,7 +64,6 @@
       playerctl
       pnpm
       poetry
-      postman
       pulsemixer
       scrcpy
       shellcheck

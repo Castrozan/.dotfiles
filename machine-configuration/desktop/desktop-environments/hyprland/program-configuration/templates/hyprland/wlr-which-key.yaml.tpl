@@ -111,9 +111,6 @@ menu:
       - key: l
         desc: Slack
         cmd: slack
-      - key: p
-        desc: Postman
-        cmd: postman
 
   - key: w
     desc: Window
