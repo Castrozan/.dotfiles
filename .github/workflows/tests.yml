@@ -180,8 +180,9 @@ jobs:
           name: swift-coverage
           path: .coverage-reports
 
-      - name: Enforce local coverage of changed lines
+      - name: Report local coverage of changed lines
         if: ${{ !cancelled() }}
+        continue-on-error: true
         env:
           COVERAGE_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |

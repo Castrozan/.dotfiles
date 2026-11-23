@@ -49,8 +49,10 @@ dotfiles-coverage-check .coverage-reports/python-coverage.xml \
   .coverage-reports/swift-coverage.xml --compare-branch origin/main
 ```
 
-CI requires at least 65% coverage of changed executable lines represented in
-the Python and Swift reports. Files without coverage data remain unmeasured.
+CI reports whether changed executable lines represented in the Python and
+Swift reports reach 65% coverage and never fails on it: what earns a test is
+decided in `repository/verification/TESTING.md`, not by a coverage floor.
+Files without coverage data remain unmeasured.
 The comparison uses the pull request base or the preceding push revision.
 New duplication, security, and secret findings use the same blocking gate as
 other findings.
