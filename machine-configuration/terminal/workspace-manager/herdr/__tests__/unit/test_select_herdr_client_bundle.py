@@ -15,10 +15,11 @@ def test_bundled_cli_selects_installed_and_running_clients(tmp_path):
     helper_directory.mkdir(parents=True)
     entry_path = SCRIPTS_DIRECTORY / "select-herdr-client.py"
     shutil.copy2(entry_path, bundle_scripts / entry_path.name)
-    shutil.copy2(
-        SCRIPTS_DIRECTORY / "herdr_client" / "selection.py",
-        helper_directory / "selection.py",
-    )
+    for helper_name in ("selection.py", "running_server_record.py"):
+        shutil.copy2(
+            SCRIPTS_DIRECTORY / "herdr_client" / helper_name,
+            helper_directory / helper_name,
+        )
 
     installed_directory = tmp_path / "installed" / "bin"
     installed_directory.mkdir(parents=True)

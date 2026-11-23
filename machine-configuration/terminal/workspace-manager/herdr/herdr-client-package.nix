@@ -7,6 +7,7 @@ let
     mkdir -p "$out/scripts/herdr_client"
     cp ${./scripts/select-herdr-client.py} "$out/scripts/select-herdr-client.py"
     cp ${./scripts/herdr_client/selection.py} "$out/scripts/herdr_client/selection.py"
+    cp ${./scripts/herdr_client/running_server_record.py} "$out/scripts/herdr_client/running_server_record.py"
   '';
   selector = pkgs.writeShellApplication {
     name = "select-herdr-client";

@@ -3,9 +3,8 @@ import os
 import pathlib
 import subprocess
 import sys
-from typing import NamedTuple
 
-from herdr_client import selection
+from herdr_client import running_server_record, selection
 
 
 INSTALLED_CLIENT_COMMANDS = frozenset(
@@ -21,17 +20,8 @@ INSTALLED_CLIENT_COMMANDS = frozenset(
 )
 
 
-RUNNING_SERVER_RECORD_ENVIRONMENT_VARIABLE = "HERDR_RUNNING_SERVER_RECORD"
-
-
 class ServerClientSelectionError(RuntimeError):
     pass
-
-
-class RunningServer(NamedTuple):
-    socket_path: pathlib.Path
-    process_identifier: int
-    executable: pathlib.Path
 
 
 def run_command(*arguments):
@@ -112,7 +102,7 @@ def read_running_server(installed_executable):
     if socket_path is None:
         return None
     process_identifier = read_socket_owner_process_id(socket_path)
-    return RunningServer(
+    return running_server_record.RunningServer(
         socket_path, process_identifier, read_process_executable(process_identifier)
     )
 
@@ -124,18 +114,6 @@ def read_running_server_executable(installed_executable):
     return running_server.executable
 
 
-def record_running_server(record_path, running_server):
-    temporary_path = record_path.with_name(f"{record_path.name}.{os.getpid()}")
-    try:
-        record_path.parent.mkdir(parents=True, exist_ok=True)
-        temporary_path.write_text(
-            f"{running_server.socket_path}\n{running_server.process_identifier}\n"
-        )
-        os.replace(temporary_path, record_path)
-    except OSError:
-        return
-
-
 def select_client_executable(installed_executable, arguments, record_path=None):
     installed_path = pathlib.Path(installed_executable)
     if not command_requires_running_server_client(arguments):
@@ -144,7 +122,7 @@ def select_client_executable(installed_executable, arguments, record_path=None):
     if running_server is None:
         return installed_path
     if record_path is not None:
-        record_running_server(record_path, running_server)
+        running_server_record.record_running_server(record_path, running_server)
     return running_server.executable
 
 
@@ -186,7 +164,7 @@ def main(arguments=None):
     operation = selected_arguments[0]
     installed_executable = selected_arguments[1]
     if operation == "select":
-        record_path = os.environ.get(RUNNING_SERVER_RECORD_ENVIRONMENT_VARIABLE)
+        record_path = os.environ.get(running_server_record.ENVIRONMENT_VARIABLE)
         selected = select_client_executable(
             installed_executable,
             selected_arguments[2:],

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 installed_executable="$1"
 shift
 running_server_record=""

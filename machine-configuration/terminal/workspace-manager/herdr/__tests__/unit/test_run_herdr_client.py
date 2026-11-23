@@ -94,6 +94,7 @@ class ClientHarness:
             capture_output=True,
             text=True,
             check=True,
+            timeout=30,
             cwd=self.working_directory,
             env=environment,
         ).stdout.strip()
