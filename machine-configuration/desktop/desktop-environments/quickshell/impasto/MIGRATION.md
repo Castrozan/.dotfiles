@@ -4,7 +4,7 @@ Impasto paths are relative to `home/.config/quickshell/` in the fork `Castrozan/
 
 Status values: `migrated` (native in Impasto as configured), `migrated differently` (another surface covers it), `needs work` (a fork or dotfiles change is still required), `dropped` (with the reason).
 
-### Shape, hiding, monitors
+## Shape, hiding, monitors
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -20,7 +20,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 10 | Click outside or Esc closes panels; open panel takes keyboard focus | Island panels hold the keyboard and close on Esc or outside click (`bar/Bar.qml:368`, `desktop/Desktop.qml:93` focus grab) | migrated | Native. |
 | 11 | Desktop border frame on an empty workspace | Optional rounded screen corners (`ScreenCorners.qml`, `screenCorners`), deck or spectrum on empty workspace (`deckOnEmpty`, `spectrumOnEmpty`) | dropped | The continuous-frame border is the old shell's signature and has no Impasto counterpart; the listed options are different decorations, all off by default. |
 
-### Bar modules
+## Bar modules
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -45,7 +45,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 30 | Status icons collapse into a "⋯" popout when the bar is short | Tray fold (`bar/widgets/TrayWidget.qml:148`) and chip settings (`chipFigure`, `chipHover`) | migrated differently | Modules are chosen and arranged in Settings; there is no automatic overflow popout for modules. |
 | 31 | Power button runs `wlogout` | Session panel: lock, suspend, log out, restart, shut down (`services/SessionService.qml:24-28`, `bar/island/SessionPanel.qml`) | migrated differently | `wlogout` keeps its own keybinds; the session panel opens from the control centre, the launcher `>` list or `panel open session`. |
 
-### Popouts
+## Popouts
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -55,7 +55,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 35 | Status-icons popout: 7 rows repeating icon actions | Toggles block in the control centre (`bar/island/controls/TogglesBlock.qml`) | migrated differently | Covers Wi-Fi, Bluetooth, power, focus, microphone, airplane, keep awake, night light. |
 | 36 | Tray menu popout with submenus | `bar/island/TrayMenuPanel.qml` | migrated | Right click on a tray icon. |
 
-### Dashboard
+## Dashboard
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -81,7 +81,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 56 | Audio tab: Bluetooth devices connect and disconnect | `bar/island/BluetoothDetail.qml` | migrated | Native. |
 | 57 | Audio tab: Bluetooth audio profile picker (`pactl set-card-profile`) | Profile rows per connected Bluetooth card in `bar/island/SoundDetail.qml` (fork, data in `services/AudioService.qml`) | migrated | Lists the available profiles as pactl names them, with the active one marked. |
 
-### Launcher and wallpaper
+## Launcher and wallpaper
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -91,7 +91,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 61 | 3 s shrinking-circle wallpaper transition overlay | `awww` transitions chosen by `wallpaperTransition` (`services/WallpaperService.qml:254-271`) | migrated differently | Transition is drawn by `awww`, not by a shell overlay. `theme_bg_apply.py` currently passes `--transition-type none` because the old overlay animated it. |
 | 62 | Launcher size 520 px, 7 rows | `launcherResults: 9`, `launcherFits` | migrated differently | Sized by Impasto settings. |
 
-### OSD, session, notifications, utilities
+## OSD, session, notifications, utilities
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -110,7 +110,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 75 | Utilities: keep awake (`systemd-inhibit`) | Keep-awake tile, `IdleService.keepAwake` (`services/ControlsService.qml:283-286`, `services/IdleService.qml`) | migrated differently | It holds Impasto's own idle monitors off, and those are all 0 (never) by default; it is not a systemd idle inhibitor, so it does not stop other idle handlers. |
 | 76 | Utilities: night light (`hyprsunset -t 3500`) | Night-light tile and detail (`services/SunsetService.qml`, `bar/island/NightLightDetail.qml`, `nightTemperature: 4000`) | migrated | Uses `hyprsunset`; the autostart `hyprsunset` line should be checked against it. |
 
-### Theming, IPC, keybinds
+## Theming, IPC, keybinds
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
 | --- | --- | --- | --- | --- |
@@ -128,7 +128,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | 88 | SUPER+SPACE fuzzel | Unchanged | migrated | Not part of the shell. |
 | 89 | Tests and probes that name `quickshell-bar` (`runtime.bats`, `perf-runtime.bats`, desktop benchmarks, bar QML tests) | `runtime.bats` reads the active shell's units from `~/.config/hypr-shell/autostart.conf` | migrated differently | The bar's perf tests skip while the bar is not the active shell; its QML tests stay while the previous bar is kept. No perf tests cover Impasto yet. |
 
-### Gaps that remain
+## Gaps that remain
 
 - User card (row 38): the package count reads pacman, so it stays empty on NixOS.
 - Notification list keyboard keys (row 70): not checked live.
@@ -137,7 +137,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 - Impasto's Settings pages for keys, compositor look and monitor arrangement do nothing on a hyprlang config; the
   dotfiles own those.
 
-### New things Impasto adds
+## New things Impasto adds
 
 - A dock with pinned and running applications, auto-hidden, on every screen.
 - Desktop widgets on the wallpaper in three themes, arranged by right click.
