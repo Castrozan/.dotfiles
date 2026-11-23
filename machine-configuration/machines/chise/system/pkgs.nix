@@ -37,7 +37,6 @@
       chromium
       google-chrome
       gnumake
-      htop
       imv
       jq
       just
@@ -65,7 +64,6 @@
       pnpm
       poetry
       pulsemixer
-      scrcpy
       shellcheck
       shfmt
       sqlite
@@ -77,7 +75,6 @@
       usbutils
       uv
       vesktop
-      vim
       vlc
       wget
       whisper-cpp

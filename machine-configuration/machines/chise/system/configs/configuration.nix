@@ -102,8 +102,6 @@
     gnome.gnome-keyring.enable = true;
     upower.enable = true;
 
-    printing.enable = true;
-
     libinput = {
       enable = true;
       touchpad = {
