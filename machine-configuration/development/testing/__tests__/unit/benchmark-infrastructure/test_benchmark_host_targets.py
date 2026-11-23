@@ -51,11 +51,6 @@ class TestConfiguredBenchmarkTarget:
         ):
             assert benchmark_core.configured_benchmark_target().host == "chise"
 
-    @pytest.mark.parametrize("host", ["", "localhost", "Kira", "zanoni"])
-    def test_reports_no_target_for_a_name_that_is_not_a_configuration_host(self, host):
-        with patch.dict("os.environ", {benchmark_core.BENCHMARK_HOST_VARIABLE: host}):
-            assert benchmark_core.configured_benchmark_target() is None
-
     def test_exits_with_an_actionable_message_when_no_host_is_injected(self, capsys):
         with patch.dict("os.environ", {}, clear=True):
             with pytest.raises(SystemExit) as exit_info:

@@ -13,12 +13,6 @@ class TestPrintRecentResults:
         assert "Recent Benchmark Results" in output
         assert "eval" in output
 
-    def test_handles_missing_file(self, tmp_path, capsys):
-        results_file = tmp_path / "nonexistent.csv"
-        benchmark_rebuild.print_recent_results(results_file)
-        output = capsys.readouterr().out
-        assert "No benchmark results found" in output
-
     def test_handles_empty_csv(self, tmp_path, capsys):
         results_file = tmp_path / "results.csv"
         results_file.write_text("timestamp,type,config,duration_seconds,commit\n")

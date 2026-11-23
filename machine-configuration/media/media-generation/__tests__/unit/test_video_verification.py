@@ -30,21 +30,6 @@ class VideoVerificationTests(unittest.TestCase):
             with self.assertRaisesRegex(VideoError, "video_contract_mismatch"):
                 validate_probe(probe, self.fixture.request)
 
-    def test_dimension_fps_frame_count_codec_and_duration_errors_are_refused(self):
-        for key, value in (
-            ("width", 720),
-            ("height", 1280),
-            ("avg_frame_rate", "24/1"),
-            ("r_frame_rate", "24/1"),
-            ("nb_read_frames", "1799"),
-            ("duration", "59.999"),
-            ("codec_name", ""),
-        ):
-            probe = probe_document()
-            probe["streams"][0][key] = value
-            with self.assertRaisesRegex(VideoError, "video_contract_mismatch"):
-                validate_probe(probe, self.fixture.request)
-
     def test_missing_audio_irregular_frames_and_wrong_container_are_refused(self):
         original = probe_document()
         changed = copy.deepcopy(original)

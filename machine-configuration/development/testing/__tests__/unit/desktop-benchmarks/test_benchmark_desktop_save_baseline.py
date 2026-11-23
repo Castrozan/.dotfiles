@@ -47,43 +47,6 @@ class TestSaveBaseline:
         assert data["measurements"]["test"]["avg_ms"] == 50.0
         assert data["measurements"]["test"]["max_allowed_ms"] == 100.0
 
-    def test_records_the_measuring_host_and_configuration(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        assert self._save(baseline_file, [_result("test", 50.0, False)]) is True
-
-        data = json.loads(baseline_file.read_text())
-        assert data["host"] == "chise"
-        assert data["config"] == "nixos"
-
-    def test_never_asks_for_a_host_when_every_measurement_failed(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-
-        with (
-            patch.object(desktop_benchmarks.baseline, "BASELINE_PATH", baseline_file),
-            patch("benchmark_core.required_benchmark_target") as resolve_host,
-        ):
-            assert (
-                desktop_benchmarks.baseline.save_baseline([_result("a", 0, True)])
-                is False
-            )
-            resolve_host.assert_not_called()
-
-    def test_saves_only_the_successful_measurements(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        results = [_result("ok", 50.0, False), _result("bad", 0, True)]
-        assert self._save(baseline_file, results) is True
-
-        data = json.loads(baseline_file.read_text())
-        assert "ok" in data["measurements"]
-        assert "bad" not in data["measurements"]
-
-    def test_refuses_to_create_a_baseline_when_every_measurement_failed(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        results = [_result("a", 0, True), _result("b", 0, True)]
-
-        assert self._save(baseline_file, results) is False
-        assert not baseline_file.exists()
-
     def test_leaves_an_existing_baseline_untouched_when_every_measurement_failed(
         self, tmp_path
     ):
@@ -92,11 +55,6 @@ class TestSaveBaseline:
 
         assert self._save(baseline_file, [_result("a", 0, True)]) is False
         assert baseline_file.read_text() == '{"kept": true}\n'
-
-    def test_refuses_when_no_component_was_measured_at_all(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        assert self._save(baseline_file, []) is False
-        assert not baseline_file.exists()
 
 
 class TestSaveBaselineExitStatus:

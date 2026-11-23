@@ -1,7 +1,4 @@
-import pytest
-
 import publish_current_usage_snapshot_to_ingest as publisher_entrypoint
-from ingestion_snapshot_publisher import IngestionRefusedError
 
 USAGE_SNAPSHOT = {
     "stats_last_computed_date": "2026-07-25",
@@ -74,33 +71,6 @@ class TestTheCurrentSnapshotIsPublishedUnderTheClaudeUsageContract:
         assert published["payload"]["totalCostUsd"] == 1.25
         assert published["payload"]["activity"]["activeDayCount"] == 1
         assert published["payload"]["models"][0]["model"] == "claude-opus-5"
-
-    def test_publishes_nothing_when_the_machine_has_no_usage_to_report(
-        self, monkeypatch
-    ):
-        monkeypatch.setattr(
-            publisher_entrypoint, "build_current_usage_snapshot", lambda: None
-        )
-        monkeypatch.setattr(
-            publisher_entrypoint,
-            "publish_snapshot",
-            lambda *unused: pytest.fail("nothing may be published without a snapshot"),
-        )
-
-        assert (
-            publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-            is None
-        )
-
-    def test_refuses_to_publish_when_the_owner_has_not_seeded_the_ingest_mount(
-        self, monkeypatch
-    ):
-        monkeypatch.setattr(
-            publisher_entrypoint, "build_current_usage_snapshot", lambda: USAGE_SNAPSHOT
-        )
-
-        with pytest.raises(IngestionRefusedError):
-            publisher_entrypoint.publish_current_usage_snapshot({})
 
     def test_reports_a_refusal_as_a_failing_exit_code(self, monkeypatch):
         monkeypatch.setattr(

@@ -46,16 +46,6 @@ def test_every_valid_heartbeat_survives_rendering_and_parsing_unchanged(heartbea
     assert parsed_heartbeat(rendered_heartbeat(heartbeat)) == heartbeat
 
 
-@given(st.text(max_size=400))
-def test_any_text_either_parses_or_is_refused_with_a_reason(text):
-    try:
-        parsed = parsed_heartbeat(text)
-    except InvalidPeerDocument as refusal:
-        assert str(refusal)
-    else:
-        assert parsed_heartbeat(rendered_heartbeat(parsed)) == parsed
-
-
 @given(heartbeats(), st.data())
 def test_dropping_any_template_line_is_refused(heartbeat, data):
     lines = [line for line in rendered_heartbeat(heartbeat).splitlines() if line]

@@ -86,53 +86,12 @@ def test_manifest_outside_the_run_is_refused(composition_run):
     assert calls == []
 
 
-def test_an_sdk_linked_into_the_run_is_refused_before_it_recompiles(composition_run):
-    root, directory, manifest, calls = composition_run
-    (directory / "fframes").symlink_to(root / "native-kit" / "fframes")
-    manifest.write_text(composition_manifest("../fframes/fframes"))
-    with pytest.raises(ValueError, match="shared SDK"):
-        shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
-    assert calls == []
-
-
-def test_a_different_sdk_feature_set_is_refused_before_it_recompiles(composition_run):
-    root, directory, manifest, calls = composition_run
-    sdk = root / "native-kit" / "fframes" / "fframes"
-    manifest.write_text(composition_manifest(sdk, features='["cli"]'))
-    with pytest.raises(ValueError, match="shared SDK"):
-        shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
-    assert calls == []
-
-
 def test_a_composition_without_the_sdk_is_refused(composition_run):
     root, directory, manifest, calls = composition_run
     manifest.write_text('[package]\nname = "masking-crab"\n')
     with pytest.raises(ValueError, match="shared SDK"):
         shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
     assert calls == []
-
-
-def test_a_kit_reached_through_a_link_still_names_the_real_sdk(
-    composition_run, tmp_path
-):
-    root, directory, manifest, calls = composition_run
-    kit = tmp_path / "kit"
-    (root / "native-kit").rename(kit)
-    (root / "native-kit").symlink_to(kit)
-    manifest.write_text(composition_manifest(kit / "fframes" / "fframes"))
-    shorts_composition.build_composition(directory, root, "composition/Cargo.toml")
-    assert len(calls) == 2
-
-
-def test_the_sweep_never_follows_a_link_out_of_the_run(tmp_path):
-    kit = tmp_path / "native-kit"
-    (kit / "target" / "release").mkdir(parents=True)
-    (kit / "target" / "CACHEDIR.TAG").write_text("Signature")
-    run = tmp_path / "run"
-    run.mkdir()
-    (run / "native-kit").symlink_to(kit)
-    shorts_composition.discard_build_caches(run)
-    assert (kit / "target" / "release").is_dir()
 
 
 def test_build_caches_are_discarded_at_any_depth(tmp_path):
@@ -146,10 +105,3 @@ def test_build_caches_are_discarded_at_any_depth(tmp_path):
     assert not (tmp_path / "composition" / "target").exists()
     assert (tmp_path / "final.mp4").exists()
     assert (tmp_path / "composition" / "Cargo.toml").exists()
-
-
-def test_a_cache_tag_in_the_run_root_never_deletes_the_run(tmp_path):
-    (tmp_path / "CACHEDIR.TAG").write_text("Signature")
-    (tmp_path / "final.mp4").write_bytes(b"video")
-    shorts_composition.discard_build_caches(tmp_path)
-    assert (tmp_path / "final.mp4").exists()

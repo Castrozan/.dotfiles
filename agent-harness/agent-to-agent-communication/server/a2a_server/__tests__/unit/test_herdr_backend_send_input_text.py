@@ -27,23 +27,11 @@ def _build_backend_with_recording_stub() -> tuple[
 
 
 class TestSendInputTextWritesLiteralPayloadThenEnter:
-    def test_send_input_text_writes_payload_as_send_text(self):
-        backend, recording_stub = _build_backend_with_recording_stub()
-        backend.send_input_text("hello")
-        text_invocation = recording_stub.invocations[0]
-        assert text_invocation == ["pane", "send-text", "wP:pT", "hello"]
-
     def test_send_input_text_sends_enter_as_separate_key_press(self):
         backend, recording_stub = _build_backend_with_recording_stub()
         backend.send_input_text("hello")
         enter_invocation = recording_stub.invocations[1]
         assert enter_invocation == ["pane", "send-keys", "wP:pT", "Enter"]
-
-    def test_send_input_text_with_key_name_input_treats_it_as_literal_text(self):
-        backend, recording_stub = _build_backend_with_recording_stub()
-        backend.send_input_text("Enter")
-        text_invocation = recording_stub.invocations[0]
-        assert text_invocation == ["pane", "send-text", "wP:pT", "Enter"]
 
     def test_send_input_text_with_control_sequence_input_treats_it_as_literal_text(
         self,

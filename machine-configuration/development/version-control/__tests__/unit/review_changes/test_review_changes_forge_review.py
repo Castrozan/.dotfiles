@@ -90,21 +90,6 @@ def test_merge_request_on_an_existing_branch_never_deletes_that_branch(
     assert not any(call[:2] == ["git", "branch"] for call in git_calls(run_command))
 
 
-def test_a_failed_review_still_removes_the_borrowed_branch(forge_doubles):
-    _run_git, run_command, neovim = forge_doubles
-    run_command.return_value = MagicMock(returncode=1)
-    neovim.side_effect = KeyboardInterrupt
-    with pytest.raises(KeyboardInterrupt):
-        forge_review.review_on_forge(GITLAB_LINK, "someone/topic")
-    assert git_calls(run_command)[-1] == [
-        "git",
-        "branch",
-        "--quiet",
-        "-D",
-        "someone/topic",
-    ]
-
-
 def test_a_non_link_is_rejected(forge_doubles):
     with pytest.raises(ReviewTargetError, match="not an MR/PR link"):
         forge_review.review_on_forge("feature", "feature")

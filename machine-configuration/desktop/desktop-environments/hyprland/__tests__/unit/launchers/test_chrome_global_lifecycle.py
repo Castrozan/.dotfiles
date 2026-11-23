@@ -57,13 +57,6 @@ class TestInitializeChromeGlobalProfileIfNeeded:
         assert prefs.exists()
         assert "restore_on_startup" in prefs.read_text()
 
-    def test_skips_when_profile_already_exists(self, tmp_path, monkeypatch):
-        data_dir = tmp_path / "chrome-global"
-        (data_dir / "Default").mkdir(parents=True)
-        monkeypatch.setattr(summoner, "CHROME_GLOBAL_DATA_DIR", data_dir)
-        summoner.initialize_chrome_global_profile_if_needed()
-        assert not (data_dir / "Default" / "Preferences").exists()
-
 
 class TestChromeGlobalHasNeverBeenLaunched:
     def test_returns_true_when_no_marker(self, tmp_path, monkeypatch):

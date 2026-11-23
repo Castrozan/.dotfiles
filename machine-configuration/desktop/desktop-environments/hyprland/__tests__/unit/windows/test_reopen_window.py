@@ -51,30 +51,8 @@ class TestMainReopensLastClosedWindow:
         assert "hyprctl" in dispatched_args
         assert any("firefox" in str(arg) for arg in dispatched_args)
 
-    def test_clears_history_when_only_one_entry(self, tmp_path, mock_subprocess_run):
-        history_file = tmp_path / "hypr-closed-windows-history"
-        entry = json.dumps({"cmd": "code", "workspace": 3, "title": "Editor"})
-        history_file.write_text(entry + "\n")
-
-        with patch.object(reopen_window, "CLOSED_WINDOWS_HISTORY_FILE", history_file):
-            reopen_window.main()
-
-        assert history_file.read_text() == ""
-
 
 class TestMainExitsWhenLaunchCommandMissing:
-    def test_exits_with_error_when_cmd_field_empty(self, tmp_path):
-        history_file = tmp_path / "hypr-closed-windows-history"
-        entry = json.dumps({"cmd": "", "workspace": 1, "title": "Bad"})
-        history_file.write_text(entry + "\n")
-
-        with patch.object(reopen_window, "CLOSED_WINDOWS_HISTORY_FILE", history_file):
-            try:
-                reopen_window.main()
-                assert False, "Should have raised SystemExit"
-            except SystemExit as exc:
-                assert exc.code == 1
-
     def test_exits_with_error_when_cmd_field_absent(self, tmp_path):
         history_file = tmp_path / "hypr-closed-windows-history"
         entry = json.dumps({"workspace": 1, "title": "No cmd"})

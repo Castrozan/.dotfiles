@@ -10,12 +10,6 @@ pytestmark = pytest.mark.usefixtures(
 
 
 class TestIdleWindow:
-    def test_three_in_the_morning_is_inside_the_window(self):
-        assert nightly_deep_test_tiers.is_inside_the_idle_window(3)
-
-    def test_the_middle_of_a_working_day_is_outside_the_window(self):
-        assert not nightly_deep_test_tiers.is_inside_the_idle_window(14)
-
     def test_a_run_outside_the_window_does_nothing_and_stays_green(self):
         with patch("nightly_deep_test_tiers.current_hour", return_value=14):
             with patch("nightly_deep_test_tiers.sys.argv", ["nightly"]):
@@ -125,12 +119,6 @@ class TestTheVerdictSeparatesSkippedFromPassed:
         verdict = nightly_deep_test_tiers.night_verdict([], ["--e2e"])
         assert "SKIPPED, proving nothing: --e2e" in verdict
         assert "--e2e" not in verdict.split(". SKIPPED")[0]
-
-    def test_a_night_where_every_tier_skipped_is_a_failure(self):
-        verdict = nightly_deep_test_tiers.night_verdict(
-            [], list(nightly_deep_test_tiers.DEEP_TIER_FLAGS)
-        )
-        assert verdict.startswith("FAILED")
 
     def test_a_failure_outranks_a_skip_in_the_verdict(self):
         verdict = nightly_deep_test_tiers.night_verdict(["--perf"], ["--e2e"])

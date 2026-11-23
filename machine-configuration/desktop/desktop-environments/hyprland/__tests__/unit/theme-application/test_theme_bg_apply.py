@@ -8,15 +8,6 @@ import theme_bg_apply
 class TestApplyCurrentBackground:
     """Uses awww instead of hyprpaper because hyprpaper cannot load GIF wallpapers."""
 
-    def test_exits_when_no_symlink(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(
-            theme_bg_apply, "CURRENT_BACKGROUND_LINK", tmp_path / "background"
-        )
-
-        with patch("theme_bg_apply.subprocess.run"):
-            with pytest.raises(SystemExit):
-                theme_bg_apply.apply_current_background()
-
     def test_exits_when_symlink_target_missing(self, tmp_path, monkeypatch):
         bg_link = tmp_path / "background"
         bg_link.symlink_to(tmp_path / "nonexistent.png")

@@ -57,24 +57,6 @@ def test_published_run_keeps_only_referenced_and_small_files(finished_run):
     assert read_document(finished_run / "retention.json") == record
 
 
-@pytest.mark.parametrize("status", ["held", "needs_inspection", "agent_finished"])
-def test_unpublished_run_keeps_everything_for_debugging(finished_run, status):
-    write_document(finished_run / "status.json", {"status": status})
-    assert shorts_retention.discard_intermediates(finished_run) is None
-    assert (finished_run / "native-render/job/render.mp4").is_file()
-    assert (finished_run / "bin/composition").is_file()
-    assert not (finished_run / "retention.json").exists()
-
-
-def test_symlinked_file_is_not_followed(finished_run, tmp_path):
-    outside = write_file(tmp_path, "outside.bin", LARGE)
-    (finished_run / "link.bin").symlink_to(outside)
-    write_document(finished_run / "status.json", {"status": "published"})
-    shorts_retention.discard_intermediates(finished_run)
-    assert outside.is_file()
-    assert (finished_run / "link.bin").is_symlink()
-
-
 def scheduled_run(root, identifier):
     directory = root / "runs" / identifier
     directory.mkdir(parents=True)

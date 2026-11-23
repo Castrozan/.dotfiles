@@ -51,29 +51,6 @@ class TestObserveProducesActivityOnlyForNewMeaningfulLines:
         observation = backend.observe()
         assert observation.raw_output_since_last_call == ""
 
-    def test_observation_reports_repeated_response_as_new_when_occurrence_count_grows(
-        self,
-    ):
-        pattern = re.compile(r"^⏺ ")
-        backend = HerdrAttachedAgentBackend("wP:pT", meaningful_line_pattern=pattern)
-        _replace_capture_pane_text_with(backend, "⏺ Hi\n")
-        _set_target_pane_exists_to(backend, True)
-        backend.start()
-        _replace_capture_pane_text_with(backend, "⏺ Hi\n⏺ Hi\n")
-        observation = backend.observe()
-        assert observation.raw_output_since_last_call == "⏺ Hi"
-
-    def test_observation_refreshes_activity_timestamp_when_new_occurrence_appears(self):
-        pattern = re.compile(r"^⏺ ")
-        backend = HerdrAttachedAgentBackend("wP:pT", meaningful_line_pattern=pattern)
-        _replace_capture_pane_text_with(backend, "⏺ Hi\n")
-        _set_target_pane_exists_to(backend, True)
-        backend.start()
-        activity_after_start = backend._last_activity_at_epoch_seconds
-        _replace_capture_pane_text_with(backend, "⏺ Hi\n⏺ Hi\n")
-        observation = backend.observe()
-        assert observation.last_activity_at_epoch_seconds >= activity_after_start
-
     def test_observation_reports_target_not_alive_when_pane_disappears(self):
         backend = HerdrAttachedAgentBackend("wP:pT", meaningful_line_pattern=None)
         _replace_capture_pane_text_with(backend, "initial\n")

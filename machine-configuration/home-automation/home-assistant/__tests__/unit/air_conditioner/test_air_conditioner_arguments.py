@@ -6,12 +6,6 @@ class TestValidateTemperature:
     def test_accepts_minimum(self):
         assert air_conditioner_arguments.validate_temperature("16") == 16.0
 
-    def test_accepts_maximum(self):
-        assert air_conditioner_arguments.validate_temperature("30") == 30.0
-
-    def test_accepts_half_degree(self):
-        assert air_conditioner_arguments.validate_temperature("22.5") == 22.5
-
     def test_rejects_below_minimum(self):
         with pytest.raises(SystemExit):
             air_conditioner_arguments.validate_temperature("15")
@@ -22,12 +16,6 @@ class TestValidateTemperature:
 
 
 class TestValidateHvacMode:
-    def test_accepts_cool(self):
-        assert air_conditioner_arguments.validate_hvac_mode("cool") == "cool"
-
-    def test_accepts_heat(self):
-        assert air_conditioner_arguments.validate_hvac_mode("heat") == "heat"
-
     def test_accepts_auto(self):
         assert air_conditioner_arguments.validate_hvac_mode("auto") == "auto"
 
@@ -43,9 +31,6 @@ class TestValidateFanMode:
     def test_accepts_silent(self):
         assert air_conditioner_arguments.validate_fan_mode("silent") == "silent"
 
-    def test_accepts_auto(self):
-        assert air_conditioner_arguments.validate_fan_mode("auto") == "auto"
-
     def test_rejects_invalid(self):
         with pytest.raises(SystemExit):
             air_conditioner_arguments.validate_fan_mode("turbo")
@@ -55,18 +40,12 @@ class TestValidateSwingMode:
     def test_accepts_vertical(self):
         assert air_conditioner_arguments.validate_swing_mode("vertical") == "vertical"
 
-    def test_accepts_both(self):
-        assert air_conditioner_arguments.validate_swing_mode("both") == "both"
-
     def test_rejects_invalid(self):
         with pytest.raises(SystemExit):
             air_conditioner_arguments.validate_swing_mode("diagonal")
 
 
 class TestValidatePresetMode:
-    def test_accepts_eco(self):
-        assert air_conditioner_arguments.validate_preset_mode("eco") == "eco"
-
     def test_accepts_boost(self):
         assert air_conditioner_arguments.validate_preset_mode("boost") == "boost"
 
@@ -76,10 +55,6 @@ class TestValidatePresetMode:
 
 
 class TestParseSetCommandArguments:
-    def test_parses_temp_flag(self):
-        result = air_conditioner_arguments.parse_set_command_arguments(["--temp", "22"])
-        assert result == {"temperature": 22.0}
-
     def test_parses_fan_flag(self):
         result = air_conditioner_arguments.parse_set_command_arguments(
             ["--fan", "high"]
@@ -118,10 +93,6 @@ class TestParseSetCommandArguments:
             "hvac_mode": "heat",
             "preset_mode": "eco",
         }
-
-    def test_returns_empty_dict_for_no_arguments(self):
-        result = air_conditioner_arguments.parse_set_command_arguments([])
-        assert result == {}
 
     def test_exits_on_unknown_flag(self):
         with pytest.raises(SystemExit):

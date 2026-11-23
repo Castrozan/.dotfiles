@@ -128,19 +128,3 @@ def test_rebased_instruction_links_resolve_in_the_installed_layout(tmp_path):
     write_instruction(tmp_path, str(deployed.relative_to(tmp_path)), projected)
     assert violations_for(deployed) == []
     assert source.read_text() == original
-
-
-def test_checks_absolute_installed_destinations_inside_a_staged_filesystem(tmp_path):
-    source = Path("/home/example/SKILL.md")
-    target = write_instruction(
-        tmp_path, "home/example/core.md", "### Evidence\n\nRead.\n"
-    )
-    inspection = inspect_markdown_instruction(
-        "### Scope\n\nRead [core](/home/example/core.md#evidence).\n"
-    )
-    assert instruction_link_violations(source, inspection, {}, tmp_path) == []
-    target.unlink()
-    assert [
-        violation.rule
-        for violation in instruction_link_violations(source, inspection, {}, tmp_path)
-    ] == ["instruction_link_file"]

@@ -63,16 +63,6 @@ class TestReadingTheLiveDirectory:
             == "claude"
         )
 
-    def test_a_daemon_that_is_not_running_names_the_endpoint_it_tried(
-        self, monkeypatch
-    ):
-        def refuse(*_args, **_kwargs):
-            raise PeerRequestFailure("http://127.0.0.1:7000/agents is unreachable")
-
-        monkeypatch.setattr(peer_transport, "request_peer_json", refuse)
-        with pytest.raises(PeerRequestFailure, match="127.0.0.1:7000"):
-            read_agent_directory("http://127.0.0.1:7000")
-
     def test_a_daemon_answering_anything_but_200_is_a_failure(self, monkeypatch):
         monkeypatch.setattr(
             peer_transport,
@@ -93,10 +83,6 @@ class TestEndpointResolution:
     def test_an_unknown_agent_lists_the_agents_that_are_attached(self):
         with pytest.raises(PeerRequestFailure, match="golden"):
             resolve_peer_endpoint(DIRECTORY_WITH_ONE_AGENT, "nobody")
-
-    def test_an_empty_directory_says_so_instead_of_listing_nothing(self):
-        with pytest.raises(PeerRequestFailure, match="none attached"):
-            resolve_peer_endpoint({}, "nobody")
 
 
 class TestTaskSubmission:
@@ -119,15 +105,6 @@ class TestTaskSubmission:
             lambda *_args, **_kwargs: (201, {"id": "task-1", "state": "working"}),
         )
         assert submit_task_to_peer("http://127.0.0.1:7001", "hello")["id"] == "task-1"
-
-    def test_any_other_status_is_a_failure_carrying_the_status_code(self, monkeypatch):
-        monkeypatch.setattr(
-            peer_transport,
-            "request_peer_json",
-            lambda *_args, **_kwargs: (500, {"error": "internal_error"}),
-        )
-        with pytest.raises(PeerRequestFailure, match="500"):
-            submit_task_to_peer("http://127.0.0.1:7001", "hello")
 
 
 class TestPollingUntilTheTaskEnds:

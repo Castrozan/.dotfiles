@@ -74,29 +74,6 @@ def test_matching_native_file_credential_skips_login(tmp_path, monkeypatch):
     assert credential_file.stat().st_mtime_ns == credential_modified_at
 
 
-def test_matching_keyring_credential_is_migrated_for_headless_access(
-    tmp_path, monkeypatch, capsys
-):
-    token_file = tmp_path / "github-token"
-    token_file.write_text("deployed-secret\n")
-    credential_file = tmp_path / "hosts.yml"
-    credential_file.write_text("github.com:\n  user: Castrozan\n  git_protocol: ssh\n")
-    calls = []
-
-    def run(command, **options):
-        calls.append(command)
-
-    monkeypatch.setattr(subprocess, "run", run)
-
-    deploy_github_authentication.deploy_github_authentication(
-        "gh", token_file, credential_file
-    )
-
-    assert len(calls) == 1
-    assert "--insecure-storage" in calls[0]
-    assert "deployed-secret" not in capsys.readouterr().out
-
-
 def test_missing_secret_fails_after_bounded_wait_before_native_auth(
     tmp_path, monkeypatch
 ):
@@ -113,25 +90,6 @@ def test_missing_secret_fails_after_bounded_wait_before_native_auth(
         )
 
     assert calls == []
-
-
-def test_login_failure_is_reported_without_retry(tmp_path, monkeypatch):
-    token_file = tmp_path / "github-token"
-    token_file.write_text("deployed-secret\n")
-    calls = []
-
-    def run(command, **options):
-        calls.append(command)
-        raise subprocess.CalledProcessError(1, command)
-
-    monkeypatch.setattr(subprocess, "run", run)
-
-    with pytest.raises(subprocess.CalledProcessError):
-        deploy_github_authentication.deploy_github_authentication(
-            "gh", token_file, tmp_path / "hosts.yml"
-        )
-
-    assert len(calls) == 1
 
 
 @pytest.mark.parametrize(

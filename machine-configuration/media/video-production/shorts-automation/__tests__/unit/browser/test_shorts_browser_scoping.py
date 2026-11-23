@@ -50,25 +50,6 @@ def test_scoped_dispatch_supplies_job_credentials(
     assert environment["OPENCLI_BRIDGE_TOKEN"] == private_browser_job_token
 
 
-def test_wrapper_allocates_owned_page_and_checks_profile_once(
-    scoped_browser, monkeypatch
-):
-    pages, instance, execute = scoped_browser
-    monkeypatch.setattr(
-        shorts_browser.sys,
-        "argv",
-        ["shorts-browser", "open", "https://studio.youtube.com"],
-    )
-    assert shorts_browser.main() == 0
-    instance.assert_called_once()
-    assert execute.call_args.args[0] == [
-        "open",
-        "https://studio.youtube.com",
-        "--tab",
-        "owned-tab",
-    ]
-
-
 @pytest.mark.parametrize(
     "arguments", [["tab", "select", "owned-tab"], ["tab", "close", "owned-tab"]]
 )

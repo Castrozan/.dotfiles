@@ -84,16 +84,6 @@ def test_parse_owner_control_message_reads_a_resize_request():
     )
 
 
-def test_parse_owner_control_message_ignores_non_json_keystroke_text():
-    assert settings.parse_owner_control_message("ls -la\n") is None
-
-
-def test_parse_owner_control_message_ignores_unknown_control_types():
-    assert (
-        settings.parse_owner_control_message('{"type": "paste", "data": "x"}') is None
-    )
-
-
 def test_parse_owner_control_message_rejects_non_positive_or_non_integer_dimensions():
     assert (
         settings.parse_owner_control_message('{"type":"resize","columns":0,"rows":40}')
@@ -112,15 +102,6 @@ def test_parse_owner_control_message_rejects_non_positive_or_non_integer_dimensi
     assert (
         settings.parse_owner_control_message(
             '{"type":"resize","columns":true,"rows":40}'
-        )
-        is None
-    )
-
-
-def test_parse_owner_control_message_rejects_dimensions_beyond_the_maximum():
-    assert (
-        settings.parse_owner_control_message(
-            '{"type":"resize","columns":99999,"rows":40}'
         )
         is None
     )

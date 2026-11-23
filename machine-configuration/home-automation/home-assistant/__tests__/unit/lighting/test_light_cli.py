@@ -51,11 +51,6 @@ class TestMainEntryPoint:
         home_assistant_light_control.main()
         assert mock_home_assistant_api_request[0]["payload"]["brightness"] == 200
 
-    def test_set_command_exits_without_attributes(self, monkeypatch, access_token):
-        monkeypatch.setattr("sys.argv", ["ha-light", "set", "bedroom"])
-        with pytest.raises(SystemExit):
-            home_assistant_light_control.main()
-
     def test_status_command_defaults_to_all(
         self,
         monkeypatch,

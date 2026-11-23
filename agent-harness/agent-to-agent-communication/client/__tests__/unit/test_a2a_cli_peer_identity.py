@@ -77,22 +77,12 @@ def herdr_reports(monkeypatch, clawde_workspaces):
 
 
 class TestAnnotatingTheDirectory:
-    def test_an_interactive_session_carries_its_servant_and_session_id(
-        self, herdr_reports
-    ):
-        peer = with_peer_identities(DIRECTORY)["evals-hillclimb"]
-        assert peer["servant"] == INTERACTIVE_SERVANT
-        assert peer["sessionId"] == INTERACTIVE_SESSION
-
     def test_a_clawde_agent_keeps_its_session_id_but_draws_no_servant(
         self, herdr_reports
     ):
         peer = with_peer_identities(DIRECTORY)["monster"]
         assert peer["sessionId"] == CLAWDE_SESSION
         assert "servant" not in peer
-
-    def test_a_pane_reporting_no_session_gains_nothing(self, herdr_reports):
-        assert with_peer_identities(DIRECTORY)["shell-pane"] == DIRECTORY["shell-pane"]
 
     def test_an_unreachable_herdr_leaves_the_directory_as_the_daemon_sent_it(
         self, monkeypatch

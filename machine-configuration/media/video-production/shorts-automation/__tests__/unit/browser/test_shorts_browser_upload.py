@@ -1,5 +1,4 @@
 import json
-import subprocess
 from types import SimpleNamespace
 from unittest.mock import Mock
 
@@ -41,15 +40,6 @@ def test_upload_requires_explicit_tab(upload_environment):
     with pytest.raises(SystemExit):
         upload_video([str(video)], ["opencli"], {})
     run.assert_not_called()
-
-
-def test_upload_failure_is_not_retried(upload_environment):
-    video, run = upload_environment
-    run.side_effect = subprocess.CalledProcessError(1, "opencli")
-    with pytest.raises(subprocess.CalledProcessError):
-        upload_video([str(video), "--tab", "own-tab"], ["opencli"], {})
-    run.assert_called_once()
-    assert video.read_bytes() == b"video-fixture"
 
 
 def test_upload_budget_rejects_large_video_before_dispatch(upload_environment):

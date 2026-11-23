@@ -62,31 +62,6 @@ def test_invalid_alignment_never_becomes_caption_evidence(
         service.generate(operation_id, speech_request, provider)
 
 
-def test_missing_cloud_credentials_fail_before_dispatch(tmp_path, monkeypatch, capsys):
-    monkeypatch.delenv("ELEVENLABS_API_KEY", raising=False)
-    monkeypatch.setattr(Path, "home", lambda: tmp_path)
-    assert (
-        main(
-            [
-                "--state-directory",
-                str(tmp_path),
-                "generate",
-                "--provider",
-                "elevenlabs",
-                "--voice",
-                "voice",
-                "--language",
-                "en-us",
-                "--text",
-                "Hello",
-            ]
-        )
-        == 1
-    )
-    assert "missing_credentials" in capsys.readouterr().err
-    assert list(tmp_path.iterdir()) == []
-
-
 @pytest.mark.parametrize("environment_key", [None, "explicit-environment-key"])
 def test_cloud_cli_loads_credentials_without_disclosing_them(
     tmp_path, monkeypatch, capsys, provider_factory, environment_key

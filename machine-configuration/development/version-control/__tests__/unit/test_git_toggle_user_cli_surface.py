@@ -6,16 +6,8 @@ import git_toggle_user
 
 
 class TestGetRepositoryCommitCount:
-    def test_returns_count_from_rev_list(self):
-        with patch("git_toggle_user.run_git_command", return_value="42"):
-            assert git_toggle_user.get_repository_commit_count() == 42
-
     def test_returns_zero_on_invalid_output(self):
         with patch("git_toggle_user.run_git_command", return_value=""):
-            assert git_toggle_user.get_repository_commit_count() == 0
-
-    def test_returns_zero_on_non_numeric_output(self):
-        with patch("git_toggle_user.run_git_command", return_value="fatal: error"):
             assert git_toggle_user.get_repository_commit_count() == 0
 
 

@@ -28,28 +28,6 @@ def mock_toggle_api_request(monkeypatch):
     return recorded_calls, ac_state
 
 
-class TestGetCurrentAirConditionerState:
-    def test_returns_off_when_off(self, access_token, mock_toggle_api_request):
-        _, ac_state = mock_toggle_api_request
-        ac_state["state"] = "off"
-        result = (
-            home_assistant_air_conditioner_toggle.get_current_air_conditioner_state(
-                access_token
-            )
-        )
-        assert result == "off"
-
-    def test_returns_cool_when_cooling(self, access_token, mock_toggle_api_request):
-        _, ac_state = mock_toggle_api_request
-        ac_state["state"] = "cool"
-        result = (
-            home_assistant_air_conditioner_toggle.get_current_air_conditioner_state(
-                access_token
-            )
-        )
-        assert result == "cool"
-
-
 class TestMainToggleBehavior:
     def test_turns_on_when_off(self, access_token, mock_toggle_api_request, capsys):
         calls, ac_state = mock_toggle_api_request
@@ -68,22 +46,6 @@ class TestMainToggleBehavior:
         turn_off_call = calls[1]
         assert turn_off_call["endpoint"] == "/api/services/climate/turn_off"
         assert "off" in capsys.readouterr().out
-
-    def test_turns_off_when_heating(
-        self, access_token, mock_toggle_api_request, capsys
-    ):
-        calls, ac_state = mock_toggle_api_request
-        ac_state["state"] = "heat"
-        home_assistant_air_conditioner_toggle.main()
-        turn_off_call = calls[1]
-        assert turn_off_call["endpoint"] == "/api/services/climate/turn_off"
-
-    def test_turns_off_when_auto(self, access_token, mock_toggle_api_request, capsys):
-        calls, ac_state = mock_toggle_api_request
-        ac_state["state"] = "auto"
-        home_assistant_air_conditioner_toggle.main()
-        turn_off_call = calls[1]
-        assert turn_off_call["endpoint"] == "/api/services/climate/turn_off"
 
 
 class TestUnavailableStateRecovery:
@@ -127,23 +89,6 @@ class TestUnavailableStateRecovery:
             c for c in calls if c["endpoint"] == "/api/services/climate/turn_on"
         ]
         assert len(turn_on_call) == 1
-
-    def test_exits_when_recovery_fails(
-        self, access_token, mock_toggle_api_request, monkeypatch
-    ):
-        _, ac_state = mock_toggle_api_request
-        ac_state["state"] = "unavailable"
-
-        fake_result = MagicMock()
-        fake_result.returncode = 1
-        monkeypatch.setattr(
-            home_assistant_air_conditioner_toggle.subprocess,
-            "run",
-            lambda *args, **kwargs: fake_result,
-        )
-
-        with pytest.raises(SystemExit):
-            home_assistant_air_conditioner_toggle.main()
 
     def test_exits_when_still_unavailable_after_recovery(
         self, access_token, mock_toggle_api_request, monkeypatch

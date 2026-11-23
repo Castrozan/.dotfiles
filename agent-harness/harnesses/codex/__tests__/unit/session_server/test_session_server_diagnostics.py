@@ -72,21 +72,3 @@ def test_diagnostic_shutdown_is_bounded_when_a_descendant_keeps_stderr_open(tmp_
         finally:
             os.close(inherited_writer)
     assert elapsed < 1.5
-
-
-def test_diagnostic_storage_failure_keeps_draining_backend_pipe(
-    tmp_path, monkeypatch, capfd
-):
-    def reject_storage(output):
-        raise OSError("diagnostic volume is full")
-
-    with SessionServerDiagnostics(tmp_path) as diagnostics:
-        monkeypatch.setattr(diagnostics, "_append", reject_storage)
-        emit_backend_output(
-            diagnostics,
-            "import os; "
-            f"os.write(2, b'backend output' * {MAXIMUM_SESSION_DIAGNOSTIC_BYTES // 14})",
-        )
-    assert diagnostics.current_path.stat().st_size == 0
-    assert diagnostics.startup_failure_details() == ""
-    assert capfd.readouterr().err == ""

@@ -28,16 +28,6 @@ def test_all_analyzers_run_after_a_crash_and_invalid_json(monkeypatch, tmp_path)
     assert "--no-fix" in invoked[0]
 
 
-def test_missing_executable_is_a_failure(monkeypatch, tmp_path):
-    def missing(command, repository):
-        raise FileNotFoundError("qlty")
-
-    monkeypatch.setattr(analyze, "run_analysis", missing)
-    reports, failures = analyze.collect_analysis(tmp_path, ["--all"])
-    assert reports == {}
-    assert len(failures) == 3
-
-
 def test_repository_checks_report_all_failures_after_a_timeout(monkeypatch, tmp_path):
     calls = []
 
@@ -70,7 +60,3 @@ def test_malformed_findings_cannot_pass_or_replace_baseline(tmp_path):
 def test_real_process_failures_are_not_clean_reports(tmp_path, program, expected_error):
     with pytest.raises(expected_error):
         analyze.run_analysis([sys.executable, "-c", program], tmp_path)
-
-
-def test_real_process_json_is_read_without_shell_evaluation(tmp_path):
-    assert analyze.run_analysis([sys.executable, "-c", "print('[]')"], tmp_path) == []

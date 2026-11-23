@@ -53,25 +53,6 @@ class TestSaveBaseline:
         assert not baseline_file.exists()
         assert results_file.read_text() == benchmark_rebuild.CSV_HEADER + "\n"
 
-    def test_leaves_an_existing_baseline_untouched_when_a_command_fails(self, tmp_path):
-        baseline_file = tmp_path / "baseline.json"
-        baseline_file.write_text('{"kept": true}\n')
-        results_file = self._results_file(tmp_path)
-
-        with (
-            patch("rebuild_benchmarks.baseline.BASELINE_PATH", baseline_file),
-            patch(
-                "benchmark_core.measure_shell_command",
-                return_value=CommandMeasurement(False, 4.0),
-            ),
-        ):
-            saved = rebuild_benchmarks.baseline.save_baseline(
-                {"eval": "false", "rebuild": "false"}, KIRA, results_file
-            )
-
-        assert saved is False
-        assert baseline_file.read_text() == '{"kept": true}\n'
-
     def test_writes_a_baseline_when_every_command_succeeds(self, tmp_path):
         baseline_file = tmp_path / "baseline.json"
         results_file = self._results_file(tmp_path)

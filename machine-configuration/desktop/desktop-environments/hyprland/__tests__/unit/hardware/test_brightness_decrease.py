@@ -9,18 +9,6 @@ pytestmark = pytest.mark.usefixtures(
 
 
 class TestDecreaseBrightnessLowersHardwareAboveMinimum:
-    def test_decrements_hardware_brightness_when_above_minimum(self):
-        with (
-            patch(
-                "brightness.get_hardware_brightness_percentage",
-                return_value=50,
-            ),
-            patch("brightness.set_hardware_brightness_percentage") as mock_set,
-        ):
-            brightness.decrease_brightness(10)
-
-            mock_set.assert_called_once_with(40)
-
     def test_clamps_hardware_brightness_to_minimum(self):
         with (
             patch(

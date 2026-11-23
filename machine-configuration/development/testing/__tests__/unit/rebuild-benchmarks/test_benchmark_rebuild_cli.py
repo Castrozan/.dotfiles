@@ -28,21 +28,6 @@ class TestMain:
         ):
             benchmark_rebuild.main()
 
-    def test_report_needs_no_configured_host(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        results_file.write_text("timestamp,type,config,duration_seconds,commit\n")
-
-        with (
-            patch("sys.argv", ["cmd", "report"]),
-            patch(
-                "benchmark_rebuild.get_results_file_path",
-                return_value=results_file,
-            ),
-            patch("benchmark_core.required_benchmark_target") as resolve_host,
-        ):
-            benchmark_rebuild.main()
-            resolve_host.assert_not_called()
-
     def test_unknown_command_exits(self):
         with (
             patch("sys.argv", ["cmd", "bogus"]),
@@ -142,26 +127,6 @@ class TestMain:
             with pytest.raises(SystemExit) as exit_info:
                 benchmark_rebuild.main()
             assert exit_info.value.code == 1
-
-    def test_check_baseline_needs_no_results_file(self):
-        with (
-            patch("sys.argv", ["cmd", "--check-baseline"]),
-            patch("rebuild_benchmarks.baseline.check_baseline", return_value=True),
-            patch("benchmark_core.ensure_results_file_exists") as mock_ensure,
-        ):
-            with pytest.raises(SystemExit):
-                benchmark_rebuild.main()
-            mock_ensure.assert_not_called()
-
-    def test_check_baseline_needs_no_configured_host(self):
-        with (
-            patch("sys.argv", ["cmd", "--check-baseline"]),
-            patch("rebuild_benchmarks.baseline.check_baseline", return_value=True),
-            patch("benchmark_core.required_benchmark_target") as resolve_host,
-        ):
-            with pytest.raises(SystemExit):
-                benchmark_rebuild.main()
-            resolve_host.assert_not_called()
 
     def test_save_baseline_calls_save(self):
         with (

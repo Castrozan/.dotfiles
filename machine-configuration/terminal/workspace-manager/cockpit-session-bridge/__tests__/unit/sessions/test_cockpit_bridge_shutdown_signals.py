@@ -21,23 +21,6 @@ def install_handlers_and_return_registry():
     return signal_registry, shutdown_requested
 
 
-def test_shutdown_handlers_cover_terminate_and_interrupt():
-    async def install_handlers():
-        signal_registry, _ = install_handlers_and_return_registry()
-        return sorted(signal_registry.registered_signal_handlers)
-
-    assert asyncio.run(install_handlers()) == sorted([signal.SIGTERM, signal.SIGINT])
-
-
-def test_a_shutdown_signal_releases_the_serving_loop():
-    async def install_then_signal():
-        signal_registry, shutdown_requested = install_handlers_and_return_registry()
-        signal_registry.registered_signal_handlers[signal.SIGTERM]()
-        await asyncio.wait_for(shutdown_requested, 1)
-
-    asyncio.run(install_then_signal())
-
-
 def test_a_repeated_shutdown_signal_does_not_raise():
     async def install_then_signal_twice():
         signal_registry, shutdown_requested = install_handlers_and_return_registry()

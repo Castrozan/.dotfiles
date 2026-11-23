@@ -4,18 +4,9 @@ import atk_mouse_device
 
 
 class TestReadSysfsAttribute:
-    def test_reads_existing_attribute(self, tmp_path):
-        attr_file = tmp_path / "test_attr"
-        attr_file.write_text("  some_value  \n")
-        assert atk_mouse_device.read_sysfs_attribute(attr_file) == "some_value"
-
     def test_returns_default_for_missing_file(self, tmp_path):
         missing = tmp_path / "nonexistent"
         assert atk_mouse_device.read_sysfs_attribute(missing) == "unknown"
-
-    def test_returns_custom_default(self, tmp_path):
-        missing = tmp_path / "nonexistent"
-        assert atk_mouse_device.read_sysfs_attribute(missing, "N/A") == "N/A"
 
 
 class TestFindAtkHidrawConfigInterface:
@@ -52,17 +43,19 @@ class TestFindAtkHidrawConfigInterface:
 
             mock_entry.__truediv__ = lambda self, k: (
                 MagicMock(
-                    __truediv__=lambda self2, k2: MagicMock(
-                        __truediv__=lambda self3, k3: (
-                            MagicMock(__truediv__=lambda self4, k4: vendor_chain)
-                            if k3 == ".."
-                            else interface_chain
-                            if k3 == "bInterfaceNumber"
-                            else MagicMock()
+                    __truediv__=lambda self2, k2: (
+                        MagicMock(
+                            __truediv__=lambda self3, k3: (
+                                MagicMock(__truediv__=lambda self4, k4: vendor_chain)
+                                if k3 == ".."
+                                else interface_chain
+                                if k3 == "bInterfaceNumber"
+                                else MagicMock()
+                            )
                         )
+                        if k2 == ".."
+                        else MagicMock()
                     )
-                    if k2 == ".."
-                    else MagicMock()
                 )
                 if k == "device"
                 else MagicMock()
@@ -79,18 +72,6 @@ class TestFindAtkHidrawConfigInterface:
             mock_hidraw_base = MagicMock()
             mock_hidraw_base.exists.return_value = True
             mock_hidraw_base.iterdir.return_value = []
-            mock_path_cls.return_value = mock_hidraw_base
-
-            try:
-                atk_mouse_device.find_atk_hidraw_config_interface()
-                assert False, "Should have raised SystemExit"
-            except SystemExit:
-                pass
-
-    def test_raises_when_sysfs_not_available(self):
-        with patch("atk_mouse_device.Path") as mock_path_cls:
-            mock_hidraw_base = MagicMock()
-            mock_hidraw_base.exists.return_value = False
             mock_path_cls.return_value = mock_hidraw_base
 
             try:

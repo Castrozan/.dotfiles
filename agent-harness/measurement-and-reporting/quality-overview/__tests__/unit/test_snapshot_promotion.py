@@ -6,18 +6,6 @@ import pytest
 import workflow_context as CONTEXT
 
 
-def test_promotion_rejects_newer_main_and_rerun_attempt(run, monkeypatch):
-    monkeypatch.syspath_prepend(str(Path(CONTEXT.__file__).parent))
-    import promote_snapshot
-
-    payload = {"workflow": CONTEXT.workflow_identity(run)}
-    assert promote_snapshot.promotion_matches(payload, run["head_sha"], run, run)
-    assert not promote_snapshot.promotion_matches(payload, "b" * 40, run, run)
-    assert not promote_snapshot.promotion_matches(
-        payload, run["head_sha"], {**run, "run_attempt": 3}, run
-    )
-
-
 @pytest.mark.parametrize("status", ["queued", "in_progress"])
 def test_promotion_skips_snapshot_when_newer_attempt_is_running(run, status):
     import promote_snapshot

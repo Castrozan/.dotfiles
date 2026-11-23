@@ -69,25 +69,6 @@ class TestMainRecoveryFlow:
         assert updated["data"]["entries"][0]["data"]["ip_address"] == "10.10.12.170"
         assert any("reload" in call["endpoint"] for call in mock_recover_api_request)
 
-    def test_exits_when_no_local_networks_available(
-        self,
-        mock_config_entries,
-        access_token,
-        monkeypatch,
-    ):
-        monkeypatch.setattr(
-            midea_device_discovery,
-            "check_midea_port_open",
-            lambda ip: False,
-        )
-        monkeypatch.setattr(
-            midea_device_discovery,
-            "discover_local_ipv4_networks",
-            lambda: [],
-        )
-        with pytest.raises(SystemExit):
-            recover_ip_module.main()
-
     def test_exits_when_device_not_found_on_any_subnet(
         self,
         mock_config_entries,

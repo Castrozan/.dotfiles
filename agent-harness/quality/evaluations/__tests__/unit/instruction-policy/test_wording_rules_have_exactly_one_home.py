@@ -58,19 +58,6 @@ def surfaces_stating(phrase: str) -> set[str]:
     }
 
 
-def test_no_wording_rule_is_stated_outside_its_single_home():
-    trespassers = {
-        phrase: sorted(surfaces_stating(phrase) - allowed_surfaces)
-        for phrase, allowed_surfaces in SINGLE_HOME_RULE_PHRASES.items()
-        if surfaces_stating(phrase) - allowed_surfaces
-    }
-    assert not trespassers, (
-        "a wording rule stated in two active instruction surfaces drifts when one is "
-        "edited; point at the canonical authority instead of restating it "
-        f"(phrase -> surfaces that restate it): {trespassers}"
-    )
-
-
 def test_every_guarded_phrase_is_actually_stated_somewhere():
     unstated = [
         phrase

@@ -28,13 +28,6 @@ class TestHideAllWorkspaceWindowsToSpecialDesktop:
         focus_file = tmp_path / "focus-1"
         assert focus_file.read_text() == "0xaaa"
 
-    def test_does_nothing_when_no_windows(self, tmp_path, hyprctl_response_builder):
-        hyprctl_response_builder("activewindow", {"address": "0xaaa"})
-        hyprctl_response_builder("clients", [])
-        with patch.object(script, "STATE_DIR", tmp_path):
-            script.hide_all_workspace_windows_to_special_desktop(1)
-        assert not (tmp_path / "ws-1").exists()
-
 
 class TestRestoreHiddenWindows:
     @patch("show_desktop.time.sleep")

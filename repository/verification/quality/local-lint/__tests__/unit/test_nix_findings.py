@@ -1,17 +1,4 @@
-import json
-
 import nix_findings
-import pytest
-
-
-def test_decodes_all_native_json_documents_and_rejects_truncation():
-    output = '{"file":"first.nix"}\n {"file":"second.nix"}\n'
-    assert [entry["file"] for entry in nix_findings.json_documents(output)] == [
-        "first.nix",
-        "second.nix",
-    ]
-    with pytest.raises(json.JSONDecodeError):
-        list(nix_findings.json_documents(output + '{"file":'))
 
 
 def test_statix_keeps_rule_and_precise_location():

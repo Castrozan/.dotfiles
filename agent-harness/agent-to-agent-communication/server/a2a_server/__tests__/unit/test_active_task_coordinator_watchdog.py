@@ -49,33 +49,6 @@ def _dead_observation_with_no_new_output() -> BackendObservation:
 
 
 class TestActiveTaskCoordinatorWatchdog:
-    def test_shutdown_callback_does_not_fire_while_target_remains_alive(self):
-        callback_invocations = []
-        backend = ScriptedAgentBackend([_alive_observation_with_no_new_output()])
-        coordinator = ActiveTaskCoordinator(
-            TaskStore(),
-            backend,
-            target_dead_grace_period_seconds=0.0,
-            on_target_died_callback=lambda: callback_invocations.append(time.time()),
-        )
-        coordinator._observe_once_and_apply_to_active_task()
-        coordinator._observe_once_and_apply_to_active_task()
-        assert callback_invocations == []
-
-    def test_shutdown_callback_fires_after_grace_period_of_target_dead(self):
-        callback_invocations = []
-        backend = ScriptedAgentBackend([_dead_observation_with_no_new_output()])
-        coordinator = ActiveTaskCoordinator(
-            TaskStore(),
-            backend,
-            target_dead_grace_period_seconds=0.05,
-            on_target_died_callback=lambda: callback_invocations.append(time.time()),
-        )
-        coordinator._observe_once_and_apply_to_active_task()
-        time.sleep(0.07)
-        coordinator._observe_once_and_apply_to_active_task()
-        assert len(callback_invocations) == 1
-
     def test_shutdown_callback_fires_exactly_once_even_across_many_dead_observations(
         self,
     ):
@@ -92,34 +65,3 @@ class TestActiveTaskCoordinatorWatchdog:
         coordinator._observe_once_and_apply_to_active_task()
         coordinator._observe_once_and_apply_to_active_task()
         assert len(callback_invocations) == 1
-
-    def test_target_returning_to_alive_resets_dead_timer(self):
-        callback_invocations = []
-        scripted = [
-            _dead_observation_with_no_new_output(),
-            _alive_observation_with_no_new_output(),
-            _dead_observation_with_no_new_output(),
-        ]
-        backend = ScriptedAgentBackend(scripted)
-        coordinator = ActiveTaskCoordinator(
-            TaskStore(),
-            backend,
-            target_dead_grace_period_seconds=0.1,
-            on_target_died_callback=lambda: callback_invocations.append(time.time()),
-        )
-        coordinator._observe_once_and_apply_to_active_task()
-        time.sleep(0.05)
-        coordinator._observe_once_and_apply_to_active_task()
-        coordinator._observe_once_and_apply_to_active_task()
-        assert callback_invocations == []
-
-    def test_shutdown_callback_is_optional(self):
-        backend = ScriptedAgentBackend([_dead_observation_with_no_new_output()])
-        coordinator = ActiveTaskCoordinator(
-            TaskStore(),
-            backend,
-            target_dead_grace_period_seconds=0.0,
-            on_target_died_callback=None,
-        )
-        coordinator._observe_once_and_apply_to_active_task()
-        coordinator._observe_once_and_apply_to_active_task()

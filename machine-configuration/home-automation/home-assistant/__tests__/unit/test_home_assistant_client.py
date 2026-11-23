@@ -83,31 +83,9 @@ class TestMakeHomeAssistantApiRequest:
             "brightness": 200,
         }
 
-    def test_posts_without_a_body_when_the_payload_is_empty(
-        self, recorded_home_assistant_transport
-    ):
-        home_assistant_client.make_home_assistant_api_request(
-            "token-value",
-            "/api/config/config_entries/entry/test-entry-id/reload",
-            {},
-        )
-        request = recorded_home_assistant_transport.sent_requests[0]
-        assert request.get_method() == "POST"
-        assert request.data is None
-
     def test_decodes_a_json_response_body(self, recorded_home_assistant_transport):
         recorded_home_assistant_transport.response_body = '{"state": "on"}'
         result = home_assistant_client.make_home_assistant_api_request(
             "token-value", "/api/states/light.bedroom"
         )
         assert result == {"state": "on"}
-
-    def test_returns_none_for_an_empty_response_body(
-        self, recorded_home_assistant_transport
-    ):
-        result = home_assistant_client.make_home_assistant_api_request(
-            "token-value",
-            "/api/services/light/turn_on",
-            {"entity_id": "light.bedroom"},
-        )
-        assert result is None

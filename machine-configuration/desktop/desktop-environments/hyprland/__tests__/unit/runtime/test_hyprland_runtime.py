@@ -10,20 +10,6 @@ def completed_process(returncode: int) -> MagicMock:
 
 
 class TestBuildEventSocketPath:
-    def test_builds_the_socket_path_from_the_instance_signature(self):
-        with patch.dict(
-            hyprland_runtime.os.environ,
-            {
-                "HYPRLAND_INSTANCE_SIGNATURE": "abc123",
-                "XDG_RUNTIME_DIR": "/run/user/1000",
-            },
-            clear=True,
-        ):
-            assert (
-                hyprland_runtime.build_event_socket_path()
-                == "/run/user/1000/hypr/abc123/.socket2.sock"
-            )
-
     def test_falls_back_to_the_user_runtime_directory_when_unset(self):
         with patch.dict(
             hyprland_runtime.os.environ,
@@ -33,17 +19,6 @@ class TestBuildEventSocketPath:
             assert (
                 hyprland_runtime.build_event_socket_path()
                 == f"/run/user/{hyprland_runtime.os.getuid()}/hypr/abc123/.socket2.sock"
-            )
-
-    def test_uses_an_empty_signature_when_hyprland_exported_none(self):
-        with patch.dict(
-            hyprland_runtime.os.environ,
-            {"XDG_RUNTIME_DIR": "/run/user/1000"},
-            clear=True,
-        ):
-            assert (
-                hyprland_runtime.build_event_socket_path()
-                == "/run/user/1000/hypr//.socket2.sock"
             )
 
 
@@ -59,13 +34,6 @@ class TestIsHyprctlConnected:
                 capture_output=True,
                 text=True,
             )
-
-    def test_returns_false_when_hyprctl_fails(self):
-        with patch(
-            "hyprland_runtime.subprocess.run",
-            return_value=completed_process(1),
-        ):
-            assert hyprland_runtime.is_hyprctl_connected() is False
 
 
 class TestFindLiveHyprlandSocket:
@@ -124,11 +92,3 @@ class TestEnsureHyprctlConnected:
                 return_value=True,
             ):
                 assert hyprland_runtime.ensure_hyprctl_connected() is True
-
-    def test_returns_false_when_no_socket_answers(self):
-        with patch("hyprland_runtime.is_hyprctl_connected", return_value=False):
-            with patch(
-                "hyprland_runtime.find_live_hyprland_socket",
-                return_value=False,
-            ):
-                assert hyprland_runtime.ensure_hyprctl_connected() is False

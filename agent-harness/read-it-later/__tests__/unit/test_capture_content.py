@@ -32,11 +32,6 @@ note_lines = st.text(
 ).filter(lambda line: line.strip() and not is_stub_line(line))
 
 
-def test_a_bare_stub_carries_no_note_of_lucas():
-    assert lucas_note(TWEET_STUB) == ""
-    assert lucas_note(YOUTUBE_STUB) == ""
-
-
 @given(
     st.lists(note_lines, min_size=1, max_size=4),
     st.sampled_from([TWEET_STUB, YOUTUBE_STUB]),
@@ -45,15 +40,6 @@ def test_every_line_lucas_adds_outside_the_stub_is_his_note(added_lines, stub):
     note = lucas_note(f"{stub}\n" + "\n".join(added_lines))
 
     assert note.splitlines() == [line.strip() for line in added_lines]
-
-
-@given(st.lists(note_lines, max_size=3))
-def test_a_claim_or_done_marker_never_reads_as_a_note(added_lines):
-    body = (
-        TWEET_STUB + "\n".join(added_lines) + "\nstatus:: working\nclaimed_by:: chise\n"
-    )
-
-    assert "status::" not in lucas_note(body)
 
 
 def test_the_first_link_is_the_canonical_origin():

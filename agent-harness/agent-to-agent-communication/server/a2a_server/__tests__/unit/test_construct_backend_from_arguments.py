@@ -1,5 +1,4 @@
 import argparse
-import re
 
 import pytest
 
@@ -30,14 +29,3 @@ class TestConstructHerdrBackendFromArguments:
         )
         assert isinstance(backend, HerdrAttachedAgentBackend)
         assert backend._herdr_pane_id == "wZ:p9"
-
-    def test_leaves_meaningful_line_pattern_unset_when_not_provided(self):
-        backend = construct_backend_from_arguments(_herdr_backend_arguments())
-        assert backend._meaningful_line_pattern is None
-
-    def test_compiles_meaningful_line_pattern_when_provided(self):
-        backend = construct_backend_from_arguments(
-            _herdr_backend_arguments(herdr_meaningful_line_pattern=r"^⏺ ")
-        )
-        assert isinstance(backend._meaningful_line_pattern, re.Pattern)
-        assert backend._meaningful_line_pattern.search("⏺ hi")

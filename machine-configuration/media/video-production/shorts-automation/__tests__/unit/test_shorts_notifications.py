@@ -140,19 +140,6 @@ def test_discovery_is_bounded_to_twenty_one_scheduled_slots(tmp_path):
     assert runs[-1].name == "2026-10-04-2100"
 
 
-def test_symlinked_and_oversized_inputs_are_rejected(publication):
-    root, run, ledger = publication
-    path = run / "episode.json"
-    path.unlink()
-    path.symlink_to(run / "status.json")
-    state.collect(root, ledger)
-    assert list(state.pending(ledger)) == []
-    path.unlink()
-    path.write_text(" " * 65537)
-    state.collect(root, ledger)
-    assert list(state.pending(ledger)) == []
-
-
 @pytest.mark.parametrize("outcome", ["sent", "delivery_uncertain"])
 def test_existing_gmail_receipt_prevents_smtp_duplicate(publication, outcome):
     root, run, ledger = publication

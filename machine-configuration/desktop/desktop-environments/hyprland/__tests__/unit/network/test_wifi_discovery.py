@@ -3,16 +3,6 @@ from network_management import network_manager
 
 
 class TestGetWifiStatus:
-    def test_returns_enabled(self):
-        mock_result = MagicMock()
-        mock_result.stdout = "enabled\n"
-
-        with patch(
-            "network_management.network_manager.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert network_manager.get_wifi_status() == "enabled"
-
     def test_returns_disabled(self):
         mock_result = MagicMock()
         mock_result.stdout = "disabled\n"

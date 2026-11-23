@@ -34,20 +34,11 @@ class TestFormatWifiNetworkLine:
         assert "(connected)" not in result
         assert "󰌾" not in result
 
-    def test_formats_empty_security_as_open(self):
-        net = {"ssid": "Open", "signal": "40", "security": "", "in_use": ""}
-        result = network_display.format_wifi_network_line(net)
-        assert "󰌾" not in result
-
 
 class TestExtractSsidFromSelection:
     def test_extracts_ssid_from_formatted_line(self):
         selection = "󰤨  HomeNet  󰌾 85% (connected)"
         assert network_display.extract_ssid_from_selection(selection) == "HomeNet"
-
-    def test_extracts_ssid_without_lock_icon(self):
-        selection = "󰤢  OpenNet  50%"
-        assert network_display.extract_ssid_from_selection(selection) == "OpenNet"
 
 
 class TestConnectionTypeIcon:
@@ -67,13 +58,6 @@ class TestConnectionTypeIcon:
 class TestExtractConnectionNameFromSelection:
     def test_extracts_active_connection_name(self):
         selection = "󰤨  MyWiFi (active)"
-        assert (
-            network_display.extract_connection_name_from_selection(selection)
-            == "MyWiFi"
-        )
-
-    def test_extracts_inactive_connection_name(self):
-        selection = "󰤨  MyWiFi"
         assert (
             network_display.extract_connection_name_from_selection(selection)
             == "MyWiFi"

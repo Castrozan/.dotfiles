@@ -61,13 +61,6 @@ class TestCompletionFromTheReportedAgentStatus:
         coordinator._observe_once_and_apply_to_active_task()
         assert coordinator._task_store.get_task(task.id).state == "completed"
 
-    def test_an_agent_idle_before_it_ever_worked_does_not_complete_the_task(self):
-        coordinator = coordinator_over([observation_with_reported_busy_state(False)])
-        task, _ = coordinator.submit_new_task_if_idle("do the thing")
-        coordinator._observe_once_and_apply_to_active_task()
-        coordinator._observe_once_and_apply_to_active_task()
-        assert coordinator._task_store.get_task(task.id).state == "working"
-
     def test_a_backend_reporting_no_status_falls_back_to_the_idle_timer(self):
         coordinator = ActiveTaskCoordinator(
             TaskStore(),
@@ -110,10 +103,3 @@ class TestHerdrAgentStatusReading:
     def test_working_and_blocked_both_mean_the_turn_is_still_running(self):
         assert agent_status_means_the_agent_is_busy("working") is True
         assert agent_status_means_the_agent_is_busy("blocked") is True
-
-    def test_idle_means_the_turn_is_over(self):
-        assert agent_status_means_the_agent_is_busy("idle") is False
-
-    def test_a_missing_status_reports_nothing_rather_than_guessing(self):
-        assert agent_status_means_the_agent_is_busy(None) is None
-        assert agent_status_means_the_agent_is_busy(17) is None

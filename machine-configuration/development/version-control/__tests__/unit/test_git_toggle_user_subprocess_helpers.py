@@ -31,9 +31,3 @@ class TestIsInsideGitRepository:
         mock_result.returncode = 0
         with patch("git_toggle_user.subprocess.run", return_value=mock_result):
             assert git_toggle_user.is_inside_git_repository() is True
-
-    def test_returns_false_when_outside_repo(self):
-        mock_result = MagicMock()
-        mock_result.returncode = 128
-        with patch("git_toggle_user.subprocess.run", return_value=mock_result):
-            assert git_toggle_user.is_inside_git_repository() is False

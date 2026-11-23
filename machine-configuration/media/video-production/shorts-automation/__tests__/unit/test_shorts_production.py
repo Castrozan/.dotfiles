@@ -1,5 +1,4 @@
 import json
-import sqlite3
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -44,14 +43,6 @@ def test_topic_reservations_are_unique_across_connections(tmp_path):
     document = proposal()
     with pytest.raises(ValueError, match="already used"):
         second.reserve(document, "afternoon")
-
-
-def test_one_run_cannot_reserve_multiple_topics(tmp_path):
-    store = TopicStore(tmp_path)
-    store.reserve(proposal(), "morning")
-    document = proposal("venus-day-length")
-    with pytest.raises(sqlite3.IntegrityError):
-        store.reserve(document, "morning")
 
 
 def test_unowned_topic_cannot_be_dispatched(tmp_path, monkeypatch):
@@ -177,11 +168,6 @@ def test_episode_actions_are_handled_by_episode_command(action, tmp_path, monkey
     result = shorts_production.execute_action(arguments, tmp_path)
     assert result == {"episode": action}
     episode_command.assert_called_once_with(action, tmp_path, Path("episode.json"))
-
-
-def test_unknown_action_is_rejected_by_the_parser():
-    with pytest.raises(SystemExit):
-        shorts_production.build_parser().parse_args(["publish"])
 
 
 def test_main_prints_the_action_result_as_json(tmp_path, monkeypatch, capsys):

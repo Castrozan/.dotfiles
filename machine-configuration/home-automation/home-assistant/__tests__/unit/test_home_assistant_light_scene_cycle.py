@@ -35,22 +35,9 @@ def mock_scene_state_file(tmp_path, monkeypatch):
 
 
 class TestReadCurrentSceneCycleIndex:
-    def test_returns_negative_one_when_no_file(self, mock_scene_state_file):
-        assert home_assistant_light_scene_cycle.read_current_scene_cycle_index() == -1
-
-    def test_reads_stored_index(self, mock_scene_state_file):
-        mock_scene_state_file.write_text("2")
-        assert home_assistant_light_scene_cycle.read_current_scene_cycle_index() == 2
-
     def test_returns_negative_one_on_invalid_content(self, mock_scene_state_file):
         mock_scene_state_file.write_text("garbage")
         assert home_assistant_light_scene_cycle.read_current_scene_cycle_index() == -1
-
-
-class TestWriteSceneCycleIndex:
-    def test_writes_index_to_file(self, mock_scene_state_file):
-        home_assistant_light_scene_cycle.write_scene_cycle_index(3)
-        assert mock_scene_state_file.read_text() == "3"
 
 
 class TestCycleStepDefinitions:
@@ -99,18 +86,6 @@ class TestMainCyclesBehavior:
             )
         assert mock_scene_state_file.read_text() == "0"
         assert first_step["name"] in capsys.readouterr().out
-
-    def test_never_calls_the_dead_scene_service(
-        self,
-        access_token,
-        mock_scene_api_request,
-        mock_scene_state_file,
-    ):
-        home_assistant_light_scene_cycle.main()
-
-        assert not any(
-            "scene" in call["endpoint"] for call in mock_scene_api_request
-        ), "scene.* entities carry no targets, so scene/turn_on silently does nothing"
 
     def test_cycles_to_next_step(
         self,

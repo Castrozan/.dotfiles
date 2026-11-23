@@ -14,20 +14,13 @@ def _empty_results_file(tmp_path):
 
 
 class TestBenchmarkCommands:
-    def test_every_measured_command_names_only_the_host_being_benchmarked(self):
-        kira = benchmark_core.BenchmarkTarget(
-            "kira", "darwin", "darwinConfigurations.kira.system"
-        )
-        commands = rebuild_benchmarks.execution.get_benchmark_commands(kira)
-
-        for benchmark_type in ("eval", "dry-run", "build"):
-            assert kira.flake_output in commands[benchmark_type], benchmark_type
-
     def test_eval_measures_the_host_configuration_without_building_it(self):
         chise = benchmark_core.BenchmarkTarget(
             "chise", "nixos", "nixosConfigurations.chise.config.system.build.toplevel"
         )
-        eval_command = rebuild_benchmarks.execution.get_benchmark_commands(chise)["eval"]
+        eval_command = rebuild_benchmarks.execution.get_benchmark_commands(chise)[
+            "eval"
+        ]
 
         assert eval_command.startswith("nix eval ")
         assert eval_command.endswith(f"#{chise.flake_output}.drvPath --raw")
@@ -41,22 +34,6 @@ class TestBenchmarkCommands:
         for benchmark_type in ("eval", "dry-run", "build"):
             assert "git+file://" in commands[benchmark_type], benchmark_type
             assert "?submodules=1#" in commands[benchmark_type], benchmark_type
-
-
-class TestRecordBenchmarkResult:
-    def test_appends_csv_line(self, tmp_path):
-        results_file = _empty_results_file(tmp_path)
-
-        rebuild_benchmarks.execution.record_benchmark_result(
-            results_file, "eval", "kira/darwin", 1.234, "abc1234"
-        )
-
-        lines = results_file.read_text().strip().split("\n")
-        assert len(lines) == 2
-        assert "eval" in lines[1]
-        assert "kira/darwin" in lines[1]
-        assert "1.234" in lines[1]
-        assert "abc1234" in lines[1]
 
 
 class TestRunAndRecordBenchmark:

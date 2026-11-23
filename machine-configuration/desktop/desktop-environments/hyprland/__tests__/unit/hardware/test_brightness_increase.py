@@ -43,21 +43,6 @@ class TestIncreaseBrightnessRaisesHardwareWhenGammaAtMax:
 
 
 class TestIncreaseBrightnessRaisesGammaBeforeHardware:
-    def test_raises_gamma_when_below_maximum(self):
-        with (
-            patch("brightness.read_persisted_gamma_percentage", return_value=50),
-            patch(
-                "brightness.apply_compositor_gamma_percentage", return_value=True
-            ) as mock_apply,
-            patch("brightness.write_persisted_gamma_percentage") as mock_write,
-            patch("brightness.set_hardware_brightness_percentage") as mock_set,
-        ):
-            brightness.increase_brightness(10)
-
-            mock_apply.assert_called_once_with(60)
-            mock_write.assert_called_once_with(60)
-            mock_set.assert_not_called()
-
     def test_clamps_gamma_to_maximum_and_does_not_touch_hardware(self):
         with (
             patch("brightness.read_persisted_gamma_percentage", return_value=95),

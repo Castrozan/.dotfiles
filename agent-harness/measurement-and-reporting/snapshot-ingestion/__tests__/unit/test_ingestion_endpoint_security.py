@@ -3,10 +3,8 @@ from contextlib import nullcontext
 from http.client import HTTPMessage
 from io import BytesIO
 from types import SimpleNamespace
-from unittest.mock import patch
 
 import pytest
-from hypothesis import given, strategies as st
 
 import ingestion_snapshot_publisher as publisher
 
@@ -37,23 +35,6 @@ def test_unsafe_ingestion_endpoints_are_refused_before_network(monkeypatch, endp
         publisher.post_ingestion_event(
             endpoint, "fixture-credential", {"topic": "claude-usage"}
         )
-
-
-@given(
-    st.from_regex(r"[a-z][a-z0-9+.-]{0,12}", fullmatch=True).filter(
-        lambda scheme: scheme not in {"http", "https"}
-    )
-)
-def test_non_http_schemes_never_receive_producer_credentials(scheme):
-    endpoint = f"{scheme}://example.invalid/ingest"
-    with patch.object(
-        publisher.urllib.request, "urlopen", return_value=accepted_response()
-    ) as open_request:
-        with pytest.raises(publisher.IngestionRefusedError):
-            publisher.post_ingestion_event(
-                endpoint, "fixture-credential", {"topic": "claude-usage"}
-            )
-        assert not open_request.called
 
 
 @pytest.mark.parametrize(

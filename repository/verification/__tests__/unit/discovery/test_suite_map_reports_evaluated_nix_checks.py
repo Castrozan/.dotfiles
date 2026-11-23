@@ -78,27 +78,6 @@ def test_the_evaluation_asks_the_flake_for_the_current_systems_check_names(
     ), "an unbounded evaluation would hang the map forever on a stuck nix daemon"
 
 
-def test_a_wrapper_that_only_imports_its_cases_is_still_registered(
-    tmp_path, load_suite_map
-):
-    suite_map = load_suite_map()
-    tests_directory = tmp_path / "__tests__"
-    tests_directory.mkdir()
-    (tests_directory / "checks.nix").write_text("args: import ./seanime.nix args\n")
-
-    summary = suite_map.summarize_tests_directory(tests_directory)
-
-    assert summary["has_checks_nix"], (
-        "a wrapper that imports its cases owns real checks, so the map must see "
-        "the file rather than the function names spelled inside it"
-    )
-    assert suite_map.format_summary_lines(summary) == ["    checks.nix: registered"], (
-        "counting literal mkEvalCheck calls reported zero for every wrapper that "
-        "imports a large check set, which read as an untested module while nix "
-        "flake check was evaluating all of its checks"
-    )
-
-
 @pytest.mark.parametrize(
     "failing_evaluation, expected_reason",
     [

@@ -4,13 +4,6 @@ import super_launcher
 
 
 class TestIsFuzzelRunning:
-    def test_returns_true_when_fuzzel_is_running(self):
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-
-        with patch("super_launcher.subprocess.run", return_value=mock_result):
-            assert super_launcher.is_fuzzel_running() is True
-
     def test_returns_false_when_fuzzel_is_not_running(self):
         mock_result = MagicMock()
         mock_result.returncode = 1

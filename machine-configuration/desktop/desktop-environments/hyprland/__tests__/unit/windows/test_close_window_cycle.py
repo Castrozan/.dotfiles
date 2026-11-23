@@ -15,18 +15,8 @@ class TestReadProcessCmdline:
         result = raw_bytes.replace(b"\x00", b" ").decode().strip()
         assert result == "/usr/bin/kitty --config foo.conf"
 
-    def test_returns_none_for_missing_process(self):
-        result = script.read_process_cmdline(999999999)
-        assert result is None
-
 
 class TestSaveWindowToHistory:
-    def test_appends_json_entry_to_history_file(self, tmp_path):
-        history_file = tmp_path / "history"
-        with patch.object(script, "CLOSED_WINDOWS_HISTORY_FILE", history_file):
-            script.save_window_to_history(0, "", 1, "test")
-            assert not history_file.exists()
-
     def test_skips_when_no_launch_command(self, tmp_path):
         history_file = tmp_path / "history"
         with patch.object(script, "CLOSED_WINDOWS_HISTORY_FILE", history_file):

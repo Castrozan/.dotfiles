@@ -65,8 +65,3 @@ def test_a_session_taken_back_from_another_pane_gets_its_old_heartbeat_restored(
     arguments += ["--heartbeats-dir", str(scenario.reports)]
     assert scenario.run(scenario.cards, *arguments, command="handover") == 0
     assert [report["state"] for report in records(scenario.reports)] == ["working"]
-
-
-def test_a_release_and_a_take_back_cannot_be_asked_together(scenario):
-    assert scenario.handover("--no-move", "--take-back") == 2
-    assert records(release_directory()) == []

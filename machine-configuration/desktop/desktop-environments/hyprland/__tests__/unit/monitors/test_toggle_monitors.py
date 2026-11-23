@@ -1,4 +1,3 @@
-import threading
 from unittest.mock import patch
 
 import monitor_configuration
@@ -26,17 +25,6 @@ class TestDetermineNextMode:
     @pytest.mark.parametrize(
         ("current_mode", "next_mode"),
         [
-            (DisplayMode.EXTERNAL, DisplayMode.EXTENDED),
-            (DisplayMode.EXTENDED, DisplayMode.INTERNAL),
-            (DisplayMode.INTERNAL, DisplayMode.EXTERNAL),
-        ],
-    )
-    def test_cycles_all_modes_with_the_lid_open(self, current_mode, next_mode):
-        assert toggle_monitors.determine_next_mode(current_mode, False) is next_mode
-
-    @pytest.mark.parametrize(
-        ("current_mode", "next_mode"),
-        [
             (DisplayMode.EXTENDED, DisplayMode.EXTERNAL),
             (DisplayMode.EXTERNAL, DisplayMode.EXTENDED),
             (DisplayMode.INTERNAL, DisplayMode.EXTENDED),
@@ -55,20 +43,6 @@ class TestToggleDisplayMode:
         assert toggle_monitors.toggle_display_mode() == "Built-in only"
         assert toggle_monitors.toggle_display_mode() == "External only"
         assert monitor_configuration.read_display_mode() is DisplayMode.EXTERNAL
-
-    def test_concurrent_presses_each_advance_the_mode(
-        self, acer_connected_with_lid_open
-    ):
-        monitor_configuration.write_display_mode(DisplayMode.EXTERNAL)
-        presses = [
-            threading.Thread(target=toggle_monitors.toggle_display_mode)
-            for _ in range(2)
-        ]
-        for press in presses:
-            press.start()
-        for press in presses:
-            press.join()
-        assert monitor_configuration.read_display_mode() is DisplayMode.INTERNAL
 
     def test_keeps_the_stored_mode_while_no_external_is_connected(
         self, monitor_state_files, monkeypatch

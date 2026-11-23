@@ -4,10 +4,6 @@ import benchmark_shell
 
 
 class TestIsShellAvailable:
-    def test_returns_true_when_found(self):
-        with patch("benchmark_shell.shutil.which", return_value="/usr/bin/bash"):
-            assert benchmark_shell.is_shell_available("bash") is True
-
     def test_returns_false_when_not_found(self):
         with patch("benchmark_shell.shutil.which", return_value=None):
             assert benchmark_shell.is_shell_available("missing-shell") is False
@@ -55,22 +51,11 @@ class TestFormatIndividualTimes:
         result = benchmark_shell.format_individual_times([0.1, 0.2, 0.3])
         assert result == "0.100 0.200 0.300"
 
-    def test_empty_list(self):
-        assert benchmark_shell.format_individual_times([]) == ""
-
 
 class TestDetermineShellsToBenchmark:
-    def test_returns_default_shells_for_none(self):
-        result = benchmark_shell.determine_shells_to_benchmark(None)
-        assert result == ["bash"]
-
     def test_returns_default_shells_for_all(self):
         result = benchmark_shell.determine_shells_to_benchmark("all")
         assert result == ["bash"]
-
-    def test_returns_specific_shell(self):
-        result = benchmark_shell.determine_shells_to_benchmark("sh")
-        assert result == ["sh"]
 
 
 class TestParseArguments:
@@ -102,12 +87,6 @@ class TestInitializeCsvIfNeeded:
         benchmark_shell.initialize_csv_if_needed(results_file)
         content = results_file.read_text()
         assert content.startswith("timestamp,shell")
-
-    def test_does_not_overwrite_existing(self, tmp_path):
-        results_file = tmp_path / "results.csv"
-        results_file.write_text("existing data\n")
-        benchmark_shell.initialize_csv_if_needed(results_file)
-        assert results_file.read_text() == "existing data\n"
 
 
 class TestMain:

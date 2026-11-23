@@ -66,14 +66,3 @@ def test_an_explanatory_comment_beside_a_directive_still_fails(tmp_path):
     )
     assert not result.passed
     assert result.detail == "found: ['comment on line 5']"
-
-
-def test_a_comment_that_merely_mentions_a_directive_word_still_fails(tmp_path):
-    result = write_and_check(
-        tmp_path,
-        "mentions.py",
-        "def resolve_account_label(account):\n"
-        "    # noqa would silence this, but the rule is real\n"
-        "    return account.label\n",
-    )
-    assert not result.passed

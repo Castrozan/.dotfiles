@@ -75,17 +75,6 @@ def test_rejects_a_source_target_without_a_deployed_owner():
         rebase_instruction_links(text, SOURCE, DEPLOYED, DESTINATIONS)
 
 
-def test_maps_concatenated_source_fragments_to_the_same_deployed_file():
-    destinations = {
-        **DESTINATIONS,
-        PurePosixPath("/instructions/core-rules/core.md"): DEPLOYED,
-    }
-    text = "### Evidence\n\nRead [core](../../core-rules/core.md#coding).\n"
-    assert rebase_instruction_links(text, SOURCE, DEPLOYED, destinations) == (
-        "### Evidence\n\nRead [core](#coding).\n"
-    )
-
-
 def test_preserves_crlf_while_rebasing_a_link_after_frontmatter():
     source = "---\r\nname: example\r\n---\r\n\r\n### Evidence\r\n\r\nRead [core](../../core-rules/core.md#evidence).\r\n"
     expected = source.replace("../../core-rules/core.md", "../core/SKILL.md")

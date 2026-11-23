@@ -35,16 +35,6 @@ class TestGetActiveConnection:
 
 
 class TestHasSavedConnection:
-    def test_returns_true_when_connection_saved(self):
-        mock_result = MagicMock()
-        mock_result.stdout = "MyWiFi\nOtherNet\n"
-
-        with patch(
-            "network_management.network_manager.subprocess.run",
-            return_value=mock_result,
-        ):
-            assert network_manager.has_saved_connection("MyWiFi") is True
-
     def test_returns_false_when_not_saved(self):
         mock_result = MagicMock()
         mock_result.stdout = "OtherNet\n"

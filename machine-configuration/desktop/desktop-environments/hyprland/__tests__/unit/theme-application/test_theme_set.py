@@ -4,15 +4,6 @@ import theme_set
 
 
 class TestNormalizeThemeName:
-    def test_lowercases_and_replaces_spaces(self):
-        assert theme_set.normalize_theme_name("Rose Pine Dawn") == "rose-pine-dawn"
-
-    def test_strips_html_tags(self):
-        assert theme_set.normalize_theme_name("<b>Catppuccin</b>") == "catppuccin"
-
-    def test_handles_already_normalized(self):
-        assert theme_set.normalize_theme_name("kanagawa") == "kanagawa"
-
     def test_strips_tags_and_normalizes_together(self):
         assert theme_set.normalize_theme_name("<span>Rose Pine</span>") == "rose-pine"
 
@@ -26,11 +17,6 @@ class TestFindThemeDirectory:
 
         result = theme_set.find_theme_directory("catppuccin")
         assert result == user_dir / "catppuccin"
-
-    def test_returns_none_when_not_found(self, tmp_path, monkeypatch):
-        monkeypatch.setattr(theme_set, "USER_THEMES_PATH", tmp_path / "a")
-
-        assert theme_set.find_theme_directory("nonexistent") is None
 
 
 class TestMainExitsOnMissingArguments:

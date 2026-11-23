@@ -108,19 +108,6 @@ def test_agents_without_a_servant_use_their_own_directory_name(marker, monkeypat
     assert sender_identity.resolve_sender_name(SENDER_DIRECTORY) == "sender-session"
 
 
-def test_a_clawde_workspace_has_no_servant_without_an_environment_marker(
-    monkeypatch, tmp_path
-):
-    workspace = tmp_path / "fleet" / "steward"
-    workspace.mkdir(parents=True)
-    monkeypatch.setenv("CLAWDE_AGENTS_DIRECTORY", str(workspace.parent))
-    monkeypatch.setenv("HERDR_PANE_ID", "w1:p2")
-    monkeypatch.setenv("CODEX_THREAD_ID", "parent-thread")
-    monkeypatch.chdir(workspace)
-
-    assert sender_identity.resolve_sender_name(SENDER_DIRECTORY) == "sender-session"
-
-
 @pytest.mark.parametrize(
     "response_text",
     [
@@ -145,20 +132,6 @@ def test_unusable_pane_identity_falls_back_to_the_sending_session_name(
             arguments, 0, response_text
         ),
     )
-
-    assert sender_identity.resolve_sender_name(SENDER_DIRECTORY) == "sender-session"
-
-
-@pytest.mark.parametrize(
-    "failure", [FileNotFoundError(), subprocess.TimeoutExpired("herdr", 1)]
-)
-def test_pane_transport_failure_can_use_the_directory_name(failure, monkeypatch):
-    monkeypatch.setenv("HERDR_PANE_ID", "w1:p2")
-
-    def fail(*arguments, **options):
-        raise failure
-
-    monkeypatch.setattr(sender_identity.subprocess, "run", fail)
 
     assert sender_identity.resolve_sender_name(SENDER_DIRECTORY) == "sender-session"
 

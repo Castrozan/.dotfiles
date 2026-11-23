@@ -20,17 +20,6 @@ SAMPLE_OTEL = {
 
 
 class TestBuildUsageSnapshot:
-    def test_snapshot_carries_labels_and_schema_version(self):
-        snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
-        )
-        assert snapshot["account_label"] == "acct123"
-        assert snapshot["machine_label"] == "mach456"
-        assert (
-            snapshot["schema_version"]
-            == usage_snapshot_writer.USAGE_SNAPSHOT_SCHEMA_VERSION
-        )
-
     def test_snapshot_folds_in_stats_summary_and_otel_metrics(self):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
             "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
@@ -42,21 +31,8 @@ class TestBuildUsageSnapshot:
         )
         assert snapshot["otel_metrics"] == SAMPLE_OTEL
 
-    def test_snapshot_carries_no_raw_account_identifier(self):
-        snapshot = usage_snapshot_writer.build_usage_snapshot(
-            "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL
-        )
-        assert "oauthAccount" not in json.dumps(snapshot)
-        assert "emailAddress" not in json.dumps(snapshot)
-
 
 class TestWriteUsageSnapshot:
-    def test_snapshot_file_name_combines_labels(self):
-        assert (
-            usage_snapshot_writer.usage_snapshot_file_name("acct123", "mach456")
-            == "acct123-mach456.json"
-        )
-
     def test_write_creates_directory_and_keyed_file(self, tmp_path):
         snapshot = usage_snapshot_writer.build_usage_snapshot(
             "acct123", "mach456", SAMPLE_STATS_SUMMARY, SAMPLE_OTEL

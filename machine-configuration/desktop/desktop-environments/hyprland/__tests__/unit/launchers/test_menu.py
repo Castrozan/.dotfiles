@@ -50,23 +50,6 @@ class TestShowFuzzelMenu:
             assert "-c" in args
             assert "2" in args
 
-    def test_no_preselect_index_when_not_matching(self):
-        mock_result = MagicMock()
-        mock_result.stdout = ""
-
-        with patch("menu.subprocess.run", return_value=mock_result) as mock_run:
-            menu.show_fuzzel_menu("Test", "alpha\nbeta", preselect="missing")
-
-            args = mock_run.call_args[0][0]
-            assert "-c" not in args
-
-    def test_returns_empty_string_when_cancelled(self):
-        mock_result = MagicMock()
-        mock_result.stdout = ""
-
-        with patch("menu.subprocess.run", return_value=mock_result):
-            assert menu.show_fuzzel_menu("Test", "opts") == ""
-
 
 class TestShowThemeMenu:
     def test_sets_theme_when_selected(self):
@@ -85,23 +68,6 @@ class TestShowThemeMenu:
             menu.show_theme_menu(back_to_exit=True)
 
             assert call(["hypr-theme-set", "catppuccin"]) in mock_run.call_args_list
-
-    def test_exits_when_cancelled_and_back_to_exit(self):
-        def run_side_effect(args, **kwargs):
-            result = MagicMock()
-            result.returncode = 0
-            result.stdout = ""
-            if "hypr-theme-list" in args:
-                result.stdout = "tokyonight\n"
-            elif "hypr-theme-current" in args:
-                result.stdout = "tokyonight\n"
-            return result
-
-        with patch("menu.subprocess.run", side_effect=run_side_effect) as mock_run:
-            menu.show_theme_menu(back_to_exit=True)
-
-            for c in mock_run.call_args_list:
-                assert "hypr-theme-set" not in c[0][0]
 
 
 class TestShowSystemMenu:

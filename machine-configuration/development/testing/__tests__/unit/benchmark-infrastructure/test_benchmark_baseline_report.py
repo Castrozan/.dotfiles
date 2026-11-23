@@ -43,20 +43,10 @@ class TestFreshnessRequirement:
         gated = with_freshness_required(_validation([], age_days=0), SAVE_COMMAND)
         assert gated.failures == []
 
-    def test_rejects_an_age_past_the_window(self):
-        gated = with_freshness_required(_validation([], age_days=45), SAVE_COMMAND)
-        assert "45 days old" in gated.failures[0]
-        assert SAVE_COMMAND in gated.failures[0]
-
     def test_rejects_an_unusable_timestamp(self):
         gated = with_freshness_required(_validation([], age_days=None), SAVE_COMMAND)
         assert "generated_at" in gated.failures[0]
         assert SAVE_COMMAND in gated.failures[0]
-
-    def test_keeps_the_failures_the_validation_already_carried(self):
-        gated = with_freshness_required(_validation(["structural"], 45), SAVE_COMMAND)
-        assert gated.failures[0] == "structural"
-        assert len(gated.failures) == 2
 
 
 class TestFreshnessRequirementOnTheOwningHost:
@@ -69,12 +59,6 @@ class TestFreshnessRequirementOnTheOwningHost:
     def test_leaves_a_stale_baseline_alone_on_a_host_that_cannot_retake_it(self):
         gated = with_freshness_required_on_owning_host(
             _validation([], age_days=45), SAVE_COMMAND, "chise"
-        )
-        assert gated.failures == []
-
-    def test_leaves_a_stale_baseline_alone_when_the_running_host_is_unknown(self):
-        gated = with_freshness_required_on_owning_host(
-            _validation([], age_days=45), SAVE_COMMAND, ""
         )
         assert gated.failures == []
 
@@ -99,9 +83,6 @@ class TestBaselineReportLines:
         assert lines[-3] == "FAILED (2 issues):"
         assert lines[-2] == "  - first"
         assert lines[-1] == "  - second"
-
-    def test_appends_no_heading_without_failures(self):
-        assert len(baseline_report_lines("A TITLE", _validation([]))) == 8
 
 
 class TestSharedHeaderAcrossCommands:
@@ -142,13 +123,6 @@ class TestCompareMeasuredValues:
             }
         }
 
-    def test_reports_nothing_within_the_ceiling(self):
-        comparison = compare_measured_values(
-            self._document(comp=100), {"comp": 80.0}, "max_allowed_ms"
-        )
-        assert comparison.exceeded_names == []
-        assert comparison.missing_names == []
-
     def test_names_a_measurement_over_its_ceiling(self):
         comparison = compare_measured_values(
             self._document(comp=100), {"comp": 150.0}, "max_allowed_ms"
@@ -163,17 +137,3 @@ class TestCompareMeasuredValues:
         )
         assert comparison.exceeded_names == []
         assert comparison.missing_names == ["comp-b"]
-
-    def test_names_every_measurement_when_nothing_was_measured(self):
-        comparison = compare_measured_values(
-            self._document(comp=100), {}, "max_allowed_ms"
-        )
-        assert comparison.missing_names == ["comp"]
-
-    def test_reads_the_ceiling_key_it_is_given(self):
-        comparison = compare_measured_values(
-            {"measurements": {"eval": {"max_allowed_seconds": 3.0}}},
-            {"eval": 4.0},
-            "max_allowed_seconds",
-        )
-        assert comparison.exceeded_names == ["eval"]

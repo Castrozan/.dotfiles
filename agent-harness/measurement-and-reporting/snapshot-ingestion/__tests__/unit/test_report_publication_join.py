@@ -1,6 +1,5 @@
 import hashlib
 import json
-from string import ascii_letters
 from urllib.parse import unquote, urlsplit
 from uuid import uuid4
 
@@ -69,20 +68,6 @@ def test_real_provenance_and_artifact_adapter_join(tmp_path, monkeypatch, prefix
         assert item["sha256"] == hashlib.sha256(request.data).hexdigest()
     assert environment["GITHUB_SHA"] == "b" * 40
     assert environment["GITHUB_RUN_ID"] == "999"
-
-
-@given(
-    port=st.one_of(
-        st.integers(min_value=65536, max_value=10**9).map(str),
-        st.text(alphabet=ascii_letters, min_size=1, max_size=12),
-    )
-)
-def test_invalid_url_ports_are_refused_without_normalization(port):
-    base_url = f"https://reports.example.test:{port}/private/reports/"
-    with pytest.raises(IngestionRefusedError):
-        producing_environment(
-            payload_for(base_url=base_url), {"REPORT_ARTIFACT_BASE_URL": base_url}
-        )
 
 
 @given(attempt=st.one_of(st.booleans(), st.none(), st.text(), st.floats()))

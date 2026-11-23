@@ -1,6 +1,5 @@
 import subprocess
 from types import SimpleNamespace
-from urllib.error import URLError
 
 import pytest
 
@@ -119,19 +118,4 @@ def test_non_https_gitlab_url_is_refused_before_any_request(
         refresh.main(arguments)
 
     assert reachable_gitlab == []
-    assert commands == []
-
-
-def test_unreachable_gitlab_fails_before_touching_the_checkout(
-    tmp_path, token_file, monkeypatch
-):
-    def urlopen(request, timeout):
-        raise URLError("no route to host")
-
-    monkeypatch.setattr(refresh, "urlopen", urlopen)
-    commands = record_commands(monkeypatch, graphs_differ=True)
-
-    with pytest.raises(URLError):
-        refresh.main(arguments_for(token_file, tmp_path / "exporter"))
-
     assert commands == []

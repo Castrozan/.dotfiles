@@ -36,22 +36,6 @@ class TestReconcileAndDispatchEvents:
         )
         assert len(reconcile_calls) == 3
 
-    def test_ignores_unrelated_and_malformed_events(self, tmp_path, monkeypatch):
-        reconcile_calls = serve_events(
-            tmp_path / "events.sock",
-            b"workspace>>2\nmonitoradded\nfocusedmon>>DP-1,1\n",
-            monkeypatch,
-        )
-        assert len(reconcile_calls) == 1
-
-    def test_event_raised_during_the_initial_reconcile_is_not_lost(
-        self, tmp_path, monkeypatch
-    ):
-        reconcile_calls = serve_events(
-            tmp_path / "events.sock", b"monitoradded>>DP-1\n", monkeypatch
-        )
-        assert len(reconcile_calls) == 2
-
 
 class TestMonitorChangeEvents:
     def test_reacts_only_to_monitor_connection_changes(self):

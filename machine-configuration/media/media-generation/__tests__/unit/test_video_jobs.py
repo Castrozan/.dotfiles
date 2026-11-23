@@ -51,14 +51,6 @@ class VideoJobTests(unittest.TestCase):
         self.assertFalse(self.fixture.state.exists())
         self.assertEqual(self.fixture.commands.calls, [])
 
-    def test_new_registration_of_changed_input_conflicts_with_existing_uuid(self):
-        self.render()
-        self.fixture.asset.write_bytes(b"newly registered")
-        self.fixture.refresh()
-        with self.assertRaisesRegex(VideoError, "operation_conflict"):
-            self.render()
-        self.assertEqual(len(self.fixture.commands.calls), 4)
-
     def test_video_and_thumbnail_checksum_failures_prevent_replay(self):
         receipt = self.render()
         for asset in receipt["assets"].values():

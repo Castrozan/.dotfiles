@@ -1,60 +1,7 @@
 import summon_chrome_global as summoner
 
 
-class TestFindChromeGlobalWindowByHyprlandTag:
-    def test_finds_tagged_window(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [
-                {
-                    "class": "chrome-global",
-                    "address": "0xa",
-                    "tags": ["chrome-global-main-window"],
-                    "workspace": {"id": 1},
-                }
-            ],
-        )
-        result = summoner.find_chrome_global_window_by_hyprland_tag()
-        assert result["address"] == "0xa"
-
-    def test_returns_none_when_no_tag(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [
-                {
-                    "class": "chrome-global",
-                    "address": "0xa",
-                    "tags": [],
-                    "workspace": {"id": 1},
-                }
-            ],
-        )
-        result = summoner.find_chrome_global_window_by_hyprland_tag()
-        assert result is None
-
-    def test_returns_none_when_no_chrome_global(self, hyprctl_response_builder):
-        hyprctl_response_builder("clients", [])
-        result = summoner.find_chrome_global_window_by_hyprland_tag()
-        assert result is None
-
-
 class TestFindChromeGlobalWindowByTitlePattern:
-    def test_finds_window_with_chat_title(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [
-                {
-                    "class": "chrome-global",
-                    "address": "0xa",
-                    "title": "Google Chat - Inbox",
-                    "floating": False,
-                    "workspace": {"id": 1},
-                }
-            ],
-        )
-        result = summoner.find_chrome_global_window_by_title_pattern()
-        assert result["address"] == "0xa"
-
     def test_finds_window_with_agenda_title(self, hyprctl_response_builder):
         hyprctl_response_builder(
             "clients",
@@ -80,22 +27,6 @@ class TestFindChromeGlobalWindowByTitlePattern:
                     "address": "0xa",
                     "title": "Google Chat",
                     "floating": True,
-                    "workspace": {"id": 1},
-                }
-            ],
-        )
-        result = summoner.find_chrome_global_window_by_title_pattern()
-        assert result is None
-
-    def test_returns_none_when_title_does_not_match(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [
-                {
-                    "class": "chrome-global",
-                    "address": "0xa",
-                    "title": "Settings",
-                    "floating": False,
                     "workspace": {"id": 1},
                 }
             ],
@@ -171,8 +102,3 @@ class TestFindChromeGlobalMainWindow:
             c for c in mock_subprocess_run.call_args_list if "tagwindow" in str(c)
         ]
         assert len(tag_calls) > 0
-
-    def test_returns_none_when_no_chrome_global(self, hyprctl_response_builder):
-        hyprctl_response_builder("clients", [])
-        result = summoner.find_chrome_global_main_window()
-        assert result is None

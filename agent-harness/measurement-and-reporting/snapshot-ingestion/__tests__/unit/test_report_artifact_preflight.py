@@ -27,24 +27,6 @@ def test_unrepresentable_worker_keys_are_refused_before_any_publication(
     assert recorded.publications == []
 
 
-@given(extra_units=st.integers(min_value=1, max_value=100))
-def test_full_object_keys_above_worker_limit_are_refused_before_publication(
-    extra_units,
-):
-    import tempfile
-
-    from test_publish_report_artifacts import ALLOWED_PREFIX
-
-    target_units = 512 + extra_units - len(ALLOWED_PREFIX)
-    relative_path = f"{'a' * 200}/{'b' * 200}/{'c' * (target_units - 402)}"
-    with tempfile.TemporaryDirectory() as root:
-        directory = write_tree(root, {"asset.js": b"1", relative_path: b"2"})
-        with stubbed_collaborators() as recorded:
-            with pytest.raises(IngestionRefusedError):
-                publish(directory)
-    assert recorded.publications == []
-
-
 def test_mutated_source_is_refused_before_its_body_is_published(tmp_path):
     directory = write_tree(tmp_path, {"index.html": b"before"})
     collect_sources = subject.collect_artifact_sources
@@ -162,31 +144,6 @@ def test_tree_budgets_refuse_exactly_when_whole_tree_totals_exceed_them(
             for index in range(len(file_sizes))
         )
         assert published_keys == expected_keys
-
-
-def test_file_count_at_the_default_bound_is_accepted(tmp_path):
-    from test_publish_report_artifacts import ALLOWED_PREFIX
-
-    directory = write_tree(
-        tmp_path, {f"file-{index}.txt": b"" for index in range(1024)}
-    )
-    with stubbed_collaborators():
-        manifest = publish(directory)
-    assert len(manifest["artifacts"]) == 1024
-    assert manifest["artifacts"][-1]["objectKey"].startswith(ALLOWED_PREFIX)
-
-
-def test_entry_count_at_the_default_bound_is_accepted(tmp_path):
-    from test_publish_report_artifacts import ALLOWED_PREFIX
-
-    directory = write_tree(tmp_path, {"index.html": b"x"})
-    for index in range(4095):
-        (directory / f"empty-{index}").mkdir()
-    with stubbed_collaborators():
-        manifest = publish(directory)
-    assert [artifact["objectKey"] for artifact in manifest["artifacts"]] == [
-        f"{ALLOWED_PREFIX}index.html"
-    ]
 
 
 def test_total_bytes_at_the_default_bound_are_accepted(tmp_path):

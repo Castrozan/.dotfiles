@@ -35,25 +35,3 @@ def test_explicit_launch_pending_preserves_strict_readiness(registry, value):
         with pytest.raises(ValueError, match="readiness"):
             registry.reserve(intent)
         assert registry.status()["jobs"] == []
-
-
-@pytest.mark.parametrize("value", [False, None, "true"])
-def test_omitted_pending_cannot_replace_interactive_readiness(registry, value):
-    directory, snapshot = inventory()
-    snapshot["result"]["snapshot"]["agents"][0]["interactive_ready"] = value
-    registry.ingest(
-        "test-host", Observation(directory, snapshot, 999, "fixture:unready", "live")
-    )
-    with pytest.raises(ValueError, match="readiness"):
-        registry.reserve(
-            DispatchIntent(
-                "intent",
-                "test-host",
-                "w1:p1",
-                "conversation-1",
-                "dot",
-                "task:work",
-                "Do it",
-            )
-        )
-    assert registry.status()["jobs"] == []

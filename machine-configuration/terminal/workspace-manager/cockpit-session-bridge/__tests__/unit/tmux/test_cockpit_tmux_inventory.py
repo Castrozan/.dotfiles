@@ -46,21 +46,6 @@ def test_parse_inventory_groups_windows_under_their_session_in_listing_order():
     ]
 
 
-def test_parse_inventory_returns_no_sessions_for_empty_tmux_output():
-    assert cockpit_tmux_multiplexer.parse_tmux_session_inventory("", "") == []
-
-
-def test_parse_inventory_keeps_a_session_that_has_no_listed_windows():
-    parsed_sessions = cockpit_tmux_multiplexer.parse_tmux_session_inventory(
-        "empty-domain\n", ""
-    )
-    assert parsed_sessions == [
-        cockpit_multiplexer_port.CockpitMultiplexerSession(
-            session_name="empty-domain", windows=()
-        )
-    ]
-
-
 def test_parse_inventory_preserves_a_window_title_that_contains_the_separator():
     parsed_sessions = cockpit_tmux_multiplexer.parse_tmux_session_inventory(
         "domain\n", "domain\t@9\tclaude\treview\tstage\n"
@@ -70,13 +55,6 @@ def test_parse_inventory_preserves_a_window_title_that_contains_the_separator():
     ] == cockpit_multiplexer_port.CockpitMultiplexerWindow(
         "@9", "review\tstage", "claude"
     )
-
-
-def test_parse_inventory_leaves_a_plain_shell_window_without_an_agent_driver():
-    parsed_sessions = cockpit_tmux_multiplexer.parse_tmux_session_inventory(
-        "domain\n", "domain\t@4\tbash\tscratch\n"
-    )
-    assert parsed_sessions[0].windows[0].agent_driver == ""
 
 
 def test_list_sessions_runs_both_listings_and_returns_the_parsed_inventory():

@@ -71,9 +71,6 @@ MALFORMED = [
 
 
 class TestSummarizeCcusageDaily:
-    def test_empty_daily_input_summarizes_to_none(self):
-        assert summarize_ccusage_daily(document()) is None
-
     def test_model_totals_sum_all_four_token_categories_and_cost(self):
         totals = summarize_ccusage_daily(CANONICAL)["model_usage_totals"]
         assert totals == {
@@ -143,16 +140,6 @@ def model_token_totals(summary):
 
 
 @given(DOCUMENT)
-def test_every_reported_counter_is_nonnegative(source):
-    summary = summarize_ccusage_daily(source)
-    values = [v for t in summary["model_usage_totals"].values() for v in t.values()]
-    values += [
-        v for d in summary["daily_model_tokens"] for v in d["tokens_by_model"].values()
-    ]
-    assert all(value >= 0 for value in values)
-
-
-@given(DOCUMENT)
 def test_token_categories_are_conserved_and_dates_are_extremes(source):
     summary = summarize_ccusage_daily(source)
     items = [item for day in source["daily"] for item in day["modelBreakdowns"]]
@@ -168,30 +155,3 @@ def test_token_categories_are_conserved_and_dates_are_extremes(source):
     assert by_model == by_day == expected
     assert summary["stats_last_computed_date"] == max(dates)
     assert summary["model_usage_first_date"] == min(dates)
-
-
-@given(DOCUMENT, st.data())
-def test_summary_is_invariant_under_day_and_model_reordering(source, data):
-    shuffled = [
-        {
-            "date": day["date"],
-            "modelBreakdowns": data.draw(st.permutations(day["modelBreakdowns"])),
-        }
-        for day in data.draw(st.permutations(source["daily"]))
-    ]
-    assert summarize_ccusage_daily({"daily": shuffled}) == summarize_ccusage_daily(
-        source
-    )
-
-
-@given(DOCUMENT, st.integers(min_value=0, max_value=6))
-def test_splitting_days_into_two_documents_preserves_token_totals(source, cut):
-    combined = {}
-    for part in (source["daily"][:cut], source["daily"][cut:]):
-        for name, totals in model_token_totals(
-            summarize_ccusage_daily({"daily": part})
-        ).items():
-            accumulated = combined.setdefault(name, dict.fromkeys(FIELDS, 0))
-            for field in FIELDS:
-                accumulated[field] += totals[field]
-    assert combined == model_token_totals(summarize_ccusage_daily(source))

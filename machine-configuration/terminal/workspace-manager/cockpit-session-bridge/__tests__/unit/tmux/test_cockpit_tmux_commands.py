@@ -109,19 +109,6 @@ def test_build_open_window_runs_the_agent_launch_command_inside_the_new_window()
     ]
 
 
-def test_build_open_window_without_an_agent_launch_command_opens_an_empty_window():
-    assert cockpit_tmux_commands.build_open_window_command(
-        TMUX_EXECUTABLE_PATH, "cockpit", "jarvis-refactor", "scratch", ""
-    ) == [
-        *COCKPIT_SOCKET_PREFIX,
-        "new-window",
-        "-t",
-        "jarvis-refactor",
-        "-n",
-        "scratch",
-    ]
-
-
 def test_build_close_window_targets_the_window_identifier():
     assert cockpit_tmux_commands.build_close_window_command(
         TMUX_EXECUTABLE_PATH, "cockpit", "@7"

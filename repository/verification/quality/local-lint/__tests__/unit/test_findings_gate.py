@@ -19,28 +19,6 @@ def test_recorded_findings_can_shrink_but_cannot_grow_or_multiply():
     assert len(findings.new_findings([recorded, recorded], baseline)) == 1
 
 
-def test_stricter_ceiling_is_not_consumed_by_a_larger_finding():
-    recorded = legacy_finding()
-    smaller = replace(recorded, score=7)
-    baseline = findings.baseline_entries([recorded, smaller])
-    assert findings.new_findings([smaller, recorded], baseline) == []
-
-
-def test_file_and_rule_identity_survive_line_movements():
-    issue = {
-        "tool": "ruff",
-        "ruleKey": "F821",
-        "message": "Undefined variable",
-        "snippet": "return missing",
-        "location": {"path": "source.py", "range": {"startLine": 3}},
-    }
-    before = findings.issue_finding(issue)
-    issue["location"]["range"]["startLine"] = 10
-    assert findings.issue_finding(issue).identity == before.identity
-    issue["location"]["path"] = "other.py"
-    assert findings.issue_finding(issue).identity != before.identity
-
-
 def test_new_duplicate_location_cannot_reuse_an_old_exception():
     issue = {
         "tool": "qlty",

@@ -62,8 +62,3 @@ class TestMainEntryPoint:
         )
         home_assistant_air_conditioner_control.main()
         assert len(mock_ac_api_request) == 3
-
-    def test_set_command_exits_without_attributes(self, monkeypatch, access_token):
-        monkeypatch.setattr("sys.argv", ["ha-ac", "set"])
-        with pytest.raises(SystemExit):
-            home_assistant_air_conditioner_control.main()

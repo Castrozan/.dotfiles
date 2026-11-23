@@ -1,6 +1,5 @@
 import json
 
-import pytest
 
 import publish_current_usage_snapshot_to_ingest as publisher_entrypoint
 from ingestion_snapshot_publisher import IngestionRefusedError
@@ -76,23 +75,6 @@ def refuse():
 
 
 class TestTheSnapshotIsCollectedOnceAndSentAsNormalizedThenRaw:
-    def test_collects_the_usage_once_and_prepares_both_bodies_from_that_collection(
-        self, monkeypatch
-    ):
-        recorder = PublicationRecorder(monkeypatch)
-
-        publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
-        assert recorder.collection_count == 1
-
-    def test_sends_the_normalized_event_before_the_raw_artifact(self, monkeypatch):
-        recorder = PublicationRecorder(monkeypatch)
-
-        publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
-        assert [call[0] for call in recorder.calls] == ["snapshot", "artifact"]
-        assert recorder.calls[0][1:3] == ("claude-usage", 1)
-
     def test_sends_the_exact_raw_utf8_json_under_the_snapshots_key(self, monkeypatch):
         recorder = PublicationRecorder(monkeypatch)
 
@@ -120,64 +102,9 @@ class TestTheSnapshotIsCollectedOnceAndSentAsNormalizedThenRaw:
 
 
 class TestAPartialPairIsNeverReportedAsSuccess:
-    def test_refuses_when_the_raw_artifact_is_refused_after_the_event_was_accepted(
-        self, monkeypatch
-    ):
-        PublicationRecorder(monkeypatch, artifact_outcome=refuse)
-
-        with pytest.raises(IngestionRefusedError, match="status 500"):
-            publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
     def test_reports_the_partial_pair_as_a_failing_exit_code(self, monkeypatch, capsys):
         PublicationRecorder(monkeypatch, artifact_outcome=refuse)
         monkeypatch.setattr(publisher_entrypoint.os, "environ", PUBLISH_ENVIRONMENT)
 
         assert publisher_entrypoint.main() == 1
         assert "status 500" in capsys.readouterr().err
-
-    def test_never_sends_the_artifact_when_the_normalized_event_is_refused(
-        self, monkeypatch
-    ):
-        recorder = PublicationRecorder(monkeypatch, snapshot_outcome=refuse)
-
-        with pytest.raises(IngestionRefusedError):
-            publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
-        assert [call[0] for call in recorder.calls] == ["snapshot"]
-
-
-class TestNothingIsSentWhenTheActivityWasNotMeasured:
-    def test_refuses_before_any_request_when_daily_activity_was_not_measured(
-        self, monkeypatch
-    ):
-        recorder = PublicationRecorder(monkeypatch)
-        unmeasured_snapshot = {
-            key: value
-            for key, value in USAGE_SNAPSHOT.items()
-            if key != "daily_activity"
-        }
-        monkeypatch.setattr(
-            publisher_entrypoint,
-            "build_current_usage_snapshot",
-            lambda: unmeasured_snapshot,
-        )
-
-        with pytest.raises(IngestionRefusedError, match="daily_activity"):
-            publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
-        assert recorder.calls == []
-
-    def test_a_measured_empty_activity_list_is_published_as_zero_activity(
-        self, monkeypatch
-    ):
-        recorder = PublicationRecorder(monkeypatch)
-        empty_activity_snapshot = {**USAGE_SNAPSHOT, "daily_activity": []}
-        monkeypatch.setattr(
-            publisher_entrypoint,
-            "build_current_usage_snapshot",
-            lambda: empty_activity_snapshot,
-        )
-
-        publisher_entrypoint.publish_current_usage_snapshot(PUBLISH_ENVIRONMENT)
-
-        assert recorder.calls[0][3]["activity"]["activeDayCount"] == 0

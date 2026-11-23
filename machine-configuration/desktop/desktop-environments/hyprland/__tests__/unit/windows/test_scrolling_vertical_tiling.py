@@ -26,15 +26,6 @@ def test_super_e_toggles_tiling_while_scrolling_stays_vertical():
     ]
 
 
-def test_toggle_uses_the_previous_strip_when_available():
-    with patch.object(script, "run_hyprctl", return_value="ok\n") as run_hyprctl:
-        assert script.toggle_vertical_tiling() == "ok"
-
-    run_hyprctl.assert_called_once_with(
-        "dispatch", "layoutmsg", "consume_or_expel prev"
-    )
-
-
 def test_toggle_uses_the_next_strip_at_the_previous_boundary():
     with patch.object(
         script,

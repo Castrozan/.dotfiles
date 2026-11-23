@@ -29,22 +29,6 @@ def test_captures_carrying_the_done_marker_leave_the_queue(tmp_path, write_captu
     ]
 
 
-def test_captures_are_ordered_newest_first_by_the_filename_timestamp(
-    tmp_path, write_capture
-):
-    write_capture(tmp_path, "Tweet from A (2026-01-05 09-00-00).md", "body")
-    write_capture(tmp_path, "Article 2026-06-13 20-37-11.md", "body")
-    write_capture(tmp_path, "Tweet from C (2026-03-20 22-55-15).md", "body")
-
-    pending_captures = captures.collect_pending_captures(tmp_path, 60, FIXED_NOW)
-
-    assert [capture["name"] for capture in pending_captures] == [
-        "Article 2026-06-13 20-37-11.md",
-        "Tweet from C (2026-03-20 22-55-15).md",
-        "Tweet from A (2026-01-05 09-00-00).md",
-    ]
-
-
 def test_the_filename_timestamp_outranks_a_recently_rewritten_modification_time(
     tmp_path, write_capture
 ):

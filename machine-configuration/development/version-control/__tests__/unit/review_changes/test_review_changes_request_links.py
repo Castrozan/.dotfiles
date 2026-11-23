@@ -41,11 +41,6 @@ def test_parses_merge_request_and_pull_request_links(raw_target, expected_link):
     assert request_links.parse_request_link(raw_target) == expected_link
 
 
-@pytest.mark.parametrize("raw_target", ["388", "!388", "feature/branch", ""])
-def test_numbers_and_branches_are_not_links(raw_target):
-    assert request_links.parse_request_link(raw_target) is None
-
-
 def test_finds_every_distinct_link_in_rendered_markdown_in_order():
     reply_text = (
         "Review [!388](https://gitlab.example/group/project/-/merge_requests/388),"

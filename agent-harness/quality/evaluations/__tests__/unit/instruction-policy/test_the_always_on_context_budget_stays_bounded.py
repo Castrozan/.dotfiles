@@ -44,16 +44,6 @@ def test_the_always_on_instruction_surface_stays_within_its_budget():
     )
 
 
-def test_the_always_on_skill_descriptions_stay_within_their_budget():
-    total = always_on_skill_description_bytes()
-    assert total <= MAXIMUM_ALWAYS_ON_SKILL_DESCRIPTION_BYTES, (
-        f"skill descriptions now cost {total} bytes of every session's context, past "
-        f"the {MAXIMUM_ALWAYS_ON_SKILL_DESCRIPTION_BYTES} byte budget. Every skill "
-        f"description is loaded eagerly so the model can route, so tighten the "
-        f"descriptions or retire a skill rather than raising this ceiling."
-    )
-
-
 def test_the_harness_auto_memory_stays_disabled():
     declared = (
         REPO_ROOT

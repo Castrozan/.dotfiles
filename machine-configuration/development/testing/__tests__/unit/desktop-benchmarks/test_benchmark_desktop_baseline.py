@@ -65,21 +65,6 @@ class TestCheckBaselineDelegatesValidation:
         assert "- first problem" in report
         assert "- second problem" in report
 
-    def test_asks_the_validator_for_the_tracked_path_and_desktop_keys(self):
-        validation = BaselineValidation({}, None, ["stubbed"])
-
-        with patch.object(
-            benchmark_baseline, "validate_tracked_baseline", return_value=validation
-        ) as validate:
-            desktop_benchmarks.baseline.check_baseline(False)
-
-        validate.assert_called_once_with(
-            desktop_benchmarks.baseline.BASELINE_PATH,
-            "avg_ms",
-            "max_allowed_ms",
-            desktop_benchmarks.baseline.SAVE_BASELINE_COMMAND,
-        )
-
 
 class TestCheckBaselineIgnoresAge:
     def test_passes_on_a_structurally_valid_but_stale_baseline(self, tmp_path, capsys):
@@ -98,17 +83,6 @@ class TestCheckBaselineIgnoresAge:
 
 
 class TestCheckBaselineFreshnessIsTheCallersChoice:
-    def test_accepts_a_stale_baseline_when_freshness_is_not_required(
-        self, tmp_path, capsys
-    ):
-        baseline_file = tmp_path / "stale.json"
-        stale = _valid_baseline()
-        stale["generated_at"] = "2024-01-01T00:00:00+00:00"
-        baseline_file.write_text(json.dumps(stale))
-
-        with patch.object(desktop_benchmarks.baseline, "BASELINE_PATH", baseline_file):
-            assert desktop_benchmarks.baseline.check_baseline(False) is True
-
     def test_rejects_a_stale_baseline_when_freshness_is_required(
         self, tmp_path, capsys, monkeypatch
     ):

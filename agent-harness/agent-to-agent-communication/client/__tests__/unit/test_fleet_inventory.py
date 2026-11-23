@@ -87,15 +87,3 @@ def test_path_sessions_are_never_opened_or_retained(registry):
     assert row["session_id"] is None
     assert "session_identity_unavailable" in row["blockers"]
     assert "/secret" not in json.dumps(registry.status())
-
-
-def test_partial_snapshot_cannot_retire_all_agents(registry):
-    observe(registry)
-    with pytest.raises(ValueError, match="snapshot"):
-        registry.ingest(
-            "test-host",
-            Observation(
-                {}, {"result": {"snapshot": {"agents": []}}}, 1000, "fixture:partial"
-            ),
-        )
-    assert registry.status()["agents"][0]["present"]

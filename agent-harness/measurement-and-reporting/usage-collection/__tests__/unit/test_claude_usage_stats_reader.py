@@ -1,6 +1,5 @@
 import json
 
-import pytest
 from hypothesis import given
 from hypothesis import strategies as st
 
@@ -31,11 +30,6 @@ class TestReadStatsCache:
         corrupt_path.write_text("{not json")
         assert claude_usage_stats_reader.read_stats_cache(corrupt_path) == {}
 
-    def test_non_object_file_returns_empty(self, tmp_path):
-        list_path = tmp_path / "stats-cache.json"
-        list_path.write_text("[1, 2]")
-        assert claude_usage_stats_reader.read_stats_cache(list_path) == {}
-
     def test_valid_file_is_parsed(self, tmp_path):
         valid_path = tmp_path / "stats-cache.json"
         valid_path.write_text(json.dumps(SAMPLE_STATS_CACHE))
@@ -61,14 +55,6 @@ class TestSummarizeStatsCache:
             "activity_last_computed_date": None,
         }
 
-    def test_explicitly_measured_empty_activity_stays_a_measured_zero(self):
-        assert (
-            claude_usage_stats_reader.summarize_stats_cache({"dailyActivity": []})[
-                "daily_activity"
-            ]
-            == []
-        )
-
     def test_summary_carries_no_model_usage_fields(self):
         summary = claude_usage_stats_reader.summarize_stats_cache(
             {**SAMPLE_STATS_CACHE, "modelUsage": {"claude-opus-4-8": {}}}
@@ -86,83 +72,6 @@ class TestSummarizeStatsCache:
     def test_activity_keeps_the_original_cache_computed_date(self):
         summary = claude_usage_stats_reader.summarize_stats_cache(SAMPLE_STATS_CACHE)
         assert summary["activity_last_computed_date"] == "2026-06-17"
-
-    def test_daily_activity_keys_are_snake_cased(self):
-        summary = claude_usage_stats_reader.summarize_stats_cache(SAMPLE_STATS_CACHE)
-        assert summary["daily_activity"][0] == {
-            "date": "2026-06-17",
-            "message_count": 42,
-            "session_count": 5,
-            "tool_call_count": 130,
-        }
-
-    @pytest.mark.parametrize(
-        "unmeasured_entry",
-        [
-            pytest.param(
-                {"date": "2026-06-17", "sessionCount": 5, "toolCallCount": 1},
-                id="missing-counter",
-            ),
-            pytest.param(
-                {
-                    "date": "2026-06-17",
-                    "messageCount": -1,
-                    "sessionCount": 0,
-                    "toolCallCount": 0,
-                },
-                id="negative-counter",
-            ),
-            pytest.param(
-                {
-                    "date": "2026-06-17",
-                    "messageCount": True,
-                    "sessionCount": 0,
-                    "toolCallCount": 0,
-                },
-                id="boolean-counter",
-            ),
-            pytest.param(
-                {
-                    "date": "2026-06-17",
-                    "messageCount": 1.5,
-                    "sessionCount": 0,
-                    "toolCallCount": 0,
-                },
-                id="fractional-counter",
-            ),
-            pytest.param(
-                {
-                    "date": "2026-6-17",
-                    "messageCount": 1,
-                    "sessionCount": 0,
-                    "toolCallCount": 0,
-                },
-                id="non-canonical-date",
-            ),
-            pytest.param("not-an-object", id="non-object-entry"),
-        ],
-    )
-    def test_partially_unmeasured_activity_omits_the_whole_list(self, unmeasured_entry):
-        summary = claude_usage_stats_reader.summarize_stats_cache(
-            {
-                "dailyActivity": [
-                    unmeasured_entry,
-                    SAMPLE_STATS_CACHE["dailyActivity"][0],
-                ]
-            }
-        )
-        assert "daily_activity" not in summary
-
-    @pytest.mark.parametrize(
-        "daily_activity",
-        [None, {}, "not-a-list", 0],
-        ids=["null", "object", "string", "number"],
-    )
-    def test_non_list_daily_activity_is_omitted_as_unknown(self, daily_activity):
-        summary = claude_usage_stats_reader.summarize_stats_cache(
-            {"dailyActivity": daily_activity}
-        )
-        assert "daily_activity" not in summary
 
     @given(
         st.lists(

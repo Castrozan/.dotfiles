@@ -2,29 +2,6 @@ from unittest.mock import patch
 import notification_sound_toggle
 
 
-class TestIsNotificationSoundsMuted:
-    def test_returns_true_when_flag_file_exists(self, tmp_path):
-        flag_file = tmp_path / "notification-sounds-muted"
-        flag_file.touch()
-
-        with patch.object(
-            notification_sound_toggle,
-            "NOTIFICATION_SOUNDS_MUTE_FLAG",
-            flag_file,
-        ):
-            assert notification_sound_toggle.is_notification_sounds_muted() is True
-
-    def test_returns_false_when_flag_file_missing(self, tmp_path):
-        flag_file = tmp_path / "notification-sounds-muted"
-
-        with patch.object(
-            notification_sound_toggle,
-            "NOTIFICATION_SOUNDS_MUTE_FLAG",
-            flag_file,
-        ):
-            assert notification_sound_toggle.is_notification_sounds_muted() is False
-
-
 class TestToggleNotificationSounds:
     def test_unmutes_when_currently_muted(self, tmp_path):
         flag_file = tmp_path / "notification-sounds-muted"

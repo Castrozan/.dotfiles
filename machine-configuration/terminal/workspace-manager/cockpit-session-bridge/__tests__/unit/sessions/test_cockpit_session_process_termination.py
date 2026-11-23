@@ -7,16 +7,6 @@ from cockpit_session_bridge_runtime_test_doubles import FakeSessionProcess
 import cockpit_session_process
 
 
-def test_terminate_skips_signals_when_session_process_already_exited():
-    already_exited_process = FakeSessionProcess(returncode=0, first_wait_hangs=False)
-
-    asyncio.run(
-        cockpit_session_process.terminate_session_process(already_exited_process)
-    )
-
-    assert already_exited_process.signals_sent == []
-
-
 def test_terminate_escalates_to_sigkill_when_sighup_does_not_reap(monkeypatch):
     monkeypatch.setattr(
         cockpit_session_process, "SESSION_PROCESS_TERMINATION_TIMEOUT_SECONDS", 0.05

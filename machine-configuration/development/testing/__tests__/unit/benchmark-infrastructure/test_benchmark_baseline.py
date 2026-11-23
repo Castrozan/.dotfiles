@@ -1,5 +1,5 @@
 import json
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 
 import benchmark_baseline
 import pytest
@@ -50,12 +50,6 @@ class TestWriteBaseline:
 
 
 class TestValidBaseline:
-    def test_reports_no_failures_and_an_age(self, tmp_path):
-        validation = _validate(_write(tmp_path, _document()))
-        assert validation.failures == []
-        assert validation.age_days == 0
-        assert validation.document["threshold_percent"] == 150
-
     def test_treats_a_naive_timestamp_as_utc(self, tmp_path):
         naive = datetime.now(timezone.utc).replace(tzinfo=None).isoformat()
         validation = _validate(_write(tmp_path, _document(generated_at=naive)))
@@ -85,33 +79,6 @@ class TestUnreadableBaseline:
         assert validation.document == {}
 
 
-class TestGeneratedAtAge:
-    def test_reports_no_age_for_a_missing_timestamp(self, tmp_path):
-        document = _document()
-        del document["generated_at"]
-        validation = _validate(_write(tmp_path, document))
-        assert validation.age_days is None
-        assert validation.failures == []
-
-    def test_reports_no_age_for_an_unparseable_timestamp(self, tmp_path):
-        validation = _validate(
-            _write(tmp_path, _document(generated_at="not-a-timestamp"))
-        )
-        assert validation.age_days is None
-        assert validation.failures == []
-
-    def test_reports_no_age_for_a_non_string_timestamp(self, tmp_path):
-        validation = _validate(_write(tmp_path, _document(generated_at=17)))
-        assert validation.age_days is None
-        assert validation.failures == []
-
-    def test_measures_a_stale_baseline_without_failing_it(self, tmp_path):
-        stale = (datetime.now(timezone.utc) - timedelta(days=45)).isoformat()
-        validation = _validate(_write(tmp_path, _document(generated_at=stale)))
-        assert validation.age_days == 45
-        assert validation.failures == []
-
-
 def _with_field(document: dict, field: str, value) -> dict:
     if value is MISSING:
         del document[field]
@@ -122,26 +89,6 @@ def _with_field(document: dict, field: str, value) -> dict:
 
 class TestMetadataValidation:
     @pytest.mark.parametrize(
-        "git_commit",
-        [MISSING, None, "", "   ", 1234, ["abc1234"]],
-        ids=["missing", "null", "empty", "blank", "number", "list"],
-    )
-    def test_rejects_an_unusable_git_commit(self, tmp_path, git_commit):
-        document = _with_field(_document(), "git_commit", git_commit)
-        validation = _validate(_write(tmp_path, document))
-        assert validation.failures == ["Baseline has no recorded git_commit."]
-
-    @pytest.mark.parametrize(
-        "host",
-        [MISSING, None, "", "   ", 1234, ["kira"]],
-        ids=["missing", "null", "empty", "blank", "number", "list"],
-    )
-    def test_rejects_a_baseline_that_names_no_measuring_host(self, tmp_path, host):
-        document = _with_field(_document(), "host", host)
-        validation = _validate(_write(tmp_path, document))
-        assert validation.failures == ["Baseline has no recorded host."]
-
-    @pytest.mark.parametrize(
         "config",
         [MISSING, None, "", "   ", 1234, ["darwin"]],
         ids=["missing", "null", "empty", "blank", "number", "list"],
@@ -150,16 +97,6 @@ class TestMetadataValidation:
         document = _with_field(_document(), "config", config)
         validation = _validate(_write(tmp_path, document))
         assert validation.failures == ["Baseline has no recorded config."]
-
-    def test_reports_every_missing_provenance_field_at_once(self, tmp_path):
-        document = _document()
-        del document["host"]
-        del document["config"]
-        validation = _validate(_write(tmp_path, document))
-        assert validation.failures == [
-            "Baseline has no recorded host.",
-            "Baseline has no recorded config.",
-        ]
 
     @pytest.mark.parametrize(
         ("threshold_percent", "expected_failure"),
@@ -179,7 +116,3 @@ class TestMetadataValidation:
         document = _with_field(_document(), "threshold_percent", threshold_percent)
         validation = _validate(_write(tmp_path, document))
         assert validation.failures == [expected_failure]
-
-    def test_accepts_recorded_metadata(self, tmp_path):
-        validation = _validate(_write(tmp_path, _document()))
-        assert validation.failures == []

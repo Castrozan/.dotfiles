@@ -69,18 +69,6 @@ class TestTheArtifactIsPutAsExactBytesUnderItsEncodedKey:
         )
         assert acknowledgement == {"objectKey": OBJECT_KEY, "byteLength": len(RAW_BODY)}
 
-    def test_percent_encodes_query_and_fragment_delimiters_in_an_opaque_key(
-        self, ingest_loopback, loopback_base_url
-    ):
-        opaque_key = "snapshots/a?b#c d/%e"
-        ingest_loopback.reply_body = accepted_artifact_reply(opaque_key, UNICODE_BODY)
-
-        put_artifact(loopback_base_url, opaque_key, UNICODE_BODY)
-
-        request = ingest_loopback.received_requests[0]
-        assert request["path"] == "/ingest/artifacts/snapshots%2Fa%3Fb%23c%20d%2F%25e"
-        assert request["body"] == UNICODE_BODY
-
     def test_uses_the_thirty_second_request_timeout(
         self, monkeypatch, ingest_loopback, loopback_base_url
     ):

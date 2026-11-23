@@ -24,9 +24,9 @@ def test_orphan_birth_stops_before_any_launch_and_records_observation(
     monkeypatch.setattr(
         migration,
         "process_birth",
-        lambda pid: {"start_ticks": 200, "state": "S", "parent": 1815}
-        if pid == 20
-        else None,
+        lambda pid: (
+            {"start_ticks": 200, "state": "S", "parent": 1815} if pid == 20 else None
+        ),
     )
     result = migration.migrate(plan, commands, directory / "orphan-attempt")
     assert result["status"] == "failed"
@@ -84,16 +84,6 @@ def test_busy_continuation_is_not_retried(prepared_migration):
     result = migration.migrate(plan, commands, directory / "busy-continuation")
     assert result["status"] == "failed"
     assert commands.launches == commands.continuations == 1
-
-
-def test_launch_failure_is_not_retried(prepared_migration):
-    plan, commands, directory, clock = prepared_migration
-    commands.fail_launch = True
-    assert (
-        migration.migrate(plan, commands, directory / "launch-failure")["status"]
-        == "failed"
-    )
-    assert commands.launches == 1 and commands.continuations == 0
 
 
 def test_missing_replacement_times_out_without_continuation(

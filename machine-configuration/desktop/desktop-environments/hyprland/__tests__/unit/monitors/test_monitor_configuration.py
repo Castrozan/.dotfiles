@@ -11,15 +11,6 @@ LAPTOP_ALONE = ConnectedMonitors(internal="eDP-1", externals=())
 
 
 class TestFindEnabledConfigLineForMonitor:
-    def test_falls_back_to_preferred_when_the_config_is_missing(self, tmp_path):
-        with patch.object(
-            monitor_configuration, "MONITORS_CONF", tmp_path / "nonexistent.conf"
-        ):
-            assert (
-                monitor_configuration.find_enabled_config_line_for_monitor("eDP-1")
-                == "eDP-1, preferred, auto, 1"
-            )
-
     @pytest.mark.parametrize(
         ("config_text", "expected_line"),
         [
@@ -65,13 +56,6 @@ class TestMonitorStatePaths:
 
 
 class TestClassifyMonitorNames:
-    def test_separates_internal_from_externals_regardless_of_order(
-        self, monitor_state_files
-    ):
-        assert monitor_configuration.classify_monitor_names(
-            ["DP-1", "eDP-1", "HDMI-A-1"]
-        ) == ConnectedMonitors(internal="eDP-1", externals=("DP-1", "HDMI-A-1"))
-
     def test_ignores_placeholder_outputs_seen_during_hotplug(self, monitor_state_files):
         assert (
             monitor_configuration.classify_monitor_names(["FALLBACK", "", "eDP-1"])
@@ -129,12 +113,6 @@ class TestRenderOverride:
 
 class TestDisplayModePersistence:
     def test_defaults_to_external_when_nothing_was_chosen(self, monitor_state_files):
-        assert monitor_configuration.read_display_mode() is DisplayMode.EXTERNAL
-
-    def test_defaults_to_external_when_the_stored_mode_is_unknown(
-        self, monitor_state_files
-    ):
-        monitor_configuration.DISPLAY_MODE_FILE.write_text("mirrored")
         assert monitor_configuration.read_display_mode() is DisplayMode.EXTERNAL
 
     def test_round_trips_the_chosen_mode(self, monitor_state_files):

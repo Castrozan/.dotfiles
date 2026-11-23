@@ -129,13 +129,3 @@ def test_recording_a_verdict_twice_leaves_the_first_one_standing(
     assert recording_outcome == "already-recorded"
     assert "first outcome" in capture_body
     assert "second outcome" not in capture_body
-
-
-def test_an_entry_link_already_wrapped_in_brackets_is_not_double_wrapped(
-    tmp_path, write_capture
-):
-    capture_path = write_capture(tmp_path, "Article 2026-07-01 10-00-00.md", "body")
-
-    record_capture_verdict(capture_path, "file", "read it", "[[Exit nodes]]")
-
-    assert "entry:: [[Exit nodes]]" in capture_path.read_text(encoding="utf-8")

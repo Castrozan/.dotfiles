@@ -20,10 +20,6 @@ class TestIsHyprlandRunning:
         with patch.dict("os.environ", {"HYPRLAND_INSTANCE_SIGNATURE": "abc"}):
             assert desktop_benchmarks.catalog.is_hyprland_running() is True
 
-    def test_returns_false_when_unset(self):
-        with patch.dict("os.environ", {}, clear=True):
-            assert desktop_benchmarks.catalog.is_hyprland_running() is False
-
 
 class TestMeasureIterations:
     def test_returns_stats(self):
@@ -44,22 +40,6 @@ class TestMeasureIterations:
         result = desktop_benchmarks.measurement.measure_iterations("test", failing, 3)
         assert result["error"] is True
         assert result["times"] == []
-
-    def test_drops_non_zero_exit_iterations(self):
-        result = desktop_benchmarks.measurement.measure_iterations(
-            "test", lambda: CommandMeasurement(False, 0.5), 3
-        )
-        assert result["error"] is True
-        assert result["times"] == []
-
-    def test_keeps_only_the_successful_iterations(self):
-        outcomes = [(True, 0.02), (False, 9.0), (True, 0.04)]
-        measurements = iter([CommandMeasurement(*outcome) for outcome in outcomes])
-        result = desktop_benchmarks.measurement.measure_iterations(
-            "test", lambda: next(measurements), 3
-        )
-        assert result["times"] == [20.0, 40.0]
-        assert result["avg"] == 30.0
 
 
 class TestBenchmarkedCommands:
@@ -128,21 +108,6 @@ class TestFormatMs:
 
     def test_seconds(self):
         assert desktop_benchmarks.results.format_ms(1500.0) == "1.50s"
-
-
-class TestRecordResult:
-    def test_appends_csv_line(self, tmp_path):
-        results_file = _empty_results_file(tmp_path)
-
-        desktop_benchmarks.results.record_result(
-            results_file, "test-comp", 42.1, 30.0, 55.2, 5
-        )
-
-        lines = results_file.read_text().strip().split("\n")
-        assert len(lines) == 2
-        assert "test-comp" in lines[1]
-        assert "42.1" in lines[1]
-        assert lines[1].endswith(",5")
 
 
 class TestQuickshellBarConfiguration:

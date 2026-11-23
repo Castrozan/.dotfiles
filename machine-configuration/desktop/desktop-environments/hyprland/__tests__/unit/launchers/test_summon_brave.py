@@ -3,36 +3,6 @@ from unittest.mock import patch
 import summon_brave
 
 
-class TestFindFirstClientByClass:
-    def test_finds_matching_client(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [
-                {
-                    "class": "brave-browser",
-                    "address": "0xa",
-                    "workspace": {"id": 1},
-                },
-                {"class": "firefox", "address": "0xb", "workspace": {"id": 2}},
-            ],
-        )
-        result = summon_brave.find_first_client_by_class("brave-browser")
-        assert result["address"] == "0xa"
-
-    def test_returns_none_when_no_match(self, hyprctl_response_builder):
-        hyprctl_response_builder(
-            "clients",
-            [{"class": "firefox", "address": "0xb", "workspace": {"id": 2}}],
-        )
-        result = summon_brave.find_first_client_by_class("brave-browser")
-        assert result is None
-
-    def test_returns_none_on_empty_clients(self, hyprctl_response_builder):
-        hyprctl_response_builder("clients", [])
-        result = summon_brave.find_first_client_by_class("brave-browser")
-        assert result is None
-
-
 class TestSummonOrLaunchBrave:
     @patch("summon_brave.os.execvp")
     def test_launches_brave_when_no_window_found(

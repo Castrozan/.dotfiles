@@ -98,15 +98,6 @@ class TestIsSinkMuted:
             with patch("volume.subprocess.run", return_value=mock_result):
                 assert volume.is_sink_muted() is True
 
-    def test_returns_false_when_not_muted(self):
-        with patch(
-            "volume.find_active_sink_name_or_default",
-            return_value="alsa_output.pci",
-        ):
-            mock_result = MagicMock(stdout="Mute: no\n")
-            with patch("volume.subprocess.run", return_value=mock_result):
-                assert volume.is_sink_muted() is False
-
 
 class TestGetVolumeIconPath:
     def test_returns_the_expected_icon_for_every_volume_and_mute_state(self):

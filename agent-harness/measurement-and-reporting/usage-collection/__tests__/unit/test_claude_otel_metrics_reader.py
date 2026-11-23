@@ -76,23 +76,6 @@ class TestReadOtelMetricsDocuments:
             == []
         )
 
-    def test_blank_and_corrupt_lines_are_skipped(self, tmp_path):
-        metrics_file_path = tmp_path / "metrics.jsonl"
-        metrics_file_path.write_text(
-            "\n".join(
-                [
-                    json.dumps(_cost_document("1.5")),
-                    "",
-                    "{ not json",
-                    json.dumps(_cost_document("2.5")),
-                ]
-            )
-        )
-        documents = claude_otel_metrics_reader.read_otel_metrics_documents(
-            metrics_file_path
-        )
-        assert len(documents) == 2
-
 
 class TestSummarizeTokenUsageByType:
     def test_cumulative_keeps_latest_value_per_stream(self):

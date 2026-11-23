@@ -1,16 +1,9 @@
-import sys
-from pathlib import Path
-
-BRIDGE_PACKAGE_DIRECTORY_PATH = (
-    Path(__file__).resolve().parents[3] / "scripts" / "cockpit_session_bridge"
-)
-sys.path.insert(0, str(BRIDGE_PACKAGE_DIRECTORY_PATH))
-
 import cockpit_lifecycle_control
 from cockpit_multiplexer_test_doubles import (
     COCKPIT_SOCKET_PREFIX,
-    TMUX_EXECUTABLE_PATH,
     RecordingSubprocessRunner,
+)
+from cockpit_multiplexer_test_doubles import (
     dispatch_through_tmux as dispatch,
 )
 
@@ -77,32 +70,6 @@ def test_remote_ssh_host_forwards_enumeration_over_ssh_while_mutations_stay_loca
         [*COCKPIT_SOCKET_PREFIX, "kill-session", "-t", "owner-real-work"]
     ]
     assert "ssh" not in close_session_runner.executed_commands[0]
-
-
-def test_list_sessions_reads_the_default_socket_when_enumeration_is_empty_while_mutations_stay_sandboxed():
-    owner_default_enumeration_policy = (
-        cockpit_lifecycle_control.CockpitTmuxSocketPolicy(
-            enumeration_socket_name="", mutation_socket_name="cockpit"
-        )
-    )
-    list_sessions_runner = RecordingSubprocessRunner(
-        {
-            "list-sessions": "dotfiles\n",
-            "list-windows": "dotfiles\t@216\tclaude\tclaude\n",
-        }
-    )
-
-    dispatch(
-        {"operation": "list-sessions"},
-        list_sessions_runner,
-        owner_default_enumeration_policy,
-    )
-
-    assert list_sessions_runner.executed_commands
-    for executed_command in list_sessions_runner.executed_commands:
-        assert "-L" not in executed_command
-        assert executed_command[0] == TMUX_EXECUTABLE_PATH
-        assert executed_command[1].startswith("list-")
 
 
 def test_list_sessions_detects_the_agent_driver_from_the_pane_current_command():

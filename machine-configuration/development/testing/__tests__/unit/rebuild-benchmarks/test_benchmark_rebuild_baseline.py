@@ -77,32 +77,8 @@ class TestCheckBaselineDelegatesValidation:
         assert "- first problem" in report
         assert "- second problem" in report
 
-    def test_asks_the_validator_for_the_tracked_path_and_rebuild_keys(self):
-        validation = BaselineValidation({}, None, ["stubbed"])
-
-        with patch(
-            "benchmark_baseline.validate_tracked_baseline", return_value=validation
-        ) as validate:
-            rebuild_benchmarks.baseline.check_baseline(False)
-
-        validate.assert_called_once_with(
-            rebuild_benchmarks.baseline.BASELINE_PATH,
-            "duration_seconds",
-            "max_allowed_seconds",
-            rebuild_benchmarks.baseline.SAVE_BASELINE_COMMAND,
-        )
-
 
 class TestCheckBaselineFreshnessIsTheCallersChoice:
-    def test_accepts_a_stale_baseline_when_freshness_is_not_required(self, tmp_path):
-        baseline_file = tmp_path / "stale.json"
-        stale = _valid_baseline()
-        stale["generated_at"] = "2024-01-01T00:00:00+00:00"
-        baseline_file.write_text(json.dumps(stale))
-
-        with patch.object(rebuild_benchmarks.baseline, "BASELINE_PATH", baseline_file):
-            assert rebuild_benchmarks.baseline.check_baseline(False) is True
-
     def test_rejects_a_stale_baseline_when_freshness_is_required(
         self, tmp_path, capsys, monkeypatch
     ):

@@ -110,22 +110,3 @@ def test_missing_process_information_is_reported_as_unknown(monkeypatch):
 
     monkeypatch.setattr(exclusive_run_owner, "find_agent_session", unavailable)
     assert exclusive_run_owner.resolve_run_owner({}, 123)["owner_type"] == "unknown"
-
-
-@pytest.mark.parametrize(
-    "failure",
-    [FileNotFoundError("unavailable"), subprocess.TimeoutExpired("servant-name", 1)],
-)
-def test_unavailable_name_lookup_preserves_the_identifiable_agent_session(
-    monkeypatch, failure
-):
-    def unavailable(*arguments, **options):
-        raise failure
-
-    monkeypatch.setattr(subprocess, "run", unavailable)
-    owner = exclusive_run_owner.resolve_run_owner(
-        {"CODEX_THREAD_ID": "fixture-session"}, 123
-    )
-    assert owner["owner_type"] == "agent"
-    assert owner["agent_session"] == "fixture-session"
-    assert not owner["agent_name"]

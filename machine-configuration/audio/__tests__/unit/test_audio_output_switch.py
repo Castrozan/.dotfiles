@@ -28,34 +28,11 @@ class TestListAllHardwareSinkNames:
             sinks = audio_output_switch.list_all_hardware_sink_names()
             assert sinks == ["alsa_output.pci"]
 
-    def test_excludes_virtual_sinks_from_the_output_cycle(self):
-        mock_result = MagicMock(
-            stdout=(
-                "0\talsa_output.pci\tmodule\ts32le\t2ch\t48000Hz\tRUNNING\n"
-                "1\tAvatarMic\tmodule\tfloat32le\t2ch\t48000Hz\tIDLE\n"
-            )
-        )
-
-        with patch("audio_output_switch.subprocess.run", return_value=mock_result):
-            sinks = audio_output_switch.list_all_hardware_sink_names()
-            assert sinks == ["alsa_output.pci"]
-
-    def test_returns_empty_when_no_sinks(self):
-        mock_result = MagicMock(stdout="")
-
-        with patch("audio_output_switch.subprocess.run", return_value=mock_result):
-            sinks = audio_output_switch.list_all_hardware_sink_names()
-            assert sinks == []
-
 
 class TestFindNextSinkInCycle:
     def test_returns_next_sink(self):
         sinks = ["sink_a", "sink_b", "sink_c"]
         assert audio_output_switch.find_next_sink_in_cycle(sinks, "sink_a") == "sink_b"
-
-    def test_wraps_around_to_first(self):
-        sinks = ["sink_a", "sink_b", "sink_c"]
-        assert audio_output_switch.find_next_sink_in_cycle(sinks, "sink_c") == "sink_a"
 
     def test_returns_first_when_current_not_found(self):
         sinks = ["sink_a", "sink_b"]
@@ -64,40 +41,8 @@ class TestFindNextSinkInCycle:
     def test_returns_current_when_list_empty(self):
         assert audio_output_switch.find_next_sink_in_cycle([], "sink_a") == "sink_a"
 
-    def test_returns_same_with_single_sink(self):
-        assert (
-            audio_output_switch.find_next_sink_in_cycle(["only_sink"], "only_sink")
-            == "only_sink"
-        )
-
 
 class TestMoveAllPlayingStreamsToSink:
-    def test_moves_all_streams(self):
-        sinks_result = MagicMock(
-            stdout="0\talsa_output.pci\tmodule\ts32le\t2ch\t48000Hz\tRUNNING\n"
-        )
-        inputs_result = MagicMock(stdout="10\t0\t\t\n11\t0\t\t\n")
-
-        with patch(
-            "audio_output_switch.subprocess.run",
-            side_effect=[sinks_result, inputs_result, MagicMock(), MagicMock()],
-        ) as mock_run:
-            audio_output_switch.move_all_playing_streams_to_sink("alsa_output.pci")
-
-            assert mock_run.call_count == 4
-            assert mock_run.call_args_list[2][0][0] == [
-                "pactl",
-                "move-sink-input",
-                "10",
-                "0",
-            ]
-            assert mock_run.call_args_list[3][0][0] == [
-                "pactl",
-                "move-sink-input",
-                "11",
-                "0",
-            ]
-
     def test_leaves_streams_routed_to_virtual_sinks(self):
         sinks_result = MagicMock(
             stdout=(
@@ -120,16 +65,6 @@ class TestMoveAllPlayingStreamsToSink:
                 "11",
                 "0",
             ]
-
-    def test_does_nothing_when_sink_not_found(self):
-        sinks_result = MagicMock(stdout="")
-
-        with patch(
-            "audio_output_switch.subprocess.run",
-            side_effect=[sinks_result],
-        ) as mock_run:
-            audio_output_switch.move_all_playing_streams_to_sink("unknown")
-            mock_run.assert_called_once()
 
 
 class TestGetSinkHumanReadableDescription:

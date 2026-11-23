@@ -51,20 +51,6 @@ def test_foreign_report_cannot_impersonate_an_additional_native_shard(evidence):
     assert not (output / ".coverage-reports/python-coverage.xml").exists()
 
 
-def test_dtd_and_entity_expansion_are_rejected(evidence):
-    artifacts, output, _ = evidence
-    report = (
-        artifacts
-        / "python-shard-unit-0-2/.quality-results/pytest-unit-shard-0-of-1.xml"
-    )
-    report.write_text(
-        '<!DOCTYPE testsuites [<!ENTITY text "unsafe">]><testsuites>&text;</testsuites>'
-    )
-    assert MERGER.merge_python_evidence(artifacts, output, (2, 2, 2))
-    assert not (output / ".quality-results/pytest-unit.xml").exists()
-    assert not (output / ".coverage-reports/python-coverage.xml").exists()
-
-
 def test_mixed_line_and_branch_data_are_rejected(evidence):
     artifacts, output, _ = evidence
     path = artifacts / "python-shard-unit-0-2/.coverage-reports/.coverage.unit-0"

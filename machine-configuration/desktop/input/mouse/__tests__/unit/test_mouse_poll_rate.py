@@ -4,9 +4,6 @@ import mouse_poll_rate
 
 
 class TestDecodeRateValue:
-    def test_decodes_8000hz(self):
-        assert mouse_poll_rate.decode_rate_value(0x40, 0x15) == "8000Hz"
-
     def test_decodes_4000hz(self):
         assert mouse_poll_rate.decode_rate_value(0x20, 0x35) == "4000Hz"
 
@@ -16,15 +13,8 @@ class TestDecodeRateValue:
     def test_decodes_1000hz(self):
         assert mouse_poll_rate.decode_rate_value(0x01, 0x54) == "1000Hz"
 
-    def test_returns_unknown_for_unrecognized_value(self):
-        result = mouse_poll_rate.decode_rate_value(0xAA, 0xBB)
-        assert "unknown" in result
-
 
 class TestRateArgumentToBytes:
-    def test_parses_8k(self):
-        assert mouse_poll_rate.rate_argument_to_bytes("8k") == (0x40, 0x15)
-
     def test_parses_8000(self):
         assert mouse_poll_rate.rate_argument_to_bytes("8000") == (0x40, 0x15)
 

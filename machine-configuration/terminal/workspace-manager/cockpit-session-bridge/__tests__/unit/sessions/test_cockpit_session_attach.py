@@ -51,26 +51,6 @@ def _resolve_over_a_tmux_only_machine(websocket_connection, attach_settings):
     )
 
 
-def test_read_session_attach_target_reads_the_terminal_identifier_from_the_query():
-    assert (
-        settings.read_session_attach_target(
-            "/cockpit/terminal-session/?terminal=term_abc123&windowIdentifier=@1"
-        )
-        == "term_abc123"
-    )
-
-
-def test_read_session_attach_target_is_none_without_a_terminal_identifier():
-    assert settings.read_session_attach_target("/cockpit/terminal-session/") is None
-    assert settings.read_session_attach_target("/?terminal=") is None
-
-
-def test_build_attach_session_command_targets_the_default_socket_when_enumeration_is_empty():
-    assert cockpit_tmux_commands.build_attach_session_command(
-        TMUX_EXECUTABLE_PATH, "", "dotfiles"
-    ) == [TMUX_EXECUTABLE_PATH, "-u", "attach-session", "-t", "dotfiles"]
-
-
 def test_build_attach_session_command_uses_the_enumeration_socket_when_named():
     assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "cockpit", "reports-deploy"

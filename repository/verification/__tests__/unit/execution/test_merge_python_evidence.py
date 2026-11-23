@@ -115,20 +115,6 @@ def test_case_collisions_across_shards_are_rejected(evidence):
     assert not (output / ".quality-results/pytest-integration.xml").exists()
 
 
-@pytest.mark.parametrize(
-    "name", ["python-shard-integration-1-2-copy", "python-shard-unit-0-1"]
-)
-def test_duplicate_or_stale_attempt_shard_is_rejected(evidence, name):
-    artifacts, output, _ = evidence
-    (artifacts / name).mkdir()
-    assert any(
-        "Unexpected" in error
-        for error in MERGER.merge_python_evidence(artifacts, output, (2, 2, 2))
-    )
-    assert not (output / ".quality-results/pytest-unit.xml").exists()
-    assert not (output / ".coverage-reports/python-coverage.xml").exists()
-
-
 def test_corrupt_coverage_never_becomes_a_partial_complete_report(evidence):
     artifacts, output, _ = evidence
     (

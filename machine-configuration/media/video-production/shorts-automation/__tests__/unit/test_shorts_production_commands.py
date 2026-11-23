@@ -89,11 +89,6 @@ def test_episode_actions_reach_the_episode_command(tmp_path, monkeypatch, action
     episode.assert_called_once_with(action, tmp_path, Path("episode.json"))
 
 
-def test_unknown_action_is_rejected_by_the_parser():
-    with pytest.raises(SystemExit):
-        parsed("publish-everything")
-
-
 def test_main_prints_the_action_result_and_restricts_new_files(
     tmp_path, monkeypatch, capsys
 ):

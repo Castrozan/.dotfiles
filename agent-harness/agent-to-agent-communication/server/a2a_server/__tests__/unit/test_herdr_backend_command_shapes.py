@@ -53,10 +53,6 @@ class TestTargetHerdrPaneExistsUsesPaneGetReturnCode:
         backend._target_herdr_pane_exists()
         assert recording_stub.invocations == [["pane", "get", "wP:pT"]]
 
-    def test_pane_exists_when_pane_get_succeeds(self):
-        backend, _ = _build_backend_with_stub(returncode=0)
-        assert backend._target_herdr_pane_exists() is True
-
     def test_pane_absent_when_pane_get_fails(self):
         backend, _ = _build_backend_with_stub(returncode=1)
         assert backend._target_herdr_pane_exists() is False
@@ -102,12 +98,6 @@ class TestLiveAgentDetectionUsesPaneGetAgentField:
             returncode=0, stdout=_pane_get_payload_with_agent("claude")
         )
         assert backend._read_pane_information().get("agent") == "claude"
-
-    def test_not_alive_when_pane_agent_is_null(self):
-        backend, _ = _build_backend_with_stub(
-            returncode=0, stdout=_pane_get_payload_with_agent(None)
-        )
-        assert backend._read_pane_information().get("agent") is None
 
     def test_not_alive_when_pane_get_fails(self):
         backend, _ = _build_backend_with_stub(

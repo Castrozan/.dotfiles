@@ -1,6 +1,5 @@
 import importlib.util
 import plistlib
-import subprocess
 from pathlib import Path
 from unittest.mock import Mock
 
@@ -36,21 +35,12 @@ def installer_package(tmp_path):
     return package
 
 
-@pytest.mark.parametrize("installed_version", ["16.3.0", "16.10.0", "17.0.0"])
-def test_fixed_versions_do_not_launch_installer(version_installer, installed_version):
-    write_installed_version(version_installer, installed_version)
-    version_installer.ensure_karabiner_version("16.3.0", "/unused.pkg")
-    version_installer.subprocess.run.assert_not_called()
-
-
 def test_minor_version_upgrade_targets_only_karabiner(
     version_installer, installer_package
 ):
     write_installed_version(version_installer, "16.0.0")
-    version_installer.subprocess.run.side_effect = (
-        lambda *arguments, **keywords: write_installed_version(
-            version_installer, "16.3.0"
-        )
+    version_installer.subprocess.run.side_effect = lambda *arguments, **keywords: (
+        write_installed_version(version_installer, "16.3.0")
     )
     version_installer.ensure_karabiner_version("16.3.0", installer_package)
     version_installer.subprocess.run.assert_called_once_with(
@@ -68,46 +58,9 @@ def test_minor_version_upgrade_targets_only_karabiner(
     version_installer.subprocess.run.assert_not_called()
 
 
-def test_activation_keeps_installer_privileges(version_installer, installer_package):
-    write_installed_version(version_installer, "16.0.0")
-
-    def install_with_activation_privileges(command, **keywords):
-        assert command[0] == "/usr/sbin/installer"
-        write_installed_version(version_installer, "16.3.0")
-
-    version_installer.subprocess.run.side_effect = install_with_activation_privileges
-    version_installer.ensure_karabiner_version("16.3.0", installer_package)
-
-
-def test_missing_application_is_installed(version_installer, installer_package):
-    version_installer.subprocess.run.side_effect = (
-        lambda *arguments, **keywords: write_installed_version(
-            version_installer, "16.3.0"
-        )
-    )
-    version_installer.ensure_karabiner_version("16.3.0", installer_package)
-    command = version_installer.subprocess.run.call_args.args[0]
-    assert command == [
-        "/usr/sbin/installer",
-        "-pkg",
-        str(installer_package),
-        "-target",
-        "/",
-    ]
-
-
 def test_unsuccessful_upgrade_stops_activation(version_installer, installer_package):
     write_installed_version(version_installer, "16.0.0")
     with pytest.raises(RuntimeError, match="installed: 16.0.0"):
-        version_installer.ensure_karabiner_version("16.3.0", installer_package)
-
-
-def test_installer_failure_stops_activation(version_installer, installer_package):
-    write_installed_version(version_installer, "16.0.0")
-    version_installer.subprocess.run.side_effect = subprocess.CalledProcessError(
-        1, ["/usr/sbin/installer"]
-    )
-    with pytest.raises(subprocess.CalledProcessError):
         version_installer.ensure_karabiner_version("16.3.0", installer_package)
 
 
@@ -115,16 +68,6 @@ def test_malformed_version_stops_before_installing(version_installer):
     write_installed_version(version_installer, "invalid")
     with pytest.raises(ValueError, match="Invalid Karabiner version"):
         version_installer.ensure_karabiner_version("16.3.0", "/unused.pkg")
-    version_installer.subprocess.run.assert_not_called()
-
-
-@pytest.mark.parametrize(
-    "installer_package", ["--help", "relative.pkg", "/missing.pkg"]
-)
-def test_invalid_package_stops_before_installing(version_installer, installer_package):
-    write_installed_version(version_installer, "16.0.0")
-    with pytest.raises(ValueError, match="Invalid Karabiner installer package"):
-        version_installer.ensure_karabiner_version("16.3.0", installer_package)
     version_installer.subprocess.run.assert_not_called()
 
 

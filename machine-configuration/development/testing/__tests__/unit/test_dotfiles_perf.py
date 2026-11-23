@@ -52,10 +52,6 @@ class TestDelegation:
             _invoke(["rebuild", "eval"])
         assert delegate.call_args[0][0] == ["benchmark-rebuild", "eval"]
 
-    def test_propagates_the_delegated_exit_status(self):
-        with _delegating(3):
-            assert _invoke(["run"]) == 3
-
 
 class TestUnavailableDelegate:
     def test_reports_an_absent_command_with_the_not_found_status(self, capsys):

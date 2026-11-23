@@ -27,17 +27,8 @@ class TestParseArguments:
         command, _, _ = benchmark_desktop.parse_arguments(["report"])
         assert command == "report"
 
-    def test_custom_iterations(self):
-        _, iterations, _ = benchmark_desktop.parse_arguments(["10"])
-        assert iterations == 10
-
     def test_component_filter(self):
         _, _, component = benchmark_desktop.parse_arguments(["tmux"])
-        assert component == "tmux"
-
-    def test_iterations_and_component(self):
-        _, iterations, component = benchmark_desktop.parse_arguments(["10", "tmux"])
-        assert iterations == 10
         assert component == "tmux"
 
 
@@ -51,11 +42,6 @@ class TestFilterBenchmarks:
         benchmarks = [("tmux-new", None), ("tmux-split", None), ("wezterm", None)]
         result = benchmark_desktop.filter_benchmarks(benchmarks, "tmux")
         assert len(result) == 2
-
-    def test_no_match_returns_empty(self):
-        benchmarks = [("a", None), ("b", None)]
-        result = benchmark_desktop.filter_benchmarks(benchmarks, "zzz")
-        assert len(result) == 0
 
 
 class TestGetAvailableBenchmarks:

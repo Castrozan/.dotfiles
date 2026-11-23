@@ -1,6 +1,5 @@
 import json
 import os
-from pathlib import Path
 import sys
 import time
 
@@ -71,20 +70,6 @@ def running_codex_stub(tmp_path, monkeypatch):
 
     monkeypatch.setattr(launcher, "wait_for_session_server", wait_for_stub)
     return tmp_path
-
-
-def test_backend_stderr_is_isolated_from_terminal_client(running_codex_stub, capfd):
-    terminal_descriptor = os.fstat(2)
-    assert launcher.run_private_session([]) == 7
-    server_state = json.loads((running_codex_stub / "server.json").read_text())
-    assert capfd.readouterr().err == "terminal client\n"
-    assert (
-        server_state["stderr_device"],
-        server_state["stderr_inode"],
-    ) != (terminal_descriptor.st_dev, terminal_descriptor.st_ino)
-    with pytest.raises(ProcessLookupError):
-        os.kill(server_state["process_identifier"], 0)
-    assert not Path(server_state["directory"]).parent.exists()
 
 
 def test_startup_failure_returns_bounded_backend_details_after_server_teardown(

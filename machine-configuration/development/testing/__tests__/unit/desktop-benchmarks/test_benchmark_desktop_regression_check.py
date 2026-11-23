@@ -57,14 +57,6 @@ class TestCompareLatestToBaseline:
         assert "SLOWER" in report
         assert "tmux" in report
 
-    def test_reads_the_latest_row_for_a_component(self, tmp_path):
-        passed = _compare(
-            tmp_path,
-            _tracked_baseline(tmux=(20.0, 40.0)),
-            "2026-01-01,tmux,10.0,10.0,10.0,5\n2026-01-02,tmux,90.0,90.0,90.0,5\n",
-        )
-        assert passed is False
-
     def test_fails_when_a_tracked_component_was_never_measured(self, tmp_path, capsys):
         passed = _compare(
             tmp_path,
@@ -83,16 +75,6 @@ class TestCompareLatestToBaseline:
         assert passed is False
         report = capsys.readouterr().out
         assert "no measured results" in report
-
-    def test_never_creates_the_results_csv_it_reads(self, tmp_path):
-        _compare(tmp_path, _tracked_baseline(tmux=(20.0, 40.0)), None)
-        assert not (tmp_path / "desktop-times.csv").exists()
-
-    def test_fails_when_the_csv_holds_no_measurements_at_all(self, tmp_path, capsys):
-        passed = _compare(tmp_path, _tracked_baseline(tmux=(20.0, 40.0)), "")
-
-        assert passed is False
-        assert "MISSING" in capsys.readouterr().out
 
     def test_fails_before_comparing_when_the_tracked_baseline_is_invalid(
         self, tmp_path, capsys

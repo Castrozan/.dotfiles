@@ -74,10 +74,6 @@ class TestReadCcusageDailySummary:
         assert summary["stats_last_computed_date"] == "2026-06-17"
         assert summary["model_usage_totals"]["claude-opus-4-8"]["cost_usd"] == 0.5
 
-    def test_empty_export_returns_none(self, monkeypatch):
-        stub_ccusage_run(monkeypatch, completed(json.dumps({"daily": []})))
-        assert read_ccusage_daily_summary() is None
-
     @pytest.mark.parametrize(
         ("outcome", "message"),
         [

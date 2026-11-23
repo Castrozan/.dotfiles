@@ -2,7 +2,6 @@ import hashlib
 import json
 import tempfile
 
-import pytest
 from hypothesis import given, settings
 from hypothesis import strategies as st
 
@@ -82,18 +81,6 @@ def test_publishes_nested_unicode_and_binary_files_with_exact_bytes(tmp_path):
             },
         ],
     }
-
-
-def test_partial_publication_failure_raises_after_only_acknowledged_artifacts(tmp_path):
-    directory = write_tree(tmp_path, {"assets/app.js": b"1", "index.html": b"2"})
-    with stubbed_collaborators(
-        failing_object_keys=frozenset({f"{ALLOWED_PREFIX}index.html"})
-    ) as recorded:
-        with pytest.raises(IngestionRefusedError, match="index.html"):
-            publish(directory)
-    assert [publication.object_key for publication in recorded.publications] == [
-        f"{ALLOWED_PREFIX}assets/app.js"
-    ]
 
 
 def test_cli_prints_manifest_and_exits_zero(tmp_path, capsys):

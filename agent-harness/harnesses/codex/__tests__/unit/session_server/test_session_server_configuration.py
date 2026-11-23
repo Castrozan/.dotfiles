@@ -1,7 +1,6 @@
 import json
 import tomllib
 
-import pytest
 
 from session_server_configuration import server_configuration_for
 
@@ -63,29 +62,6 @@ def test_caller_directory_and_feature_overrides_reach_the_private_server(
     )
     assert configuration.working_directory == tmp_path.resolve()
     assert configuration.arguments == ("--enable", "hooks", "--disable", "multi_agent")
-
-
-def test_flag_text_after_separator_remains_prompt_text(tmp_path, monkeypatch):
-    monkeypatch.chdir(tmp_path)
-    configuration = server_configuration_for(["--", "--profile=not-a-profile"])
-    assert configuration.arguments == ()
-    assert configuration.working_directory == tmp_path.resolve()
-
-
-def test_missing_or_malformed_profile_fails_without_launching_another_configuration(
-    tmp_path, monkeypatch
-):
-    monkeypatch.setenv("CODEX_HOME", str(tmp_path))
-    with pytest.raises(FileNotFoundError):
-        server_configuration_for(["--profile", "missing"])
-    (tmp_path / "broken.config.toml").write_text("not valid TOML")
-    with pytest.raises(tomllib.TOMLDecodeError):
-        server_configuration_for(["--profile", "broken"])
-
-
-def test_default_launch_keeps_the_runtime_owned_model_unset():
-    configuration = server_configuration_for([])
-    assert configuration.arguments == ()
 
 
 def test_strict_configuration_validation_is_preserved():

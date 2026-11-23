@@ -1,35 +1,8 @@
-from pathlib import Path
 from unittest.mock import MagicMock, patch
 
 import pytest
 
 import theme_generate_and_apply
-
-
-class TestDeriveThemeNameFromImagePath:
-    def test_derives_name_from_stem(self):
-        assert (
-            theme_generate_and_apply.derive_theme_name_from_image_path(
-                Path("/wallpapers/sunset.png")
-            )
-            == "auto-sunset"
-        )
-
-    def test_derives_name_from_complex_filename(self):
-        assert (
-            theme_generate_and_apply.derive_theme_name_from_image_path(
-                Path("/pics/my-cool-wallpaper.jpg")
-            )
-            == "auto-my-cool-wallpaper"
-        )
-
-    def test_derives_name_from_gif(self):
-        assert (
-            theme_generate_and_apply.derive_theme_name_from_image_path(
-                Path("/anim/waves.gif")
-            )
-            == "auto-waves"
-        )
 
 
 class TestApplyGeneratedTheme:

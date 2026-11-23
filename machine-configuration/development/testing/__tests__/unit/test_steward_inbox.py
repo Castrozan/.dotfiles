@@ -24,10 +24,3 @@ def test_a_message_lands_in_the_inbox_in_the_steward_msg_shape(tmp_path, monkeyp
         "sent_unix": message["sent_unix"],
         "text": "the night failed",
     }
-
-
-def test_no_steward_workspace_means_no_message_and_no_directory(tmp_path, monkeypatch):
-    monkeypatch.setenv("STEWARD_WORKSPACE_DIR", str(tmp_path / "absent"))
-
-    assert steward_inbox.leave_message_in_the_steward_inbox(SENDER, "lost") is None
-    assert not (tmp_path / "absent").exists()

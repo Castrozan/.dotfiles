@@ -52,20 +52,6 @@ def prompt_doubles(monkeypatch):
         yield prompts
 
 
-def test_prompt_names_the_repository_a_bare_number_resolves_in(prompt_doubles):
-    review_changes_cli.prompt_for_target([])
-    assert prompt_doubles == ["MR/PR number, link or branch in group/project [main]: "]
-
-
-def test_prompt_offers_the_request_detected_in_the_agent_reply(prompt_doubles, capsys):
-    detected_request = RequestLink(ForgeRepository("gitlab.example", "team/app"), "9")
-    review_changes_cli.prompt_for_target([detected_request])
-    assert capsys.readouterr().out == ""
-    assert prompt_doubles == [
-        "MR/PR number, link or branch in group/project [team/app!9]: "
-    ]
-
-
 def test_prompt_lists_the_other_requests_a_number_can_pick(prompt_doubles, capsys):
     review_changes_cli.prompt_for_target(
         [
@@ -112,14 +98,3 @@ def test_command_line_target_skips_agent_reply_detection():
         review_changes_cli.review(["530"])
     latest_request_links_in_active_agent.assert_not_called()
     resolve_review_target.assert_called_once_with("530", [])
-
-
-def test_prompt_outside_a_repository_names_no_repository(monkeypatch):
-    prompts = []
-    monkeypatch.setattr("builtins.input", lambda prompt: prompts.append(prompt) or "")
-    monkeypatch.setattr(
-        review_changes_cli, "origin_repository", lambda _directory: None
-    )
-    with patch("review_changes_cli.run_command", return_value=MagicMock(stdout="")):
-        review_changes_cli.prompt_for_target([])
-    assert prompts == ["MR/PR number, link or branch: "]

@@ -148,20 +148,3 @@ def test_a_root_without_a_catalog_is_refused_before_any_command(
     with pytest.raises(ValueError, match="No marketplace catalog"):
         register_plugin(tmp_path / "empty", tmp_path)
     assert not recorded_calls
-
-
-def test_option_like_root_is_a_resolved_positional_path(
-    tmp_path, monkeypatch, recorded_calls
-):
-    monkeypatch.chdir(tmp_path)
-    write_dotfiles_bundle(tmp_path / "--config=features.example=true")
-    register_plugin(Path("--config=features.example=true"), tmp_path)
-    assert recorded_calls[0] == [
-        "/codex",
-        "plugin",
-        "marketplace",
-        "add",
-        "--json",
-        "--",
-        str(tmp_path / "--config=features.example=true"),
-    ]

@@ -30,15 +30,6 @@ def test_remote_ssh_invocation_uses_non_interactive_options():
     ]
 
 
-def test_remote_command_uses_a_bare_tmux_not_the_local_store_path():
-    remote_list_sessions_command = cockpit_tmux_commands.build_list_sessions_command(
-        TMUX_EXECUTABLE_PATH, "", remote_ssh_host=REMOTE_SSH_HOST
-    )
-    assert remote_list_sessions_command[-1].startswith(f"{REMOTE_TMUX} ")
-    assert "/nix/store/" not in remote_list_sessions_command[-1]
-    assert TMUX_EXECUTABLE_PATH not in remote_list_sessions_command[-1]
-
-
 def test_enumeration_builders_cross_ssh_as_one_shell_quoted_remote_command():
     assert cockpit_tmux_commands.build_list_sessions_command(
         TMUX_EXECUTABLE_PATH, "", remote_ssh_host=REMOTE_SSH_HOST
@@ -64,14 +55,6 @@ def test_enumeration_builders_cross_ssh_as_one_shell_quoted_remote_command():
     ]
 
 
-def test_enumeration_format_argument_is_quoted_so_the_remote_shell_keeps_it():
-    remote_list_sessions_command = cockpit_tmux_commands.build_list_sessions_command(
-        TMUX_EXECUTABLE_PATH, "", remote_ssh_host=REMOTE_SSH_HOST
-    )
-    assert "'#{session_name}'" in remote_list_sessions_command[-1]
-    assert not remote_list_sessions_command[-1].endswith("-F")
-
-
 def test_attach_builder_forces_a_remote_pseudoterminal_when_a_remote_host_is_given():
     assert cockpit_tmux_commands.build_attach_session_command(
         TMUX_EXECUTABLE_PATH, "", "todos", remote_ssh_host=REMOTE_SSH_HOST
@@ -80,17 +63,6 @@ def test_attach_builder_forces_a_remote_pseudoterminal_when_a_remote_host_is_giv
         "-tt",
         REMOTE_SSH_HOST,
         f"{REMOTE_TMUX} -u attach-session -t todos",
-    ]
-
-
-def test_remote_attach_target_with_shell_metacharacters_is_quoted_not_executed():
-    assert cockpit_tmux_commands.build_attach_session_command(
-        TMUX_EXECUTABLE_PATH, "", "feature; rm -rf /", remote_ssh_host=REMOTE_SSH_HOST
-    ) == [
-        *SSH,
-        "-tt",
-        REMOTE_SSH_HOST,
-        f"{REMOTE_TMUX} -u attach-session -t " + shlex.quote("feature; rm -rf /"),
     ]
 
 

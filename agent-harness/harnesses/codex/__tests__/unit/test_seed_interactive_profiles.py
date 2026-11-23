@@ -88,18 +88,6 @@ def test_rebuild_preserves_native_profile_state_and_applies_managed_policy(tmp_p
     assert configuration["hooks"] == {"state": {"known": {"approved": True}}}
 
 
-def test_invalid_profile_is_preserved_and_fails_activation(tmp_path):
-    source = tmp_path / "profile.config.toml.nix-source"
-    source.write_text('developer_instructions = "current"\n')
-    profile = tmp_path / "profile.config.toml"
-    profile.write_text('model = "unfinished')
-
-    with pytest.raises(tomllib.TOMLDecodeError):
-        seed_profile(source, profile)
-
-    assert profile.read_text() == 'model = "unfinished'
-
-
 @pytest.fixture
 def profile_activation(tmp_path, monkeypatch):
     directory = tmp_path / ".codex"

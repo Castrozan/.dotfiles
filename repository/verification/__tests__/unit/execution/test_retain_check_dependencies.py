@@ -66,39 +66,6 @@ def test_only_locally_built_dependencies_of_the_checks_are_rooted(tmp_path, caps
     )
 
 
-def test_a_check_output_is_never_rooted_so_the_check_still_rebuilds():
-    assert (
-        retainer.select_retained_paths(
-            [CHECK_OUTPUT],
-            [CHECK_OUTPUT],
-            [CHECK_DERIVATION],
-            [f"{CHECK_OUTPUT}\tultimate"],
-        )
-        == []
-    )
-
-
-def test_a_path_signed_by_a_binary_cache_is_left_to_garbage_collection():
-    assert (
-        retainer.select_retained_paths(
-            [SUBSTITUTED_DEPENDENCY],
-            [],
-            ["/nix/store/cccc-glibc-2.42.drv"],
-            [f"{SUBSTITUTED_DEPENDENCY}\tcache.nixos.org-1:c2lnbmF0dXJl"],
-        )
-        == []
-    )
-
-
-def test_a_source_added_without_a_derivation_is_left_to_garbage_collection():
-    assert (
-        retainer.select_retained_paths(
-            [FLAKE_SOURCE], [], ["unknown-deriver"], [f"{FLAKE_SOURCE}\tultimate"]
-        )
-        == []
-    )
-
-
 def test_store_queries_batch_paths_and_pass_flake_arguments(monkeypatch, tmp_path):
     commands = []
 

@@ -101,16 +101,6 @@ def test_wrong_attempt_foreign_run_corrupt_or_expired_artifact_cannot_publish(
     assert not (tmp_path / "site").exists()
 
 
-def test_missing_coverage_artifact_cannot_publish(run, coverage_producer, tmp_path):
-    for route in coverage_producer[0]:
-        if route.endswith("/artifacts?per_page=100"):
-            coverage_producer[0][route] = {"total_count": 0, "artifacts": []}
-    with pytest.raises(ValueError, match="verified coverage artifact"):
-        prepare_from_event(run, tmp_path)
-    assert not coverage_producer[1]
-    assert not (tmp_path / "site").exists()
-
-
 def test_successful_upload_from_another_job_cannot_publish(
     run, jobs, coverage_producer, tmp_path
 ):

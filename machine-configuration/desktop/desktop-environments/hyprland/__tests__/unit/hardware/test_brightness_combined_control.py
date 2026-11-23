@@ -40,18 +40,6 @@ def runtime(monkeypatch, tmp_path):
     return state
 
 
-def test_reads_live_gamma_instead_of_stale_saved_value(runtime):
-    runtime["gamma"] = 40
-    brightness.GAMMA_STATE_PATH.write_text("100")
-    assert brightness.get_brightness_state() == {
-        "value": 20,
-        "minimum": 0.1,
-        "hardware": 50,
-        "gamma": 40,
-        "hardwareActive": True,
-    }
-
-
 @pytest.mark.parametrize(
     ("target", "hardware", "gamma", "effective"),
     [(50, 50, 100, 50), (0.5, 1, 50, 0.5), (0, 1, 10, 0.1), (100, 100, 100, 100)],

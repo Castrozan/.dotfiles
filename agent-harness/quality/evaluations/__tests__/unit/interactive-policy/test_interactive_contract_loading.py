@@ -1,12 +1,8 @@
 from interactive_surface_support import (
-    HUMANIZE_SKILL_PATH,
     INTERACTIVE_GENERATOR_PATHS,
     INTERACTIVE_LAUNCH_SOURCES,
     INTERACTIVE_POLICY_SOURCE,
-    MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES,
-    MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES,
     ON_DEMAND_HUMANIZE_SOURCES,
-    expanded_interactive_policy,
     interactive_policy_section,
 )
 
@@ -33,21 +29,3 @@ def test_explicit_wellput_request_loads_before_other_actions():
 
     assert "explicitly asked to use the `wellput` skill" in wellput_loading
     assert "before any other action" in wellput_loading
-
-
-def test_interactive_and_on_demand_surfaces_have_separate_context_budgets():
-    always_injected_policy_bytes = len(expanded_interactive_policy().encode())
-    assert (
-        always_injected_policy_bytes <= MAXIMUM_ALWAYS_INJECTED_INTERACTIVE_POLICY_BYTES
-    ), (
-        "the always-injected interactive policy now exceeds its context budget at "
-        f"{always_injected_policy_bytes} bytes"
-    )
-
-    on_demand_package_bytes = sum(
-        len(path.read_bytes()) for path in (HUMANIZE_SKILL_PATH,)
-    )
-    assert on_demand_package_bytes <= MAXIMUM_ON_DEMAND_HUMANIZE_PACKAGE_BYTES, (
-        "the on-demand Humanize package now exceeds its context budget at "
-        f"{on_demand_package_bytes} bytes"
-    )

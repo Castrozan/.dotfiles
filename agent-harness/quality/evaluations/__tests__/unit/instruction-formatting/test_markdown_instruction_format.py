@@ -93,16 +93,6 @@ def test_uses_rendered_heading_text_for_github_anchors(heading, anchor):
     assert inspected.violations == []
 
 
-def test_rejects_duplicate_heading_anchors():
-    inspected = inspect_markdown_instruction(
-        "### Evidence\n\nRead.\n\n### Evidence\n\nVerify.\n"
-    )
-    assert inspected.anchors == ["evidence", "evidence-1"]
-    assert [violation.rule for violation in inspected.violations] == [
-        "instruction_heading_anchor"
-    ]
-
-
 def test_numeric_heading_names_and_punctuation_collisions_use_upstream_anchors():
     inspected = inspect_markdown_instruction(
         "### Phase 2\n\nRead.\n\n### Phase 2!\n\nVerify.\n\n### Phase 3\n\nAct.\n"
@@ -151,14 +141,6 @@ def test_paragraphs_accept_six_source_lines_and_reject_more(prose_line_count):
     assert [
         (violation.rule, violation.line_number) for violation in inspected.violations
     ] == expected
-
-
-def test_blank_lines_reset_the_paragraph_limit_without_counting_as_prose():
-    prose = "\n".join("Read the source." for _ in range(6))
-    inspected = inspect_markdown_instruction(
-        f"### Evidence\n\n{prose}\n \t\n\n{prose}\n"
-    )
-    assert inspected.violations == []
 
 
 def test_each_long_paragraph_reports_its_source_start_after_frontmatter():

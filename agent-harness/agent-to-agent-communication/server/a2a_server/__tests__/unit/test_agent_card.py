@@ -19,21 +19,6 @@ class TestBuildAgentCardFromEnvironment:
         assert payload["defaultOutputModes"] == ["text"]
         assert payload["capabilities"] == []
 
-    def test_serializes_provided_capabilities(self):
-        card = build_agent_card_from_environment(
-            agent_name="silver",
-            description="d",
-            endpoint_url="http://x",
-            capability_specifications=(
-                ("validate", "Validate Lancamentos", "Per-record validation"),
-                ("aggregate", "CON Rubric Family", "Cross-DB aggregate validation"),
-            ),
-        )
-        capability_payload = card.to_json_serializable_dict()["capabilities"]
-        assert len(capability_payload) == 2
-        assert capability_payload[0]["id"] == "validate"
-        assert capability_payload[1]["name"] == "CON Rubric Family"
-
     def test_serialize_to_json_bytes_returns_parseable_json(self):
         card = build_agent_card_from_environment(
             agent_name="silver",

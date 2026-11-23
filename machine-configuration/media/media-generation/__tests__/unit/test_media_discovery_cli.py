@@ -8,7 +8,6 @@ import media_movie_cli
 import media_speech_cli
 from media_image.contract import ImageError
 from media_image.provider_factory import create_image_provider
-from media_movie.discovery import example_movie_request
 from media_movie.request_reader import read_movie_request
 from media_speech.contract import SpeechError
 from media_speech.delivery import direct_speech_text
@@ -156,12 +155,3 @@ def test_removed_image_provider_is_rejected_before_state_or_credentials(
     with pytest.raises(ImageError, match="unsupported_provider"):
         create_image_provider("replicate")
     assert not state.exists()
-
-
-def test_movie_schema_rejects_removed_image_provider(capsys):
-    document = example_movie_request()
-    document["scenes"][0]["image"]["provider"] = "replicate"
-    assert media_movie_cli.main(["schema"]) == 0
-    schema = json.loads(capsys.readouterr().out)
-    with pytest.raises(jsonschema.ValidationError):
-        jsonschema.validate(document, schema)

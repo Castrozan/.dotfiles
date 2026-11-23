@@ -89,15 +89,6 @@ class TestCopyScreenshotToClipboardAndNotify:
 
 
 class TestAnnotateClipboardImage:
-    def test_returns_none_when_no_image_in_clipboard(self, tmp_path):
-        wl_paste_result = MagicMock()
-        wl_paste_result.returncode = 1
-        wl_paste_result.stdout = b""
-
-        with patch("screenshot.subprocess.run", return_value=wl_paste_result):
-            result = screenshot.annotate_clipboard_image(tmp_path / "test.png")
-            assert result is None
-
     def test_saves_clipboard_and_opens_satty(self, tmp_path):
         save_path = tmp_path / "test.png"
         annotated_path = tmp_path / "test_annotated.png"

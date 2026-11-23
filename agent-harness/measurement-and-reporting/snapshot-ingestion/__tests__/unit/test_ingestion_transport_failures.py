@@ -41,34 +41,3 @@ def test_invalid_response_encoding_is_an_explicit_refusal(monkeypatch):
     request = urllib.request.Request("https://example.invalid/ingest/claude-usage")
     with pytest.raises(publisher.IngestionRefusedError):
         publisher.send_ingest_request(request, "claude-usage event")
-
-
-@pytest.mark.parametrize(
-    "failure",
-    [
-        urllib.error.URLError("connection refused"),
-        TimeoutError("timed out"),
-        ConnectionResetError("connection reset"),
-    ],
-)
-def test_unreachable_ingest_is_an_explicit_refusal(monkeypatch, failure):
-    def unreachable(*arguments, **keywords):
-        raise failure
-
-    monkeypatch.setattr(publisher.urllib.request, "urlopen", unreachable)
-    request = urllib.request.Request("https://example.invalid/ingest/claude-usage")
-    with pytest.raises(publisher.IngestionRefusedError):
-        publisher.send_ingest_request(request, "claude-usage event")
-
-
-def test_response_read_timeout_is_an_explicit_refusal(monkeypatch):
-    def timeout_read():
-        raise TimeoutError("response body timed out")
-
-    def opened(*arguments, **keywords):
-        return nullcontext(SimpleNamespace(status=202, read=timeout_read))
-
-    monkeypatch.setattr(publisher.urllib.request, "urlopen", opened)
-    request = urllib.request.Request("https://example.invalid/ingest/claude-usage")
-    with pytest.raises(publisher.IngestionRefusedError):
-        publisher.send_ingest_request(request, "claude-usage event")

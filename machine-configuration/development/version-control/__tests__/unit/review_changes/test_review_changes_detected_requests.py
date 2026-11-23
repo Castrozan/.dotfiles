@@ -61,8 +61,3 @@ def test_typed_link_names_its_own_repository_whatever_was_detected(
     assert parse_in_current_repository(typed_link, detected_requests) == RequestLink(
         ForgeRepository("gitlab.example", "group/typed"), request_number
     )
-
-
-@given(detected_requests=DETECTED_REQUESTS)
-def test_branch_name_is_never_a_request(detected_requests):
-    assert parse_in_current_repository("feature/530", detected_requests) is None

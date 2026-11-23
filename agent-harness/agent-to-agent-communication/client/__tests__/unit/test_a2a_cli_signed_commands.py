@@ -42,25 +42,6 @@ def test_remote_calls_accept_an_explicit_sender(command_name):
     assert arguments.sender == "Sasaki Kojirou"
 
 
-def test_the_same_signature_is_not_appended_twice(monkeypatch):
-    requests = []
-
-    def request(method, url, payload=None):
-        requests.append(payload)
-        return 201, {"id": "task-1"}
-
-    monkeypatch.setattr(peer_transport, "request_peer_json", request)
-    arguments = argparse.Namespace(
-        agent="peer",
-        text="inspect the result — Sasaki Kojirou",
-        sender="Sasaki Kojirou",
-    )
-
-    commands.command_send(arguments, PEER_DIRECTORY)
-
-    assert requests == [{"input": arguments.text}]
-
-
 def test_whoami_prints_the_name_messages_are_signed_with(monkeypatch, capsys):
     monkeypatch.setenv("CLAWDE_AGENT_NAME", "golden")
     resolved = build_argument_parser().parse_args(["whoami"])

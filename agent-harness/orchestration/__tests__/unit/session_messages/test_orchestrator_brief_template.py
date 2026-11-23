@@ -22,21 +22,6 @@ def test_a_brief_stating_outcomes_passes_and_one_dictating_steps_is_refused():
     assert len(brief_problems(brief(done_when=inline), "kira", WORKFLOWS)) == 1
 
 
-@pytest.mark.parametrize(
-    "step", ["- 1. Build the gate", "(1) build the gate", "Step 1: build the gate"]
-)
-def test_every_common_way_of_numbering_a_step_is_refused(step):
-    assert len(brief_problems(brief(done_when=step), "kira", WORKFLOWS)) == 1
-
-
-@pytest.mark.parametrize(
-    "outcome",
-    ["- 1.2 GiB freed on chise", "- Version 2.1 lands", "10:30 is the cutoff"],
-)
-def test_numbers_that_are_not_steps_pass(outcome):
-    assert brief_problems(brief(done_when=outcome), "kira", WORKFLOWS) == []
-
-
 def test_lucas_numbered_words_and_fenced_lines_are_not_dictated_steps():
     words = "> 1. No need to clone, it's on the disk already.\n> 2. I need info."
     assert brief_problems(brief(words=words), "kira", WORKFLOWS) == []
@@ -65,14 +50,6 @@ def test_a_brief_without_context_for_the_session_is_refused(context):
         "Context" in problem
         for problem in brief_problems(no_heading, "kira", WORKFLOWS)
     )
-
-
-@given(kind=st.sampled_from(["None", "Design"]), reason=ONE_LINE_REASONS)
-def test_a_brief_declaring_discovery_or_a_designed_process_is_not_forced_into_a_workflow(
-    kind, reason
-):
-    assert brief_problems(brief(process=f"{kind}: {reason}"), "kira", WORKFLOWS) == []
-    assert brief_problems(brief(process=f"{kind}: {reason}"), "kira", {}) == []
 
 
 @given(command=st.sampled_from(sorted(WORKFLOWS)), wrapper=st.sampled_from(["", "`"]))

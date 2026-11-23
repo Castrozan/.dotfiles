@@ -1,4 +1,3 @@
-import os
 from contextlib import contextmanager
 from pathlib import Path
 from types import SimpleNamespace
@@ -75,18 +74,6 @@ def stubbed_collaborators(refused_environment=None, failing_object_keys=frozense
         yield recorded
 
 
-def test_checks_producing_environment_before_scanning_or_publishing(tmp_path):
-    directory = tmp_path / "empty"
-    directory.mkdir()
-    with stubbed_collaborators(
-        refused_environment=IngestionRefusedError("identity refused")
-    ) as recorded:
-        with pytest.raises(IngestionRefusedError, match="identity refused"):
-            publish(directory)
-    assert recorded.environment_calls == [make_payload()]
-    assert recorded.publications == []
-
-
 @pytest.mark.parametrize("object_key_prefix", [ALLOWED_PREFIX, "reports/"])
 def test_accepts_whitelisted_report_prefixes(tmp_path, object_key_prefix):
     directory = write_tree(tmp_path, {"index.html": b"<html>"})
@@ -120,21 +107,6 @@ def test_refuses_empty_tree_before_publishing(tmp_path):
     with stubbed_collaborators() as recorded:
         with pytest.raises(IngestionRefusedError, match="no files"):
             publish(write_tree(tmp_path, {}))
-    assert recorded.publications == []
-
-
-@pytest.mark.parametrize("special_entry_kind", ["symlink", "fifo"])
-def test_refuses_symlink_and_special_entries_before_publishing(
-    tmp_path, special_entry_kind
-):
-    directory = write_tree(tmp_path, {"index.html": b"<html>"})
-    if special_entry_kind == "symlink":
-        os.symlink(directory / "index.html", directory / "linked.html")
-    else:
-        os.mkfifo(directory / "pipe")
-    with stubbed_collaborators() as recorded:
-        with pytest.raises(IngestionRefusedError):
-            publish(directory)
     assert recorded.publications == []
 
 

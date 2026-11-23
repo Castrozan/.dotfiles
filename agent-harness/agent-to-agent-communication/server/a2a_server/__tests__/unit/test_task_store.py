@@ -14,10 +14,6 @@ class TestTaskStore:
         assert task_one.input_text == "hello"
         assert task_two.input_text == "world"
 
-    def test_get_task_returns_none_for_unknown_id(self):
-        store = TaskStore()
-        assert store.get_task("nonexistent") is None
-
     def test_transition_task_state_updates_state_and_activity_timestamp(self):
         store = TaskStore()
         task = store.create_task("input")

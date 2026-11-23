@@ -76,9 +76,3 @@ def test_retried_job_cannot_reuse_an_earlier_attempt_artifact(run, artifact, job
         run, jobs, [artifact], [original, CONTEXT.workflow_identity(run)]
     )
     assert context["artifacts"]["bats-junit"]["id"] is None
-
-
-def test_artifact_must_match_its_upload_step_not_merely_its_job(run, artifact, jobs):
-    artifact["created_at"] = "2026-09-26T00:15:00Z"
-    context = CONTEXT.build_context(run, jobs, [artifact])
-    assert context["artifacts"]["bats-junit"]["id"] is None

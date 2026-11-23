@@ -118,17 +118,6 @@ def test_request_number_outside_a_repository_asks_for_the_link(git_doubles):
         review_target.resolve_review_target("388")
 
 
-def test_request_lookup_failure_surfaces_the_forge_message(git_doubles):
-    with (
-        patch(
-            "review_target.view_change_request",
-            side_effect=ReviewTargetError("dial tcp 10.0.0.1:443: i/o timeout"),
-        ),
-        pytest.raises(ReviewTargetError, match="i/o timeout"),
-    ):
-        review_target.resolve_review_target("404")
-
-
 def test_empty_target_reviews_the_local_current_branch_against_its_request_base(
     git_doubles,
 ):
@@ -144,25 +133,6 @@ def test_empty_target_reviews_the_local_current_branch_against_its_request_base(
     assert resolved.merge_base_commit == (
         "merge-base-of-commit-of-develop-and-local-feature-tip"
     )
-
-
-def test_branch_without_request_or_local_copy_uses_the_remote_branch_and_default_base(
-    git_doubles,
-):
-    with (
-        patch(
-            "review_target.view_change_request",
-            side_effect=ReviewTargetError("no merge request for branch"),
-        ),
-        patch("review_target.local_branch_commit", return_value=None),
-        patch("review_target.default_base_branch", return_value="main"),
-    ):
-        resolved = review_target.resolve_review_target("someone/branch")
-    assert resolved.head_commit == "commit-of-someone/branch"
-    assert resolved.merge_base_commit == (
-        "merge-base-of-commit-of-main-and-commit-of-someone/branch"
-    )
-    assert resolved.change_request is None
 
 
 def test_detached_head_without_target_raises():

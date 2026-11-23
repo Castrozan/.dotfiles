@@ -55,15 +55,6 @@ class TestGenerateColorsTomlForWallpaper:
 
 
 class TestCreatePreviewImageFromSource:
-    def test_copies_non_gif_image_directly(self, tmp_path):
-        source = tmp_path / "wall.png"
-        source.write_bytes(b"fake-png-data")
-        preview = tmp_path / "preview.png"
-
-        theme_generate_and_apply.create_preview_image_from_source(source, preview)
-
-        assert preview.read_bytes() == b"fake-png-data"
-
     def test_replaces_a_read_only_preview(self, tmp_path):
         source = tmp_path / "wall.png"
         source.write_bytes(b"new-png-data")

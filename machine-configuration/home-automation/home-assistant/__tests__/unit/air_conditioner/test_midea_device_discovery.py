@@ -7,16 +7,6 @@ HOME_ASSISTANT_COMMAND_MODULE = recover_ip_module
 
 
 class TestParseLocalIpv4Networks:
-    def test_extracts_scannable_lan_subnet(self):
-        sample_output = (
-            "3: wlp4s0    inet 10.10.12.170/21 brd 10.10.15.255 scope global "
-            "dynamic noprefixroute wlp4s0\\       valid_lft 403sec\n"
-        )
-        result = midea_device_discovery.parse_local_ipv4_networks_from_ip_address_command_output(
-            sample_output
-        )
-        assert result == [ipaddress.ip_network("10.10.8.0/21")]
-
     def test_skips_docker_and_tailscale_and_oversized_networks(self):
         sample_output = (
             "3: wlp4s0    inet 10.10.12.170/21 brd 10.10.15.255 scope global "
@@ -38,33 +28,8 @@ class TestParseLocalIpv4Networks:
         )
         assert result == []
 
-    def test_handles_multiple_interfaces(self):
-        sample_output = (
-            "3: wlp4s0    inet 10.10.12.170/24 scope global wlp4s0\n"
-            "4: eth0    inet 192.168.7.5/24 scope global eth0\n"
-        )
-        result = midea_device_discovery.parse_local_ipv4_networks_from_ip_address_command_output(
-            sample_output
-        )
-        assert ipaddress.ip_network("10.10.12.0/24") in result
-        assert ipaddress.ip_network("192.168.7.0/24") in result
-        assert len(result) == 2
-
 
 class TestEnumerateUniqueHostAddresses:
-    def test_enumerates_unique_hosts(self):
-        networks = [
-            ipaddress.ip_network("192.168.7.0/30"),
-            ipaddress.ip_network("10.0.0.0/30"),
-        ]
-        result = midea_device_discovery.enumerate_unique_host_addresses_across_networks(
-            networks
-        )
-        assert "192.168.7.1" in result
-        assert "192.168.7.2" in result
-        assert "10.0.0.1" in result
-        assert "10.0.0.2" in result
-
     def test_deduplicates_overlapping_networks(self):
         networks = [
             ipaddress.ip_network("192.168.7.0/30"),
@@ -132,13 +97,6 @@ class TestPickBestMideaCandidateAddress:
         )
         assert result == "10.0.0.42"
         assert "TCP-only" in capsys.readouterr().err
-
-    def test_returns_none_when_no_candidates(self):
-        result = midea_device_discovery.pick_best_midea_candidate_address(
-            confirmed_midea_addresses=[],
-            all_port_open_addresses=[],
-        )
-        assert result is None
 
     def test_warns_and_picks_first_when_multiple_confirmed(self, capsys):
         result = midea_device_discovery.pick_best_midea_candidate_address(

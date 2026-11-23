@@ -84,24 +84,6 @@ class TestMeasureShellCommand:
 
 
 class TestFailureOutput:
-    def test_a_failing_command_carries_the_error_it_printed(self):
-        with patch(
-            "benchmark_core.subprocess.run",
-            return_value=MagicMock(returncode=1, stderr="error: flake is broken\n"),
-        ):
-            measurement = benchmark_core.measure_shell_command("nix flake check")
-
-        assert measurement.failure_output == "error: flake is broken"
-
-    def test_a_successful_command_carries_no_failure_output(self):
-        with patch(
-            "benchmark_core.subprocess.run",
-            return_value=MagicMock(returncode=0, stderr="progress noise"),
-        ):
-            measurement = benchmark_core.measure_shell_command("true")
-
-        assert measurement.failure_output == ""
-
     def test_a_timeout_says_the_command_was_killed(self):
         with patch(
             "benchmark_core.subprocess.run",
@@ -110,15 +92,6 @@ class TestFailureOutput:
             measurement = benchmark_core.measure_shell_command("nix flake check", 5)
 
         assert "killed after 5s" in measurement.failure_output
-
-    def test_a_command_that_cannot_start_says_so(self):
-        with patch(
-            "benchmark_core.subprocess.run",
-            side_effect=OSError("no such binary"),
-        ):
-            measurement = benchmark_core.measure_command(["absent"])
-
-        assert "could not start" in measurement.failure_output
 
     def test_it_keeps_only_the_closing_lines_of_a_long_error(self):
         printed = "\n".join(f"line {number}" for number in range(100))

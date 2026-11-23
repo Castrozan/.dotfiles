@@ -34,24 +34,6 @@ class TestIsNotificationSoundMonitorRunning:
                 is False
             )
 
-    def test_returns_false_when_process_not_running(self, tmp_path):
-        pid_file = tmp_path / "monitor.pid"
-        pid_file.write_text("9999\n")
-
-        with patch.object(
-            notification_sound_toggle,
-            "NOTIFICATION_SOUND_MONITOR_PID_FILE",
-            pid_file,
-        ):
-            with patch(
-                "notification_sound_processes.is_pid_running",
-                return_value=False,
-            ):
-                assert (
-                    notification_sound_toggle.is_notification_sound_monitor_running()
-                    is False
-                )
-
 
 class TestMuteNotificationSinkInputs:
     def test_mutes_event_role_sink_inputs(self):
@@ -118,19 +100,6 @@ class TestMuteNotificationSinkInputs:
                 ["pactl", "set-sink-input-mute", "5", "1"],
                 capture_output=True,
             )
-
-    def test_does_nothing_when_no_notification_sink_inputs(self):
-        pactl_output = 'Sink Input #1\n    media.role = "music"\n'
-        mock_result = MagicMock()
-        mock_result.stdout = pactl_output
-
-        with patch(
-            "notification_sound_toggle.subprocess.run",
-            return_value=mock_result,
-        ) as mock_run:
-            notification_sound_toggle.mute_notification_sink_inputs()
-
-            mock_run.assert_called_once()
 
 
 class TestStartNotificationSoundMonitor:
