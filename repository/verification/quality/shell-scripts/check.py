@@ -7,6 +7,7 @@ SHELL_EXTENSIONS = {".sh", ".bash", ".bats"}
 SHELL_INTERPRETERS = ("bash", "sh")
 SHEBANG_BYTES = 128
 SHELLCHECK_TIMEOUT_SECONDS = 45
+GIT_TIMEOUT_SECONDS = 10
 
 
 def tracked_files(repository):
@@ -16,6 +17,7 @@ def tracked_files(repository):
         check=True,
         capture_output=True,
         text=True,
+        timeout=GIT_TIMEOUT_SECONDS,
     )
     return [name for name in listing.stdout.split("\0") if name]
 

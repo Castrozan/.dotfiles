@@ -6,6 +6,7 @@ from pathlib import Path
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[4]
 BUDGET_PATH = Path(__file__).resolve().parent / "budget.json"
+GIT_TIMEOUT_SECONDS = 10
 POLICY = "repository/verification/TESTING.md#what-earns-a-test"
 SUITES = {
     "pytest": (
@@ -27,6 +28,7 @@ def tracked_files(repository):
         check=True,
         capture_output=True,
         text=True,
+        timeout=GIT_TIMEOUT_SECONDS,
     )
     return [name for name in listing.stdout.split("\0") if name]
 

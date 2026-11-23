@@ -46,7 +46,9 @@ assert_fails_with() {
 	local expectedOutputPattern="$1"
 	shift
 	run_script_under_test "$@"
+	# shellcheck disable=SC2154
 	[ "$status" -ne 0 ]
+	# shellcheck disable=SC2154
 	[[ "$output" == *"$expectedOutputPattern"* ]]
 }
 
