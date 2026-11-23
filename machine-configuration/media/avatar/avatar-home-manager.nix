@@ -23,6 +23,10 @@ in
     rustSlices = lib.optionals (hostname == "chise") [
       "routing"
       "floor"
+      "talk"
+      "command"
+      "start"
+      "stop"
       "wake"
       "holder"
       "listen"
