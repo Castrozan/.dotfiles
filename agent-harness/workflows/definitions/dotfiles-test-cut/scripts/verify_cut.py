@@ -4,7 +4,13 @@ import subprocess
 import sys
 from pathlib import Path
 
-from kill_matrix import kill_matrix
+from kill_matrix import (
+    WHOLE_SUITE_TIMEOUT_SECONDS,
+    failing_tests,
+    tracked_python_files,
+    unit_test_files,
+)
+from source_mutants import source_mutants
 
 BUDGET_PATH = "repository/verification/quality/test-budget/budget.json"
 BUDGET_CHECK = "repository/verification/quality/test-budget/check.py"
@@ -12,8 +18,44 @@ GIT_TIMEOUT_SECONDS = 30
 BUDGET_CHECK_TIMEOUT_SECONDS = 60
 
 
-def killed_mutants(matrix):
-    return {mutant["mutant"] for mutant in matrix["mutants"] if mutant["killed_by"]}
+def killed_by_source(matrix):
+    grouped = {}
+    for record in matrix["mutants"]:
+        if record["killed_by"]:
+            grouped.setdefault(record["source"], []).append(record)
+    return grouped
+
+
+def escaped_from_source(root, source_name, records, removed, options):
+    source_path = root / source_name
+    original_text = source_path.read_text()
+    mutated_texts = {
+        f"{source_name} {description}": mutated_text
+        for _, description, mutated_text in source_mutants(
+            original_text, options.mutants_per_file
+        )
+    }
+    escaped = []
+    try:
+        for record in records:
+            staying = [name for name in record["killed_by"] if name not in removed]
+            source_path.write_text(mutated_texts[record["mutant"]])
+            if (
+                not staying
+                or failing_tests(root, staying, options.run_timeout_seconds) == []
+            ):
+                escaped.append(record["mutant"])
+    finally:
+        source_path.write_text(original_text)
+    return escaped
+
+
+def escaped_mutants(root, matrix, removed, options):
+    return [
+        mutant
+        for source_name, records in killed_by_source(matrix).items()
+        for mutant in escaped_from_source(root, source_name, records, removed, options)
+    ]
 
 
 def budget_failure(root):
@@ -27,14 +69,14 @@ def budget_failure(root):
     return checked.stderr.strip() if checked.returncode else ""
 
 
-def cut_failure(root, before, after):
-    if after["error"]:
-        return after["error"]
-    escaped = sorted(killed_mutants(before) - killed_mutants(after))
+def cut_failure(root, matrix, removed, options):
+    unit_files = unit_test_files(tracked_python_files(root, matrix["subtree"]))
+    existing = [name for name in unit_files if (root / name).exists()]
+    if failing_tests(root, existing, WHOLE_SUITE_TIMEOUT_SECONDS) != []:
+        return "the remaining unit tests do not pass"
+    escaped = escaped_mutants(root, matrix, removed, options)
     if escaped:
-        return (
-            f"{len(escaped)} mutants the suite caught before now survive: {escaped[:5]}"
-        )
+        return f"{len(escaped)} mutants caught before now survive: {escaped[:5]}"
     return budget_failure(root)
 
 
@@ -65,11 +107,10 @@ def arguments():
         description="Keep a test cut only when every mutant caught before it is still caught"
     )
     parser.add_argument("--root", type=Path, required=True)
-    parser.add_argument("--subtree", required=True)
     parser.add_argument("--matrix", type=Path, required=True)
+    parser.add_argument("--selection", type=Path, required=True)
     parser.add_argument("--patch", type=Path, required=True)
-    parser.add_argument("--mutants-per-file", type=int, default=40)
-    parser.add_argument("--maximum-source-files", type=int, default=12)
+    parser.add_argument("--mutants-per-file", type=int, default=60)
     parser.add_argument("--run-timeout-seconds", type=int, default=120)
     return parser.parse_args()
 
@@ -77,11 +118,12 @@ def arguments():
 def main():
     options = arguments()
     root = options.root.resolve()
-    before = json.loads(options.matrix.read_text())
-    after = kill_matrix(root, options.subtree, options)
-    failure = cut_failure(root, before, after)
+    matrix = json.loads(options.matrix.read_text())
+    cuts = json.loads(options.selection.read_text())["cuts"]
+    removed = {cut["test"] for cut in cuts}
+    failure = cut_failure(root, matrix, removed, options)
     if failure:
-        restore(root, options.subtree)
+        restore(root, matrix["subtree"])
     print(
         json.dumps(
             {
@@ -89,9 +131,8 @@ def main():
                 "patch_path": written_patch(root, options.patch),
                 "detail": failure
                 or "every mutant caught before the cut is still caught",
-                "tests_before": len(before["tests"]),
-                "tests_after": len(after.get("tests", [])),
-                "mutants_killed": len(killed_mutants(after)),
+                "tests_before": len(matrix["tests"]),
+                "tests_cut": 0 if failure else len(removed),
             }
         )
     )

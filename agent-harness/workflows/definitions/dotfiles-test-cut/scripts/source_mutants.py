@@ -14,6 +14,12 @@ COMPARISON_SWAPS = {
     ast.IsNot: ast.Is,
 }
 BOOLEAN_SWAPS = {ast.And: ast.Or, ast.Or: ast.And}
+ARITHMETIC_SWAPS = {
+    ast.Add: ast.Sub,
+    ast.Sub: ast.Add,
+    ast.Mult: ast.Div,
+    ast.Div: ast.Mult,
+}
 
 
 def mutated_comparison(node):
@@ -27,6 +33,17 @@ def mutated_boolean_operation(node):
     return ast.BoolOp(BOOLEAN_SWAPS[type(node.op)](), node.values)
 
 
+def mutated_arithmetic(node):
+    replacement = ARITHMETIC_SWAPS.get(type(node.op))
+    if replacement is None:
+        return None
+    return ast.BinOp(node.left, replacement(), node.right)
+
+
+def mutated_negation(node):
+    return node.operand if isinstance(node.op, ast.Not) else None
+
+
 def mutated_constant(node):
     if isinstance(node.value, bool):
         return ast.Constant(not node.value)
@@ -37,10 +54,31 @@ def mutated_constant(node):
     return None
 
 
+def is_none(node):
+    return node is None or (isinstance(node, ast.Constant) and node.value is None)
+
+
+def mutated_return(node):
+    return None if is_none(node.value) else ast.Return(ast.Constant(None))
+
+
+def mutated_statement(node):
+    return ast.Pass() if isinstance(node.value, (ast.Call, ast.Await)) else None
+
+
+def mutated_raise(node):
+    return ast.Pass()
+
+
 MUTATORS = {
     ast.Compare: mutated_comparison,
     ast.BoolOp: mutated_boolean_operation,
+    ast.BinOp: mutated_arithmetic,
+    ast.UnaryOp: mutated_negation,
     ast.Constant: mutated_constant,
+    ast.Return: mutated_return,
+    ast.Expr: mutated_statement,
+    ast.Raise: mutated_raise,
 }
 
 
@@ -49,32 +87,38 @@ def mutation_of(node):
     return None if mutator is None else mutator(node)
 
 
+def is_documentation(node):
+    return isinstance(node, ast.Expr) and isinstance(node.value, ast.Constant)
+
+
 class SingleNodeReplacement(ast.NodeTransformer):
     def __init__(self, target_index):
         self.target_index = target_index
         self.visited_index = -1
+        self.line = None
         self.description = None
 
-    def visit_Expr(self, node):
-        if isinstance(node.value, ast.Constant):
+    def visit(self, node):
+        if is_documentation(node):
             return node
-        return self.generic_visit(node)
-
-    def generic_visit(self, node):
         replacement = mutation_of(node)
         if replacement is None:
-            return super().generic_visit(node)
+            return self.generic_visit(node)
         self.visited_index += 1
         if self.visited_index != self.target_index:
-            return super().generic_visit(node)
+            return self.generic_visit(node)
+        self.line = node.lineno
         self.description = (
-            f"line {node.lineno}: {ast.unparse(node)} -> {ast.unparse(replacement)}"
+            f"mutant {self.target_index} line {node.lineno}: "
+            f"{ast.unparse(node)[:80]} -> {ast.unparse(replacement)[:80]}"
         )
         return ast.copy_location(replacement, node)
 
 
 def mutable_node_count(tree):
-    return sum(1 for node in ast.walk(tree) if mutation_of(node) is not None)
+    counting = SingleNodeReplacement(-1)
+    counting.visit(copy.deepcopy(tree))
+    return counting.visited_index + 1
 
 
 def source_mutants(source_text, maximum_mutants):
@@ -86,5 +130,7 @@ def source_mutants(source_text, maximum_mutants):
         replacement = SingleNodeReplacement(target_index)
         mutated_tree = ast.fix_missing_locations(replacement.visit(copy.deepcopy(tree)))
         if replacement.description is not None:
-            mutants.append((replacement.description, ast.unparse(mutated_tree)))
+            mutants.append(
+                (replacement.line, replacement.description, ast.unparse(mutated_tree))
+            )
     return mutants

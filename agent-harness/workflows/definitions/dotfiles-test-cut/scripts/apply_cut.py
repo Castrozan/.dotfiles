@@ -1,13 +1,30 @@
 import argparse
 import ast
 import json
-import sys
+import subprocess
 from pathlib import Path
 
-from cut_candidates import named_definition
-
 BUDGET_PATH = "repository/verification/quality/test-budget/budget.json"
+DEFINITION_NODES = (ast.ClassDef, ast.FunctionDef, ast.AsyncFunctionDef)
 TEST_NODES = (ast.FunctionDef, ast.AsyncFunctionDef)
+UNUSED_NAME_RULES = "F401,F811,F841"
+RUFF_TIMEOUT_SECONDS = 60
+
+
+def named_definition(tree, qualified_name):
+    scope = tree
+    for name in qualified_name:
+        scope = next(
+            (
+                node
+                for node in scope.body
+                if isinstance(node, DEFINITION_NODES) and node.name == name
+            ),
+            None,
+        )
+        if scope is None:
+            return None
+    return scope
 
 
 def first_line(node):
@@ -60,34 +77,52 @@ def lower_budget(root, removed_count):
     budget_path.write_text(json.dumps(budget) + "\n")
 
 
-def apply_cut(root, allowed_tests, requested_cuts):
-    removed = []
-    refused = []
-    for cut in requested_cuts:
-        if cut["test"] in allowed_tests and remove_test(root, cut["test"]):
-            removed.append(cut)
-        else:
-            refused.append(cut["test"])
+def tidy(root, tests):
+    touched = sorted(
+        {test.split("::")[0] for test in tests if (root / test.split("::")[0]).exists()}
+    )
+    if not touched:
+        return
+    for command in (
+        [
+            "ruff",
+            "check",
+            "--quiet",
+            "--select",
+            UNUSED_NAME_RULES,
+            "--fix",
+            "--exit-zero",
+        ],
+        ["ruff", "format", "--quiet"],
+    ):
+        subprocess.run(
+            [*command, *touched], cwd=root, check=True, timeout=RUFF_TIMEOUT_SECONDS
+        )
+
+
+def apply_cut(root, cuts):
+    removed = [cut["test"] for cut in cuts if remove_test(root, cut["test"])]
     lower_budget(root, len(removed))
-    return {"removed": removed, "refused": refused}
+    tidy(root, removed)
+    return {
+        "removed": len(removed),
+        "refused": sorted({cut["test"] for cut in cuts} - set(removed)),
+    }
 
 
 def arguments():
     parser = argparse.ArgumentParser(
-        description="Delete the judged tests that were measured candidates and lower the test budget"
+        description="Delete the selected tests and lower the test budget by their count"
     )
     parser.add_argument("--root", type=Path, required=True)
-    parser.add_argument("--candidates", type=Path, required=True)
+    parser.add_argument("--selection", type=Path, required=True)
     return parser.parse_args()
 
 
 def main():
     options = arguments()
-    allowed_tests = {
-        candidate["test"] for candidate in json.loads(options.candidates.read_text())
-    }
-    requested_cuts = json.loads(sys.stdin.read())["cuts"]
-    print(json.dumps(apply_cut(options.root.resolve(), allowed_tests, requested_cuts)))
+    cuts = json.loads(options.selection.read_text())["cuts"]
+    print(json.dumps(apply_cut(options.root.resolve(), cuts)))
     return 0
 
 

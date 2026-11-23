@@ -1,10 +1,11 @@
 name: dotfiles-test-cut
 description: >-
-  Cut the unit tests of one dotfiles subtree that fail for no mutant of its Python sources. A script mutates the sources
-  and records which tests notice, one medium-tier judge reads the silent tests against the rule for what earns a test,
-  a script deletes the judged ones and lowers the test budget, and a second measurement drops the cut unless every
-  mutant caught before is still caught. Works in a scratch worktree of the committed revision and returns the cut as a
-  patch for the caller to apply. Spends one model call.
+  Cut the Python unit tests of one dotfiles subtree that catch nothing of their own. A script mutates the sources,
+  runs for each mutant the tests that execute the mutated function, and records which fail. A test that runs mutated
+  code and fails for no mutant leaves, and so does one whose every catch is repeated by a test that stays; a test that
+  reaches no mutated code is left alone. A second run drops the cut unless every mutant caught before is still caught.
+  Works in a scratch worktree of the committed revision and returns the cut as a patch for the caller to apply. Spends
+  no model call.
 inputs:
   root: { required: true }
   subtree: { required: true }
@@ -32,81 +33,42 @@ nodes:
     bash: |
       SCRATCH=$scratch.output.root
       python3 @workflowDirectory@/scripts/kill_matrix.py --root "$SCRATCH" --subtree "$INPUTS_SUBTREE" \
-        --output "$ARTIFACTS_DIR/test-cut/matrix.json" --mutants-per-file 40
+        --output "$ARTIFACTS_DIR/test-cut/matrix.json"
     output_format:
       type: object
       properties:
         matrix_path: { type: string }
         error: { type: string }
       required: [matrix_path, error]
-  - id: candidates
+  - id: select
     depends_on: [measure]
     when: "$measure.output.error == ''"
     mutates_checkout: false
-    bash: |
-      SCRATCH=$scratch.output.root
-      @python@ @workflowDirectory@/scripts/cut_candidates.py --root "$SCRATCH" \
-        --matrix "$ARTIFACTS_DIR/test-cut/matrix.json" --output "$ARTIFACTS_DIR/test-cut/candidates.json"
+    bash: >-
+      @python@ @workflowDirectory@/scripts/cut_selection.py --matrix "$ARTIFACTS_DIR/test-cut/matrix.json"
+      --output "$ARTIFACTS_DIR/test-cut/selection.json"
     output_format:
       type: object
       properties:
-        candidates_path: { type: string }
-        candidate_count: { type: integer }
+        selection_path: { type: string }
         tests: { type: integer }
+        unreached: { type: integer }
+        kept_for_a_kill: { type: integer }
+        cut: { type: integer }
         mutants: { type: integer }
         mutants_killed: { type: integer }
-      required:
-        [candidates_path, candidate_count, tests, mutants, mutants_killed]
-  - id: judge_data
-    depends_on: [candidates]
-    mutates_checkout: false
-    bash: |
-      SCRATCH=$scratch.output.root
-      CANDIDATES_PATH=$candidates.output.candidates_path
-      export SCRATCH CANDIDATES_PATH
-      @instructionData@ --text SCRATCH CANDIDATES_PATH
-    output_format:
-      type: object
-      properties:
-        scratch: { type: string }
-        candidates_path: { type: string }
-      required: [scratch, candidates_path]
-  - id: judge
-    command: judge-silent-tests
-    depends_on: [judge_data]
-    with:
-      root: $judge_data.output.scratch
-      candidates_path: $judge_data.output.candidates_path
-    context: fresh
-    model: medium
-    effort: medium
-    mutates_checkout: false
-    output_format:
-      type: object
-      properties:
-        cuts:
-          type: array
-          maxItems: 60
-          items:
-            type: object
-            properties:
-              test: { type: string }
-              condition: { type: integer, minimum: 1, maximum: 7 }
-              reason: { type: string }
-            required: [test, condition, reason]
-      required: [cuts]
+      required: [selection_path, tests, unreached, kept_for_a_kill, cut, mutants, mutants_killed]
   - id: apply
-    depends_on: [judge]
+    depends_on: [select]
     mutates_checkout: false
     bash: |
       SCRATCH=$scratch.output.root
-      judged=$judge.output
-      printf '%s' "$judged" | @python@ @workflowDirectory@/scripts/apply_cut.py --root "$SCRATCH" \
-        --candidates "$ARTIFACTS_DIR/test-cut/candidates.json"
+      @python@ @workflowDirectory@/scripts/apply_cut.py --root "$SCRATCH" \
+        --selection "$ARTIFACTS_DIR/test-cut/selection.json"
     output_format:
       type: object
       properties:
-        removed: { type: array, items: { type: object } }
+        removed: { type: integer }
         refused: { type: array, items: { type: string } }
       required: [removed, refused]
   - id: verify
@@ -114,8 +76,8 @@ nodes:
     mutates_checkout: false
     bash: |
       SCRATCH=$scratch.output.root
-      python3 @workflowDirectory@/scripts/verify_cut.py --root "$SCRATCH" --subtree "$INPUTS_SUBTREE" \
-        --matrix "$ARTIFACTS_DIR/test-cut/matrix.json" --mutants-per-file 40 \
+      python3 @workflowDirectory@/scripts/verify_cut.py --root "$SCRATCH" \
+        --matrix "$ARTIFACTS_DIR/test-cut/matrix.json" --selection "$ARTIFACTS_DIR/test-cut/selection.json" \
         --patch "$ARTIFACTS_DIR/test-cut/cut.patch"
       git -C "$INPUTS_ROOT" worktree remove --force "$SCRATCH" >&2
     output_format:
@@ -125,7 +87,5 @@ nodes:
         patch_path: { type: string }
         detail: { type: string }
         tests_before: { type: integer }
-        tests_after: { type: integer }
-        mutants_killed: { type: integer }
-      required:
-        [kept, patch_path, detail, tests_before, tests_after, mutants_killed]
+        tests_cut: { type: integer }
+      required: [kept, patch_path, detail, tests_before, tests_cut]
