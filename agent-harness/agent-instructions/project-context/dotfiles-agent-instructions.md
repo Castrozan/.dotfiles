@@ -69,12 +69,11 @@ every other key collision, so an MCP dropped from its nix source disappears from
 
 ### Private marketplaces
 
-On kira, the marketplace URL is in
-`~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix` and the credential rule in
-`~/.dotfiles/private-configuration/machines/kira/git-user.nix`. The rule reads a secret and disables the host's keychain
-helper. Edit these modules and rebuild to move an installed marketplace to its declared source. Keep keys out of URLs,
-settings, repositories and the keychain. Do not use `/plugin marketplace add` or `remove`, or hand-edit managed records
-under `~/.claude`.
+On kira, marketplace URLs live in `~/.dotfiles/private-configuration/machines/kira/workspace-profiles.nix`; the Git
+credential rule lives in `~/.dotfiles/private-configuration/machines/kira/git-user.nix`. It reads a secret file and
+disables the host's keychain helper. Change managed sources in their machine modules and rebuild; installed
+marketplaces move to their declared source. Keep keys out of URLs, settings, repositories and the keychain. Do not
+use `/plugin marketplace add` or `remove`, or hand-edit managed records under `~/.claude`.
 
 ### Machine local wrapper
 
