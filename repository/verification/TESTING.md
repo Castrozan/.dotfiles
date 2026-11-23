@@ -262,9 +262,10 @@ Code with no test that pays stays without one and shows as uncovered; never writ
 `dotfiles-lint` enforces the budget and runs shellcheck over every tracked shell script, with or without an extension.
 Conditions 1 to 6 are checked in review of the change, against this section.
 
-`dotfiles-test-cut` measures condition 1 for the Python unit tests of one subtree. It mutates the sources beside them,
-lists the tests that fail for no mutant, and returns the ones that also fail a condition on reading as a patch, kept
-only when every mutant caught before the cut is still caught after it.
+`dotfiles-test-cut` measures conditions 1 and 6 for the Python unit tests of one subtree. It mutates the sources beside
+them and records which tests fail for each mutant. A test that runs mutated code and fails for no mutant leaves, and so
+does one whose every catch a staying test repeats; a test that reaches no mutated code is not judged. The cut comes
+back as a patch only when every mutant caught before it is still caught after it.
 
 ## What earns an eval
 
