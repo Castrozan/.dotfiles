@@ -97,8 +97,8 @@ menu:
         desc: OBS
         cmd: obs
       - key: i
-        desc: Discord
-        cmd: discord
+        desc: Vesktop
+        cmd: vesktop
       - key: k
         desc: Calculator
         cmd: gnome-calculator

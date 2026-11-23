@@ -20,10 +20,6 @@
       cacert
       curl
       deno
-      (discord.override {
-        withOpenASAR = true;
-        withVencord = true; # For customization
-      })
       docker
       dust
       eza
