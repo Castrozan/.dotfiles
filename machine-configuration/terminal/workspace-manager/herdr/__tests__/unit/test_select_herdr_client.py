@@ -38,34 +38,30 @@ def _executable(tmp_path, package_name):
 
 
 @pytest.mark.parametrize(
-    "arguments",
+    ("arguments", "requires_running_server_client"),
     [
-        [],
-        ["--session", "work"],
-        ["completion", "bash"],
-        ["config", "reset-keys"],
-        ["integration", "install", "codex"],
-        ["status", "server"],
-        ["api", "schema"],
-        ["server"],
-        ["server", "live-handoff"],
+        ([], False),
+        (["--session", "work"], False),
+        (["completion", "bash"], False),
+        (["config", "reset-keys"], False),
+        (["integration", "install", "codex"], False),
+        (["status", "server"], False),
+        (["api", "schema"], False),
+        (["server"], False),
+        (["server", "live-handoff"], False),
+        (["agent", "exit"], True),
+        (["workspace", "list"], True),
+        (["api", "snapshot"], True),
+        (["server", "stop"], True),
     ],
 )
-def test_local_and_tui_commands_use_the_installed_client(arguments):
-    assert not select_herdr_client.command_requires_running_server_client(arguments)
-
-
-@pytest.mark.parametrize(
-    "arguments",
-    [
-        ["agent", "exit"],
-        ["workspace", "list"],
-        ["api", "snapshot"],
-        ["server", "stop"],
-    ],
-)
-def test_socket_commands_use_the_running_server_client(arguments):
-    assert select_herdr_client.command_requires_running_server_client(arguments)
+def test_only_socket_commands_require_the_running_server_client(
+    arguments, requires_running_server_client
+):
+    assert (
+        select_herdr_client.command_requires_running_server_client(arguments)
+        is requires_running_server_client
+    )
 
 
 def test_running_server_client_is_selected_by_socket_owner(tmp_path, monkeypatch):
