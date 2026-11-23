@@ -7,10 +7,10 @@ description: Track background Bash and Monitor waits that stayed silent, deny th
 
 The wait guard lives in the dotfiles repository's PreToolUse hooks. Its module `background_wait_shape_classifier`
 decides for foreground Bash, backgrounded Bash and Monitor on every harness, denying any wait paced by a sleep and
-naming the event that ends it from `wait_target_event_replacements`. Three corpora pin it: `known_silent_background_waits`
-and `known_delay_waits` list waits the guard must deny, `known_good_tool_calls` lists calls no guard may deny. Each
-corpus has an integration test that runs the whole PreToolUse dispatcher. Work in that repository and follow its
-commit, review and rebuild rules.
+naming the event that ends it from `wait_target_event_replacements`. Three corpora pin it:
+`known_silent_background_waits` and `known_delay_waits` list waits the guard must deny, `known_good_tool_calls` lists
+calls no guard may deny. Each corpus has an integration test that runs the whole PreToolUse dispatcher. Work in that
+repository and follow its commit, review and rebuild rules.
 
 ### Event waits
 
