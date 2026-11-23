@@ -32,15 +32,25 @@ let
     )
   );
 
+  interfaceScale = config.custom.desktopShell.impastoInterfaceScale;
+
   callImpastoCommand =
     target: function:
     "${impastoShellPackage}/bin/impasto-shell ipc --any-display call ${target} ${function}";
 in
 {
-  options.custom.desktopShell.impastoFirstRunSettings = lib.mkOption {
-    type = lib.types.attrsOf lib.types.anything;
-    default = { };
-    description = "Machine-specific Impasto settings merged into the file seeded on its first run.";
+  options.custom.desktopShell = {
+    impastoFirstRunSettings = lib.mkOption {
+      type = lib.types.attrsOf lib.types.anything;
+      default = { };
+      description = "Machine-specific Impasto settings merged into the file seeded on its first run.";
+    };
+
+    impastoInterfaceScale = lib.mkOption {
+      type = lib.types.nullOr lib.types.number;
+      default = null;
+      description = "Factor that enlarges every Impasto surface and its text through QT_SCALE_FACTOR; null leaves Impasto at its native size.";
+    };
   };
 
   config = lib.mkIf (config.custom.desktopShell.active == "impasto") {
@@ -97,7 +107,10 @@ in
         Environment = [
           "QT_QPA_PLATFORM=wayland"
           "IMPASTO_LOCK_COMMAND=hyprlock"
-        ];
+        ]
+        ++ lib.optional (
+          interfaceScale != null
+        ) "QT_SCALE_FACTOR=${lib.strings.floatToString interfaceScale}";
         Restart = "always";
         RestartSec = "1s";
       };
