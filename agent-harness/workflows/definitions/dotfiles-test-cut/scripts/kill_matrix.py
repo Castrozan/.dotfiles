@@ -8,7 +8,7 @@ import sys
 from pathlib import Path
 
 from reach_map import enclosing_range, reach_map, reaching
-from source_mutants import source_mutants
+from source_mutants import EVERY_MUTANT, source_mutants
 
 FAILED_TEST = re.compile(
     r"^(?:FAILED|ERROR) (\S+?)(?:\[.*\])?(?: - .*)?$", re.MULTILINE
@@ -147,7 +147,7 @@ def arguments():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--subtree", required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--mutants-per-file", type=int, default=60)
+    parser.add_argument("--mutants-per-file", type=int, default=EVERY_MUTANT)
     parser.add_argument("--run-timeout-seconds", type=int, default=120)
     return parser.parse_args()
 

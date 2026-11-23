@@ -2,6 +2,7 @@ import argparse
 import ast
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 BUDGET_PATH = "repository/verification/quality/test-budget/budget.json"
@@ -100,29 +101,35 @@ def tidy(root, tests):
         )
 
 
-def apply_cut(root, cuts):
-    removed = [cut["test"] for cut in cuts if remove_test(root, cut["test"])]
+def apply_cut(root, measured, judged):
+    allowed = [name for name in judged if name in measured]
+    removed = [name for name in allowed if remove_test(root, name)]
     lower_budget(root, len(removed))
     tidy(root, removed)
-    return {
-        "removed": len(removed),
-        "refused": sorted({cut["test"] for cut in cuts} - set(removed)),
-    }
+    return {"removed": removed, "refused": sorted(set(judged) - set(removed))}
 
 
 def arguments():
     parser = argparse.ArgumentParser(
-        description="Delete the selected tests and lower the test budget by their count"
+        description="Delete the judged tests that were measured candidates and lower the test budget"
     )
     parser.add_argument("--root", type=Path, required=True)
-    parser.add_argument("--selection", type=Path, required=True)
+    parser.add_argument("--candidates", type=Path, required=True)
+    parser.add_argument("--output", type=Path, required=True)
     return parser.parse_args()
 
 
 def main():
     options = arguments()
-    cuts = json.loads(options.selection.read_text())["cuts"]
-    print(json.dumps(apply_cut(options.root.resolve(), cuts)))
+    measured = {
+        candidate["test"] for candidate in json.loads(options.candidates.read_text())
+    }
+    judged = [cut["test"] for cut in json.loads(sys.stdin.read())["cuts"]]
+    applied = apply_cut(options.root.resolve(), measured, judged)
+    options.output.write_text(json.dumps(applied, indent=1) + "\n")
+    print(
+        json.dumps({"removed": len(applied["removed"]), "refused": applied["refused"]})
+    )
     return 0
 
 

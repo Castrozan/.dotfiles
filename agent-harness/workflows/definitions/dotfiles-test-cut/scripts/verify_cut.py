@@ -10,7 +10,7 @@ from kill_matrix import (
     tracked_python_files,
     unit_test_files,
 )
-from source_mutants import source_mutants
+from source_mutants import EVERY_MUTANT, source_mutants
 
 BUDGET_PATH = "repository/verification/quality/test-budget/budget.json"
 BUDGET_CHECK = "repository/verification/quality/test-budget/check.py"
@@ -108,9 +108,9 @@ def arguments():
     )
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--matrix", type=Path, required=True)
-    parser.add_argument("--selection", type=Path, required=True)
+    parser.add_argument("--applied", type=Path, required=True)
     parser.add_argument("--patch", type=Path, required=True)
-    parser.add_argument("--mutants-per-file", type=int, default=60)
+    parser.add_argument("--mutants-per-file", type=int, default=EVERY_MUTANT)
     parser.add_argument("--run-timeout-seconds", type=int, default=120)
     return parser.parse_args()
 
@@ -119,8 +119,7 @@ def main():
     options = arguments()
     root = options.root.resolve()
     matrix = json.loads(options.matrix.read_text())
-    cuts = json.loads(options.selection.read_text())["cuts"]
-    removed = {cut["test"] for cut in cuts}
+    removed = set(json.loads(options.applied.read_text())["removed"])
     failure = cut_failure(root, matrix, removed, options)
     if failure:
         restore(root, matrix["subtree"])

@@ -13,6 +13,7 @@ COMPARISON_SWAPS = {
     ast.Is: ast.IsNot,
     ast.IsNot: ast.Is,
 }
+EVERY_MUTANT = 1_000_000
 BOOLEAN_SWAPS = {ast.And: ast.Or, ast.Or: ast.And}
 ARITHMETIC_SWAPS = {
     ast.Add: ast.Sub,
