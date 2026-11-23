@@ -1,12 +1,12 @@
 name: dotfiles-test-cut
 description: >-
-  Cut the Python unit tests of one dotfiles subtree that catch nothing of their own. A script mutates the sources,
-  runs for each mutant the tests that execute the mutated function, and records which fail. A test that runs mutated
-  code and fails for no mutant is a candidate, and so is one whose every catch a single test in the same file repeats;
-  a test that reaches no mutated code is not judged. One medium-tier judge reads the candidates against the rule for
-  what earns a test, a script deletes the judged ones and lowers the test budget, and a second run drops the cut unless
-  every mutant caught before is still caught. Works in a scratch worktree of the committed revision and returns the cut
-  as a patch for the caller to apply. Spends one model call.
+  Cut the Python unit tests of one dotfiles subtree that catch nothing of their own. A script mutates the sources
+  inside a sandbox with no network, display or writable home, runs for each mutant the tests that execute the mutated
+  function, and records which fail. A test that runs mutated code and fails for no mutant leaves, and so does one whose
+  every catch a single test in the same file repeats; a test that reaches no mutated code is not judged. A script
+  deletes them and lowers the test budget, and a second run drops the cut unless every mutant caught before is still
+  caught. Works in a scratch worktree of the committed revision and returns the cut as a patch for the caller to apply.
+  Spends no model call.
 inputs:
   root: { required: true }
   subtree: { required: true }
@@ -54,7 +54,6 @@ nodes:
       properties:
         candidates_path: { type: string }
         candidates: { type: integer }
-        candidates_left_for_another_run: { type: integer }
         tests: { type: integer }
         unreached: { type: integer }
         mutants: { type: integer }
@@ -62,56 +61,16 @@ nodes:
       required:
         - candidates_path
         - candidates
-        - candidates_left_for_another_run
         - tests
         - unreached
         - mutants
         - mutants_killed
-  - id: judge_data
+  - id: apply
     depends_on: [candidates]
     mutates_checkout: false
     bash: |
       SCRATCH=$scratch.output.root
-      CANDIDATES_PATH=$candidates.output.candidates_path
-      export SCRATCH CANDIDATES_PATH
-      @instructionData@ --text SCRATCH CANDIDATES_PATH
-    output_format:
-      type: object
-      properties:
-        scratch: { type: string }
-        candidates_path: { type: string }
-      required: [scratch, candidates_path]
-  - id: judge
-    command: judge-test-candidates
-    depends_on: [judge_data]
-    with:
-      root: $judge_data.output.scratch
-      candidates_path: $judge_data.output.candidates_path
-    context: fresh
-    model: medium
-    effort: medium
-    mutates_checkout: false
-    output_format:
-      type: object
-      properties:
-        cuts:
-          type: array
-          maxItems: 80
-          items:
-            type: object
-            properties:
-              test: { type: string }
-              condition: { type: integer, minimum: 1, maximum: 7 }
-              reason: { type: string }
-            required: [test, condition, reason]
-      required: [cuts]
-  - id: apply
-    depends_on: [judge]
-    mutates_checkout: false
-    bash: |
-      SCRATCH=$scratch.output.root
-      judged=$judge.output
-      printf '%s' "$judged" | @python@ @workflowDirectory@/scripts/apply_cut.py --root "$SCRATCH" \
+      @python@ @workflowDirectory@/scripts/apply_cut.py --root "$SCRATCH" \
         --candidates "$ARTIFACTS_DIR/test-cut/candidates.json" --output "$ARTIFACTS_DIR/test-cut/applied.json"
     output_format:
       type: object

@@ -81,7 +81,6 @@ def arguments():
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--matrix", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
-    parser.add_argument("--maximum-candidates", type=int, default=80)
     return parser.parse_args()
 
 
@@ -89,17 +88,12 @@ def main():
     options = arguments()
     matrix = json.loads(options.matrix.read_text())
     found = candidates(options.root.resolve(), matrix)
-    options.output.write_text(
-        json.dumps(found[: options.maximum_candidates], indent=1) + "\n"
-    )
+    options.output.write_text(json.dumps(found, indent=1) + "\n")
     print(
         json.dumps(
             {
                 "candidates_path": str(options.output),
-                "candidates": min(len(found), options.maximum_candidates),
-                "candidates_left_for_another_run": max(
-                    0, len(found) - options.maximum_candidates
-                ),
+                "candidates": len(found),
                 "tests": len(matrix["tests"]),
                 "unreached": len(set(matrix["tests"]) - reached_tests(matrix)),
                 "mutants": len(matrix["mutants"]),

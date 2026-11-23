@@ -1,11 +1,11 @@
 import ast
 import os
-import subprocess
 import sys
 import tempfile
 from pathlib import Path
 
 import coverage
+from sandbox import sandboxed_pytest
 
 WHOLE_FILE = (1, sys.maxsize)
 FUNCTION_NODES = (ast.FunctionDef, ast.AsyncFunctionDef)
@@ -30,28 +30,12 @@ def recorded_reach(root, data_path):
 def reach_map(root, subtree, unit_files, timeout_seconds):
     with tempfile.TemporaryDirectory() as scratch:
         data_path = Path(scratch) / "coverage"
-        subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                "-q",
-                "-p",
-                "no:cacheprovider",
-                f"--cov={subtree}",
-                "--cov-context=test",
-                "--cov-report=",
-                *unit_files,
-            ],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            env={
-                **os.environ,
-                "PYTHONDONTWRITEBYTECODE": "1",
-                "COVERAGE_FILE": str(data_path),
-            },
+        sandboxed_pytest(
+            root,
+            [f"--cov={subtree}", "--cov-context=test", "--cov-report=", *unit_files],
+            timeout_seconds,
+            writable_directories=[scratch],
+            extra_environment={"COVERAGE_FILE": str(data_path)},
         )
         return recorded_reach(root, data_path) if data_path.exists() else {}
 

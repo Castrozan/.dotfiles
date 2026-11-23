@@ -1,13 +1,12 @@
 import argparse
 import ast
 import json
-import os
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 from reach_map import enclosing_range, reach_map, reaching
+from sandbox import sandboxed_pytest
 from source_mutants import EVERY_MUTANT, source_mutants
 
 FAILED_TEST = re.compile(
@@ -45,22 +44,7 @@ def unit_test_files(names):
 
 def pytest_output(root, arguments, timeout_seconds):
     try:
-        completed = subprocess.run(
-            [
-                sys.executable,
-                "-m",
-                "pytest",
-                "-q",
-                "-p",
-                "no:cacheprovider",
-                *arguments,
-            ],
-            cwd=root,
-            capture_output=True,
-            text=True,
-            timeout=timeout_seconds,
-            env={**os.environ, "PYTHONDONTWRITEBYTECODE": "1"},
-        )
+        completed = sandboxed_pytest(root, arguments, timeout_seconds)
     except subprocess.TimeoutExpired:
         return None
     return completed.stdout
@@ -117,19 +101,30 @@ def mutant_kills(root, source_name, line_reach, options):
     return records
 
 
+def judged_reach(reach, unjudged):
+    return {
+        source_name: {line: names - unjudged for line, names in line_reach.items()}
+        for source_name, line_reach in reach.items()
+    }
+
+
 def kill_matrix(root, subtree, options):
     names = tracked_python_files(root, subtree)
     unit_files = unit_test_files(names)
-    baseline_failures = failing_tests(root, unit_files, WHOLE_SUITE_TIMEOUT_SECONDS)
-    if not unit_files or baseline_failures is None or baseline_failures:
-        return {"error": "the unit tests do not pass before mutation", "mutants": []}
-    reach = reach_map(root, subtree, unit_files, WHOLE_SUITE_TIMEOUT_SECONDS)
+    failing_unmutated = failing_tests(root, unit_files, WHOLE_SUITE_TIMEOUT_SECONDS)
+    if not unit_files or failing_unmutated is None:
+        return {"error": "the unit tests did not finish before mutation", "mutants": []}
+    reach = judged_reach(
+        reach_map(root, subtree, unit_files, WHOLE_SUITE_TIMEOUT_SECONDS),
+        set(failing_unmutated),
+    )
     sources = [name for name in names if not is_test_support(name)]
     reached_sources = [name for name in sources if reach.get(name)]
     return {
         "error": "",
         "subtree": subtree,
         "tests": collected_tests(root, unit_files),
+        "failing_unmutated": failing_unmutated,
         "sources_mutated": reached_sources,
         "sources_unreached": sorted(set(sources) - set(reached_sources)),
         "mutants": [
