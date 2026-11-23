@@ -12,7 +12,6 @@ def runtime(monkeypatch, tmp_path):
         "gamma": 100,
         "monitors": [{"name": "eDP-1"}],
         "gamma_failure": False,
-        "osd": [],
         "hardware_writes": [],
     }
     monkeypatch.setattr(brightness, "GAMMA_STATE_PATH", tmp_path / "gamma")
@@ -33,8 +32,6 @@ def runtime(monkeypatch, tmp_path):
                 result.returncode = 1
             else:
                 state["gamma"] = int(command[3])
-        elif command[:2] == ["quickshell-osd-send", "brightness"]:
-            state["osd"].append(float(command[2]))
         else:
             pytest.fail(f"Unexpected external command: {command}")
         return result
@@ -66,23 +63,23 @@ def test_absolute_control_composes_hardware_and_gamma(
     assert runtime["hardware"] == hardware
     assert runtime["gamma"] == gamma
     assert brightness.get_brightness_state()["value"] == effective
-    assert runtime["osd"][-1] == effective
 
 
 def test_raising_absolute_level_clears_old_software_dimming(runtime):
     runtime.update(hardware=1, gamma=30)
     brightness.set_brightness_percentage(40)
     assert (runtime["hardware"], runtime["gamma"]) == (40, 100)
-    assert runtime["osd"] == [40]
 
 
 def test_key_steps_cross_hardware_floor_without_inverting_reported_level(runtime):
     runtime["hardware"] = 2
-    brightness.decrease_brightness(1)
-    brightness.decrease_brightness(1)
-    brightness.increase_brightness(1)
-    brightness.increase_brightness(1)
-    assert runtime["osd"] == [1, 0.99, 1, 2]
+    reported_levels = []
+    for step in (brightness.decrease_brightness,) * 2 + (
+        brightness.increase_brightness,
+    ) * 2:
+        step(1)
+        reported_levels.append(brightness.get_brightness_state()["value"])
+    assert reported_levels == [1, 0.99, 1, 2]
     assert (runtime["hardware"], runtime["gamma"]) == (2, 100)
 
 
@@ -94,7 +91,6 @@ def test_external_only_control_changes_gamma_and_preserves_disabled_backlight(ru
     brightness.decrease_brightness(10)
     brightness.increase_brightness(1)
     assert runtime["gamma"] == 31
-    assert runtime["osd"] == [40, 30, 31]
     assert runtime["hardware_writes"] == []
     assert runtime["hardware"] == 0
 
@@ -103,7 +99,6 @@ def test_failed_external_dimming_does_not_claim_success_or_change_backlight(runt
     runtime.update(hardware=0, gamma_failure=True, monitors=[{"name": "DP-1"}])
     with pytest.raises(RuntimeError, match="compositor dimming"):
         brightness.set_brightness_percentage(30)
-    assert runtime["osd"] == [100]
     assert runtime["hardware_writes"] == []
     assert not brightness.GAMMA_STATE_PATH.exists()
 
@@ -113,7 +108,6 @@ def test_rejects_non_finite_levels_before_writing(runtime, target):
     with pytest.raises(ValueError, match="finite"):
         brightness.set_brightness_percentage(target)
     assert runtime["hardware_writes"] == []
-    assert runtime["osd"] == []
 
 
 def test_main_exposes_combined_json_state(runtime, monkeypatch, capsys):

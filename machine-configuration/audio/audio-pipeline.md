@@ -46,7 +46,7 @@ The `audio-output-switch` script cycles through available hardware sinks. It lis
 
 The `volume` script is the single entry point for all volume operations. It prefers the default sink when it's RUNNING, then falls back to any running sink, then `@DEFAULT_SINK@`. This matters because when multiple sinks are active (e.g. BT headphones + laptop speakers), the default sink reflects the user's intent (set by the autoswitch service or manual selection). All operations use `pactl`.
 
-OSD notifications go through a Unix socket at `/tmp/quickshell-osd.sock` as JSON messages. The Quickshell bar's OSD component listens on this socket and renders a vertical slider. Direct drag/scroll on the OSD sends `pactl set-sink-volume` commands.
+The script shows no OSD itself: Impasto renders its own volume OSD from the sink state.
 
 
 ## Virtual Audio Devices

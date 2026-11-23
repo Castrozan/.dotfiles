@@ -79,7 +79,7 @@ class TestSetBackgroundSymlinkFromCurrentTheme:
 
 class TestTouchShellWatchedThemeFilesIfPresent:
     @pytest.mark.parametrize(
-        "file_name", ["quickshell-bar-colors.json", "impasto-palette.json"]
+        "file_name", list(theme_set.SHELL_WATCHED_THEME_FILE_NAMES)
     )
     def test_touches_file_when_exists(self, tmp_path, monkeypatch, file_name):
         theme_path = tmp_path / "theme"

@@ -70,7 +70,6 @@ in
     (mkHyprlandPythonScriptWithDeps "brightness" ./scripts/hardware/brightness.py [
       pkgs.brightnessctl
     ])
-    (mkHyprlandPythonScript "quickshell-osd-send" ./scripts/utilities/quickshell_osd_send.py)
 
     (mkHyprlandPythonScript "hypr-focus-daemon" ./scripts/windows/focus_daemon.py)
     (mkHyprlandPythonScript "hypr-close-window-cycle" ./scripts/windows/close_window_cycle.py)

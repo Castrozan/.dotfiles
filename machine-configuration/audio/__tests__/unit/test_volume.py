@@ -1,5 +1,5 @@
 from pathlib import Path
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import volume
 
@@ -121,63 +121,45 @@ class TestGetVolumeIconPath:
 
 
 class TestIncreaseVolume:
-    def test_sets_volume_and_sends_osd(self):
+    def test_sets_volume(self):
         with patch(
             "volume.find_active_sink_name_or_default",
             return_value="alsa_output.pci",
         ):
             with patch("volume.subprocess.run") as mock_run:
-                with patch("volume.send_volume_osd"):
-                    volume.increase_volume(5)
+                volume.increase_volume(5)
 
-                    mock_run.assert_called_once_with(
-                        ["pactl", "set-sink-volume", "alsa_output.pci", "+5%"],
-                        capture_output=True,
-                    )
+                mock_run.assert_called_once_with(
+                    ["pactl", "set-sink-volume", "alsa_output.pci", "+5%"],
+                    capture_output=True,
+                )
 
 
 class TestDecreaseVolume:
-    def test_sets_volume_and_sends_osd(self):
+    def test_sets_volume(self):
         with patch(
             "volume.find_active_sink_name_or_default",
             return_value="alsa_output.pci",
         ):
             with patch("volume.subprocess.run") as mock_run:
-                with patch("volume.send_volume_osd"):
-                    volume.decrease_volume(5)
+                volume.decrease_volume(5)
 
-                    mock_run.assert_called_once_with(
-                        ["pactl", "set-sink-volume", "alsa_output.pci", "-5%"],
-                        capture_output=True,
-                    )
+                mock_run.assert_called_once_with(
+                    ["pactl", "set-sink-volume", "alsa_output.pci", "-5%"],
+                    capture_output=True,
+                )
 
 
 class TestToggleMute:
-    def test_sends_mute_osd_when_muted_after_toggle(self):
+    def test_toggles_the_active_sink_mute(self):
         with patch(
             "volume.find_active_sink_name_or_default",
             return_value="alsa_output.pci",
         ):
             with patch("volume.subprocess.run") as mock_run:
-                with patch("volume.is_sink_muted", return_value=True):
-                    volume.toggle_mute()
+                volume.toggle_mute()
 
-                    assert mock_run.call_count == 2
-                    assert mock_run.call_args_list[0] == call(
-                        ["pactl", "set-sink-mute", "alsa_output.pci", "toggle"],
-                        capture_output=True,
-                    )
-                    assert mock_run.call_args_list[1] == call(
-                        ["quickshell-osd-send", "mute", "true"]
-                    )
-
-    def test_sends_volume_osd_when_unmuted_after_toggle(self):
-        with patch(
-            "volume.find_active_sink_name_or_default",
-            return_value="alsa_output.pci",
-        ):
-            with patch("volume.subprocess.run"):
-                with patch("volume.is_sink_muted", return_value=False):
-                    with patch("volume.send_volume_osd") as mock_osd:
-                        volume.toggle_mute()
-                        mock_osd.assert_called_once()
+                mock_run.assert_called_once_with(
+                    ["pactl", "set-sink-mute", "alsa_output.pci", "toggle"],
+                    capture_output=True,
+                )

@@ -77,18 +77,12 @@ def get_volume_icon_path() -> str:
     return str(VOLUME_ICONS_DIR / "volume-high.png")
 
 
-def send_volume_osd() -> None:
-    current_volume = get_volume_for_active_sink()
-    subprocess.run(["quickshell-osd-send", "volume", str(current_volume)])
-
-
 def increase_volume(step: int) -> None:
     sink_name = find_active_sink_name_or_default()
     subprocess.run(
         ["pactl", "set-sink-volume", sink_name, f"+{step}%"],
         capture_output=True,
     )
-    send_volume_osd()
 
 
 def decrease_volume(step: int) -> None:
@@ -97,7 +91,6 @@ def decrease_volume(step: int) -> None:
         ["pactl", "set-sink-volume", sink_name, f"-{step}%"],
         capture_output=True,
     )
-    send_volume_osd()
 
 
 def toggle_mute() -> None:
@@ -106,10 +99,6 @@ def toggle_mute() -> None:
         ["pactl", "set-sink-mute", sink_name, "toggle"],
         capture_output=True,
     )
-    if is_sink_muted():
-        subprocess.run(["quickshell-osd-send", "mute", "true"])
-    else:
-        send_volume_osd()
 
 
 def increase_microphone_volume(step: int) -> None:
@@ -117,7 +106,6 @@ def increase_microphone_volume(step: int) -> None:
         ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"+{step}%"],
         capture_output=True,
     )
-    send_microphone_osd()
 
 
 def decrease_microphone_volume(step: int) -> None:
@@ -125,7 +113,6 @@ def decrease_microphone_volume(step: int) -> None:
         ["pactl", "set-source-volume", "@DEFAULT_SOURCE@", f"-{step}%"],
         capture_output=True,
     )
-    send_microphone_osd()
 
 
 def toggle_microphone_mute() -> None:
@@ -133,26 +120,6 @@ def toggle_microphone_mute() -> None:
         ["pactl", "set-source-mute", "@DEFAULT_SOURCE@", "toggle"],
         capture_output=True,
     )
-    result = subprocess.run(
-        ["pactl", "get-source-mute", "@DEFAULT_SOURCE@"],
-        capture_output=True,
-        text=True,
-    )
-    if "yes" in result.stdout:
-        subprocess.run(["quickshell-osd-send", "mic-mute", "true"])
-    else:
-        send_microphone_osd()
-
-
-def send_microphone_osd() -> None:
-    result = subprocess.run(
-        ["pactl", "get-source-volume", "@DEFAULT_SOURCE@"],
-        capture_output=True,
-        text=True,
-    )
-    match = re.search(r"(\d+)%", result.stdout)
-    current_volume = int(match.group(1)) if match else 0
-    subprocess.run(["quickshell-osd-send", "mic", str(current_volume)])
 
 
 def main() -> None:
@@ -175,8 +142,6 @@ def main() -> None:
             increase_microphone_volume(VOLUME_STEP_NORMAL)
         case "--mic-dec":
             decrease_microphone_volume(VOLUME_STEP_NORMAL)
-        case "--send-osd":
-            send_volume_osd()
         case "--get":
             print(get_volume_for_active_sink())
         case "--get-icon":

@@ -1,7 +1,5 @@
 #!/usr/bin/env bats
 
-QUICKSHELL_BAR_CONFIGURATION_PATH=~/.config/quickshell/bar
-
 setup_file() {
 	[ -n "${HYPRLAND_INSTANCE_SIGNATURE:-}" ] || return 0
 	_warm_the_quickshell_client_so_no_measurement_absorbs_its_process_start
@@ -15,7 +13,6 @@ setup() {
 
 _warm_the_quickshell_client_so_no_measurement_absorbs_its_process_start() {
 	qs -c switcher ipc --any-display show >/dev/null 2>&1 || true
-	qs -p "$QUICKSHELL_BAR_CONFIGURATION_PATH" ipc --any-display show >/dev/null 2>&1 || true
 }
 
 _measure_ms() {
@@ -24,14 +21,6 @@ _measure_ms() {
 	"$@" >/dev/null 2>&1
 	end=$(date +%s%N)
 	echo $(((end - start) / 1000000))
-}
-
-_skip_unless_the_quickshell_bar_is_the_active_shell() {
-	[ -d "$QUICKSHELL_BAR_CONFIGURATION_PATH" ] || skip "the quickshell bar is not the active desktop shell"
-}
-
-_qs_bar_ipc() {
-	qs -p "$QUICKSHELL_BAR_CONFIGURATION_PATH" ipc --any-display call "$@"
 }
 
 # ── Hyprland IPC ──────────────────────────────────────────────────────────────
@@ -76,42 +65,6 @@ _qs_bar_ipc() {
 	sleep 0.1
 
 	echo "# window switcher open: ${ms}ms" >&3
-	[ "$ms" -lt 300 ]
-}
-
-# ── QuickShell IPC (launcher) ──────────��─────────────────────────────────────
-
-@test "perf: launcher toggle < 300ms" {
-	_skip_unless_the_quickshell_bar_is_the_active_shell
-	ms=$(_measure_ms _qs_bar_ipc launcher toggle)
-	sleep 0.15
-	_qs_bar_ipc launcher toggle >/dev/null 2>&1
-
-	echo "# launcher toggle: ${ms}ms" >&3
-	[ "$ms" -lt 300 ]
-}
-
-# ─��� QuickShell IPC (dashboard) ───────────────────────────────────────────────
-
-@test "perf: dashboard toggle < 300ms" {
-	_skip_unless_the_quickshell_bar_is_the_active_shell
-	ms=$(_measure_ms _qs_bar_ipc dashboard toggle)
-	sleep 0.15
-	_qs_bar_ipc dashboard toggle >/dev/null 2>&1
-
-	echo "# dashboard toggle: ${ms}ms" >&3
-	[ "$ms" -lt 300 ]
-}
-
-# ── QuickShell IPC (sidebar/notifications) ───────────────────────────────────
-
-@test "perf: sidebar toggle < 300ms" {
-	_skip_unless_the_quickshell_bar_is_the_active_shell
-	ms=$(_measure_ms _qs_bar_ipc sidebar toggle)
-	sleep 0.15
-	_qs_bar_ipc sidebar toggle >/dev/null 2>&1
-
-	echo "# sidebar toggle: ${ms}ms" >&3
 	[ "$ms" -lt 300 ]
 }
 

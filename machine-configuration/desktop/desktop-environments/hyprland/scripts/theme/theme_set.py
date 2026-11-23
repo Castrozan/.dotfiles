@@ -78,7 +78,11 @@ def set_background_symlink_from_current_theme() -> None:
     background_link.symlink_to(backgrounds[0])
 
 
-SHELL_WATCHED_THEME_FILE_NAMES = ("quickshell-bar-colors.json", "impasto-palette.json")
+SHELL_WATCHED_THEME_FILE_NAMES = (
+    "quickshell-overview-colors.json",
+    "quickshell-switcher-colors.json",
+    "impasto-palette.json",
+)
 
 
 def touch_shell_watched_theme_files_if_present() -> None:
@@ -171,7 +175,6 @@ def main() -> None:
     set_background_symlink_from_current_theme()
     subprocess.run(["hypr-theme-bg-apply"])
     subprocess.run(["hypr-restart-hyprctl"])
-    subprocess.run(["makoctl", "reload"], capture_output=True)
     update_btop_theme_in_config()
     subprocess.run(["hypr-theme-set-herdr"])
     update_clipse_custom_theme()

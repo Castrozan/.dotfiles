@@ -20,12 +20,10 @@ class TestIncreaseBrightnessRaisesHardwareWhenGammaAtMax:
                 return_value=50,
             ),
             patch("brightness.set_hardware_brightness_percentage") as mock_set,
-            patch("brightness.send_brightness_osd") as mock_osd,
         ):
             brightness.increase_brightness(10)
 
             mock_set.assert_called_once_with(60)
-            mock_osd.assert_called_once_with(60)
 
     def test_clamps_hardware_brightness_to_maximum(self):
         with (
@@ -38,12 +36,10 @@ class TestIncreaseBrightnessRaisesHardwareWhenGammaAtMax:
                 return_value=95,
             ),
             patch("brightness.set_hardware_brightness_percentage") as mock_set,
-            patch("brightness.send_brightness_osd") as mock_osd,
         ):
             brightness.increase_brightness(10)
 
             mock_set.assert_called_once_with(100)
-            mock_osd.assert_called_once_with(100)
 
 
 class TestIncreaseBrightnessRaisesGammaBeforeHardware:
@@ -55,14 +51,12 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
             ) as mock_apply,
             patch("brightness.write_persisted_gamma_percentage") as mock_write,
             patch("brightness.set_hardware_brightness_percentage") as mock_set,
-            patch("brightness.send_brightness_osd") as mock_osd,
         ):
             brightness.increase_brightness(10)
 
             mock_apply.assert_called_once_with(60)
             mock_write.assert_called_once_with(60)
             mock_set.assert_not_called()
-            mock_osd.assert_called_once_with(0.6)
 
     def test_clamps_gamma_to_maximum_and_does_not_touch_hardware(self):
         with (
@@ -72,14 +66,12 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
             ) as mock_apply,
             patch("brightness.write_persisted_gamma_percentage") as mock_write,
             patch("brightness.set_hardware_brightness_percentage") as mock_set,
-            patch("brightness.send_brightness_osd") as mock_osd,
         ):
             brightness.increase_brightness(10)
 
             mock_apply.assert_called_once_with(100)
             mock_write.assert_called_once_with(100)
             mock_set.assert_not_called()
-            mock_osd.assert_called_once_with(1)
 
     def test_falls_back_to_hardware_when_gamma_apply_fails(self):
         with (
@@ -91,10 +83,8 @@ class TestIncreaseBrightnessRaisesGammaBeforeHardware:
                 return_value=50,
             ),
             patch("brightness.set_hardware_brightness_percentage") as mock_set,
-            patch("brightness.send_brightness_osd") as mock_osd,
         ):
             brightness.increase_brightness(10)
 
             mock_write.assert_not_called()
             mock_set.assert_called_once_with(60)
-            mock_osd.assert_called_once_with(30)

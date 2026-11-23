@@ -4,7 +4,7 @@ import QtQuick
 
 Scope {
     id: switcherTheme
-    readonly property string themeColorsPath: `${Quickshell.env("HOME")}/.config/hypr-theme/current/theme/quickshell-osd-colors.json`
+    readonly property string themeColorsPath: `${Quickshell.env("HOME")}/.config/hypr-theme/current/theme/quickshell-switcher-colors.json`
 
     function parseThemeColors(jsonText: string): var {
         try {

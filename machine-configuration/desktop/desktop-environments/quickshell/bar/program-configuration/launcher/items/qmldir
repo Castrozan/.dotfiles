@@ -1,5 +1,0 @@
-module launcher.items
-
-LauncherAppItem 1.0 LauncherAppItem.qml
-LauncherActionItem 1.0 LauncherActionItem.qml
-LauncherWallpaperItem 1.0 LauncherWallpaperItem.qml

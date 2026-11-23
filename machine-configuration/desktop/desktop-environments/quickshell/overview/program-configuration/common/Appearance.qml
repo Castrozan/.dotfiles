@@ -39,7 +39,7 @@ Singleton {
 
     FileView {
         id: hyprThemeFile
-        path: Qt.url(`file://${Quickshell.env("HOME")}/.config/hypr-theme/current/theme/quickshell-bar-colors.json`)
+        path: Qt.url(`file://${Quickshell.env("HOME")}/.config/hypr-theme/current/theme/quickshell-overview-colors.json`)
         watchChanges: true
         blockLoading: true
         onFileChanged: this.reload()

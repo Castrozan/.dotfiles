@@ -100,10 +100,6 @@ def get_brightness_state() -> dict:
     }
 
 
-def send_brightness_osd(value: float) -> None:
-    subprocess.run(["quickshell-osd-send", "brightness", str(value)])
-
-
 def brightness_targets(target: float, state: dict) -> tuple[int, int]:
     if not math.isfinite(target):
         raise ValueError("Brightness must be finite")
@@ -122,12 +118,10 @@ def set_brightness_percentage(target: float) -> None:
     hardware, gamma = brightness_targets(target, state)
     if gamma != state["gamma"]:
         if not apply_compositor_gamma_percentage(gamma):
-            send_brightness_osd(state["value"])
             raise RuntimeError("Could not apply compositor dimming")
     write_persisted_gamma_percentage(gamma)
     if state["hardwareActive"] and hardware != state["hardware"]:
         set_hardware_brightness_percentage(hardware)
-    send_brightness_osd(get_brightness_state()["value"])
 
 
 def increase_brightness(step: int) -> None:
@@ -136,16 +130,11 @@ def increase_brightness(step: int) -> None:
         gamma = min(GAMMA_MAXIMUM_PERCENT, state["gamma"] + step)
         if apply_compositor_gamma_percentage(gamma):
             write_persisted_gamma_percentage(gamma)
-            send_brightness_osd(
-                combined_percentage(state["hardware"], gamma, state["hardwareActive"])
-            )
             return
         if not state["hardwareActive"]:
-            send_brightness_osd(state["value"])
             return
     hardware = min(100, state["hardware"] + step)
     set_hardware_brightness_percentage(hardware)
-    send_brightness_osd(combined_percentage(hardware, state["gamma"], True))
 
 
 def decrease_brightness(step: int) -> None:
@@ -153,16 +142,10 @@ def decrease_brightness(step: int) -> None:
     if state["hardwareActive"] and state["hardware"] > 1:
         hardware = max(1, state["hardware"] - step)
         set_hardware_brightness_percentage(hardware)
-        send_brightness_osd(combined_percentage(hardware, state["gamma"], True))
         return
     gamma = max(GAMMA_MINIMUM_PERCENT, state["gamma"] - step)
     if apply_compositor_gamma_percentage(gamma):
         write_persisted_gamma_percentage(gamma)
-        send_brightness_osd(
-            combined_percentage(state["hardware"], gamma, state["hardwareActive"])
-        )
-    else:
-        send_brightness_osd(state["value"])
 
 
 def main() -> None:
