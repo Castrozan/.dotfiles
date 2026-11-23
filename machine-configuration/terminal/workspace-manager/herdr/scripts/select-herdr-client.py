@@ -125,12 +125,15 @@ def read_running_server_executable(installed_executable):
 
 
 def record_running_server(record_path, running_server):
-    record_path.parent.mkdir(parents=True, exist_ok=True)
     temporary_path = record_path.with_name(f"{record_path.name}.{os.getpid()}")
-    temporary_path.write_text(
-        f"{running_server.socket_path}\n{running_server.process_identifier}\n"
-    )
-    os.replace(temporary_path, record_path)
+    try:
+        record_path.parent.mkdir(parents=True, exist_ok=True)
+        temporary_path.write_text(
+            f"{running_server.socket_path}\n{running_server.process_identifier}\n"
+        )
+        os.replace(temporary_path, record_path)
+    except OSError:
+        return
 
 
 def select_client_executable(installed_executable, arguments, record_path=None):

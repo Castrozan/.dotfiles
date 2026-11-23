@@ -1,6 +1,9 @@
 installed_executable="$1"
 shift
-running_server_record="${XDG_STATE_HOME:-$HOME/.local/state}/herdr/running-server-client"
+running_server_record=""
+if [[ -e /proc/self/exe ]]; then
+  running_server_record="${XDG_STATE_HOME:-${HOME:-}/.local/state}/herdr/running-server-client"
+fi
 
 running_server_is_installed_executable() {
   local recorded_socket recorded_process server_status
