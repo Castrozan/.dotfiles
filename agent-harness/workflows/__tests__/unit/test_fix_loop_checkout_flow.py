@@ -39,6 +39,7 @@ def checkout(tmp_path, monkeypatch):
     )
     monkeypatch.setenv("GIT_CONFIG_GLOBAL", str(configuration))
     monkeypatch.setenv("GIT_CONFIG_NOSYSTEM", "1")
+    monkeypatch.delenv("COVERAGE_PROCESS_START", raising=False)
     origin, root = tmp_path / "origin.git", tmp_path / "checkout"
     git_command("init", "-q", "--bare", "-b", "main", str(origin))
     git_command("init", "-q", "-b", "main", str(root))

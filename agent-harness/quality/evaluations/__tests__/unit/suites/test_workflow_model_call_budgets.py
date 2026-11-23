@@ -44,7 +44,8 @@ MAXIMUM_MODEL_CALLS_PER_ROUTINE_WORKFLOW = 2
 MAXIMUM_RESEARCH_SOURCE_CALLS = 7
 MODEL_TIERS = {"small", "medium", "large"}
 SUPPORTED_EFFORT_LEVELS = {"low", "medium", "high", "xhigh", "max"}
-MODEL_NODE_KEYS = {"prompt", "command", "loop", "loop_group"}
+MODEL_NODE_KEYS = {"prompt", "command", "loop"}
+CHECKOUT_MUTATING_WORKFLOWS = {"dotfiles-fix-loop"}
 
 
 def load_workflows():
@@ -54,8 +55,18 @@ def load_workflows():
     }
 
 
+def flattened_nodes(nodes):
+    for node in nodes:
+        yield node
+        yield from flattened_nodes(node.get("loop_group", {}).get("nodes", []))
+
+
 def model_nodes(workflow):
-    return [node for node in workflow["nodes"] if MODEL_NODE_KEYS & node.keys()]
+    return [
+        node
+        for node in flattened_nodes(workflow["nodes"])
+        if MODEL_NODE_KEYS & node.keys()
+    ]
 
 
 def fan_out_nodes(workflow):
@@ -102,8 +113,21 @@ def test_every_model_call_pins_a_portable_tier_and_an_effort():
             )
 
 
-def test_every_workflow_is_read_only_and_runs_in_place():
+def test_only_the_named_workflows_mutate_the_checkout_and_a_person_confirms_them():
+    workflows = load_workflows()
+    mutating = {
+        name for name, workflow in workflows.items() if workflow["mutates_checkout"]
+    }
+    assert mutating == CHECKOUT_MUTATING_WORKFLOWS
+    for name in mutating:
+        assert workflows[name].get("worktree") == {"enabled": False}, name
+        assert any("wait" in node for node in workflows[name]["nodes"]), name
+
+
+def test_every_other_workflow_is_read_only_and_runs_in_place():
     for name, workflow in load_workflows().items():
+        if name in CHECKOUT_MUTATING_WORKFLOWS:
+            continue
         assert workflow.get("mutates_checkout") is False, name
         assert workflow.get("worktree") == {"enabled": False}, name
         for node in workflow["nodes"]:

@@ -12,6 +12,7 @@ inputs:
   lint_command: { default: dotfiles-lint }
   upstream: { default: origin/main }
 returns: deliver
+mutates_checkout: true
 worktree:
   enabled: false
 nodes:
