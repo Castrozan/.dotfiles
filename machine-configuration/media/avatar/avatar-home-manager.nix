@@ -21,6 +21,11 @@ in
     enable = true;
     hostName = hostname;
     rustSlices = lib.optionals (hostname == "chise") [
+      "routing"
+      "floor"
+      "wake"
+      "holder"
+      "listen"
       "doctor"
       "audio"
       "transcribe"
