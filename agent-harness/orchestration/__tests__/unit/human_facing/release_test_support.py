@@ -1,15 +1,19 @@
 import json
 
-from orchestration_test_support import run_orchestrator, valid_card_document
+from orchestration_test_support import (
+    heartbeat_text,
+    run_orchestrator,
+    valid_card_document,
+)
 
 ORCHESTRATOR = "orchestrator-session"
 RELEASED_PANE = "worker-pane"
 REPORT = {
     "goal": "retire hey-bot into the avatar",
     "state": "done",
-    "done_check": "hey-bot is gone",
-    "progress": "wake word ported",
-    "next_step": "nothing",
+    "done_when": "hey-bot is gone",
+    "doing": "wake word ported",
+    "next": "nothing",
 }
 
 
@@ -26,13 +30,15 @@ class ReleaseScenario:
 
     def handover(self, *flags):
         arguments = [RELEASED_PANE, "--for", ORCHESTRATOR]
-        arguments += ["--reports-dir", str(self.reports), *flags]
+        arguments += ["--heartbeats-dir", str(self.reports), *flags]
         return self.run(self.cards, *arguments, command="handover")
 
-    def file_report(self, **overrides):
-        document = json.dumps({**REPORT, **overrides})
+    def file_heartbeat(self, **overrides):
+        document = heartbeat_text(**{**REPORT, **overrides})
         arguments = ["file", "--to", ORCHESTRATOR]
-        return self.run(self.reports, *arguments, stdin_text=document, command="report")
+        return self.run(
+            self.reports, *arguments, stdin_text=document, command="heartbeat"
+        )
 
     def file_card(self):
         document = json.dumps(valid_card_document())
@@ -40,7 +46,7 @@ class ReleaseScenario:
 
     def round_output(self):
         self.capsys.readouterr()
-        arguments = ["--for", ORCHESTRATOR, "--reports-dir", str(self.reports)]
+        arguments = ["--for", ORCHESTRATOR, "--heartbeats-dir", str(self.reports)]
         assert self.run(self.cards, *arguments, command="round") == 0
         return self.capsys.readouterr().out
 

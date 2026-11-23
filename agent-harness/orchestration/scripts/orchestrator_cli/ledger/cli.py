@@ -40,11 +40,11 @@ def add_parser(subcommands) -> None:
             "--to", help="the session it concerns; it receives his words now"
         )
         entry.add_argument(
-            "--reports-dir", default=str(state_directory("orchestrator-reports"))
+            "--heartbeats-dir", default=str(state_directory("orchestrator-heartbeats"))
         )
         entry.set_defaults(handler=command_record, kind=kind)
     close = commands.add_parser(
-        "close", help="close an ask once live state, not a report, proves it done"
+        "close", help="close an ask once live state, not a heartbeat, proves it done"
     )
     close.add_argument("identifier")
     close.add_argument("--evidence", required=True, help="what proves it done")
@@ -60,7 +60,7 @@ def command_record(arguments: argparse.Namespace) -> int:
     orchestrator = sender_name(None)
     entry = new_entry(arguments.kind, arguments.words, arguments.to, orchestrator)
     address = arguments.to and session_address(
-        Path(arguments.reports_dir), arguments.to
+        Path(arguments.heartbeats_dir), arguments.to
     )
     save_record(Path(arguments.dir), entry["id"], entry)
     print(f"recorded {entry['id']}")

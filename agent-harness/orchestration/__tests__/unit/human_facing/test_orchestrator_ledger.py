@@ -20,7 +20,7 @@ def round_output(monkeypatch, tmp_path, capsys):
         tmp_path / "cards",
         "--for",
         PANE_SENDER_NAME,
-        "--reports-dir",
+        "--heartbeats-dir",
         str(tmp_path / "reports"),
         "--ledger-dir",
         str(tmp_path / "ledger"),
@@ -111,7 +111,11 @@ def test_an_ask_for_an_ambiguous_session_is_not_recorded(
     arguments = ("ask", "--words", "ship it", "--to", "Archer")
     assert (
         ledger(
-            monkeypatch, tmp_path / "ledger", *arguments, "--reports-dir", str(reports)
+            monkeypatch,
+            tmp_path / "ledger",
+            *arguments,
+            "--heartbeats-dir",
+            str(reports),
         )
         == 1
     )

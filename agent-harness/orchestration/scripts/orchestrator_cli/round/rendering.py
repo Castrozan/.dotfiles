@@ -62,29 +62,29 @@ def minutes_since(timestamp: str, now: datetime) -> int:
     return int((now - datetime.fromisoformat(timestamp)).total_seconds() // 60)
 
 
-def next_cell(report: dict) -> str:
-    decisions = report["open_decisions"]
+def next_cell(heartbeat: dict) -> str:
+    decisions = heartbeat["open_decisions"]
     if decisions:
         return f"waiting on {', '.join(decisions)}"
-    return clipped(sentence(report["next_step"]), NEXT_CHARACTERS)
+    return clipped(sentence(heartbeat["next"]), NEXT_CHARACTERS)
 
 
-def session_rows(reports: list[dict], now: datetime) -> list[list[str]]:
+def session_rows(heartbeats: list[dict], now: datetime) -> list[list[str]]:
     return [
         [
             str(index),
-            report["name"],
-            f"{report['state']} {minutes_since(report['updated_at'], now)}m",
-            next_cell(report),
+            heartbeat["name"],
+            f"{heartbeat['state']} {minutes_since(heartbeat['updated_at'], now)}m",
+            next_cell(heartbeat),
         ]
-        for index, report in enumerate(reports, start=1)
+        for index, heartbeat in enumerate(heartbeats, start=1)
     ]
 
 
-def sessions_block(reports: list[dict], now: datetime) -> str:
-    if not reports:
-        return "No session has filed a report."
-    return markdown_table(SESSION_HEADERS, session_rows(reports, now))
+def sessions_block(heartbeats: list[dict], now: datetime) -> str:
+    if not heartbeats:
+        return "No session has published a heartbeat."
+    return markdown_table(SESSION_HEADERS, session_rows(heartbeats, now))
 
 
 def age(timestamp: str, now: datetime) -> str:
@@ -127,7 +127,7 @@ def asks_caption(orchestrator: str) -> str:
     return (
         f"Each row is something you asked {orchestrator} for, in your words. "
         f"It leaves once {orchestrator} has checked the real result, "
-        "not only a session's report."
+        "not only a session's heartbeat."
     )
 
 
@@ -151,7 +151,7 @@ def asks_block(asks: list[dict], now: datetime, orchestrator: str) -> list[str]:
 
 def rendered_round(
     cards: list[dict],
-    reports: list[dict],
+    heartbeats: list[dict],
     asks: list[dict],
     now: datetime,
     orchestrator: str,
@@ -163,7 +163,7 @@ def rendered_round(
         [
             *asks_block(asks, now, orchestrator),
             "### Sessions",
-            sessions_block(reports, now),
+            sessions_block(heartbeats, now),
             "### Decisions waiting for you",
             *decisions,
         ]

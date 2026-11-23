@@ -14,7 +14,7 @@ SHELL_LOOP_CLOSER_PATTERN = re.compile(r"(?<![\w-])done(?![\w-])")
 PACING_SLEEP_PATTERN = re.compile(r"(?<![A-Za-z0-9_/.-])sleep\s+[\"']?[0-9.$]")
 
 PEER_STATE_READ_PATTERN = re.compile(
-    r"\borchestrator\s+report\s+(?:show|list)\b"
+    r"\borchestrator\s+(?:heartbeat\s+show|status)\b"
     r"|\bherdr\s+(?:--\S+\s+\S+\s+)*(?:agent|pane)\s+read\b"
     r"|\ba2a\s+(?:status|inbox)\b"
 )

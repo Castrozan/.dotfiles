@@ -64,7 +64,7 @@ def event_line(message: dict, workspace: str) -> tuple[str | None, str | None]:
 @dataclass(frozen=True)
 class WatchConfiguration:
     workspace: str
-    report_directory: Path
+    heartbeat_directory: Path
     decision_directory: Path
     timeout_minutes: float
     followed_panes: frozenset[str]
@@ -141,7 +141,7 @@ class WorkspaceWatch:
 
     def current_records(self) -> SessionRecords:
         return session_records(
-            all_records(self.configuration.report_directory),
+            all_records(self.configuration.heartbeat_directory),
             all_records(self.configuration.decision_directory),
         )
 

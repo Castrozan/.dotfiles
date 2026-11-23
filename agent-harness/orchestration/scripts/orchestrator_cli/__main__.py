@@ -5,9 +5,10 @@ import sys
 
 from .decisions import cli as decision_cli
 from .handover import cli as handover_cli
+from .heartbeats import cli as heartbeat_cli
+from .heartbeats import status_cli
 from .learning import cli as learning_cli
 from .ledger import cli as ledger_cli
-from .reports import cli as report_cli
 from .round import cli as round_cli
 from .session_messages import cli as session_message_cli
 from .user_model import cli as user_model_cli
@@ -15,7 +16,9 @@ from .watch import cli as watch_cli
 
 COMMANDS = {
     "decision": (decision_cli.add_parser, decision_cli.command_decision),
-    "report": (report_cli.add_parser, report_cli.command_report),
+    "heartbeat": (heartbeat_cli.add_parser, heartbeat_cli.command_heartbeat),
+    "status": (status_cli.add_status_parser, status_cli.command_index),
+    "close": (status_cli.add_close_parser, status_cli.command_index),
     "user": (user_model_cli.add_parser, user_model_cli.command_user),
     "learn": (learning_cli.add_parser, learning_cli.command_learn),
     "watch": (watch_cli.add_parser, watch_cli.command_watch),
@@ -36,8 +39,9 @@ COMMANDS = {
 def build_argument_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="orchestrator",
-        description="Run sub-sessions as their orchestrator: decision cards, status "
-        "reports, briefs and relays, the ledger of what the human gave, the user model, the learning loop and the workspace "
+        description="Run sub-sessions as their orchestrator: decision cards, "
+        "heartbeats and the session index, briefs and relays, the ledger of what the "
+        "human gave, the user model, the learning loop and the workspace "
         "watch.",
     )
     subcommands = parser.add_subparsers(dest="command", required=True)

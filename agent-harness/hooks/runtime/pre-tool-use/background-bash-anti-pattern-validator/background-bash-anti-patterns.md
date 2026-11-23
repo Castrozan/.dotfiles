@@ -58,22 +58,22 @@ the restarted daemon keeps the group alive past the command's own success.
 ## peer-wait-without-liveness-exit
 
 Applies to backgrounded Bash and to Monitor. A loop that reads a peer agent's
-state (`orchestrator report show`, `herdr agent read`, `herdr pane read`,
+state (`orchestrator heartbeat show`, `herdr agent read`, `herdr pane read`,
 `a2a status`, `a2a inbox`) must also leave when the peer is gone. A closed pane
 freezes everything the loop reads, so the loop sits silent until its cap, or
 forever.
 
-- Wrong: `until orchestrator report show <peer> | grep -q done; do sleep 45; done`
+- Wrong: `until orchestrator heartbeat show <peer> | grep -q done; do sleep 45; done`
 - Right: put a liveness probe in the exit condition and say why the loop ended:
 
 ```bash
 n=0
-until orchestrator report show <peer> | grep -q done \
+until orchestrator heartbeat show <peer> | grep -q done \
   || ! herdr pane get <pane> >/dev/null 2>&1 || [ $n -ge 80 ]; do
   sleep 45; n=$((n+1))
 done
 herdr pane get <pane> >/dev/null 2>&1 || echo "PEER-GONE: pane <pane> closed"
-orchestrator report show <peer>
+orchestrator heartbeat show <peer>
 ```
 
 Probes that count, inside the loop: `herdr pane get`, `herdr pane list`,

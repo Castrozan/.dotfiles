@@ -85,7 +85,7 @@ def test_records_give_each_pane_its_latest_answer_and_latest_report_state():
     ]
     records = session_records(reports, cards)
     assert records.answered_at == {"wW:p1": BEGINNING + timedelta(minutes=20)}
-    assert records.report_states == {"wW:p1": "done"}
+    assert records.heartbeat_states == {"wW:p1": "done"}
 
 
 card_states = st.sampled_from(

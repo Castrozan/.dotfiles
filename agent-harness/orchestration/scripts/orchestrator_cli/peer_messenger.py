@@ -70,15 +70,20 @@ def peer_names(agent: dict) -> set[str]:
     }
 
 
-def peer_pane(target: str) -> str | None:
+def peer_record(target: str, host: str | None = None) -> dict | None:
     try:
-        directory = json.loads(run_a2a("list", "--json"))
+        directory = json.loads(run_a2a("list", "--json", host=host))
     except ValueError as failure:
         raise PeerMessageFailure(f"a2a list: {failure}") from failure
     for agent in directory.values():
         if target.casefold() in peer_names(agent):
-            return agent.get("paneId")
+            return agent
     return None
+
+
+def peer_pane(target: str) -> str | None:
+    agent = peer_record(target)
+    return agent.get("paneId") if agent else None
 
 
 def copy_file_to_host(path: Path, host: str) -> None:

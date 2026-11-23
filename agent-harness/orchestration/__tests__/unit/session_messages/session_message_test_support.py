@@ -2,7 +2,7 @@ CONTRACT = """## Contract
 
 ```
 ssh chise orchestrator decision file --to Ibaraki --sender Mozart --reply-host kira
-ssh chise orchestrator report file --to Ibaraki --sender Mozart --reply-host kira
+ssh chise orchestrator heartbeat file --to Ibaraki --sender Mozart --reply-host kira < HEARTBEAT.md
 ```
 """
 

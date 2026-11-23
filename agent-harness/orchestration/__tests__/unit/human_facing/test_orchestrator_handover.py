@@ -1,7 +1,7 @@
 import json
 from datetime import datetime, timezone
 
-from orchestration_test_support import file_card, run_orchestrator
+from orchestration_test_support import file_card, heartbeat_text, run_orchestrator
 from orchestrator_cli.handover import cli as handover_cli
 from orchestrator_cli.watch.herdr_events import HerdrUnavailable
 from orchestrator_cli.watch.session_timeouts import (
@@ -14,13 +14,13 @@ ORCHESTRATOR = "orchestrator-session"
 REPORT = {
     "goal": "retire hey-bot into the avatar",
     "state": "working",
-    "done_check": "hey-bot is gone",
-    "progress": "inventory filed",
-    "next_step": "port the wake word",
+    "done_when": "hey-bot is gone",
+    "doing": "inventory filed",
+    "next": "port the wake word",
 }
 
 
-def file_report(monkeypatch, reports):
+def file_heartbeat(monkeypatch, reports):
     return run_orchestrator(
         monkeypatch,
         reports,
@@ -29,8 +29,8 @@ def file_report(monkeypatch, reports):
         ORCHESTRATOR,
         "--sender",
         "Voyager",
-        stdin_text=json.dumps(REPORT),
-        command="report",
+        stdin_text=heartbeat_text(**REPORT),
+        command="heartbeat",
     )
 
 
@@ -41,7 +41,7 @@ def handover(monkeypatch, cards, reports):
         "worker-pane",
         "--for",
         ORCHESTRATOR,
-        "--reports-dir",
+        "--heartbeats-dir",
         str(reports),
         command="handover",
     )
@@ -56,7 +56,7 @@ def test_a_handover_closes_cards_retires_the_report_tells_the_peer_and_moves_it(
 ):
     cards, reports = tmp_path / "cards", tmp_path / "reports"
     _, identifier = file_card(monkeypatch, cards, capsys)
-    assert file_report(monkeypatch, reports) == 0
+    assert file_heartbeat(monkeypatch, reports) == 0
     notifications.clear()
     assert handover(monkeypatch, cards, reports) == 0
     (card,) = records(cards)
@@ -77,10 +77,10 @@ def test_a_handed_over_session_leaves_the_round(
     monkeypatch, tmp_path, capsys, notifications, moved_panes
 ):
     cards, reports = tmp_path / "cards", tmp_path / "reports"
-    file_report(monkeypatch, reports)
+    file_heartbeat(monkeypatch, reports)
     handover(monkeypatch, cards, reports)
     capsys.readouterr()
-    round_arguments = ["--for", ORCHESTRATOR, "--reports-dir", str(reports)]
+    round_arguments = ["--for", ORCHESTRATOR, "--heartbeats-dir", str(reports)]
     run_orchestrator(monkeypatch, cards, *round_arguments, command="round")
     assert "Voyager" not in capsys.readouterr().out
 
@@ -89,7 +89,7 @@ def test_a_failed_move_keeps_the_records_and_says_what_is_left(
     monkeypatch, tmp_path, capsys, notifications
 ):
     cards, reports = tmp_path / "cards", tmp_path / "reports"
-    file_report(monkeypatch, reports)
+    file_heartbeat(monkeypatch, reports)
 
     def refuse(pane_id, label):
         raise HerdrUnavailable("herdr did not move worker-pane")

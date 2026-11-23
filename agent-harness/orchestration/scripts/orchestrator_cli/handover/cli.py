@@ -6,6 +6,18 @@ from pathlib import Path
 
 from ..decisions.cards import ESCALATED_STATE, OPEN_STATE, withdrawn_card
 from ..document_fields import InvalidPeerDocument
+from ..heartbeats.records import (
+    HANDED_OVER_STATE,
+    handed_over_heartbeat,
+    taken_back_heartbeat,
+)
+from ..heartbeats.session_index import (
+    closed_entry,
+    entries_of,
+    is_open,
+    reopened_entry,
+    save_entry,
+)
 from ..peer_messenger import (
     PeerAddress,
     PeerMessageFailure,
@@ -21,23 +33,18 @@ from ..releases.released_sessions import (
     standing_releases,
     taken_back_release,
 )
-from ..reports.status_reports import (
-    HANDED_OVER_STATE,
-    handed_over_report,
-    taken_back_report,
-)
 from ..watch.herdr_events import HerdrUnavailable, move_pane_to_new_tab
 
 HANDOVER_REASON = "handed over to the human, who drives this session directly now"
 RELEASE_NOTICE = (
     "{orchestrator} handed you to Lucas: he drives this session directly from now on. "
     "Answer him in your pane. This replaces your brief's Contract: send {orchestrator} "
-    "no more reports, decision cards or notifications; the orchestrator command "
+    "no more heartbeats, decision cards or notifications; the orchestrator command "
     "refuses them from you now."
 )
 TAKE_BACK_NOTICE = (
-    "Lucas handed you back to {orchestrator}, who orchestrates you again: file reports "
-    "and decision cards to {orchestrator} as your brief's Contract says. Cards closed "
+    "Lucas handed you back to {orchestrator}, who orchestrates you again: publish "
+    "heartbeats and file decision cards to {orchestrator} as your brief's Contract says. Cards closed "
     "at the handover stay closed, so file again whatever still needs deciding."
 )
 
@@ -46,7 +53,7 @@ def add_parser(subcommands) -> None:
     handover = subcommands.add_parser(
         "handover",
         help="release a sub-session to the human: tell it, close its cards, retire "
-        "its report, refuse what it files from then on, and move its pane to a tab "
+        "its heartbeat, refuse what it files from then on, and move its pane to a tab "
         "of its own",
     )
     handover.add_argument("pane", help="the sub-session's herdr pane id")
@@ -68,7 +75,7 @@ def add_parser(subcommands) -> None:
         "--dir", default=str(state_directory("orchestrator-decisions"))
     )
     handover.add_argument(
-        "--reports-dir", default=str(state_directory("orchestrator-reports"))
+        "--heartbeats-dir", default=str(state_directory("orchestrator-heartbeats"))
     )
 
 
@@ -91,29 +98,53 @@ def close_cards(directory: Path, orchestrator: str, panes: frozenset[str]) -> li
     return closed
 
 
-def session_reports(
+def session_heartbeats(
     directory: Path, orchestrator: str, panes: frozenset[str]
 ) -> list[dict]:
     return [
-        report
-        for report in all_records(directory)
-        if belongs_to(report, orchestrator, panes)
+        heartbeat
+        for heartbeat in all_records(directory)
+        if belongs_to(heartbeat, orchestrator, panes)
     ]
+
+
+def index_entries_on(orchestrator: str, panes: frozenset[str]) -> list[dict]:
+    return [entry for entry in entries_of(orchestrator) if entry["pane"] in panes]
+
+
+def close_index_entries(orchestrator: str, panes: frozenset[str]) -> list[str]:
+    lines = []
+    for entry in filter(is_open, index_entries_on(orchestrator, panes)):
+        save_entry(closed_entry(entry, HANDOVER_REASON), Path(entry["heartbeat"]))
+        lines.append(f"closed {entry['name']} in your index")
+    return lines
+
+
+def reopen_index_entries(orchestrator: str, panes: frozenset[str]) -> None:
+    for entry in index_entries_on(orchestrator, panes):
+        if entry["closed_because"] == HANDOVER_REASON:
+            save_entry(reopened_entry(entry), Path(entry["heartbeat"]))
+            print(f"reopened {entry['name']} in your index", flush=True)
 
 
 def hand_over(arguments: argparse.Namespace, orchestrator: str) -> None:
     pane = arguments.pane
     identity = identity_of_pane(pane)
-    reports_directory = Path(arguments.reports_dir)
-    reports = session_reports(reports_directory, orchestrator, identity.panes)
-    label = reports[0]["requester"] if reports else pane
+    heartbeats_directory = Path(arguments.heartbeats_dir)
+    heartbeats = session_heartbeats(heartbeats_directory, orchestrator, identity.panes)
+    label = heartbeats[0]["requester"] if heartbeats else pane
     release = new_release(pane, identity, label, orchestrator)
     save_record(release_directory(), release["name"], release)
     lines = close_cards(Path(arguments.dir), orchestrator, identity.panes)
-    for report in reports:
-        if report["state"] != HANDED_OVER_STATE:
-            save_record(reports_directory, report["name"], handed_over_report(report))
-            lines.append(f"retired report {report['name']}")
+    for heartbeat in heartbeats:
+        if heartbeat["state"] != HANDED_OVER_STATE:
+            save_record(
+                heartbeats_directory,
+                heartbeat["name"],
+                handed_over_heartbeat(heartbeat),
+            )
+            lines.append(f"retired heartbeat {heartbeat['name']}")
+    lines += close_index_entries(orchestrator, identity.panes)
     lines.append(f"released {label}: what it files from now on is refused")
     print("\n".join(lines), flush=True)
     notify_peer(
@@ -134,12 +165,15 @@ def take_back(arguments: argparse.Namespace, orchestrator: str) -> None:
         raise InvalidPeerDocument(f"{pane} is not released")
     for release in releases:
         save_record(release_directory(), release["name"], taken_back_release(release))
-    reports_directory = Path(arguments.reports_dir)
+    heartbeats_directory = Path(arguments.heartbeats_dir)
     panes = identity.panes.union(*(release["panes"] for release in releases))
-    for report in session_reports(reports_directory, orchestrator, panes):
-        if report["state"] == HANDED_OVER_STATE:
-            save_record(reports_directory, report["name"], taken_back_report(report))
-            print(f"restored report {report['name']}", flush=True)
+    for heartbeat in session_heartbeats(heartbeats_directory, orchestrator, panes):
+        if heartbeat["state"] == HANDED_OVER_STATE:
+            save_record(
+                heartbeats_directory, heartbeat["name"], taken_back_heartbeat(heartbeat)
+            )
+            print(f"restored heartbeat {heartbeat['name']}", flush=True)
+    reopen_index_entries(orchestrator, panes)
     print(f"took {pane} back: what it files reaches you again", flush=True)
     notify_peer(
         PeerAddress(pane),

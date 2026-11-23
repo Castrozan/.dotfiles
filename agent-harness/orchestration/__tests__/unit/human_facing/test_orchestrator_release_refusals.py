@@ -14,11 +14,11 @@ from release_test_support import RELEASED_PANE, records
 def test_what_a_released_session_files_is_refused_and_never_reaches_the_orchestrator(
     scenario,
 ):
-    assert scenario.file_report(state="working") == 0
+    assert scenario.file_heartbeat(state="working") == 0
     assert scenario.handover() == 0
     scenario.notifications.clear()
     scenario.errors()
-    assert scenario.file_report() == 1
+    assert scenario.file_heartbeat() == 1
     assert scenario.file_card() == 1
     refusals = scenario.errors()
     assert refusals.count("released this session to Lucas") == 2
@@ -34,7 +34,7 @@ def test_a_release_follows_the_session_into_another_pane(scenario, live_panes):
     assert scenario.handover() == 0
     live_panes["wL:p4"] = {"pane_id": "wL:p4", "agent_session": session}
     scenario.monkeypatch.setenv("HERDR_PANE_ID", "wL:p4")
-    assert scenario.file_report() == 1
+    assert scenario.file_heartbeat() == 1
     assert "released this session" in scenario.errors()
 
 
@@ -44,7 +44,7 @@ def test_another_session_still_files_while_a_release_stands(scenario, live_panes
     scenario.monkeypatch.setenv("HERDR_PANE_ID", "wW:p7")
     for pane in (None, {"pane_id": "wW:p7", "agent_session": None}):
         live_panes["wW:p7"] = pane
-        assert scenario.file_report() == 0
+        assert scenario.file_heartbeat() == 0
         assert scenario.file_card() == 0
     assert len(scenario.notifications) == 3 and len(records(scenario.cards)) == 2
 

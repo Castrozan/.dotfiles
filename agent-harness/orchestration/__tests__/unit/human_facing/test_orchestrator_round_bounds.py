@@ -5,12 +5,12 @@ from datetime import datetime, timedelta, timezone
 import pytest
 from orchestration_test_support import file_card, valid_card_document
 from orchestrator_cli.decisions import card_limits
-from orchestrator_cli.reports.status_reports import REPORT_TEXT_LIMITS
+from orchestrator_cli.heartbeats.template import HEARTBEAT_LINE_LIMITS
 from round_test_support import (
     escalate,
-    file_report,
+    file_heartbeat,
+    heartbeat_fields,
     record_open_ask,
-    report_document,
     run_round,
 )
 
@@ -59,15 +59,17 @@ def test_two_decisions_six_sessions_and_open_asks_at_every_limit_fit_one_screen(
         _, identifier = file_card(monkeypatch, cards, capsys, document)
         escalate(monkeypatch, cards, identifier)
     for index in range(6):
+        monkeypatch.setenv("HERDR_PANE_ID", f"pane-{index}")
         longest_report = {
-            field: "word " * (limit // 5) for field, limit in REPORT_TEXT_LIMITS.items()
+            field: "word " * (limit // 5)
+            for field, limit in HEARTBEAT_LINE_LIMITS.items()
         }
         assert (
-            file_report(
+            file_heartbeat(
                 monkeypatch,
                 reports,
                 f"Servant {index}",
-                report_document(**longest_report),
+                heartbeat_fields(**longest_report),
             )
             == 0
         )
@@ -78,7 +80,7 @@ def test_two_decisions_six_sessions_and_open_asks_at_every_limit_fit_one_screen(
     assert "Newer requests not shown: 2." in output
 
 
-def write_report(reports, name, minutes_ago, **fields):
+def write_heartbeat(reports, name, minutes_ago, **fields):
     template = json.loads(next(reports.glob("Voyager*.json")).read_text())
     updated = datetime.now(timezone.utc) - timedelta(minutes=minutes_ago)
     record = {
@@ -95,11 +97,11 @@ def test_finished_and_handed_over_sessions_leave_while_legacy_text_is_clipped(
     monkeypatch, directories, capsys, notifications
 ):
     cards, reports = directories
-    assert file_report(monkeypatch, reports, "Voyager", report_document()) == 0
-    write_report(reports, "Finished-long-ago", 120, state="done")
-    write_report(reports, "Finished-just-now", 5, state="done")
-    write_report(reports, "Handed-over", 1, state="handed-over")
-    write_report(reports, "Oversized", 1, next_step="legacy " * 200)
+    assert file_heartbeat(monkeypatch, reports, "Voyager", heartbeat_fields()) == 0
+    write_heartbeat(reports, "Finished-long-ago", 120, state="done")
+    write_heartbeat(reports, "Finished-just-now", 5, state="done")
+    write_heartbeat(reports, "Handed-over", 1, state="handed-over")
+    write_heartbeat(reports, "Oversized", 1, next="legacy " * 200)
     output = run_round(monkeypatch, cards, reports, capsys)
     assert "Finished-long-ago" not in output and "Handed-over" not in output
     assert "Finished-just-now" in output and "Voyager" in output
@@ -111,8 +113,8 @@ def test_a_pipe_in_a_cell_keeps_the_session_table_columns(
     monkeypatch, directories, capsys, notifications
 ):
     cards, reports = directories
-    document = report_document(next_step="split a | b, c || d")
-    assert file_report(monkeypatch, reports, "Voyager", document) == 0
+    document = heartbeat_fields(next="split a | b, c || d")
+    assert file_heartbeat(monkeypatch, reports, "Voyager", document) == 0
     output = run_round(monkeypatch, cards, reports, capsys)
     rows = [line for line in output.splitlines() if line.startswith("| ")]
     assert len({len(UNESCAPED_PIPE.findall(row)) for row in rows}) == 1
@@ -123,7 +125,7 @@ def test_a_report_field_past_its_limit_is_refused_by_name(
     monkeypatch, directories, notifications
 ):
     _, reports = directories
-    too_long = "x" * (REPORT_TEXT_LIMITS["progress"] + 1)
-    document = report_document(progress=too_long)
-    assert file_report(monkeypatch, reports, "Voyager", document) == 1
+    too_long = "x" * (HEARTBEAT_LINE_LIMITS["doing"] + 1)
+    document = heartbeat_fields(doing=too_long)
+    assert file_heartbeat(monkeypatch, reports, "Voyager", document) == 1
     assert not reports.exists() or list(reports.iterdir()) == []

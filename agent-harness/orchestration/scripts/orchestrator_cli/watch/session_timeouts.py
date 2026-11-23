@@ -6,9 +6,9 @@ from datetime import datetime, timedelta, timezone
 
 from ..decisions.cards import ESCALATED_STATE, OPEN_STATE
 
-FINISHED_REPORT_STATE = "done"
-BLOCKED_REPORT_STATE = "blocked"
-HANDED_OVER_REPORT_STATE = "handed-over"
+FINISHED_HEARTBEAT_STATE = "done"
+BLOCKED_HEARTBEAT_STATE = "blocked"
+HANDED_OVER_HEARTBEAT_STATE = "handed-over"
 WORKING_STATUS = "working"
 
 
@@ -24,7 +24,7 @@ class WatchedSession:
 @dataclass(frozen=True)
 class SessionRecords:
     answered_at: dict[str, datetime]
-    report_states: dict[str, str]
+    heartbeat_states: dict[str, str]
     waiting_on_human: frozenset[str] = frozenset()
 
 
@@ -48,10 +48,10 @@ def latest_answer_times(stamps: list[tuple[str | None, str]]) -> dict[str, datet
 
 
 def waits_only_on_human(
-    report: dict, awaited: set[str], card_states: dict[str, str]
+    heartbeat: dict, awaited: set[str], card_states: dict[str, str]
 ) -> bool:
     return (
-        report["state"] == BLOCKED_REPORT_STATE
+        heartbeat["state"] == BLOCKED_HEARTBEAT_STATE
         and bool(awaited)
         and all(
             card_states.get(identifier) == ESCALATED_STATE for identifier in awaited
@@ -60,7 +60,7 @@ def waits_only_on_human(
 
 
 def panes_waiting_on_human(
-    latest_reports: dict[str, dict], cards: list[dict]
+    latest_heartbeats: dict[str, dict], cards: list[dict]
 ) -> frozenset[str]:
     card_states = {card["id"]: card["state"] for card in cards}
     unresolved: dict[str, set[str]] = defaultdict(set)
@@ -69,30 +69,34 @@ def panes_waiting_on_human(
             unresolved[card.get("requester_pane")].add(card["id"])
     return frozenset(
         pane_id
-        for pane_id, report in latest_reports.items()
+        for pane_id, heartbeat in latest_heartbeats.items()
         if waits_only_on_human(
-            report,
-            unresolved[pane_id] | set(report.get("open_decisions", [])),
+            heartbeat,
+            unresolved[pane_id] | set(heartbeat.get("open_decisions", [])),
             card_states,
         )
     )
 
 
-def session_records(reports: list[dict], cards: list[dict]) -> SessionRecords:
+def session_records(heartbeats: list[dict], cards: list[dict]) -> SessionRecords:
     stamps = [
-        (report.get("requester_pane"), report["updated_at"]) for report in reports
+        (heartbeat.get("requester_pane"), heartbeat["updated_at"])
+        for heartbeat in heartbeats
     ]
     stamps += [(card.get("requester_pane"), card_activity_time(card)) for card in cards]
-    oldest_first = sorted(reports, key=lambda report: report["updated_at"])
-    latest_reports = {
-        report["requester_pane"]: report
-        for report in oldest_first
-        if report.get("requester_pane")
+    oldest_first = sorted(heartbeats, key=lambda heartbeat: heartbeat["updated_at"])
+    latest_heartbeats = {
+        heartbeat["requester_pane"]: heartbeat
+        for heartbeat in oldest_first
+        if heartbeat.get("requester_pane")
     }
     return SessionRecords(
         latest_answer_times(stamps),
-        {pane_id: report["state"] for pane_id, report in latest_reports.items()},
-        panes_waiting_on_human(latest_reports, cards),
+        {
+            pane_id: heartbeat["state"]
+            for pane_id, heartbeat in latest_heartbeats.items()
+        },
+        panes_waiting_on_human(latest_heartbeats, cards),
     )
 
 
@@ -109,10 +113,12 @@ def session_deadline(
 
 
 def is_finished(session: WatchedSession, records: SessionRecords) -> bool:
-    report_state = records.report_states.get(session.pane_id)
-    if report_state == HANDED_OVER_REPORT_STATE:
+    heartbeat_state = records.heartbeat_states.get(session.pane_id)
+    if heartbeat_state == HANDED_OVER_HEARTBEAT_STATE:
         return True
-    return report_state == FINISHED_REPORT_STATE and session.status != WORKING_STATUS
+    return (
+        heartbeat_state == FINISHED_HEARTBEAT_STATE and session.status != WORKING_STATUS
+    )
 
 
 def waits_on_human(session: WatchedSession, records: SessionRecords) -> bool:
@@ -123,8 +129,8 @@ def timeout_line(
     session: WatchedSession, records: SessionRecords, now: datetime
 ) -> str:
     quiet_seconds = (now - last_heard_at(session, records)).total_seconds()
-    report_state = records.report_states.get(session.pane_id, "none")
+    heartbeat_state = records.heartbeat_states.get(session.pane_id, "none")
     return (
         f"TIMEOUT {session.pane_id} {session.status} "
-        f"quiet-minutes={int(quiet_seconds // 60)} report={report_state}"
+        f"quiet-minutes={int(quiet_seconds // 60)} heartbeat={heartbeat_state}"
     )

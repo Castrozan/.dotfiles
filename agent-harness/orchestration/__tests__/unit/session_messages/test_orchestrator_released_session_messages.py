@@ -38,7 +38,7 @@ def relay(monkeypatch, tmp_path, target):
         tmp_path / "reports",
         *arguments,
         command="relay",
-        location_flag="--reports-dir",
+        location_flag="--heartbeats-dir",
     )
 
 

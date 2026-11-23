@@ -4,12 +4,12 @@ KNOWN_SILENT_BACKGROUND_WAITS = (
         "denied_by": "peer-wait-without-liveness-exit",
         "silent_minutes": 170,
         "command": (
-            "first=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null | head -1); "
-            "n=0; until { cur=$(orchestrator report show Reviewer-w4E-p6 2>/dev/null "
+            "first=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | head -1); "
+            "n=0; until { cur=$(orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null "
             '| head -1); [ "$cur" != "$first" ] && echo "$cur" '
             '| grep -qE "· (done|blocked) · "; } || [ $n -ge 240 ]; '
             "do sleep 45; n=$((n+1)); done; "
-            "orchestrator report show Reviewer-w4E-p6 2>/dev/null | sed -n 1,20p"
+            "orchestrator heartbeat show Reviewer-w4E-p6 2>/dev/null | sed -n 1,20p"
         ),
     },
     {
