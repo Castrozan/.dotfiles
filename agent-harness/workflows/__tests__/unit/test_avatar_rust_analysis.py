@@ -66,7 +66,7 @@ def assert_topics_written(report, output_directory, avatar_root, standards_file)
     ]
     assert report == {"topics": [str(path) for path in written_paths], "error": ""}
     assert len(written_paths) == 5
-    for template_path, written_path in zip(template_paths, written_paths):
+    for template_path, written_path in zip(template_paths, written_paths, strict=True):
         expected = substituted_template(template_path, avatar_root, standards_file)
         assert written_path.read_text() == expected
 
