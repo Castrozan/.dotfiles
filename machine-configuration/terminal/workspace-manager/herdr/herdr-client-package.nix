@@ -23,8 +23,8 @@ let
     name = "herdr";
     runtimeInputs = [ selector ];
     text = ''
-      selected_executable="$(select-herdr-client select ${herdrPackage}/bin/herdr "$@")"
-      exec "$selected_executable" "$@"
+      set -- ${herdrPackage}/bin/herdr "$@"
+      ${builtins.readFile ./scripts/run-herdr-client.sh}
     '';
   };
 in
