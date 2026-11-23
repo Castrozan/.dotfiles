@@ -27,6 +27,9 @@ to other programs, because the hypr-theme pipeline owns those. A machine adds it
 through `custom.desktopShell.impastoFirstRunSettings`. Delete the file and rebuild to get the seed again; a seed change
 never reaches a settings file that already exists.
 
+The fork's `settingsScale` setting enlarges the Settings window alone, leaving the bar, island and dock at their own
+size; chise seeds 1.25, and Settings › Appearance › Type changes it.
+
 ## Working on the fork
 
 Clone the fork, commit, push, then pin the new revision in `repository/flake-assembly/dependencies/flake.nix` and run

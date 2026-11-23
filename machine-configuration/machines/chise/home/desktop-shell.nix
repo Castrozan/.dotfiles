@@ -3,6 +3,7 @@
   custom.desktopShell = {
     active = "impasto";
     impastoFirstRunSettings = {
+      settingsScale = 1.25;
       vpnUnit = "openvpn-proton-paraguay.service";
       vpnConnectCommand = "vpn-py";
       vpnDisconnectCommand = "vpn-off";

@@ -72,7 +72,7 @@
     install-nothing.inputs.nixpkgs.follows = "nixpkgs";
     lazygit.url = "github:Castrozan/lazygit";
     lazygit.inputs.nixpkgs.follows = "nixpkgs";
-    impasto.url = "github:Castrozan/impasto/ae71a2472dc656a4cce67ba46a012a2d6880a740";
+    impasto.url = "github:Castrozan/impasto/e33c5c4f35ea3bccce06243c138b983f9e9d475b";
     impasto.inputs.nixpkgs.follows = "nixpkgs-unstable";
     viu.url = "github:viu-media/viu";
     viu.inputs.nixpkgs.follows = "nixpkgs";
