@@ -106,10 +106,10 @@ _measure_ms() {
 @test "perf: tmux new session < 500ms" {
 	tmux kill-session -t _bats_perf_test >/dev/null 2>&1 || true
 	tmux new-session -d -s _bats_perf_warmup >/dev/null 2>&1
-	tmux kill-session -t _bats_perf_warmup >/dev/null 2>&1 || true
 
 	ms=$(_measure_ms tmux new-session -d -s _bats_perf_test)
 	tmux kill-session -t _bats_perf_test >/dev/null 2>&1 || true
+	tmux kill-session -t _bats_perf_warmup >/dev/null 2>&1 || true
 
 	echo "# tmux new session: ${ms}ms" >&3
 	[ "$ms" -lt 500 ]

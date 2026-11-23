@@ -15,6 +15,8 @@ let
   };
 in
 {
+  home.packages = [ quickshellPackage ];
+
   xdg.configFile."quickshell/switcher" = {
     source = ./program-configuration;
     recursive = true;
