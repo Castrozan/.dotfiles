@@ -7,7 +7,11 @@ from instructions.instruction_surface_scanner import (
     public_skill_definition_path,
 )
 
-DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE = {"all-skills", "wellput"}
+SKILLS_DEPLOYED_AS_THEIR_OWN_PLUGIN = {"avatar"}
+DEPLOYED_SKILLS_WITHOUT_A_SAME_NAMED_SOURCE = {
+    "all-skills",
+    "wellput",
+} | SKILLS_DEPLOYED_AS_THEIR_OWN_PLUGIN
 MINIMUM_CATALOG_SKILLS = 10
 INTERACTIVE_SKILL_CATALOG = (
     Path(__file__).resolve().parents[5]
@@ -55,7 +59,11 @@ def test_every_skill_in_the_router_catalog_exists_on_disk():
 
 def test_router_catalog_offers_exactly_the_deployed_default_skills():
     catalog = set(router_catalog_descriptions())
-    deployed = deployed_default_skill_names() | {"all-skills"}
+    deployed = (
+        deployed_default_skill_names()
+        | {"all-skills"}
+        | SKILLS_DEPLOYED_AS_THEIR_OWN_PLUGIN
+    )
     assert catalog == deployed, (
         "the routing catalog must mirror the skills every session loads; "
         f"missing: {sorted(deployed - catalog)}, not deployed: {sorted(catalog - deployed)}"
