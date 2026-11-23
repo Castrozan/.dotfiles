@@ -91,8 +91,8 @@ Answer every status question, Lucas's or your own, with `orchestrator status`. I
 each session and close or handover retires it, and each open session's published heartbeat: what it does now and next,
 how long ago it published, and its pane. `orchestrator heartbeat show <name>` prints one heartbeat whole.
 
-Status alone never warrants messaging a session or reading its pane. Message it only to deliver a decision, to relay
-Lucas's words or a fact such as the gap its work leaves, and with `orchestrator relay <session> --status-check` when
+Status alone never warrants messaging a session or reading its pane. Message it only to deliver a decision or to relay
+Lucas's words or a fact such as the gap its work leaves. Send `orchestrator relay <session> --status-check` only when
 status flags it: stale, silent since dispatch, or a pane idle, blocked or gone while its heartbeat says working.
 
 ### Deciding as Lucas
