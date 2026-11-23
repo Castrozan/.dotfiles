@@ -20,7 +20,6 @@ in
         xdg-desktop-portal-gtk
 
         wl-clipboard
-        hyprpaper
         awww
         libnotify
         pamixer
