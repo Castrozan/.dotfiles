@@ -96,14 +96,13 @@ def dispatched_name(agent: dict, arguments, placement: SessionPlacement) -> str:
     )
 
 
-def indexed_dispatch(arguments, brief: Path, goal: str, orchestrator: str) -> str:
+def dispatched_entry(arguments, brief: Path, goal: str, orchestrator: str) -> dict:
     agent = live_peer(arguments.target, arguments.host)
     names = filter(None, (agent.get(key) for key in ("name", "servant", "paneId")))
     placement = SessionPlacement(arguments.host, agent.get("paneId"), frozenset(names))
     known = filer_entry(entries_of(orchestrator), placement)
     name = known["name"] if known else dispatched_name(agent, arguments, placement)
-    entry = new_entry(name, orchestrator, placement, goal, str(brief))
-    return save_entry(entry, record_path(Path(arguments.heartbeats_dir), name))["name"]
+    return new_entry(name, orchestrator, placement, goal, str(brief))
 
 
 def command_dispatch(arguments: argparse.Namespace) -> int:
@@ -119,10 +118,13 @@ def command_dispatch(arguments: argparse.Namespace) -> int:
     else:
         require_unreleased_target(arguments.target)
     orchestrator = sender_name(None)
-    name = indexed_dispatch(arguments, brief, brief_goal(text), orchestrator)
+    entry = dispatched_entry(arguments, brief, brief_goal(text), orchestrator)
     address = PeerAddress(arguments.target, arguments.host)
     notify_peer(address, orchestrator, dispatch_text(brief))
-    print(f"sent {brief} to {address}; indexed as {name}")
+    heartbeat = record_path(Path(arguments.heartbeats_dir), entry["name"])
+    print(
+        f"sent {brief} to {address}; indexed as {save_entry(entry, heartbeat)['name']}"
+    )
     return 0
 
 

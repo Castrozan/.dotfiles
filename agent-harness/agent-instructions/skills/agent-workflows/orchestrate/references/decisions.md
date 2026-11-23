@@ -91,9 +91,9 @@ Answer every status question, Lucas's or your own, with `orchestrator status`. I
 each session and close or handover retires it, and each open session's published heartbeat: what it does now and next,
 how long ago it published, and its pane. `orchestrator heartbeat show <name>` prints one heartbeat whole.
 
-Status alone never warrants messaging a session or reading its pane. Message it only to deliver a decision, relay
-Lucas's words or a fact, or correct it, and run `orchestrator relay <session> --status-check` when status flags it:
-stale, silent since dispatch, or a pane idle, blocked or gone while its heartbeat says working.
+Status alone never warrants messaging a session or reading its pane. Message it only to deliver a decision, to relay
+Lucas's words or a fact such as the gap its work leaves, and with `orchestrator relay <session> --status-check` when
+status flags it: stale, silent since dispatch, or a pane idle, blocked or gone while its heartbeat says working.
 
 ### Deciding as Lucas
 
@@ -143,7 +143,8 @@ a visual, so any line you change is judged as your prose; the short prose lets t
 That output opens with his requests you have not yet verified done, under a caption telling him what the table lists
 and what makes a row leave; with no such request the section is absent. One short row per session follows, with its
 state and next step or the decision it waits on; the rest stays in `orchestrator heartbeat show`. A done session leaves
-the table half an hour after its last heartbeat and a handed-over one at once, so never add rows of your own.
+the table half an hour after its last heartbeat and a closed or handed-over one at once, so never add rows of your
+own.
 
 Every decision waiting for him closes the view, each with its question, every option and what it does, the
 recommendation and the reply to give. Never paste raw card text or an earlier option by number. Mention `orchestrator
