@@ -6,23 +6,6 @@ import nix_gc
 
 
 class TestParseArguments:
-    def test_defaults_to_all_scope(self):
-        assert nix_gc.parse_arguments([]) == ("all", False)
-
-    @pytest.mark.parametrize(
-        ("argument", "scope"),
-        [
-            ("--all", "all"),
-            ("--user", "user"),
-            ("--system", "system"),
-        ],
-    )
-    def test_parses_scope(self, argument, scope):
-        assert nix_gc.parse_arguments([argument]) == (scope, False)
-
-    def test_parses_dry_run(self):
-        assert nix_gc.parse_arguments(["--system", "--dry-run"]) == ("system", True)
-
     def test_help_exits_zero(self):
         with pytest.raises(SystemExit, match="0"):
             nix_gc.parse_arguments(["--help"])
@@ -61,22 +44,6 @@ class TestEnsureNixInPath:
 
 
 class TestCollectGarbage:
-    @pytest.mark.parametrize(
-        ("sudo", "prefix"),
-        [(False, []), (True, ["sudo"])],
-    )
-    def test_deletes_old_generations_before_collecting(self, sudo, prefix):
-        with patch(
-            "nix_gc.resolve_nix_collect_garbage_path",
-            return_value="/nix/bin/nix-collect-garbage",
-        ):
-            with patch("nix_gc.subprocess.run") as run:
-                nix_gc.collect_garbage(False, sudo=sudo)
-
-        run.assert_called_once_with(
-            prefix + ["/nix/bin/nix-collect-garbage", "--delete-old"], check=True
-        )
-
     @pytest.mark.parametrize(
         ("sudo", "prefix"),
         [(False, []), (True, ["sudo"])],

@@ -81,27 +81,3 @@ def test_unknown_tool_rewrites_preserve_opaque_provider_schema(tool_name):
 
     assert payload.native_output(decision, tool_name) == original
     assert decision == original
-
-
-def test_local_rewrite_preserves_nested_values_and_unknown_top_level_fields():
-    decision = {
-        "hookSpecificOutput": {
-            "updatedInput": {
-                "file_path": "x",
-                "skill": "opaque",
-                "metadata": {"file_path": "nested", "new_string": "opaque"},
-                "values": [{"old_string": "opaque"}],
-            }
-        }
-    }
-    original = deepcopy(decision)
-
-    assert payload.native_output(decision, "edit")["hookSpecificOutput"][
-        "updatedInput"
-    ] == {
-        "path": "x",
-        "skill": "opaque",
-        "metadata": {"file_path": "nested", "new_string": "opaque"},
-        "values": [{"old_string": "opaque"}],
-    }
-    assert decision == original

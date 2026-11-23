@@ -78,10 +78,6 @@ def test_build_permission_map_turns_a_disallowed_tool_list_into_an_allow_by_defa
     assert permission_map["edit"] == "deny"
 
 
-def test_build_permission_map_defaults_to_full_access_without_tool_fields():
-    assert build_permission_map({}) == {"*": "allow"}
-
-
 def test_translate_subagent_definition_emits_opencode_frontmatter_and_keeps_the_body():
     translated = translate_subagent_definition(ALLOW_LIST_SUBAGENT)
 

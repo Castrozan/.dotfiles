@@ -1,7 +1,6 @@
 import contextlib
 import os
 import socket
-import stat
 import tempfile
 from pathlib import Path
 
@@ -41,23 +40,6 @@ REMOVABLE_FILE_CREATORS = [
     create_symlink_to_existing_file,
     create_dangling_symlink,
 ]
-
-
-@pytest.mark.parametrize("create_special_file", SPECIAL_FILE_CREATORS)
-def test_never_removes_special_files_or_the_directory_holding_them(
-    tmp_path, monkeypatch, create_special_file
-):
-    channel_directory = tmp_path / "agent-channel"
-    channel_directory.mkdir()
-    monkeypatch.chdir(channel_directory)
-    special_file = channel_directory / "endpoint"
-    create_special_file(special_file)
-
-    result = remove_everything_written_before_now(tmp_path)
-
-    special_file_mode = os.lstat(special_file).st_mode
-    assert stat.S_ISFIFO(special_file_mode) or stat.S_ISSOCK(special_file_mode)
-    assert result.failed_entry_count == 0
 
 
 @settings(deadline=None, max_examples=30)

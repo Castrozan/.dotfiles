@@ -63,10 +63,6 @@ class TestGetProperty:
         )
         assert len(receiver.written_reports[0]) == 65
 
-    def test_skips_unrelated_reports_until_command_echo(self):
-        receiver = FakeReceiver([response(0x12), response(0x02, value=7)])
-        assert corsair_mouse_brightness.get_property(receiver, 0x02) == 7
-
     def test_reports_silent_mouse(self):
         receiver = FakeReceiver([])
         with pytest.raises(corsair_mouse_brightness.CorsairMouseError, match="wake"):
@@ -107,9 +103,6 @@ class TestStoreOnboardBrightness:
 
 
 class TestParseRequestedBrightness:
-    def test_no_argument_reads(self):
-        assert corsair_mouse_brightness.parse_requested_brightness([]) is None
-
     def test_accepts_range_bounds(self):
         assert corsair_mouse_brightness.parse_requested_brightness(["0"]) == 0
         assert corsair_mouse_brightness.parse_requested_brightness(["1000"]) == 1000

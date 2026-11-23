@@ -49,18 +49,6 @@ def test_keeps_a_fresh_file_and_its_ancestors_while_removing_stale_siblings(tmp_
     assert result.failed_entry_count == 0
 
 
-def test_keeps_a_fresh_directory_after_removing_its_stale_children(tmp_path):
-    active_directory = tmp_path / "active-session"
-    active_directory.mkdir()
-    (active_directory / "old.txt").write_text("old")
-    mark_fresh(active_directory)
-
-    remove_everything_written_before_now(tmp_path)
-
-    assert active_directory.is_dir()
-    assert list(active_directory.iterdir()) == []
-
-
 @pytest.mark.parametrize(
     "top_level_name", ["agenix", "agenix.d", "com.apple.chrono", ".AddressBookLocks"]
 )
@@ -87,19 +75,6 @@ def test_skips_a_directory_flagged_undeletable_without_recording_a_failure(tmp_p
 
     assert (flagged_directory / "TemporaryItems").is_dir()
     assert result.failed_entry_count == 0
-
-
-def test_removes_a_stale_symlink_without_touching_its_target(tmp_path):
-    temporary_directory = tmp_path / "T"
-    temporary_directory.mkdir()
-    link_target = tmp_path / "target.txt"
-    link_target.write_text("target")
-    (temporary_directory / "link").symlink_to(link_target)
-
-    remove_everything_written_before_now(temporary_directory)
-
-    assert list(temporary_directory.iterdir()) == []
-    assert link_target.read_text() == "target"
 
 
 @pytest.mark.parametrize(

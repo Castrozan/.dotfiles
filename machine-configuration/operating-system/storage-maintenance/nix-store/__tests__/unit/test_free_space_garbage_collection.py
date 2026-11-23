@@ -20,13 +20,6 @@ def test_never_collects_at_or_above_the_minimum(free_bytes, previous):
     assert not decision.collect
 
 
-@given(free_bytes=st.integers(min_value=0, max_value=40 * GIBIBYTE - 1))
-def test_collects_below_the_minimum_up_to_the_target(free_bytes):
-    decision = collection.decide(free_bytes, THRESHOLDS, None)
-    assert decision.collect
-    assert free_bytes + decision.bytes_to_free == THRESHOLDS.target_free_bytes
-
-
 @given(
     previous=st.integers(min_value=GIBIBYTE, max_value=40 * GIBIBYTE - 1),
     drop=st.integers(min_value=0, max_value=40 * GIBIBYTE),

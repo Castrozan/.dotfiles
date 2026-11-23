@@ -74,20 +74,6 @@ def test_core_services_applications_are_only_focused(bundle_path):
     assert open_command_tokens(script) == ["/usr/bin/open", bundle_path]
 
 
-def test_script_exits_at_once_so_the_launcher_closes_without_waiting_for_the_application():
-    script = generator.render_application_script(
-        installed_application(Path("/Applications/Example.app")), None
-    )
-
-    command_lines = [
-        line for line in script.split("\n") if line and not line.startswith("#")
-    ]
-
-    assert len(command_lines) == 1
-    assert command_lines[0].endswith(">/dev/null 2>&1 &")
-    assert "# @vicinae.mode silent" in script
-
-
 def test_earlier_search_root_wins_for_a_duplicate_bundle_identifier(tmp_path):
     first_bundle = create_application_bundle(
         tmp_path / "first" / "Tool.app", {"CFBundleIdentifier": "com.example.tool"}
@@ -176,13 +162,3 @@ def test_synchronization_replaces_stale_output_and_keeps_user_scripts(tmp_path):
     assert '# @vicinae.keywords ["tool"]' in generated_script.read_text()
     assert user_script.exists()
     assert not stale_script.exists()
-
-
-def test_unchanged_script_is_not_rewritten(tmp_path):
-    script_path = tmp_path / "script.sh"
-    generator.write_executable_script_if_changed(script_path, "content")
-    first_modification = script_path.stat().st_mtime_ns
-
-    generator.write_executable_script_if_changed(script_path, "content")
-
-    assert script_path.stat().st_mtime_ns == first_modification

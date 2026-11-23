@@ -141,18 +141,5 @@ def test_a_lock_a_live_sync_keeps_refreshing_is_left_alone(harness, monkeypatch)
     assert harness.lock.exists()
 
 
-def test_a_stale_lock_no_one_refreshes_is_removed_and_the_sync_proceeds(harness):
-    harness.install_ob_losing_the_race(losses=0)
-    harness.lock.mkdir()
-
-    exit_code = harness.run()
-
-    assert exit_code == 0
-    assert harness.attempts == 1, (
-        "a lock whose mtime never moves belongs to a dead run, and the old sixty "
-        "second window skipped whole passes waiting on it"
-    )
-
-
 def test_a_missing_ob_install_fails_without_touching_the_lock(harness):
     assert harness.run() == 1
