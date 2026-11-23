@@ -8,5 +8,9 @@ in
       export PYTHONPATH="${../scripts}:${waitGuardModules}''${PYTHONPATH:+:$PYTHONPATH}"
       exec ${pkgs.python312}/bin/python3 -m background_wait_tracker "$@"
     '')
+    (pkgs.writeShellScriptBin "wait-for-event" ''
+      export PYTHONPATH="${../scripts}''${PYTHONPATH:+:$PYTHONPATH}"
+      exec ${pkgs.python312}/bin/python3 -m wait_for_event "$@"
+    '')
   ];
 }
