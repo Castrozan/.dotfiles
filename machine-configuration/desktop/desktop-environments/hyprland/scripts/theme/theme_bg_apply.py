@@ -6,6 +6,7 @@ CURRENT_BACKGROUND_LINK = (
     Path.home() / ".config" / "hypr-theme" / "current" / "background"
 )
 IMPASTO_SHELL_COMMAND = "impasto-shell"
+WALLPAPER_COMMAND_TIMEOUT_SECONDS = 10
 
 
 def apply_current_background() -> None:
@@ -36,6 +37,7 @@ def apply_current_background() -> None:
             "none",
         ],
         capture_output=True,
+        timeout=WALLPAPER_COMMAND_TIMEOUT_SECONDS,
     )
     hand_background_to_impasto_shell(resolved_background)
 
@@ -55,6 +57,7 @@ def hand_background_to_impasto_shell(background: Path) -> None:
             str(background),
         ],
         capture_output=True,
+        timeout=WALLPAPER_COMMAND_TIMEOUT_SECONDS,
     )
 
 

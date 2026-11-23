@@ -1,4 +1,4 @@
-### Previous bar to Impasto: where every feature went
+# Previous bar to Impasto: where every feature went
 
 Impasto paths are relative to `home/.config/quickshell/` in the fork `Castrozan/impasto`. Current bar paths are relative to `machine-configuration/desktop/desktop-environments/quickshell/bar/program-configuration/` in the dotfiles. Every Impasto equivalent below was found by reading the source.
 
@@ -7,7 +7,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Shape, hiding, monitors
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 1 | Vertical bar on the left edge, 48 px (`drawers/ScreenDrawers.qml`) | Horizontal bar on the top edge with the island in the middle (`bar/Bar.qml`) | migrated differently | Impasto has no vertical bar; its four styles are all top-edge (`barStyle` in `services/SettingsService.qml`). |
 | 2 | Bar hidden by default, shown on hover of a 2 px left edge strip | `barAutohide` plus the top-edge strip (`bar/Bar.qml:260-340`) | migrated | Seeded `barAutohide: true`; the pointer at the top edge brings the bar down. |
 | 3 | Top edge hover opens the dashboard | Hovering a bar module opens its glance in the island (`bar/widgets/DynamicIsland.qml`) | migrated differently | No whole-dashboard hover; SUPER+A opens the control centre. |
@@ -23,7 +23,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Bar modules
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 12 | Launcher button, left click launcher, right click terminal | Dock launcher button (`dock/Dock.qml`, `dockLauncher`); launcher shortcut | migrated differently | No right-click terminal; SUPER+RETURN stays the terminal key. |
 | 13 | Window-switcher button (writes the switcher socket) | None | dropped | Lucas's own switcher service stays on SUPER+TAB and ALT+TAB; only the bar button goes. The launcher also has a `windows` mode (`services/LauncherService.qml:39`). |
 | 14 | Workspaces: 7 slots per page, paged around the focused one, highest at top, click to switch | Workspace strip, 5 slots growing to 10, dots, bars, rings or numbers (`bar/widgets/WorkspacesWidget.qml`, `workspaceCount`, `workspaceMax`, `workspaceStyle`) | migrated differently | Horizontal, capped at `workspaceMax` 10 by default, so the screensaver workspace 11 needs `workspaceMax` raised to show. Click uses the hyprlang dispatch added in the fork (`services/CompositorDispatch.qml`). |
@@ -48,7 +48,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Popouts
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 32 | Network popout: connection, IP, list of networks | `bar/island/NetworkDetail.qml`; address also in `bar/island/StatsPanel.qml` | migrated | Opens in the island from the module or the Wi-Fi tile. |
 | 33 | Bluetooth popout: adapter state, connected devices | `bar/island/BluetoothDetail.qml` | migrated | Same. |
 | 34 | Battery popout: percent, status, watts | `bar/island/PowerDetail.qml`, battery glance | migrated | Watts not verified in the detail; percent and state are shown. |
@@ -58,7 +58,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Dashboard
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 37 | Dashboard panel with Tab and Shift+Tab between five tabs | Control centre, a grid of blocks (`bar/island/ControlsPanel.qml`, default layout at `services/ControlsService.qml:522-529`) plus one island panel per topic | migrated differently | SUPER+A for the control centre; SUPER+M for media. |
 | 38 | Dashboard tab: user card (OS, WM, uptime) | `impasto` block (`bar/island/controls/ImpastoBlock.qml`, data from `scripts/machine.py`) | needs work | The block exists but is not in the default layout, and `machine.py` counts packages from `/var/lib/pacman/local`, which is absent on NixOS. Add the block in Settings; package count stays empty unless patched. |
 | 39 | Dashboard tab: weather summary | `bar/island/controls/WeatherCard.qml` | migrated | In the default control centre. |
@@ -84,7 +84,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Launcher and wallpaper
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 58 | Launcher apps mode: desktop entries, prefix first, most recent first | Apps mode with history (`services/LauncherService.qml:53`, `launcherOrder: "recent"`, `scripts/applications.py`) | migrated | Opened by SUPER+Q. Apps start through `gtk-launch`; terminal apps follow the desktop entry, so wezterm handling should be checked live. |
 | 59 | Launcher `:` actions: Wallpaper, Next Wallpaper, Lock, Reboot, Shutdown | `>` desk list of control centre doors and modes (`services/LauncherService.qml:366-403`); session panel | migrated differently | Session actions through the session door; wallpaper through the appearance door. No "next wallpaper" entry; `wallpaper random` exists as IPC (`Commands.qml:515`). |
 | 60 | Launcher `:wallpaper` mode over `~/.config/hypr-theme/wallpapers`, applying through `hypr-theme-generate-and-apply` | hypr-theme stays the picker; `theme_bg_apply.py` hands each applied wallpaper to Impasto (`wallpaper set`) | migrated differently | Pick wallpapers through hypr-theme as before; Impasto takes its palette from the wallpaper it is handed. Picking in Impasto's own appearance panel changes only Impasto and the wallpaper, not the hypr-theme programs. |
@@ -94,7 +94,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### OSD, session, notifications, utilities
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 63 | OSD fed by JSON on `quickshell-osd.sock` from `volume` and `brightness` scripts | Island OSD driven by the services themselves (`services/OsdService.qml`, `bar/island/OsdLayer.qml`) | migrated | Volume and mute come from Pipewire change signals, brightness from a watch on the backlight file (`services/BrightnessService.qml:136-141`), so the scripts keep working and the socket message is no longer needed. `quickshell-osd-send` finds no socket while Impasto is active; confirm it fails quietly. |
 | 64 | OSD for microphone mute | `services/OsdService.qml:148-158` | migrated | Announces "Microphone muted" or "Microphone live". |
 | 65 | OSD slider is interactive (drag, scroll) | Volume and brightness sliders in the control centre and module details (`bar/island/controls/TogglesBlock.qml`, `bar/island/LevelRow.qml`) | migrated differently | The OSD readout itself is not a control. |
@@ -113,7 +113,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 ### Theming, IPC, keybinds
 
 | # | Current feature | Impasto equivalent | Status | Reason / how to reach it |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | 77 | Colours from `quickshell-bar-colors.json`, rendered by the hypr-theme pipeline | Adaptive palette sampled from the wallpaper, or one of nine fixed palettes (`services/ThemeService.qml`, `scripts/theme_manager.py`) | migrated differently | Impasto colours itself from the wallpaper it set; `themeTargets: []` stops it writing other programs. The template stays because the overview reads it. |
 | 78 | Font hardcoded to JetBrainsMono Nerd Font | `fontFamily` Inter, `fontMono` JetBrainsMono Nerd Font Mono (`services/SettingsService.qml`) | migrated differently | Configurable; set `fontFamily` to keep the old face. |
 | 79 | `bar toggle` on SUPER+J | `bar pin` (fork, `Commands.qml`), `bar toggle` (zen) | migrated | SUPER+J pins or unpins the bar. |

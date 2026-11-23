@@ -50,6 +50,7 @@ class TestApplyCurrentBackground:
                     "none",
                 ],
                 capture_output=True,
+                timeout=theme_bg_apply.WALLPAPER_COMMAND_TIMEOUT_SECONDS,
             )
 
     def test_hands_the_resolved_background_to_impasto_when_it_is_installed(

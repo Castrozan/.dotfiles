@@ -1,4 +1,4 @@
-### Impasto desktop shell
+# Impasto desktop shell
 
 chise runs [Impasto](https://github.com/andreumassanet/impasto) (GPL-3.0, by Andreu Massanet) from the fork
 [Castrozan/impasto](https://github.com/Castrozan/impasto), pinned as the `impasto` flake input. The fork carries what

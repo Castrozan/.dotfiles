@@ -7,7 +7,7 @@
 }:
 let
   impastoShellPackage = inputs.impasto.packages.${pkgs.stdenv.hostPlatform.system}.impasto-shell;
-  quickshellConfigurationName = impastoShellPackage.quickshellConfigurationName;
+  inherit (impastoShellPackage) quickshellConfigurationName;
 
   firstRunSettings = pkgs.writeText "impasto-first-run-settings.json" (
     builtins.toJSON (

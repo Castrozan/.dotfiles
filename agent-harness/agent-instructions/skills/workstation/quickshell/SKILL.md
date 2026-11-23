@@ -31,11 +31,15 @@ TARGET FUNCTION [ARGS]`. Use IPC to trigger UI states for testing: more reliable
 --any-display`: the systemd service registers its display as `wayland,wayland-1` while callers see only `wayland-1`, so
 the default display filter rejects the match and the call fails with "No running instances".
 
+### Active desktop shell
+
 The desktop shell is whichever `custom.desktopShell.active` selects. On chise that is Impasto, built from the
 `impasto` flake input (the Castrozan/impasto fork, edited in its own clone) and run as `impasto-shell.service`; call it
 with `impasto-shell ipc --any-display call TARGET FUNCTION`. Its notes, the way back to the previous bar and the feature
 map live in `machine-configuration/desktop/desktop-environments/quickshell/impasto/README.md`. The `bar` config below
 runs only when the selection is `quickshell-bar`; the switcher and overview run with either shell.
+
+### Quickshell services
 
 Three quickshell services run independently:
 
