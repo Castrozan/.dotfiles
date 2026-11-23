@@ -57,6 +57,7 @@ def test_a_stale_marketplace_moves_to_its_declared_source_and_nothing_else_chang
                 "installLocation": str(clone_path),
             },
             "dotagents": {"source": OLD_SOURCE},
+            "avatar": {"source": OLD_SOURCE},
         },
     )
     user_settings_path = write_json(
@@ -96,6 +97,7 @@ def test_a_stale_marketplace_moves_to_its_declared_source_and_nothing_else_chang
             "installLocation": str(clone_path),
         },
         "dotagents": {"source": NEW_SOURCE},
+        "avatar": {"source": OLD_SOURCE},
     }
     assert json.loads(user_settings_path.read_text()) == {
         "model": "opus",
