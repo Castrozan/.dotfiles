@@ -13,8 +13,8 @@ Impasto unit. The previous shell's code stays in `../bar` until Lucas says Impas
 
 ### What the selector moves
 
-`custom.desktopShell.active` decides which shell module contributes the unit list in `~/.config/hypr-shell/autostart.conf`
-and the bindings in `~/.config/hypr-shell/bindings.conf`. Impasto owns notifications, so mako exists only with the
+`custom.desktopShell.active` decides which shell module contributes the unit list in
+`~/.config/hypr-shell/autostart.conf` and the bindings in `~/.config/hypr-shell/bindings.conf`. Impasto owns notifications, so mako exists only with the
 previous shell. The overview and window switcher are separate services and run with either shell.
 
 ### State and first run
