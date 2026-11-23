@@ -37,7 +37,6 @@ in
         wlogout
         polkit_gnome
         gnome-calculator
-        yad
       ]
       ++ [
         xdg-desktop-portal-hyprland
