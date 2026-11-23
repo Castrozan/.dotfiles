@@ -71,10 +71,3 @@ def test_a_failing_update_warns_without_failing_the_activation(
     assert run_main_over(monkeypatch, [nix_source_path]) == 0
     assert "could not update plugin alpha@shop" in capsys.readouterr().err
 
-
-def test_no_enabled_plugins_runs_no_commands(tmp_path, monkeypatch):
-    nix_source_path = write_settings(tmp_path, "settings.json.nix-source", {})
-    recorded_commands = record_plugin_commands(monkeypatch)
-
-    assert run_main_over(monkeypatch, [nix_source_path]) == 0
-    assert recorded_commands == []

@@ -14,18 +14,23 @@ def read_json_object(path: pathlib.Path) -> dict | None:
     return content if isinstance(content, dict) else None
 
 
+def declared_sources_in_overlay(overlay: dict) -> dict:
+    declared_marketplaces = overlay.get("extraKnownMarketplaces", {})
+    if not isinstance(declared_marketplaces, dict):
+        return {}
+    return {
+        marketplace_name: declaration["source"]
+        for marketplace_name, declaration in declared_marketplaces.items()
+        if isinstance(declaration, dict) and isinstance(declaration.get("source"), dict)
+    }
+
+
 def read_declared_marketplace_sources(overlay_paths: list[pathlib.Path]) -> dict:
     declared_sources: dict = {}
     for overlay_path in overlay_paths:
-        overlay = read_json_object(overlay_path) or {}
-        declared_marketplaces = overlay.get("extraKnownMarketplaces", {})
-        if not isinstance(declared_marketplaces, dict):
-            continue
-        for marketplace_name, declaration in declared_marketplaces.items():
-            if isinstance(declaration, dict) and isinstance(
-                declaration.get("source"), dict
-            ):
-                declared_sources[marketplace_name] = declaration["source"]
+        declared_sources.update(
+            declared_sources_in_overlay(read_json_object(overlay_path) or {})
+        )
     return declared_sources
 
 
@@ -66,40 +71,61 @@ def reconcile_file(
     return rewritten_marketplace_names
 
 
-def read_clone_origin_url(clone_path: pathlib.Path) -> str | None:
-    completed_process = subprocess.run(
-        ["git", "-C", str(clone_path), "remote", "get-url", "origin"],
+def clone_git_directory_of(record: object) -> pathlib.Path | None:
+    if not isinstance(record, dict):
+        return None
+    install_location = record.get("installLocation")
+    if not isinstance(install_location, str) or not install_location.startswith("/"):
+        return None
+    clone_git_directory = pathlib.Path(install_location) / ".git"
+    return clone_git_directory if clone_git_directory.is_dir() else None
+
+
+def declared_git_url(declared_source: dict) -> str | None:
+    if declared_source.get("source") != "git":
+        return None
+    declared_url = declared_source.get("url")
+    return declared_url if isinstance(declared_url, str) and declared_url else None
+
+
+def run_git(
+    clone_git_directory: pathlib.Path, arguments: list[str]
+) -> subprocess.CompletedProcess:
+    return subprocess.run(
+        ["git", f"--git-dir={clone_git_directory}", *arguments],
         capture_output=True,
         text=True,
         check=False,
+        timeout=30,
     )
-    if completed_process.returncode != 0:
-        return None
-    return completed_process.stdout.strip()
+
+
+def point_clone_origin_at(
+    clone_git_directory: pathlib.Path | None, declared_url: str | None
+) -> bool:
+    if clone_git_directory is None or declared_url is None:
+        return False
+    origin = run_git(clone_git_directory, ["config", "--get", "remote.origin.url"])
+    if origin.returncode != 0 or origin.stdout.strip() == declared_url:
+        return False
+    run_git(
+        clone_git_directory, ["remote", "set-url", "origin", declared_url]
+    ).check_returncode()
+    return True
 
 
 def point_clone_origins_at_declared_urls(
     known_marketplaces_path: pathlib.Path, declared_sources: dict
 ) -> list[str]:
     marketplace_records = read_json_object(known_marketplaces_path) or {}
-    repointed_marketplace_names = []
-    for marketplace_name, declared_source in declared_sources.items():
-        record = marketplace_records.get(marketplace_name)
-        declared_url = declared_source.get("url")
-        if not isinstance(record, dict) or declared_source.get("source") != "git" or not declared_url:
-            continue
-        clone_path = pathlib.Path(record.get("installLocation") or "")
-        if not (clone_path / ".git").exists():
-            continue
-        origin_url = read_clone_origin_url(clone_path)
-        if origin_url is None or origin_url == declared_url:
-            continue
-        subprocess.run(
-            ["git", "-C", str(clone_path), "remote", "set-url", "origin", declared_url],
-            check=True,
+    return [
+        marketplace_name
+        for marketplace_name, declared_source in declared_sources.items()
+        if point_clone_origin_at(
+            clone_git_directory_of(marketplace_records.get(marketplace_name)),
+            declared_git_url(declared_source),
         )
-        repointed_marketplace_names.append(marketplace_name)
-    return repointed_marketplace_names
+    ]
 
 
 def main() -> int:
