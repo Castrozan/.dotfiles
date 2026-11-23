@@ -25,9 +25,26 @@ let
     (lib.findFirst (entry: entry.label == "logout") null wlogoutConfiguration.programs.wlogout.layout)
     .action;
 
-  cfg = helpers.homeManagerTestConfiguration [ ../session/graphical-services-activation.nix ];
+  cfg = helpers.homeManagerTestConfiguration [
+    ../../quickshell/desktop-shell-selection-home-manager.nix
+    ../session/graphical-services-activation.nix
+  ];
 
   startGraphicalServicesActivation = cfg.home.activation.startGraphicalServices.data;
+
+  defaultDesktopShellConfiguration = helpers.homeManagerTestConfiguration [
+    ../../quickshell/desktop-shell-selection-home-manager.nix
+    ../../quickshell/bar/quickshell-bar-home-manager.nix
+  ];
+
+  defaultDesktopShellFiles = defaultDesktopShellConfiguration.xdg.configFile;
+
+  impastoDesktopShellConfiguration = helpers.homeManagerTestConfiguration [
+    ../../quickshell/desktop-shell-selection-home-manager.nix
+    ../../quickshell/bar/quickshell-bar-home-manager.nix
+    ../mako.nix
+    { custom.desktopShell.active = "impasto"; }
+  ];
 
   commandPackagesConfiguration = helpers.homeManagerTestConfiguration [
     ../hyprland-command-packages-home-manager.nix
@@ -106,6 +123,35 @@ in
     mkEvalCheck "domain-hyprland-session-services-stop-with-the-session"
       (chiseSessionServicesNotStoppedWithTheSession == [ ])
       "Every user service wanted by graphical-session.target must also be PartOf it, so `uwsm stop` and compositor crashes stop it with the session. Otherwise it outlives Hyprland, crashes on the vanished Wayland socket and Restart= loops it into a failed unit, because automatic restarts skip ConditionEnvironment. Offending services: ${toString chiseSessionServicesNotStoppedWithTheSession}";
+
+  domain-hyprland-default-desktop-shell-is-the-quickshell-bar =
+    mkEvalCheck "domain-hyprland-default-desktop-shell-is-the-quickshell-bar"
+      (
+        defaultDesktopShellConfiguration.custom.desktopShell.active == "quickshell-bar"
+        &&
+          lib.all (binding: lib.hasInfix binding defaultDesktopShellFiles."hypr-shell/bindings.conf".text)
+            [
+              "bindd = SUPER, J, Toggle left bar, exec, qs -c bar ipc --any-display call -- bar toggle"
+              "bindd = SUPER, M, Media dashboard, exec, qs -c bar ipc --any-display call dashboard toggle"
+              "bindd = SUPER, Q, Launcher, exec, qs -c bar ipc --any-display call launcher toggle"
+              "bindd = SUPER, A, Notifications, exec, qs -c bar ipc --any-display call sidebar toggle"
+            ]
+        &&
+          lib.hasInfix "systemctl --user start quickshell-bar.service mako.service\n"
+            defaultDesktopShellFiles."hypr-shell/autostart.conf".text
+        && defaultDesktopShellConfiguration.systemd.user.services ? quickshell-bar
+      )
+      "With the default selection the Hyprland session must keep today's behaviour: the four quickshell bar binds in hypr-shell/bindings.conf and a hypr-shell/autostart.conf that starts quickshell-bar.service and mako.service. Those binds and units left the static conf.d files when the shell became selectable, so losing them here leaves the session without a bar, launcher or notification daemon";
+
+  domain-hyprland-impasto-desktop-shell-replaces-the-quickshell-bar-and-mako =
+    mkEvalCheck "domain-hyprland-impasto-desktop-shell-replaces-the-quickshell-bar-and-mako"
+      (
+        !(impastoDesktopShellConfiguration.systemd.user.services ? quickshell-bar)
+        && !(impastoDesktopShellConfiguration.systemd.user.services ? mako)
+        && impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/bindings.conf".text == ""
+        && impastoDesktopShellConfiguration.xdg.configFile."hypr-shell/autostart.conf".text == ""
+      )
+      "Selecting impasto must leave exactly one desktop shell: no quickshell bar unit, and no mako unit because the selected shell owns org.freedesktop.Notifications itself. Two shells running together fight over layer-shell surfaces and the notification bus name";
 
   domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend =
     mkEvalCheck "domain-hyprland-portal-backend-starts-without-waiting-for-the-frontend"
