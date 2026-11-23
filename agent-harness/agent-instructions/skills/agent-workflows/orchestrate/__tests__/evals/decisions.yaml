@@ -7,7 +7,7 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta: |
-      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--reports-dir reports` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Two cards are open. Handle the round and report it to Lucas.
+      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--heartbeats-dir heartbeats` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Two cards are open. Handle the round and report it to Lucas.
     tempo_limite_segundos: 420
     ambiente:
       git: true
@@ -44,7 +44,7 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta: |
-      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--reports-dir reports` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Lucas just overrode D-20261108-f16a29 and said: "no, when only the version string changes, merge it straight to main". Run the learning loop.
+      You orchestrate this round as Medea. Decision cards from simulated sub-sessions are in ./decisions and Lucas's user model is ./USER.md: pass `--dir decisions` to `orchestrator decision`, `orchestrator learn` and `orchestrator round`, `--heartbeats-dir heartbeats` and `--for Medea` to `orchestrator round`, and `--user-model USER.md` or `--file USER.md` wherever a command takes the user model. The sub-sessions are simulated, so a notification that fails after the record is saved is expected. This sandbox has no private-configuration checkout, so do not commit or push USER.md. Lucas just overrode D-20261108-f16a29 and said: "no, when only the version string changes, merge it straight to main". Run the learning loop.
     tempo_limite_segundos: 420
     ambiente:
       git: true
@@ -78,12 +78,12 @@ casos:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta:
       You orchestrate Voyager in pane wW:pPZ. Your watch just printed `TIMEOUT wW:pPZ idle quiet-minutes=10
-      report=working`. Voyager owes you an inventory card and is idle while a background evaluation runs. No card has
+      heartbeat=working`. Voyager owes you an inventory card and is idle while a background evaluation runs. No card has
       reached you. What do you do now?
     assercoes:
       juiz:
         - Sends Voyager a status check now with `orchestrator relay` and `--status-check`, which asks for the card or
-          report it owes and whether its background command is still alive, instead of only reading the pane or waiting
+          heartbeat it owes and whether its background command is still alive, instead of only reading the pane or waiting
           for the evaluation to finish.
   - nome: orchestrator_relays_lucas_words_without_adding_steps
     nivel: unidade
@@ -91,8 +91,8 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta:
-      You orchestrate Mozart, a session on kira that filed its reports with `--reply-host kira`. Its goal is a rehearsal
-      that reads GitLab over the VPN, and its report says it waits for kira's rebuild, then connects the VPN, rehearses
+      You orchestrate Mozart, a session on kira that publishes its heartbeat with `--reply-host kira`. Its goal is a rehearsal
+      that reads GitLab over the VPN, and its heartbeat says it waits for kira's rebuild, then connects the VPN, rehearses
       once and disconnects. kira's rebuild just finished. Lucas now says "vpn is already connected". What do you send
       Mozart, and with which command?
     assercoes:
@@ -106,7 +106,7 @@ casos:
     instrucoes_extras:
       - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
     pergunta:
-      You orchestrate Carmilla, whose report says it is blocked until Lucas asks the reviewer to look at its infra merge
+      You orchestrate Carmilla, whose heartbeat says it is blocked until Lucas asks the reviewer to look at its infra merge
       request. Lucas now types "i asked the reviewer to look at it". Your context will be compacted soon. Which commands
       do you run, and what do you tell Lucas about the review request in your next round? Answer without running
       anything.
@@ -123,14 +123,14 @@ casos:
     pergunta:
       You orchestrate Archer for a team project whose code is private and lives only on the team's GitLab, and which
       must run on Claude Code, Codex and OpenCode; Lucas has said cost is not a constraint. Archer's brief did not say
-      any of this. Its report now recommends three calls for Lucas, to publish a provider on GitHub, choose the engine
+      any of this. Its heartbeat now recommends three calls for Lucas, to publish a provider on GitHub, choose the engine
       that fits the budget, and drop OpenCode support. What do you do before your next round, and with which
       commands? Answer without running anything.
     assercoes:
       juiz:
         - Sends Archer the missing context as facts (private team code on GitLab only, all three harnesses required,
           cost open) with `orchestrator relay Archer --fact` or `orchestrator ledger fact --to Archer`, waits for its
-          revised report, and does not present the three recommendations to Lucas as decisions; it does not dictate
+          revised heartbeat, and does not present the three recommendations to Lucas as decisions; it does not dictate
           how Archer should redo the work.
   - nome: orchestrator_lets_the_answer_notice_carry_a_decision
     nivel: unidade
@@ -158,7 +158,7 @@ casos:
 
       ### Your requests not yet verified done
 
-      Each row is something you asked Medea for, in your words. It leaves once Medea has checked the real result, not only a session's report.
+      Each row is something you asked Medea for, in your words. It leaves once Medea has checked the real result, not only a session's heartbeat.
 
       | # | You asked | Handled by | Asked |
       |---|---|---|---|
@@ -189,3 +189,17 @@ casos:
         - Opens with that round output reproduced verbatim as Markdown outside any code fence, then answers the build
           question briefly after it in at most 100 words of its own prose with no closing labels; it does not paste a
           long card paragraph or refer to an option only by its number.
+  - nome: orchestrator_answers_status_from_heartbeats_without_messaging
+    nivel: unidade
+    instrucao: agent-harness/agent-instructions/skills/agent-workflows/orchestrate/SKILL.md
+    instrucoes_extras:
+      - agent-harness/agent-instructions/skills/agent-workflows/orchestrate/references/decisions.md
+    pergunta:
+      You orchestrate Voyager, Mozart and Carmilla, all three working. Lucas asks "what is everyone doing right now?".
+      Which commands do you run, and do you message any session? Answer without running anything.
+    assercoes:
+      juiz:
+        - Runs `orchestrator status` and answers from its rows, optionally reading a heartbeat with `orchestrator
+          heartbeat show`, and messages no session, reads no pane and sends no a2a task to collect status; it sends
+          `orchestrator relay <session> --status-check` only to a session that status flags as stale, silent or
+          contradicted by its pane.
