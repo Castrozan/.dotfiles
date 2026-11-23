@@ -46,8 +46,10 @@ from `.deep-work/{task-slug}/context.md`. Never ask the user to repeat informati
 
 ### Heartbeat integration
 
-HEARTBEAT.md remains the lightweight signal that work is active. For deep-work tasks it points to the workspace and
-current phase; the workspace owns the detailed state.
+`HEARTBEAT.md` at the worktree root is the lightweight signal that work is active, in the template `orchestrator
+heartbeat file --help` prints; `orchestrator heartbeat check < HEARTBEAT.md` validates it. Its Doing line names the
+workspace and current phase; the workspace owns the detailed state. An orchestrated session publishes this same file
+as its status, so keep one heartbeat, never a second record.
 
 ### Compaction survival test
 
