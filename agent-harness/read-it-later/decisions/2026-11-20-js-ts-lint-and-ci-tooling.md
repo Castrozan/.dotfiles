@@ -1,6 +1,6 @@
 # JS/TS lint rule sets and sub-minute CI tweets
 
-**Bundle goal:** Close out five tweets about the JavaScript and TypeScript toolchain (nkzw oxlint 3.0, the Cloudflare oxlint config, a sub-minute bun CI pipeline and two later captures of Pontus's updated CI prompt tweet); nothing in Lucas's setup changes, and the nkzw tweet is kept as reference.
+**Bundle goal:** Close out six tweets about the JavaScript and TypeScript toolchain and CI speed (nkzw oxlint 3.0, the Cloudflare oxlint config, a sub-minute bun CI pipeline, two later captures of Pontus's updated CI prompt tweet, and a playbook promotion for Vincent Koc's OpenClaw CI cost write-up); nothing in Lucas's setup changes, and the nkzw tweet and the OpenClaw CI write-up are kept as reference.
 
 | # | Capture | TL;DR | Action | Why | Already covered | Second Brain direction | Systems | Local | Lucas's note |
 |---|---|---|---|---|---|---|---|---|---|
@@ -9,6 +9,7 @@
 | 3 | [Tweet from Pontus Abrahamsson (2026-11-20 10-01-33)](https://x.com/pontusab/status/2123750671795261748) | Pontus Abrahamsson cut a TypeScript CI pipeline under one minute by moving to bun test/check/lint/fmt, filling shards by recorded test time, running only tests the diff can reach, building the app once per process, and running lint, typecheck, build and tests in parallel. | drop | The bun-specific tooling does not apply to the dotfiles pipeline (bats, pytest, Nix), and its transferable ideas, recorded-time shard weights and parallel jobs, already landed in 3f9206ac7 and 74128da12. | 3f9206ac7 perf(ci): parallelize tests and reuse verified coverage artifacts; repository/verification/runner/python/pytest_shards.py already assigns test files to shards by recorded weights; .github/workflows/tests.yml already enforces coverage of changed lines; 74128da12 perf(ci): run Python test shards across four pytest workers | - | - | no | - |
 | 4 | [Tweet from Pontus Abrahamsson (2026-11-20 17-47-18)](https://x.com/pontusab/status/2123771160261529982) | Pontus announces an updated prompt to get a CI pipeline under one minute, quoting his bun test, bun check, sharded-by-recorded-time pipeline list. | drop | Same status as the later capture below and the same quoted thread as the 10-01-33 capture already in this group; the origin text carries only the pitch for a prompt and no new tool or step. | Tweet from Pontus Abrahamsson (2026-11-20 10-01-33).md is already a card in this group and quotes the same sub-one-minute CI thread | - | - | no | - |
 | 5 | [Tweet from Pontus Abrahamsson (2026-11-20 17-47-29)](https://x.com/pontusab/status/2123771160261529982) | Duplicate capture of the same updated CI prompt tweet, saved eleven seconds later. | drop | Duplicate of the capture saved eleven seconds earlier, with the same origin and the same quoted CI thread already in this group. | Tweet from Pontus Abrahamsson (2026-11-20 10-01-33).md is already a card in this group and quotes the same sub-one-minute CI thread | - | - | no | - |
+| 6 | [Tweet from Yonas Beshawred (2026-11-24 07-39-37)](https://x.com/yonasbe/status/2125022297748824496) | Yonas Beshawred of StarSling promotes a 46-technique GitHub Actions playbook distilled from Vincent Koc's write-up on cutting OpenClaw's CI usage 95.5%: post-merge full-suite schedule, test selection from the changed code with a full-suite fallback, cancelling superseded runs, duration-balanced shards and doing less work per job. | file → Vincent Koc - OpenClaw CI cost reduction (Developer Tooling MOC) | The tweet is a runner-product promotion, but the Vincent Koc article it quotes is a substantive, measured CI write-up worth keeping beside the group's other CI references. The dotfiles pipeline already carries most of its techniques (recorded-weight shards, parallel jobs, cancelled superseded runs, pruned tests), so nothing is built; the remaining ideas are a post-merge full-suite schedule and affected-test selection with a full-suite fallback. | 3f9206ac7 perf(ci): parallelize tests and reuse verified coverage artifacts; repository/verification/runner/python/pytest_shards.py already assigns test files to shards by recorded weights; 74128da12 perf(ci): run Python test shards across four pytest workers; .github/workflows/tests.yml and .github/workflows/nix-lint.yml already cancel superseded pull request runs through a concurrency group; f42c3f7d3 test: write the line for what earns a test and cut what fails it, and 82736829e test(evals): keep only the case that pays for its execution already apply the write-up's delete-weak-tests step | - | dotfiles | no | - |
 
 Answer on the pull request in plain language: approve the table as it stands, change any card ("drop 3", "session for 2 on kira"), or ask. Captures added after your approval need a new one.
 
@@ -19,7 +20,7 @@ Answer on the pull request in plain language: approve the table as it stands, ch
 {
   "topic_slug": "js-ts-lint-and-ci-tooling",
   "title": "JS/TS lint rule sets and sub-minute CI tweets",
-  "bundle_goal": "Close out five tweets about the JavaScript and TypeScript toolchain (nkzw oxlint 3.0, the Cloudflare oxlint config, a sub-minute bun CI pipeline and two later captures of Pontus's updated CI prompt tweet); nothing in Lucas's setup changes, and the nkzw tweet is kept as reference.",
+  "bundle_goal": "Close out six tweets about the JavaScript and TypeScript toolchain and CI speed (nkzw oxlint 3.0, the Cloudflare oxlint config, a sub-minute bun CI pipeline, two later captures of Pontus's updated CI prompt tweet, and a playbook promotion for Vincent Koc's OpenClaw CI cost write-up); nothing in Lucas's setup changes, and the nkzw tweet and the OpenClaw CI write-up are kept as reference.",
   "cards": [
     {
       "linked_urls": [
@@ -121,6 +122,47 @@ Answer on the pull request in plain language: approve the table as it stands, ch
       "action": "drop",
       "reason": "Duplicate of the capture saved eleven seconds earlier, with the same origin and the same quoted CI thread already in this group.",
       "added_at": "2026-11-22T20:11:05+00:00"
+    },
+    {
+      "linked_urls": [
+        "https://vincent.build/openclaw-ci-cost-reduction/",
+        "http://starsling.dev/ci-playbooks/openclaw"
+      ],
+      "covered_evidence": [
+        "3f9206ac7 perf(ci): parallelize tests and reuse verified coverage artifacts; repository/verification/runner/python/pytest_shards.py already assigns test files to shards by recorded weights",
+        "74128da12 perf(ci): run Python test shards across four pytest workers",
+        ".github/workflows/tests.yml and .github/workflows/nix-lint.yml already cancel superseded pull request runs through a concurrency group",
+        "f42c3f7d3 test: write the line for what earns a test and cut what fails it, and 82736829e test(evals): keep only the case that pays for its execution already apply the write-up's delete-weak-tests step"
+      ],
+      "second_brain_direction": [],
+      "systems": [
+        "dotfiles"
+      ],
+      "runs_locally_on_chise": false,
+      "capture": "Tweet from Yonas Beshawred (2026-11-24 07-39-37).md",
+      "tldr": "Yonas Beshawred of StarSling promotes a 46-technique GitHub Actions playbook distilled from Vincent Koc's write-up on cutting OpenClaw's CI usage 95.5%: post-merge full-suite schedule, test selection from the changed code with a full-suite fallback, cancelling superseded runs, duration-balanced shards and doing less work per job.",
+      "origin_url": "https://x.com/yonasbe/status/2125022297748824496",
+      "lucas_note": "",
+      "action": "file",
+      "reason": "The tweet is a runner-product promotion, but the Vincent Koc article it quotes is a substantive, measured CI write-up worth keeping beside the group's other CI references. The dotfiles pipeline already carries most of its techniques (recorded-weight shards, parallel jobs, cancelled superseded runs, pruned tests), so nothing is built; the remaining ideas are a post-merge full-suite schedule and affected-test selection with a full-suite fallback.",
+      "entry": {
+        "title": "Vincent Koc - OpenClaw CI cost reduction",
+        "theme_moc": "Developer Tooling MOC",
+        "tags": [
+          "topic/dev-tools",
+          "topic/engineering"
+        ],
+        "why": "A measured account of cutting an agent-heavy project's runner hours 86.5% by running less, stopping wasted runs, balancing shards and trimming per-job setup, framed around agent cycle time from PR open to merge. Yonas Beshawred's StarSling playbook turns it into 46 techniques to hand an agent.",
+        "what_to_steal": [
+          "Run the full main-branch suite on a post-merge schedule instead of every push, with affected-test selection on pull requests that falls back to the full suite when unsure",
+          "Judge every CI optimization on cost and waiting time together, and compare equivalent jobs before trusting a saving",
+          "Hand an agent the article with the prompt to audit CI, measure a baseline and propose reviewable steps"
+        ],
+        "reuse_for": "choosing the next CI speed-up for the dotfiles pipeline once its test budget grows again",
+        "creator": "Vincent Koc (@vincent_koc)",
+        "platform": "X"
+      },
+      "added_at": "2026-11-24T10:46:46+00:00"
     }
   ]
 }
