@@ -1,6 +1,5 @@
 {
   pkgs,
-  lib,
   mkEvalCheck,
   helpers,
   self,
@@ -12,8 +11,6 @@ let
   userSettingsEnabledPlugins =
     (builtins.fromJSON cfg.home.file.".claude/settings.json.nix-source".source.baseSettings.text)
     .enabledPlugins;
-
-  interactiveLauncher = builtins.readFile "${cfg.claude.package}/bin/claude";
 
   retirementActivation = cfg.home.activation.removeRetiredClaudeMarketplaces;
 
@@ -32,9 +29,24 @@ in
       "user settings reach every Claude process, including clawde agents that launch the unwrapped binary, so they enable only the dotfiles plugin and the avatar plugin, which production-plugin-avatar-carries-only-skills holds to skills alone; the compaction brief travels inside the dotfiles plugin, and an interactive mod enabled there would send keep-warm pings, hold channel messages, or rewrite prompts in fleet sessions nobody is watching";
 
   claude-interactive-launcher-loads-the-mods-directory =
-    mkEvalCheck "claude-interactive-launcher-loads-the-mods-directory"
-      (lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfg.claude.interactiveSessionModsDirectory}" interactiveLauncher)
-      "the interactive mods have no marketplace, so the launcher flag is the only thing that loads them into a keyboard session";
+    let
+      capturePluginDirectory = pkgs.writeShellScript "capture-claude-plugin-directory" ''
+        while [ "$#" -gt 1 ]; do
+          if [ "$1" = --plugin-dir ]; then
+            printf '%s\n' "$2"
+            exit 0
+          fi
+          shift
+        done
+        exit 1
+      '';
+    in
+    pkgs.runCommand "claude-interactive-launcher-loads-the-mods-directory" { } ''
+      sed 's|^CLAUDE_LAUNCHER_BINARY=.*|CLAUDE_LAUNCHER_BINARY=${capturePluginDirectory}|' \
+        ${cfg.claude.package}/bin/claude > launcher
+      test "$(${pkgs.bash}/bin/bash launcher)" = "${cfg.claude.interactiveSessionModsDirectory}"
+      touch "$out"
+    '';
 
   claude-cache-tax-writes-no-transcript-messages =
     pkgs.runCommandLocal "claude-cache-tax-writes-no-transcript-messages" { }
