@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 case "$#:${1:-}" in
 1:--help | 1:-h | 1:--version | 1:-v) exec @opencodeUnwrapped@/bin/opencode "$@" ;;
 esac

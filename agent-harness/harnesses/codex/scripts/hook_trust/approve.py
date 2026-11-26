@@ -85,7 +85,7 @@ async def approve_session_hooks(connection, discovery: HookDiscoveryRequest) -> 
     await approve_discovered_hooks(client, sorted(directories))
 
 
-async def approve_private_session_hooks(
+async def _approve_private_session_hooks(
     socket_path: Path, discovery: HookDiscoveryRequest
 ) -> None:
     from websockets.asyncio.client import unix_connect
@@ -104,6 +104,17 @@ async def approve_private_session_hooks(
             await approve_session_hooks(connection, discovery)
     except WebSocketException as error:
         raise RuntimeError(str(error)) from error
+
+
+def approve_private_launch_hooks(socket_path: Path, arguments: list[str]) -> None:
+    discovery = discover_launch_request(arguments)
+    if discovery is None:
+        return
+    try:
+        asyncio.run(_approve_private_session_hooks(socket_path, discovery))
+    except (OSError, ValueError, RuntimeError) as error:
+        detail = str(error) or "timed out"
+        raise RuntimeError(f"Codex hook approval failed: {detail}") from error
 
 
 async def approve_launch_hooks(binary: str, discovery: HookDiscoveryRequest) -> None:

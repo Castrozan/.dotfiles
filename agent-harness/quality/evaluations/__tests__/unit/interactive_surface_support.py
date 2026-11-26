@@ -60,7 +60,7 @@ INTERACTIVE_GENERATOR_PATHS = (
 )
 INTERACTIVE_LAUNCH_SOURCES = (
     REPO_ROOT
-    / "agent-harness/harnesses/claude-code/launch/interactive-claude-command.nix",
+    / "agent-harness/harnesses/claude-code/scripts/launch-interactive-claude.sh",
     REPO_ROOT / "agent-harness" / "harnesses" / "codex" / "scripts" / "codex",
     REPO_ROOT / "agent-harness/harnesses/opencode/scripts/launch_opencode.sh",
     REPO_ROOT

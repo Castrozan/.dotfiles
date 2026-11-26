@@ -1,7 +1,7 @@
 from pathlib import Path
 import signal
 import subprocess
-from unittest.mock import AsyncMock, Mock
+from unittest.mock import Mock
 
 import pytest
 
@@ -23,7 +23,7 @@ def private_launch(monkeypatch):
     monkeypatch.setattr(launcher.threading, "Thread", Mock())
     ready = Mock()
     monkeypatch.setattr(launcher, "wait_for_session_server", ready)
-    monkeypatch.setattr(launcher, "approve_private_session_hooks", AsyncMock())
+    monkeypatch.setattr(launcher, "approve_private_launch_hooks", Mock())
     kill_group = Mock()
     monkeypatch.setattr(launcher.os, "killpg", kill_group)
     monkeypatch.setattr(launcher, "process_group_exists", lambda identifier: False)
@@ -36,7 +36,7 @@ def test_private_launch_keeps_client_arguments_and_owns_server_lifetime(private_
 
     def launch_process(command, **options):
         if "--remote" in command:
-            launcher.approve_private_session_hooks.assert_awaited_once()
+            launcher.approve_private_launch_hooks.assert_called_once()
         return next(original_launch)
 
     processes.side_effect = launch_process
@@ -66,7 +66,7 @@ def test_failed_startup_never_opens_client_and_reaps_server(
     if failure_stage == "readiness":
         ready.side_effect = TimeoutError("not ready")
     else:
-        launcher.approve_private_session_hooks.side_effect = RuntimeError("not ready")
+        launcher.approve_private_launch_hooks.side_effect = RuntimeError("not ready")
     with pytest.raises((TimeoutError, RuntimeError), match="not ready"):
         launcher.run_private_session([])
     assert processes.call_count == 1

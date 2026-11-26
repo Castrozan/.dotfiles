@@ -1,4 +1,3 @@
-import asyncio
 import os
 from pathlib import Path
 import signal
@@ -9,8 +8,7 @@ import tempfile
 import threading
 import time
 
-from approve import approve_private_session_hooks
-from launch_arguments import discover_launch_request
+from approve import approve_private_launch_hooks
 from profile_connection import profile_connection_path
 from session_server_configuration import server_configuration_for
 from session_server_diagnostics import SessionServerDiagnostics
@@ -93,7 +91,6 @@ def run_private_session(arguments: list[str]) -> int:
     managed_permissions = arguments[:4] == managed_permission_arguments
     client_arguments = arguments[4:] if managed_permissions else arguments
     configuration = server_configuration_for(client_arguments)
-    discovery = discover_launch_request(client_arguments)
     server_arguments = list(configuration.arguments)
     if managed_permissions:
         server_arguments.extend(
@@ -139,14 +136,7 @@ def run_private_session(arguments: list[str]) -> int:
                 if details:
                     raise RuntimeError(f"{error}\n{details}") from error
                 raise
-            if discovery is not None:
-                try:
-                    asyncio.run(approve_private_session_hooks(socket_path, discovery))
-                except (OSError, ValueError, RuntimeError) as error:
-                    detail = str(error) or "timed out"
-                    raise RuntimeError(
-                        f"Codex hook approval failed: {detail}"
-                    ) from error
+            approve_private_launch_hooks(socket_path, client_arguments)
             with profile_connection_path(
                 socket_path, configuration.profile_path
             ) as client_path:
