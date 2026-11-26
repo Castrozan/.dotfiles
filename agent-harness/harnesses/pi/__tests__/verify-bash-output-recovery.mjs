@@ -15,6 +15,7 @@ const { clampMaxTokensToContext } = await import(
 );
 const smallModel = { contextWindow: 24576, maxTokens: 2048 };
 const largeModel = { contextWindow: 131072, maxTokens: 8192 };
+const contextPressureOutput = `${"x".repeat(46000)}TAIL_MARKER`;
 const { default: registerRecovery } = await import(pathToFileURL(extension));
 let recover;
 registerRecovery({
@@ -29,7 +30,7 @@ for (const model of [smallModel, largeModel]) {
     "ordinary output\n",
     "",
     `${"x".repeat(20000)}TAIL_MARKER`,
-    `${"x".repeat(46000)}TAIL_MARKER`,
+    contextPressureOutput,
     `${"x".repeat(300000)}TAIL_MARKER`,
     `${"x".repeat(300000)}TAIL_MARKER\n`,
     `header\n${"界".repeat(100000)}TAIL_MARKER\n`,
@@ -74,7 +75,7 @@ for (const model of [smallModel, largeModel]) {
         assert(!repaired.content[0].text.includes("\ufffd"));
         assert(repaired.details.truncation.outputBytes <= maximumOutputBytes);
         assert(repaired.details.truncation.outputLines >= 1);
-        if (model === smallModel && outputBytes > 40000) {
+        if (model === smallModel && input === contextPressureOutput) {
           const requestContext = (content) => ({
             messages: [
               {
