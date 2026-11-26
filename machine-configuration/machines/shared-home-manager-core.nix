@@ -18,9 +18,6 @@
     inherit username;
     homeDirectory =
       if pkgs.stdenv.hostPlatform.isDarwin then "/Users/${username}" else "/home/${username}";
-    packages = [
-      (pkgs.callPackage ../../agent-harness/orchestration/hex-orchestrator-package.nix { })
-    ];
     stateVersion = home-version;
   };
   programs.home-manager.enable = true;
