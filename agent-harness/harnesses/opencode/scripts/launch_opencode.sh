@@ -1,5 +1,9 @@
 opencodeConfigOverlayFile="@interactiveSessionConfigOverlay@"
 
+case "$#:${1:-}" in
+  1:--help | 1:-h | 1:--version | 1:-v) exec @opencodeAuthenticated@/bin/opencode "$@" ;;
+esac
+
 applyInteractiveSessionOverlay() {
   @workspaceProfileLaunchDispatch@
   export OPENCODE_CONFIG="$opencodeConfigOverlayFile"

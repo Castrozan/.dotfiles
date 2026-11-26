@@ -40,27 +40,24 @@ let
     inherit (workspaceProfileActivation) activationShellStatementsForProfile;
   };
 
+  workspaceProfileLaunchDispatchFile = pkgs.writeText "claude-workspace-profile-launch-dispatch" workspaceProfileLaunchDispatch;
+
   # No servant wiring here on purpose. The Servant is derived at SessionStart from
   # the id Claude Code mints for itself, so this wrapper neither knows nor needs to
   # know which one a launch draws, and a resume lands on the same one for free.
-  claudePackage = pkgs.writeShellScriptBin "claude" ''
-    claudeSystemPromptFile="${interactiveSessionOnlySystemPromptSurfaces}"
-    claudeSettingsFile="${interactiveSessionSettingsFile}"
-    resolvedWorkspaceProfileName=""
-    ${workspaceProfileLaunchDispatch}
-    export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
-    case "''${1-}" in
-      remote-control | rc | remote | sync | bridge)
-        exec ${claudeExecutable} "$@"
-        ;;
-    esac
-    exec ${claudeExecutable} \
-      --dangerously-skip-permissions \
-      --append-system-prompt-file "$claudeSystemPromptFile" \
-      --plugin-dir ${claudeMods.interactiveSessionModsDirectory} \
-      --settings "$claudeSettingsFile" \
-      "$@"
-  '';
+  claudePackage = pkgs.writeShellApplication {
+    name = "claude";
+    bashOptions = [ ];
+    excludeShellChecks = [ "SC1090" ];
+    runtimeEnv = {
+      CLAUDE_LAUNCHER_BINARY = claudeExecutable;
+      CLAUDE_LAUNCHER_SYSTEM_PROMPT_FILE = "${interactiveSessionOnlySystemPromptSurfaces}";
+      CLAUDE_LAUNCHER_SETTINGS_FILE = "${interactiveSessionSettingsFile}";
+      CLAUDE_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
+      CLAUDE_LAUNCHER_PLUGIN_DIRECTORY = "${claudeMods.interactiveSessionModsDirectory}";
+    };
+    text = builtins.readFile ../scripts/launch-interactive-claude.sh;
+  };
 in
 {
   options.claude = {
