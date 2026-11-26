@@ -2,6 +2,7 @@ import json
 import os
 import sys
 import time
+from unittest.mock import AsyncMock
 
 import pytest
 
@@ -69,6 +70,7 @@ def running_codex_stub(tmp_path, monkeypatch):
         raise TimeoutError("stub server did not become ready")
 
     monkeypatch.setattr(launcher, "wait_for_session_server", wait_for_stub)
+    monkeypatch.setattr(launcher, "approve_private_session_hooks", AsyncMock())
     return tmp_path
 
 

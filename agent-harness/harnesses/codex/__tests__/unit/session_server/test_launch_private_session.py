@@ -1,7 +1,7 @@
 from pathlib import Path
 import signal
 import subprocess
-from unittest.mock import Mock
+from unittest.mock import AsyncMock, Mock
 
 import pytest
 
@@ -23,6 +23,7 @@ def private_launch(monkeypatch):
     monkeypatch.setattr(launcher.threading, "Thread", Mock())
     ready = Mock()
     monkeypatch.setattr(launcher, "wait_for_session_server", ready)
+    monkeypatch.setattr(launcher, "approve_private_session_hooks", AsyncMock())
     kill_group = Mock()
     monkeypatch.setattr(launcher.os, "killpg", kill_group)
     monkeypatch.setattr(launcher, "process_group_exists", lambda identifier: False)
@@ -31,6 +32,14 @@ def private_launch(monkeypatch):
 
 def test_private_launch_keeps_client_arguments_and_owns_server_lifetime(private_launch):
     server, client, processes, _, kill_group = private_launch
+    original_launch = processes.side_effect
+
+    def launch_process(command, **options):
+        if "--remote" in command:
+            launcher.approve_private_session_hooks.assert_awaited_once()
+        return next(original_launch)
+
+    processes.side_effect = launch_process
     arguments = ["--sandbox", "danger-full-access", "resume", "--last"]
     assert launcher.run_private_session(arguments) == 7
     server_call, client_call = processes.call_args_list
@@ -49,10 +58,16 @@ def test_private_launch_keeps_client_arguments_and_owns_server_lifetime(private_
     client.terminate.assert_not_called()
 
 
-def test_failed_startup_never_opens_client_and_reaps_server(private_launch):
+@pytest.mark.parametrize("failure_stage", ["readiness", "approval"])
+def test_failed_startup_never_opens_client_and_reaps_server(
+    private_launch, failure_stage
+):
     server, _, processes, ready, kill_group = private_launch
-    ready.side_effect = TimeoutError("not ready")
-    with pytest.raises(TimeoutError, match="not ready"):
+    if failure_stage == "readiness":
+        ready.side_effect = TimeoutError("not ready")
+    else:
+        launcher.approve_private_session_hooks.side_effect = RuntimeError("not ready")
+    with pytest.raises((TimeoutError, RuntimeError), match="not ready"):
         launcher.run_private_session([])
     assert processes.call_count == 1
     kill_group.assert_called_once_with(server.pid, signal.SIGTERM)

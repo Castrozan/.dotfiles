@@ -16,6 +16,7 @@ load '../support/codex_launcher_fixture'
 	run_codex
 	[ "$status" -eq 0 ]
 	[ -f "$PRIVATE_LAUNCH_MARKER" ]
+	[ ! -e "$HOOK_TRUST_ARGUMENTS_FILE" ]
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive>" ]
 }
 
@@ -130,11 +131,11 @@ load '../support/codex_launcher_fixture'
 @test "keeps hook discovery overrides out of the interactive launch" {
 	write_dispatch_file 'codexInteractiveProfile=dotfiles-workspace-test' \
 		"workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
-	run_codex -C '/a project' resume --last
+	run_codex --no-daemon -C '/a project' resume --last
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test> <-C> </a project> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test> <--no-daemon> <-C> </a project> <resume> <--last>" ]
 	run cat "$HOOK_TRUST_ARGUMENTS_FILE"
-	[ "$output" = $'<-c>\n<model_reasoning_effort="high">\n<-C>\n</a project>\n<resume>\n<--last>' ]
+	[ "$output" = $'<-c>\n<model_reasoning_effort="high">\n<--no-daemon>\n<-C>\n</a project>\n<resume>\n<--last>' ]
 }
 
 @test "does not mistake a positional prompt for an explicit profile flag" {
@@ -151,17 +152,25 @@ load '../support/codex_launcher_fixture'
 
 @test "does not start codex when hook approval fails" {
 	HOOK_TRUST_EXIT_STATUS=7
-	run_codex
+	run_codex --no-daemon
 	[ "$status" -eq 7 ]
 	[ -z "$output" ]
 }
 
 @test "explicit endpoints and informational options bypass automatic private server selection" {
-	for argument in --no-daemon '--remote=unix:///custom.sock' --help --version; do
+	for argument in --no-daemon '--remote=unix:///custom.sock'; do
 		run_codex "$argument"
 		[ "$status" -eq 0 ]
 		[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
 		[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <$argument>" ]
+	done
+	for argument in --help -h --version -V; do
+		HOOK_TRUST_EXIT_STATUS=7
+		run_codex "$argument"
+		[ "$status" -eq 0 ]
+		[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
+		[ "${lines[0]}" = "argv: <$argument>" ]
+		[ "${lines[1]}" = 'AGENT_INTERACTIVE_PREFERENCES_PATH=<unset>' ]
 	done
 }
 

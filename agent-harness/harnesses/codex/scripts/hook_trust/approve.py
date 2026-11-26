@@ -3,13 +3,14 @@ import os
 import sys
 from pathlib import Path
 
-from app_server import CodexConfigurationClient
+from app_server import CodexConfigurationClient, CodexStdioConnection
 from launch_arguments import HookDiscoveryRequest, discover_launch_request
 
 
 approval_timeout_seconds = 8
 session_page_size = 100
 hook_directory_batch_size = 25
+maximum_response_bytes = 4 * 1024 * 1024
 
 
 async def session_directories(client: CodexConfigurationClient) -> set[Path]:
@@ -75,6 +76,36 @@ def _collect_untrusted_hook_updates(entries: list[dict], trust_updates: dict) ->
                 trust_updates[hook["key"]] = {"trusted_hash": hook["currentHash"]}
 
 
+async def approve_session_hooks(connection, discovery: HookDiscoveryRequest) -> None:
+    client = CodexConfigurationClient(connection)
+    await client.initialize()
+    directories = {discovery.working_directory}
+    if discovery.include_session_directories:
+        directories.update(await session_directories(client))
+    await approve_discovered_hooks(client, sorted(directories))
+
+
+async def approve_private_session_hooks(
+    socket_path: Path, discovery: HookDiscoveryRequest
+) -> None:
+    from websockets.asyncio.client import unix_connect
+    from websockets.exceptions import WebSocketException
+
+    try:
+        async with (
+            asyncio.timeout(approval_timeout_seconds),
+            unix_connect(
+                str(socket_path),
+                uri="ws://localhost",
+                close_timeout=0.1,
+                max_size=maximum_response_bytes,
+            ) as connection,
+        ):
+            await approve_session_hooks(connection, discovery)
+    except WebSocketException as error:
+        raise RuntimeError(str(error)) from error
+
+
 async def approve_launch_hooks(binary: str, discovery: HookDiscoveryRequest) -> None:
     process = await asyncio.create_subprocess_exec(
         binary,
@@ -84,16 +115,11 @@ async def approve_launch_hooks(binary: str, discovery: HookDiscoveryRequest) -> 
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.DEVNULL,
-        limit=4 * 1024 * 1024,
+        limit=maximum_response_bytes,
     )
     try:
         async with asyncio.timeout(approval_timeout_seconds):
-            client = CodexConfigurationClient(process)
-            await client.initialize()
-            directories = {discovery.working_directory}
-            if discovery.include_session_directories:
-                directories.update(await session_directories(client))
-            await approve_discovered_hooks(client, sorted(directories))
+            await approve_session_hooks(CodexStdioConnection(process), discovery)
     finally:
         if process.returncode is None:
             process.kill()

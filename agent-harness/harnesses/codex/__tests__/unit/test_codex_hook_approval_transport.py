@@ -3,7 +3,7 @@ import json
 from unittest.mock import AsyncMock, Mock
 
 import approve
-from app_server import CodexConfigurationClient
+from app_server import CodexConfigurationClient, CodexStdioConnection
 from launch_arguments import HookDiscoveryRequest
 import pytest
 
@@ -18,7 +18,7 @@ def test_client_ignores_notifications_and_correlates_responses():
             b'{"id":1,"result":{"data":[]}}\n',
         ]
     )
-    client = CodexConfigurationClient(process)
+    client = CodexConfigurationClient(CodexStdioConnection(process))
 
     assert asyncio.run(client.request("hooks/list", {"cwds": ["/project"]})) == {
         "data": []
@@ -38,7 +38,8 @@ def test_client_surfaces_closed_transport_and_rpc_errors(response):
     process.stdin.drain = AsyncMock()
     process.stdout.readline = AsyncMock(return_value=response)
     with pytest.raises(RuntimeError):
-        asyncio.run(CodexConfigurationClient(process).request("config/batchWrite", {}))
+        client = CodexConfigurationClient(CodexStdioConnection(process))
+        asyncio.run(client.request("config/batchWrite", {}))
 
 
 def test_stalled_approval_is_bounded_and_reaps_its_process(monkeypatch, tmp_path):

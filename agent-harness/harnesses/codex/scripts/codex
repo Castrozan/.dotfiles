@@ -6,6 +6,9 @@ workspaceProfileArguments=()
 interactivePreferencesArguments=()
 codexLaunchExecutable="$CODEX_LAUNCHER_BINARY"
 unset CODEX_SESSION_SOCKET_PATH
+case "$#:${1:-}" in
+1:--help | 1:-h | 1:--version | 1:-V) exec "$CODEX_LAUNCHER_BINARY" "$@" ;;
+esac
 codexCommand=""
 codexCommandOptionValuePending=false
 for argument in "$@"; do
@@ -44,8 +47,10 @@ agents | exec | e | review | login | logout | mcp | plugin | app-server | remote
 	done
 	;;
 esac
-"$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
-	"${workspaceProfileArguments[@]}" "$@" || exit "$?"
+if [[ "$codexLaunchExecutable" == "$CODEX_LAUNCHER_BINARY" ]]; then
+	"$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
+		"${workspaceProfileArguments[@]}" "$@" || exit "$?"
+fi
 exec "$codexLaunchExecutable" \
 	--config 'default_permissions=":danger-full-access"' \
 	--ask-for-approval "never" \

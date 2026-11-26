@@ -42,7 +42,11 @@ def respond_to_initialization(connection):
     for frame in connection:
         request = json.loads(frame)
         if "id" in request:
-            connection.send(json.dumps({"id": request["id"], "result": {}}))
+            result = {}
+            if request["method"] == "hooks/list":
+                (STATE_DIRECTORY / "hooks-listed").touch()
+                result = {"data": []}
+            connection.send(json.dumps({"id": request["id"], "result": result}))
 
 
 def main():

@@ -59,6 +59,7 @@ class PrivateSessionFixture:
         self.environment["PYTHONPATH"] = os.pathsep.join(
             (
                 str(LAUNCHER.parent),
+                str(LAUNCHER.parent.parent / "hook_trust"),
                 str(TESTS_DIRECTORY.parents[2] / "hooks/runtime/common"),
             )
         )

@@ -23,6 +23,7 @@ def test_private_backend_and_worker_groups_remain_in_terminal_session(
     assert server["process_group_identifier"] == server["process_identifier"]
     assert server["process_group_identifier"] != launcher["process_group_identifier"]
     assert client["process_group_identifier"] == launcher["process_group_identifier"]
+    assert (private_session.directory / "hooks-listed").is_file()
     for role in ("worker-one", "worker-two"):
         worker = identities[role]
         assert worker["session_identifier"] == launcher["session_identifier"]
