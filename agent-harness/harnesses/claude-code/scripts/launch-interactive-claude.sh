@@ -5,7 +5,7 @@ case "$#:${1:-}" in
 esac
 claudeSystemPromptFile="$CLAUDE_LAUNCHER_SYSTEM_PROMPT_FILE"
 claudeSettingsFile="$CLAUDE_LAUNCHER_SETTINGS_FILE"
-resolvedWorkspaceProfileName=""
+# shellcheck source=/dev/null
 source "$CLAUDE_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
 export AGENT_INTERACTIVE_PREFERENCES_PATH="$claudeSystemPromptFile"
 case "${1-}" in
