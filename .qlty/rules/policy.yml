@@ -146,3 +146,61 @@ rule:
 constraints:
   METHOD:
     regex: ^(run|call|check_call|check_output)$
+---
+id: python-unit-test-fixed-sleep
+language: Python
+severity: error
+message: Wait on the signal the code gives, or inject the clock and advance it; a fixed sleep guesses how long real work takes and fails under load. A test that waits on a real process belongs in integration/.
+metadata:
+  source: https://github.com/interfere-inc/landmines/blob/abe23a5898f9823eebf57d63a323a5af8883e69b/packages/landmines/src/rules/no-fixed-sleep.ts
+files:
+  - "**/__tests__/unit/**/*.py"
+rule:
+  any:
+    - pattern: time.sleep($DURATION)
+    - pattern: asyncio.sleep($DURATION)
+    - pattern: sleep($DURATION)
+constraints:
+  DURATION:
+    not:
+      regex: ^0(\.0*)?$
+---
+id: python-unit-test-clock-deadline-poll
+language: Python
+severity: error
+message: Wait on the event that announces the state, such as a threading.Event, a pipe or the operation's own completion, instead of looping until a clock deadline; a longer deadline only hides the race. A test that waits on a real process belongs in integration/.
+metadata:
+  source: https://github.com/interfere-inc/landmines/blob/abe23a5898f9823eebf57d63a323a5af8883e69b/packages/landmines/src/rules/no-unsignaled-poll.ts
+files:
+  - "**/__tests__/unit/**/*.py"
+rule:
+  kind: while_statement
+  has:
+    field: condition
+    has:
+      kind: call
+      regex: (monotonic|perf_counter|\.time)\(\)$
+      stopBy: end
+---
+id: python-unit-test-elapsed-time-bound
+language: Python
+severity: error
+message: An upper bound on elapsed wall-clock time measures how busy the machine was, not the behavior. Assert the ordering that proves it, or prove concurrency with a threading.Barrier that only opens when the calls overlap.
+metadata:
+  source: https://github.com/interfere-inc/landmines/blob/abe23a5898f9823eebf57d63a323a5af8883e69b/packages/landmines/src/rules/no-elapsed-time-bound.ts
+files:
+  - "**/__tests__/unit/**/*.py"
+rule:
+  kind: assert_statement
+  has:
+    kind: comparison_operator
+    any:
+      - pattern: $ELAPSED < $BOUND
+      - pattern: $ELAPSED <= $BOUND
+constraints:
+  ELAPSED:
+    any:
+      - regex: (?i)(elapsed|duration)
+      - all:
+          - kind: binary_operator
+          - regex: (monotonic|perf_counter|\.time)\(\)\s*-

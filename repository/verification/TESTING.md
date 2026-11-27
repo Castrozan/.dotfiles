@@ -260,7 +260,10 @@ retrying it is not a fix. A test that always fails has the test or the code wron
 Code with no test that pays stays without one and shows as uncovered; never write a test to raise coverage.
 
 `dotfiles-lint` enforces the budget and runs shellcheck over every tracked shell script, with or without an extension.
-Conditions 1 to 6 are checked in review of the change, against this section.
+Its `python-unit-test-*` rules in `.qlty/rules/policy.yml` reject the wall clock in a Python `unit/` test: a fixed
+sleep, a loop until a clock deadline, and an upper bound on elapsed time. Each fails with the honest alternative, and
+existing occurrences sit in `.qlty/baseline.json` until they are fixed. Conditions 1 to 6 are checked in review of the
+change, against this section.
 
 `dotfiles-test-cut` measures conditions 1 and 6 for the Python unit tests of one subtree. It mutates the sources beside
 them and records which tests fail for each mutant. A test that runs mutated code and fails for no mutant leaves, and so
