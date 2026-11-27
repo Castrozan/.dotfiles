@@ -16,11 +16,14 @@ let
         dockAutohide = true;
         themeTargets = [ ];
         shakeToFind = false;
-        barRight = [
-          "tray"
+        barLeft = [
+          "workspaces"
           "stats"
           "vpn"
           "keyboardlight"
+        ];
+        barRight = [
+          "tray"
           "notifications"
           "network"
           "bluetooth"
