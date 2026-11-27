@@ -179,7 +179,7 @@ rule:
     field: condition
     has:
       kind: call
-      regex: (monotonic|perf_counter|\.time)\(\)$
+      regex: ^((time\.)?(monotonic|perf_counter)(_ns)?|time\.time(_ns)?|\S*loop(\(\))?\.time)\(\)$
       stopBy: end
 ---
 id: python-unit-test-elapsed-time-bound
@@ -190,6 +190,15 @@ metadata:
   source: https://github.com/interfere-inc/landmines/blob/abe23a5898f9823eebf57d63a323a5af8883e69b/packages/landmines/src/rules/no-elapsed-time-bound.ts
 files:
   - "**/__tests__/unit/**/*.py"
+utils:
+  clock-reading:
+    kind: call
+    regex: ^((time\.)?(monotonic|perf_counter)(_ns)?|time\.time(_ns)?|\S*loop(\(\))?\.time)\(\)$
+  elapsed-since-clock-reading:
+    kind: binary_operator
+    has:
+      field: left
+      matches: clock-reading
 rule:
   kind: assert_statement
   has:
@@ -197,10 +206,22 @@ rule:
     any:
       - pattern: $ELAPSED < $BOUND
       - pattern: $ELAPSED <= $BOUND
-constraints:
-  ELAPSED:
-    any:
-      - regex: (?i)(elapsed|duration)
-      - all:
-          - kind: binary_operator
-          - regex: (monotonic|perf_counter|\.time)\(\)\s*-
+  any:
+    - has:
+        kind: comparison_operator
+        has:
+          nthChild: 1
+          matches: elapsed-since-clock-reading
+    - inside:
+        kind: function_definition
+        stopBy: end
+        has:
+          kind: assignment
+          stopBy: end
+          all:
+            - has:
+                field: left
+                pattern: $ELAPSED
+            - has:
+                field: right
+                matches: elapsed-since-clock-reading
