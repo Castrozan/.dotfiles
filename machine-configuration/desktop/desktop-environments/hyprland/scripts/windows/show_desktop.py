@@ -33,7 +33,7 @@ def hide_all_workspace_windows_to_special_desktop(workspace_id: int) -> None:
     state_file.write_text("\n".join(window_addresses))
 
     hide_batch = "; ".join(
-        f"dispatch movetoworkspacesilent special:desktop,address:{addr}"
+        f"dispatch movetoworkspacesilent special:desktop-{workspace_id},address:{addr}"
         for addr in window_addresses
     )
     run_hyprctl_batch(hide_batch)

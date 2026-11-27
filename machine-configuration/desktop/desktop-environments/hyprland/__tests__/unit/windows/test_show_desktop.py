@@ -9,8 +9,12 @@ class TestHideAllWorkspaceWindowsToSpecialDesktop:
     ):
         hyprctl_response_builder("activewindow", {"address": "0xaaa"})
         hyprctl_response_builder("clients", sample_hyprland_clients)
-        with patch.object(script, "STATE_DIR", tmp_path):
+        with (
+            patch.object(script, "STATE_DIR", tmp_path),
+            patch.object(script, "run_hyprctl_batch") as run_batch,
+        ):
             script.hide_all_workspace_windows_to_special_desktop(1)
+        assert "special:desktop-1,address:0xaaa" in run_batch.call_args.args[0]
         state_file = tmp_path / "ws-1"
         assert state_file.exists()
         addresses = state_file.read_text().splitlines()

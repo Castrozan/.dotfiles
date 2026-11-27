@@ -26,6 +26,7 @@ Scope {
         }
 
         let focusedWorkspaceId = Hyprland.focusedWorkspace ? Hyprland.focusedWorkspace.id : -1;
+        let desktopShownWorkspaceName = `special:desktop-${focusedWorkspaceId}`;
 
         let toplevelsMap = {};
         let toplevels = Hyprland.toplevels.values;
@@ -38,7 +39,10 @@ Scope {
         for (let i = 0; i < freshClients.length; i++) {
             let client = freshClients[i];
 
-            if (!client.workspace || client.workspace.id !== focusedWorkspaceId)
+            if (!client.workspace)
+                continue;
+            let hiddenByShowDesktop = client.workspace.name === desktopShownWorkspaceName;
+            if (client.workspace.id !== focusedWorkspaceId && !hiddenByShowDesktop)
                 continue;
 
             let address = client.address.replace(/^0x/, "");
@@ -51,7 +55,8 @@ Scope {
                 title: client.title || client.class || "Unknown",
                 windowClass: client.class || "",
                 waylandHandle: toplevel.wayland,
-                focusHistoryId: client.focusHistoryID ?? 9999
+                focusHistoryId: client.focusHistoryID ?? 9999,
+                hiddenByShowDesktop: hiddenByShowDesktop
             });
         }
 
@@ -72,9 +77,7 @@ Scope {
             return;
 
         if (confirmRequestedBeforeOverlayReady) {
-            let indexToFocus = windowList.length > 1 ? 1 : 0;
-            let selectedAddress = windowList[indexToFocus].address;
-            Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
+            focusWindow(windowList[windowList.length > 1 ? 1 : 0]);
             closeSwitcher();
             return;
         }
@@ -132,12 +135,18 @@ Scope {
 
         clampSelectedIndex();
 
-        if (windowList.length > 0 && selectedIndex < windowList.length) {
-            let selectedAddress = windowList[selectedIndex].address;
-            Hyprland.dispatch(`focuswindow address:0x${selectedAddress}`);
-        }
+        if (windowList.length > 0 && selectedIndex < windowList.length)
+            focusWindow(windowList[selectedIndex]);
 
         closeSwitcher();
+    }
+
+    function focusWindow(window: var): void {
+        if (window.hiddenByShowDesktop) {
+            Quickshell.execDetached(["sh", "-c", 'hypr-show-desktop && hyprctl dispatch focuswindow "address:0x$1"', "sh", window.address]);
+            return;
+        }
+        Hyprland.dispatch(`focuswindow address:0x${window.address}`);
     }
 
     function closeSwitcher(): void {
