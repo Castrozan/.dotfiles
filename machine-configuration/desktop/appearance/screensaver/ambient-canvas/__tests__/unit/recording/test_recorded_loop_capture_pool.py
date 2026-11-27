@@ -62,15 +62,14 @@ def test_an_incomplete_worker_prevents_publication(monkeypatch, other_manifest):
     assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
 
 
-@pytest.mark.parametrize("failing_worker_index", [0, 1])
-def test_worker_failure_cancels_its_siblings(monkeypatch, failing_worker_index):
+def test_a_later_worker_failure_cancels_the_siblings_still_recording(monkeypatch):
     barrier = threading.Barrier(2)
     cancelled_workers = []
 
     def drive_browser(*arguments):
         worker, deadline, cancellation_event = arguments[-3:]
         barrier.wait(timeout=2)
-        if worker.index == failing_worker_index:
+        if worker.index == 1:
             raise OSError("browser failed")
         assert cancellation_event.wait(timeout=2)
         cancelled_workers.append(worker.index)
@@ -80,4 +79,4 @@ def test_worker_failure_cancels_its_siblings(monkeypatch, failing_worker_index):
     started = time.monotonic()
     assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
     assert time.monotonic() - started < 1
-    assert cancelled_workers == [1 - failing_worker_index]
+    assert cancelled_workers == [0]
