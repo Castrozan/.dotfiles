@@ -29,7 +29,6 @@ POLLING_LOOP_TEMPLATES = (
     "while true; do {read} && break; {delay}; done",
     "while {delay}; do {read} && break; done",
 )
-CONTEXTS = (("Bash", False), ("Bash", True), ("Monitor", False))
 INERT_TEMPLATES = (
     "echo 'sleep {seconds}'",
     "git commit -m 'stop using sleep {seconds} to wait'",
@@ -78,46 +77,35 @@ def polling_loops(draw, state_read):
 
 
 @settings(deadline=None)
-@given(event_source_reads, st.data(), st.sampled_from(CONTEXTS))
-def test_a_delay_in_a_polling_loop_over_an_event_source_is_denied_everywhere(
-    target_and_read, data, context
+@given(event_source_reads, st.data())
+def test_a_delay_in_a_polling_loop_over_an_event_source_is_a_delay_wait(
+    target_and_read, data
 ):
     target_name, state_read = target_and_read
     command = data.draw(polling_loops(state_read))
-    assert sut.find_denied_delay_wait(command, *context) == sut.DelayWait(
-        "sleep-paced-loop", target_name
-    )
+    assert sut.delay_wait_in(command) == sut.DelayWait("sleep-paced-loop", target_name)
 
 
 @settings(deadline=None)
-@given(event_source_reads, delay_commands(waiting_durations), st.sampled_from(CONTEXTS))
-def test_a_fixed_delay_before_reading_state_is_denied_everywhere(
-    target_and_read, delay_command, context
+@given(event_source_reads, delay_commands(waiting_durations))
+def test_a_fixed_delay_before_reading_state_is_a_delay_wait(
+    target_and_read, delay_command
 ):
     target_name, state_read = target_and_read
     command = f"{delay_command}; {state_read}"
-    assert sut.find_denied_delay_wait(command, *context) == sut.DelayWait(
-        "fixed-delay", target_name
-    )
+    assert sut.delay_wait_in(command) == sut.DelayWait("fixed-delay", target_name)
 
 
 @settings(deadline=None)
 @given(st.sampled_from(REMOTE_STATE_READS), st.data())
-def test_a_remote_poll_is_allowed_only_off_the_session_as_a_safety_net(
-    state_read, data
-):
+def test_a_remote_poll_is_a_delay_wait_like_any_other(state_read, data):
     command = data.draw(polling_loops(state_read))
-    assert sut.find_denied_delay_wait(command, "Bash", False) is not None
-    assert sut.find_denied_delay_wait(command, "Bash", True) is None
-    assert sut.find_denied_delay_wait(command, "Monitor", False) is None
+    assert sut.delay_wait_in(command).rule_name == "sleep-paced-loop"
 
 
 @settings(deadline=None)
-@given(
-    st.lists(sub_second_durations, min_size=1, max_size=4),
-    st.sampled_from(CONTEXTS),
-)
-def test_sub_second_input_pacing_outside_a_polling_loop_is_allowed(durations, context):
+@given(st.lists(sub_second_durations, min_size=1, max_size=4))
+def test_sub_second_input_pacing_outside_a_polling_loop_is_allowed(durations):
     paced_inputs = "; ".join(
         f"xdotool key k{index}; sleep {duration}"
         for index, duration in enumerate(durations)
@@ -125,8 +113,8 @@ def test_sub_second_input_pacing_outside_a_polling_loop_is_allowed(durations, co
     item_loop = (
         f"for point in a b c; do xdotool mousemove $point; sleep {durations[0]}; done"
     )
-    assert sut.find_denied_delay_wait(paced_inputs, *context) is None
-    assert sut.find_denied_delay_wait(item_loop, *context) is None
+    assert sut.delay_wait_in(paced_inputs) is None
+    assert sut.delay_wait_in(item_loop) is None
 
 
 @settings(deadline=None)
@@ -134,10 +122,9 @@ def test_sub_second_input_pacing_outside_a_polling_loop_is_allowed(durations, co
     st.sampled_from(INERT_TEMPLATES),
     numeric_durations,
     event_source_reads,
-    st.sampled_from(CONTEXTS),
 )
-def test_delay_text_the_shell_never_executes_is_never_denied(
-    template, seconds, target_and_read, context
+def test_delay_text_the_shell_never_executes_is_never_a_delay_wait(
+    template, seconds, target_and_read
 ):
     command = template.format(seconds=seconds, read=target_and_read[1])
-    assert sut.find_denied_delay_wait(command, *context) is None
+    assert sut.delay_wait_in(command) is None

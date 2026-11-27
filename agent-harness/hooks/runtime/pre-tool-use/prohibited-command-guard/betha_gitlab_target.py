@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 
-from shell_simple_commands import words_after_command_wrappers
+from shell_command_wrappers import words_after_command_wrappers
 
 BETHA_GITLAB_HOST = "gitlab.services.betha.cloud"
 GLAB_BUILT_IN_DEFAULT_HOST = "gitlab.com"

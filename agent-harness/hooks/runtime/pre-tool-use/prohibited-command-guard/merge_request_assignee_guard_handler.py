@@ -40,10 +40,8 @@ def _unassigned_betha_creation_form_in(command, session_directory):
     from betha_gitlab_target import creation_targets_betha_gitlab
     from merge_request_creation_forms import creation_form_missing_an_assignee
     from shell_data_heredoc_bodies import shell_text_outside_data_heredoc_bodies
-    from shell_simple_commands import (
-        simple_commands_in,
-        words_after_command_wrappers,
-    )
+    from shell_command_wrappers import words_after_command_wrappers
+    from shell_simple_commands import simple_commands_in
 
     simple_commands = simple_commands_in(
         shell_text_outside_data_heredoc_bodies(command)

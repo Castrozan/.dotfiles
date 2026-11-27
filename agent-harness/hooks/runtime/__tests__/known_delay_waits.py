@@ -138,6 +138,47 @@ KNOWN_DELAY_WAITS = (
         "unknown",
     ),
     ("watch -n 5 'gh run list --limit 3'", BACKGROUND, "sleep-paced-loop", "ci-run"),
+    (
+        "until curl -sf https://api.example.com/deploys/42 | grep -q finished; "
+        "do sleep 30; done",
+        MONITOR,
+        "sleep-paced-loop",
+        "remote-endpoint",
+    ),
+    (
+        "for i in $(seq 1 20); do pgrep -f 'user-data-dir=/tmp/profile' >/dev/null "
+        "&& break; timeout 1 tail -f /dev/null; done",
+        FOREGROUND,
+        "sleep-paced-loop",
+        "process-exit",
+    ),
+    (
+        "timeout 8 tail -f /dev/null; pgrep -fa browser-profile | cut -c1-200",
+        FOREGROUND,
+        "fixed-delay",
+        "process-exit",
+    ),
+    (
+        "timeout 5 sleep infinity; herdr pane read w1:p2 --lines 12",
+        FOREGROUND,
+        "fixed-delay",
+        "pane-output",
+    ),
+    (
+        "bar-shell ipc call bar peek >/dev/null; read -t 1.2 _ </dev/null; "
+        'grim -g "$G" /tmp/bar.png',
+        FOREGROUND,
+        "fixed-delay",
+        "desktop-window",
+    ),
+    (
+        "wait-for-event process 4117525 >/dev/null 2>&1; read -t 5 _ </dev/null; "
+        "systemctl --user is-active app.service",
+        BACKGROUND,
+        "fixed-delay",
+        "service-state",
+    ),
+    ("gsleep 45; a2a status 0c7f", FOREGROUND, "fixed-delay", "peer-agent"),
 )
 
 

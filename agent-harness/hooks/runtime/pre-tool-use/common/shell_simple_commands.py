@@ -2,20 +2,6 @@ from __future__ import annotations
 
 COMMAND_SUBSTITUTION_OPENER = "$("
 BACKTICK = "`"
-SHELL_KEYWORDS_BEFORE_A_COMMAND = frozenset(
-    "{ ! if then else elif do while until time".split()
-)
-OPERAND_COUNT_BY_COMMAND_WRAPPER = {
-    "command": 0,
-    "env": 0,
-    "exec": 0,
-    "nice": 0,
-    "nohup": 0,
-    "proxy": 0,
-    "rtk": 0,
-    "sudo": 0,
-    "timeout": 1,
-}
 
 
 class _SimpleCommandBuilder:
@@ -163,37 +149,3 @@ def simple_commands_in(command_text):
     simple_commands = []
     _offset_after_commands(command_text, 0, "", simple_commands)
     return simple_commands
-
-
-def _is_variable_assignment(word):
-    assigned_name, assignment_separator, _assigned_value = word.partition("=")
-    return bool(assignment_separator) and assigned_name.isidentifier()
-
-
-def _precedes_the_command(word):
-    return _is_variable_assignment(word) or word in SHELL_KEYWORDS_BEFORE_A_COMMAND
-
-
-def _words_after_wrapper_options(words):
-    option_count = 0
-    while option_count < len(words) and words[option_count].startswith("-"):
-        option_count += 1
-    return words[option_count:]
-
-
-def words_after_command_wrappers(words):
-    remaining_words = list(words)
-    while remaining_words:
-        leading_word = remaining_words[0]
-        if _precedes_the_command(leading_word):
-            remaining_words = remaining_words[1:]
-            continue
-        operand_count = OPERAND_COUNT_BY_COMMAND_WRAPPER.get(
-            leading_word.rsplit("/", 1)[-1]
-        )
-        if operand_count is None:
-            break
-        remaining_words = _words_after_wrapper_options(remaining_words[1:])[
-            operand_count:
-        ]
-    return remaining_words

@@ -61,6 +61,11 @@ PRE_TOOL_USE_HANDLERS = [
         surfaces=(CLAUDE_SURFACE, OPENCODE_SURFACE),
     ),
     HookHandler(
+        handler_module_name="foreground_event_wait_guard_handler",
+        tool_matcher="Bash",
+        surfaces=(CLAUDE_SURFACE,),
+    ),
+    HookHandler(
         handler_module_name="codex_sandbox_downgrade_guard_handler",
         tool_matcher="mcp__codex__codex",
         surfaces=(CLAUDE_SURFACE,),

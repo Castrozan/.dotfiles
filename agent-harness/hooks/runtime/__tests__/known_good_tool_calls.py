@@ -51,6 +51,18 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "python3 - <<'PY'\nimport time\nfor attempt in range(3):\n    time.sleep(1)\nPY",
     "docker run -d --name keep alpine sleep infinity",
     "nvidia-smi --query-gpu=utilization.gpu --format=csv --loop=10",
+    'while read -r -t 5 line; do echo "$line"; done < /tmp/events.log',
+    "timeout 20 tail -f /var/log/app.log | grep -m1 READY",
+    "herdr pane wait-output w4E:p6 --match READY --timeout 5000",
+    "timeout 20 wait-for-event process 4030397; cat /tmp/summon.log",
+    "wait-for-event file /tmp/server.log --match listening --timeout-seconds 15",
+    "hypruse wait_for window_open --match Steam",
+    "herdr agent wait w4E:p6 --until working --timeout 30000",
+    "ci-watcher --help",
+    "herdr agent wait --help",
+    "find agent-workflows/background-waits development/ci-watcher -type f",
+    "grep -rn 'wait-for-event process' agent-harness",
+    "git commit -m 'deny herdr agent wait in the foreground'",
     "launch-command-detached-into-new-session /tmp/rebuild.log rebuild",
     "git commit -F- -- agent-harness/hooks/runtime <<'MESSAGE'\n"
     "fix(hooks): explain what the guard forbids\n"
@@ -68,9 +80,6 @@ KNOWN_GOOD_BACKGROUND_BASH_COMMANDS = (
     "agent-session exit --print-target > /tmp/status.txt 2>&1",
     "gh run watch 30957498339 --exit-status > /tmp/ci.log 2>&1",
     "herdr agent wait w4E:p6 --until done --until blocked --timeout 3600000",
-    "for i in $(seq 1 120); do "
-    "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
-    '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"',
     "wait-for-event process $(pgrep -f darwin-rebuild) --timeout-seconds 3600",
     "ci-watcher 30957498339 --timeout 3600",
 )

@@ -21,7 +21,6 @@ for _shared_module_candidate_directory in _SHARED_MODULE_CANDIDATE_DIRECTORIES:
 from background_bash_fake_success_detectors import (  # noqa: E402
     command_filters_by_hardcoded_long_literal_used_in_count_or_test,
     command_pipes_count_into_test_against_literal_zero,
-    command_uses_until_loop_terminating_on_empty_count,
 )
 from background_daemon_spawner_detectors import (  # noqa: E402
     command_starts_a_lingering_daemon_or_service,
@@ -46,7 +45,6 @@ BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH = (
 )
 
 PATTERN_DETECTORS_BY_RULE_NAME = {
-    "until-loop-terminating-on-empty-count": command_uses_until_loop_terminating_on_empty_count,
     "jq-select-filter-with-hardcoded-literal-in-flow-control": command_filters_by_hardcoded_long_literal_used_in_count_or_test,
     "count-piped-into-test-against-zero": command_pipes_count_into_test_against_literal_zero,
     "interactive-editor-or-full-screen-tui": command_launches_interactive_full_screen_program,
@@ -54,7 +52,6 @@ PATTERN_DETECTORS_BY_RULE_NAME = {
 }
 
 FAILURE_MODE_BY_RULE_NAME = {
-    "until-loop-terminating-on-empty-count": "silent-fake-success",
     "jq-select-filter-with-hardcoded-literal-in-flow-control": "silent-fake-success",
     "count-piped-into-test-against-zero": "silent-fake-success",
     "interactive-editor-or-full-screen-tui": "hang-forever",
@@ -116,7 +113,7 @@ def build_foreground_ci_wait_deny_reason():
     return (
         "Waiting on a CI run in the foreground parks this session for the whole "
         "run and streams its progress redraws into the context. Background it "
-        "instead and the harness reports the exit, or poll 'gh run list' when a "
+        "instead and the harness reports the exit, or read 'gh run list' once when a "
         f"verdict is actually due. See {BACKGROUND_BASH_PATTERNS_REFERENCE_FILE_PATH}."
     )
 

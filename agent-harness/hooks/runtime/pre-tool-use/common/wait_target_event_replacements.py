@@ -50,8 +50,6 @@ COMPILED_WAIT_TARGET_PATTERNS = tuple(
     for target_name, pattern in WAIT_TARGET_PATTERNS_IN_PRIORITY_ORDER
 )
 
-TARGETS_WITHOUT_AN_EVENT_SOURCE = frozenset({"forge-merge-request", "remote-endpoint"})
-
 EVENT_REPLACEMENT_BY_WAIT_TARGET = {
     "background-task-output": (
         "the harness notifies you when that background task ends; do other work or "
@@ -95,12 +93,12 @@ EVENT_REPLACEMENT_BY_WAIT_TARGET = {
         "line; if your own command writes it, background that command instead."
     ),
     "forge-merge-request": (
-        "`ci-watcher <pipeline-id>` for its pipeline, then read the state once; a "
-        "capped loop runs only backgrounded or under Monitor, as a safety net."
+        "background `ci-watcher <pipeline-id>` for its pipeline and read the state "
+        "once after it notifies; set auto-merge when the wait is for the merge."
     ),
     "remote-endpoint": (
-        "read it once when the result is due; nothing pushes it here, so a capped "
-        "loop runs only backgrounded or under Monitor, as a safety net."
+        "read it once when the result is due, or background one `curl --retry <n> "
+        "--retry-all-errors --retry-delay <s> -f <url>` and take its notification."
     ),
     UNKNOWN_WAIT_TARGET: (
         "background the command that causes the change and take its notification, "
@@ -114,7 +112,3 @@ def waited_target(command_text):
         if pattern.search(command_text):
             return target_name
     return UNKNOWN_WAIT_TARGET
-
-
-def target_has_an_event_source(target_name):
-    return target_name not in TARGETS_WITHOUT_AN_EVENT_SOURCE

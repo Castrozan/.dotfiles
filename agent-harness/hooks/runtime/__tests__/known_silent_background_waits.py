@@ -30,7 +30,7 @@ KNOWN_SILENT_BACKGROUND_WAITS = (
     },
     {
         "tool_name": "Bash",
-        "denied_by": "forge-poll-without-cap",
+        "denied_by": "sleep-paced-loop on forge-merge-request",
         "silent_minutes": 608,
         "command": (
             "S=/tmp/scratch; "

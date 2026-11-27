@@ -14,25 +14,15 @@ CAPPED_MERGE_REQUEST_POLL = (
     "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
     '[ "$state" != opened ] && break; sleep 30; done; echo "merge request: $state"'
 )
-UNCAPPED_MERGE_REQUEST_POLL = (
-    "until [ \"$(glab api 'projects/group%2Fplugin/merge_requests/118' "
-    '| jq -r .state)" = merged ]; do sleep 30; done'
-)
 
 
-def denied(command, tool_name="Bash", runs_in_background=False):
-    return sut.find_denied_delay_wait(command, tool_name, runs_in_background)
+def denied(command):
+    return sut.delay_wait_in(command)
 
 
 class TestPeerPolls:
-    @pytest.mark.parametrize(
-        ("tool_name", "runs_in_background"),
-        [("Bash", False), ("Bash", True), ("Monitor", False)],
-    )
-    def test_the_incident_poll_is_denied_in_every_context(
-        self, tool_name, runs_in_background
-    ):
-        assert denied(INCIDENT_PEER_REPORT_POLL, tool_name, runs_in_background) == (
+    def test_the_incident_poll_is_a_delay_wait_on_its_peer(self):
+        assert denied(INCIDENT_PEER_REPORT_POLL) == (
             sut.DelayWait("sleep-paced-loop", "peer-agent")
         )
 
@@ -40,40 +30,29 @@ class TestPeerPolls:
         command = INCIDENT_PEER_REPORT_POLL.replace(
             "|| [ $n -ge 240 ]", "|| ! herdr pane get w4E:p6 >/dev/null 2>&1"
         )
-        assert denied(command, "Bash", True).target_name == "peer-agent"
+        assert denied(command).target_name == "peer-agent"
 
 
-class TestRemoteStateSafetyNet:
-    @pytest.mark.parametrize(
-        ("tool_name", "runs_in_background"), [("Bash", True), ("Monitor", False)]
-    )
-    def test_a_capped_remote_poll_off_the_session_is_a_known_good_shape(
-        self, tool_name, runs_in_background
-    ):
-        assert denied(CAPPED_MERGE_REQUEST_POLL, tool_name, runs_in_background) is None
-        assert (
-            sut.known_good_background_wait_shape(CAPPED_MERGE_REQUEST_POLL, tool_name)
-            == "remote-state-safety-net"
-        )
-
-    def test_the_same_poll_in_the_foreground_is_denied(self):
+class TestRemotePolls:
+    def test_a_capped_remote_poll_is_a_delay_wait_on_the_merge_request(self):
         assert denied(CAPPED_MERGE_REQUEST_POLL) == sut.DelayWait(
             "sleep-paced-loop", "forge-merge-request"
         )
 
-    def test_an_uncapped_remote_poll_in_background_bash_needs_a_cap(self):
-        executed_text = UNCAPPED_MERGE_REQUEST_POLL
-        assert sut.find_unlisted_background_wait_rules(executed_text, "Bash") == [
-            "forge-poll-without-cap"
-        ]
-        assert sut.known_good_background_wait_shape(executed_text, "Bash") is None
-
-    def test_a_remote_poll_that_also_reads_a_local_file_has_an_event(self):
-        command = (
-            "until grep -q CHAIN-DONE /tmp/chain.log; do sleep 30; done; "
-            + UNCAPPED_MERGE_REQUEST_POLL
-        )
-        assert denied(command, "Bash", True).target_name == "file-content"
+    def test_no_remote_poll_is_a_known_good_shape(self):
+        for tool_name in ("Bash", "Monitor"):
+            assert (
+                sut.known_good_background_wait_shape(
+                    CAPPED_MERGE_REQUEST_POLL, tool_name
+                )
+                is None
+            )
+            assert (
+                sut.find_unlisted_background_wait_rules(
+                    CAPPED_MERGE_REQUEST_POLL, tool_name
+                )
+                == []
+            )
 
 
 class TestPeerEventStream:
@@ -105,7 +84,7 @@ class TestNativeWaitsAreNotDelays:
     )
     def test_a_native_wait_or_one_shot_job_is_not_a_background_wait(self, command):
         assert not sut.command_is_a_background_wait(command)
-        assert denied(command, "Bash", True) is None
+        assert denied(command) is None
 
 
 class TestDenyReason:

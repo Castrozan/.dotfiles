@@ -10,7 +10,13 @@ from shell_delay_durations import (
     sleep_is_a_delay,
     sleep_seconds,
 )
-from shell_simple_commands import simple_commands_in, words_after_command_wrappers
+from shell_command_wrappers import command_inside_wrappers
+from shell_delay_synonyms import (
+    SLEEP_COMMAND_NAMES,
+    command_blocks_until_killed,
+    timeout_word_of_a_read_that_only_passes_time,
+)
+from shell_simple_commands import simple_commands_in
 
 CONDITION_LOOP_KEYWORDS = frozenset({"while", "until"})
 ITERATION_LOOP_KEYWORDS = frozenset({"for", "select"})
@@ -66,7 +72,15 @@ class _DelayScan:
         if words[0] in CONDITION_LOOP_KEYWORDS:
             self.open_loops.append(ShellLoop(polls=True))
             words = words[1:]
-        self._read_command_words(words_after_command_wrappers(words))
+        wrapped_command = command_inside_wrappers(words)
+        if wrapped_command.timeout_duration_word and command_blocks_until_killed(
+            wrapped_command.command_words
+        ):
+            self.record_delay(
+                duration_word_seconds(wrapped_command.timeout_duration_word)
+            )
+            return
+        self._read_command_words(wrapped_command.command_words)
 
     def _close_loop(self):
         if len(self.open_loops) > self.inherited_loop_count:
@@ -104,6 +118,12 @@ def _read_sleep_command(scan, words):
         scan.record_delay(sleep_seconds(words[1:]))
 
 
+def _read_read_command(scan, words):
+    timeout_word = timeout_word_of_a_read_that_only_passes_time(words[1:])
+    if timeout_word is not None:
+        scan.record_delay(duration_word_seconds(timeout_word))
+
+
 def _read_loop_exit_command(scan, _words):
     innermost_loop = scan.innermost_loop()
     if innermost_loop is not None:
@@ -133,8 +153,9 @@ def _read_python_command(scan, words):
 
 
 COMMAND_READERS_BY_NAME = {
-    "sleep": _read_sleep_command,
+    **dict.fromkeys(SLEEP_COMMAND_NAMES, _read_sleep_command),
     "watch": _read_watch_command,
+    "read": _read_read_command,
     **dict.fromkeys(LOOP_EXIT_COMMANDS, _read_loop_exit_command),
     **dict.fromkeys(SHELL_INTERPRETERS, _read_shell_command),
 }

@@ -18,9 +18,10 @@ PEER_POLL_WITH_LIVENESS_EXIT = (
     "|| ! herdr pane get w4E:p6 >/dev/null 2>&1; do sleep 45; done"
 )
 PEER_EVENT_STREAM = "orchestrator watch --workspace w4E --timeout-minutes 10"
-UNCAPPED_MERGE_REQUEST_POLL = (
-    "until [ \"$(glab api 'projects/group%2Fplugin/merge_requests/118' "
-    '| jq -r .state)" = merged ]; do sleep 30; done'
+CAPPED_MERGE_REQUEST_POLL = (
+    "for i in $(seq 1 120); do "
+    "state=$(glab api 'projects/group%2Fplugin/merge_requests/118' | jq -r .state); "
+    '[ "$state" != opened ] && break; sleep 30; done'
 )
 
 
@@ -83,13 +84,13 @@ class TestBackgroundedBash:
         assert "peer-event-stream-outside-monitor" in result.reason
         assert "Monitor tool" in result.reason
 
-    def test_an_uncapped_remote_poll_is_denied_for_its_missing_cap(self):
-        result = background_bash_validator.handle(
-            bash_tool_call(UNCAPPED_MERGE_REQUEST_POLL, run_in_background=True)
+    def test_a_capped_remote_poll_has_no_safety_net_exemption(self):
+        result = delay_wait_guard.handle(
+            bash_tool_call(CAPPED_MERGE_REQUEST_POLL, run_in_background=True)
         )
 
-        assert "forge-poll-without-cap" in result.reason
-        assert "remote-state-safety-net" in result.reason
+        assert "(sleep-paced-loop on forge-merge-request)" in result.reason
+        assert "auto-merge" in result.reason
 
 
 class TestMonitor:

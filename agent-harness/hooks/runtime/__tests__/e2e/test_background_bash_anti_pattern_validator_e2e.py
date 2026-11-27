@@ -43,24 +43,6 @@ def _permission_decision(result):
 
 
 class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
-    def test_denies_background_bash_with_until_zero_count_loop(self):
-        result = _invoke_dispatcher_with_payload(
-            {
-                "tool_name": "Bash",
-                "tool_input": {
-                    "command": 'until [ "$(curl -s https://api.example.com/runs | jq length)" = "0" ]; do sleep 15; done',
-                    "run_in_background": True,
-                },
-            }
-        )
-        assert result.returncode == 0
-        parsed = json.loads(result.stdout)
-        assert parsed["hookSpecificOutput"]["permissionDecision"] == "deny"
-        assert (
-            "until-loop-terminating-on-empty-count"
-            in parsed["hookSpecificOutput"]["permissionDecisionReason"]
-        )
-
     def test_denies_foreground_bash_with_until_ci_polling_loop(self):
         result = _invoke_dispatcher_with_payload(
             {
@@ -80,7 +62,7 @@ class TestBackgroundBashAntiPatternsEndToEndThroughDispatcher:
             "for i in $(seq 1 60); do "
             'matched=$(curl -s https://api.example.com/runs | jq "[.[] | select(.headSha == \\"$SHA\\")] | length"); '
             '[ "$matched" -gt 0 ] || { echo "no runs match"; exit 1; }; '
-            "sleep 15; done"
+            "wait-for-event file /tmp/runs.log --match changed --timeout-seconds 60; done"
         )
         result = _invoke_dispatcher_with_payload(
             {

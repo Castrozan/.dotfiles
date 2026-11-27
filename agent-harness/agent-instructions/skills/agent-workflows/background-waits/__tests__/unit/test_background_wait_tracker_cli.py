@@ -10,10 +10,7 @@ from transcript_fixture import (
     write_transcript,
 )
 
-STUCK_REMOTE_POLL = (
-    "for i in $(seq 1 60); do curl -sf https://api.example.com/job | grep -q done "
-    "&& break; sleep 30; done"
-)
+STUCK_PEER_WAIT = "herdr agent wait w3A:p12 --until done"
 
 
 @pytest.fixture
@@ -29,9 +26,9 @@ def transcript_path(tmp_path):
             launch_record("toolu_incident", INCIDENT_COMMAND),
             started_record("toolu_incident", "task_incident"),
             task_stop_record("task_incident", minutes_after_launch=170),
-            launch_record("toolu_remote_poll", STUCK_REMOTE_POLL),
-            started_record("toolu_remote_poll", "task_remote_poll"),
-            task_stop_record("task_remote_poll", minutes_after_launch=95),
+            launch_record("toolu_peer_wait", STUCK_PEER_WAIT),
+            started_record("toolu_peer_wait", "task_peer_wait"),
+            task_stop_record("task_peer_wait", minutes_after_launch=95),
         ],
     )
 
@@ -71,17 +68,15 @@ def test_the_listing_holds_only_silent_commands_still_allowed_and_undismissed(
     )
 
     _exit_code, listing = run_tracker(monkeypatch, capsys, ledger_path, "list")
-    assert [line.split("\t")[0] for line in listing.splitlines()] == [
-        "toolu_remote_poll"
-    ]
-    assert "allowed:remote-state-safety-net" in listing
+    assert [line.split("\t")[0] for line in listing.splitlines()] == ["toolu_peer_wait"]
+    assert "allowed:not-a-wait" in listing
 
     run_tracker(
         monkeypatch,
         capsys,
         ledger_path,
         "dismiss",
-        "toolu_remote_poll",
+        "toolu_peer_wait",
         "--reason",
         "activation was merely slow",
     )
@@ -101,7 +96,7 @@ def test_a_second_scan_keeps_the_dismissal_and_records_nothing_new(
         capsys,
         ledger_path,
         "dismiss",
-        "toolu_remote_poll",
+        "toolu_peer_wait",
         "--reason",
         "slow",
     )
@@ -119,7 +114,7 @@ def test_a_second_scan_keeps_the_dismissal_and_records_nothing_new(
     }
     assert dismissed_reason_by_id == {
         "toolu_incident": None,
-        "toolu_remote_poll": "slow",
+        "toolu_peer_wait": "slow",
     }
 
 

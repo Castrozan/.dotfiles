@@ -1,15 +1,6 @@
 import re
 
 
-def command_uses_until_loop_terminating_on_empty_count(command_string):
-    return bool(
-        re.search(
-            r"until\b[\s\S]*?\[\s*\"?\$\([\s\S]+?\)\"?\s*=\s*\"?0\"?\s*\][\s\S]*?\bsleep\b",
-            command_string,
-        )
-    )
-
-
 def command_filters_by_hardcoded_long_literal_used_in_count_or_test(command_string):
     has_jq_select_with_long_literal = bool(
         re.search(

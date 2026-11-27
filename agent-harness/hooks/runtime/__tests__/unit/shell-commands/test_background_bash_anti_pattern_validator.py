@@ -24,32 +24,6 @@ sys.modules["background_bash_anti_pattern_validator_handler"] = sut
 _module_spec.loader.exec_module(sut)
 
 
-class TestCommandUsesUntilLoopTerminatingOnEmptyCount:
-    @pytest.mark.parametrize(
-        "command",
-        [
-            'until [ "$(gh run list --json status --jq length)" = "0" ]; do sleep 15; done',
-            'until [ "$(jq length data.json)" = "0" ]; do sleep 5; done',
-            'until [ "$(echo 0)" = "0" ]; do sleep 1; done',
-            'until [ "$(curl -s api/count | jq .pending)" = 0 ]; do sleep 30; done',
-        ],
-    )
-    def test_flags_until_loop_with_zero_count_termination(self, command):
-        assert sut.command_uses_until_loop_terminating_on_empty_count(command) is True
-
-    @pytest.mark.parametrize(
-        "command",
-        [
-            "for i in $(seq 1 60); do sleep 15; done",
-            'while [ "$pending" != "" ]; do sleep 5; done',
-            "echo hi",
-            "sleep 10",
-        ],
-    )
-    def test_passes_non_polling_or_inverted_termination(self, command):
-        assert sut.command_uses_until_loop_terminating_on_empty_count(command) is False
-
-
 class TestCommandFiltersByHardcodedLongLiteralUsedInCountOrTest:
     @pytest.mark.parametrize(
         "command",

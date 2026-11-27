@@ -8,8 +8,10 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
 from hook_module_loader import import_hyphenated_hook_module
 
 shell_simple_commands = import_hyphenated_hook_module("shell_simple_commands")
+shell_command_wrappers = import_hyphenated_hook_module("shell_command_wrappers")
 simple_commands_in = shell_simple_commands.simple_commands_in
-words_after_command_wrappers = shell_simple_commands.words_after_command_wrappers
+command_inside_wrappers = shell_command_wrappers.command_inside_wrappers
+words_after_command_wrappers = shell_command_wrappers.words_after_command_wrappers
 
 
 @pytest.mark.parametrize(
@@ -78,3 +80,21 @@ def test_splits_command_text_into_simple_commands(
 )
 def test_strips_the_wrappers_in_front_of_the_command(words, expected_invocation_words):
     assert words_after_command_wrappers(words) == expected_invocation_words
+
+
+@pytest.mark.parametrize(
+    "words, timeout_duration_word",
+    [
+        (["timeout", "120", "glab", "mr"], "120"),
+        (["nohup", "timeout", "$LIMIT", "glab", "mr"], "$LIMIT"),
+        (["timeout", "5", "timeout", "90", "glab", "mr"], "5"),
+        (["timeout"], None),
+        (["glab", "mr", "--timeout", "9"], None),
+    ],
+)
+def test_reports_the_duration_of_the_outermost_timeout_wrapper(
+    words, timeout_duration_word
+):
+    assert command_inside_wrappers(words).timeout_duration_word == (
+        timeout_duration_word
+    )
