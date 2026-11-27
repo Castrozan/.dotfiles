@@ -141,6 +141,7 @@ valid:
   - "assert plan.duration <= MAXIMUM_DURATION"
   - "def test_parsed_span():\n    elapsed = parse_span('00:05')\n    assert elapsed < 10"
   - "def test_fake_clock():\n    elapsed = fake_clock.monotonic() - started\n    assert elapsed < 1"
+  - "def test_two_values():\n    elapsed = time.monotonic() - started\n    assert retries < 3"
 invalid:
   - "def test_probe():\n    elapsed = time.monotonic() - started\n    assert elapsed < 1.5"
   - "def test_probe():\n    elapsed_seconds = time.perf_counter() - started_at\n    assert elapsed_seconds < 0.28, 'gatherers must overlap'"
