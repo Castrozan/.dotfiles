@@ -19,6 +19,7 @@ from hook_dispatch import (  # noqa: E402
     CODEX_SURFACE,
     HookHandler,
     OPENCODE_SURFACE,
+    PI_SURFACE,
     dispatched_hook_input_or_exit,
     requested_hook_surface,
     run_handlers,
@@ -32,6 +33,10 @@ SESSION_START_HANDLERS = [
     ),
     HookHandler(handler_module_name="compaction_context_recovery_handler"),
     HookHandler(handler_module_name="herdr_agent_session_report_handler"),
+    HookHandler(
+        handler_module_name="rex_terminal_context_handler",
+        surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE),
+    ),
     # Only the surfaces whose interactive prompt carries core-rules/servant-identity.md,
     # because the name this injects is inert without the rule that claims it.
     HookHandler(
