@@ -6,7 +6,9 @@ from unittest.mock import Mock
 
 import pytest
 
+import ambient_canvas_browser
 from recording import recorded_loop_browser_capture as browser_capture
+from recording import recorded_loop_capture_plan as capture_plan
 from recording.recorded_loop_capture_plan import RecordingWorker, RecordingConfiguration
 
 
@@ -42,6 +44,7 @@ def capture_dependencies(monkeypatch, tmp_path):
         lambda *arguments: (1920, 1080, 0, 0),
     )
     launch = Mock(return_value=Mock())
+    launch.return_value.poll.return_value = None
     terminate = Mock()
     monkeypatch.setattr(browser_capture.subprocess, "Popen", launch)
     monkeypatch.setattr(browser_capture, "terminate_browser_process", terminate)
@@ -81,6 +84,54 @@ def test_watchdog_cleans_up_without_deleting_progress(capture_dependencies, tmp_
     )
     assert "workerIndex=1" in record_url
     assert "workerCount=4" in record_url
+
+
+def test_a_browser_that_dies_before_uploading_fails_the_worker_at_once(
+    capture_dependencies,
+):
+    server, target, launch, terminate, profile_directory = capture_dependencies
+    launch.return_value.poll.return_value = -9
+    started = time.monotonic()
+    with pytest.raises(browser_capture.RecordingBrowserExitedError):
+        run_browser(target, threading.Event(), started + 60)
+    assert time.monotonic() - started < 3
+    terminate.assert_called_once_with(launch.return_value, str(profile_directory))
+    assert not profile_directory.exists()
+
+
+def test_a_browser_that_exits_right_after_uploading_keeps_its_manifest(
+    capture_dependencies,
+):
+    server, target, launch, terminate, profile_directory = capture_dependencies
+    server.received_manifest_bytes = b"manifest"
+
+    def exit_after_upload():
+        server.manifest_received_event.set()
+        return 0
+
+    launch.return_value.poll.side_effect = exit_after_upload
+    assert run_browser(target, threading.Event(), time.monotonic() + 60) == b"manifest"
+
+
+@pytest.mark.parametrize(
+    ("platform", "session_bus_address"),
+    [("linux", "disabled:"), ("darwin", "unix:path=/run/user/1000/bus")],
+)
+def test_record_browser_cannot_leave_the_launcher_cgroup_on_linux(
+    monkeypatch, capture_dependencies, platform, session_bus_address
+):
+    server, target, launch, terminate, profile_directory = capture_dependencies
+    monkeypatch.setattr(ambient_canvas_browser, "resolve_platform", lambda: platform)
+    monkeypatch.setattr(
+        capture_plan.os,
+        "environ",
+        {"DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus", "HOME": "/home"},
+    )
+    run_browser(target, threading.Event(), time.monotonic() + 0.02)
+    assert launch.call_args.kwargs["env"] == {
+        "DBUS_SESSION_BUS_ADDRESS": session_bus_address,
+        "HOME": "/home",
+    }
 
 
 @pytest.mark.parametrize("termination_failure", [None, "timeout", "missing"])

@@ -9,7 +9,7 @@ from recording.recorded_loop_capture_plan import RecordingWorker
 
 
 @pytest.mark.parametrize(
-    ("processor_count", "worker_count"), [(None, 1), (1, 1), (4, 2), (32, 4)]
+    ("processor_count", "worker_count"), [(None, 1), (1, 1), (2, 1), (4, 2), (32, 2)]
 )
 def test_capture_pool_is_bounded_by_processor_count(
     monkeypatch, processor_count, worker_count
@@ -62,19 +62,22 @@ def test_an_incomplete_worker_prevents_publication(monkeypatch, other_manifest):
     assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
 
 
-def test_worker_failure_cancels_its_siblings(monkeypatch):
+@pytest.mark.parametrize("failing_worker_index", [0, 1])
+def test_worker_failure_cancels_its_siblings(monkeypatch, failing_worker_index):
     barrier = threading.Barrier(2)
     cancelled_workers = []
 
     def drive_browser(*arguments):
         worker, deadline, cancellation_event = arguments[-3:]
         barrier.wait(timeout=2)
-        if worker.index == 0:
+        if worker.index == failing_worker_index:
             raise OSError("browser failed")
         assert cancellation_event.wait(timeout=2)
         cancelled_workers.append(worker.index)
 
     monkeypatch.setattr(capture_pool, "resolve_recording_worker_count", lambda: 2)
     monkeypatch.setattr(capture_pool, "drive_record_browser", drive_browser)
+    started = time.monotonic()
     assert capture_pool.capture_recorded_playlist(*([None] * 4)) is None
-    assert cancelled_workers == [1]
+    assert time.monotonic() - started < 1
+    assert cancelled_workers == [1 - failing_worker_index]

@@ -131,6 +131,13 @@ in
         Service = {
           Type = "oneshot";
           KillMode = "process";
+          Slice = "background.slice";
+          Nice = 19;
+          CPUWeight = "idle";
+          IOWeight = 10;
+          MemoryHigh = "2G";
+          MemoryMax = "3G";
+          OOMPolicy = "continue";
           ExecStart = "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas";
         };
         Install = {

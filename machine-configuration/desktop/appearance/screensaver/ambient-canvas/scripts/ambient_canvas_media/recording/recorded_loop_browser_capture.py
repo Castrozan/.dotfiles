@@ -10,12 +10,18 @@ from ambient_canvas_browser import (
     resolve_centered_window_geometry,
 )
 from recording.recorded_loop_capture_plan import (
+    build_browser_environment_without_systemd_scope_escape,
     build_record_browser_arguments,
     build_record_index_url,
     RecordingConfiguration,
 )
 from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
 from recorded_loop_upload_server import start_recorded_loop_upload_server
+
+
+class RecordingBrowserExitedError(RuntimeError):
+    def __init__(self, exit_status):
+        super().__init__(f"recording browser exited with status {exit_status}")
 
 
 class BrowserCaptureRequest(NamedTuple):
@@ -73,6 +79,7 @@ def drive_record_browser(request, worker, deadline, cancellation_event):
             ),
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
+            env=build_browser_environment_without_systemd_scope_escape(),
         )
         while not cancellation_event.is_set():
             remaining_seconds = deadline - time.monotonic()
@@ -80,6 +87,11 @@ def drive_record_browser(request, worker, deadline, cancellation_event):
                 break
             if upload_server.manifest_received_event.wait(min(1, remaining_seconds)):
                 break
+            exit_status = browser_process.poll()
+            if exit_status is not None:
+                if upload_server.manifest_received_event.is_set():
+                    break
+                raise RecordingBrowserExitedError(exit_status)
     finally:
         if browser_process is not None:
             terminate_browser_process(browser_process, throwaway_profile_directory)

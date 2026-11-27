@@ -39,6 +39,14 @@ let
       ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas;
     in
     !ambientCanvasService.Unit.X-RestartIfChanged && !ambientCanvasService.Unit.X-StopIfChanged;
+  linuxAmbientCanvasRecordingYieldsToTheDesktop =
+    let
+      ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas.Service;
+    in
+    ambientCanvasService.Slice == "background.slice"
+    && ambientCanvasService.CPUWeight == "idle"
+    && ambientCanvasService ? MemoryMax
+    && ambientCanvasService.OOMPolicy == "continue";
   darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
 in
 {
@@ -90,4 +98,9 @@ in
     mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation"
       linuxAmbientCanvasKeepAliveAvoidsActivationRestart
       "the timer-driven ambient-canvas oneshot can record for minutes, so a rebuild must neither stop nor restart it and wait for the record pass";
+
+  domain-screensaver-ambient-canvas-recording-yields-to-the-desktop =
+    mkEvalCheck "domain-screensaver-ambient-canvas-recording-yields-to-the-desktop"
+      linuxAmbientCanvasRecordingYieldsToTheDesktop
+      "a theme change re-records the loop with headless Chrome workers, so the keep-alive must run in background.slice at idle CPU weight under a memory ceiling, and survive a worker OOM kill so the launcher fails the pass itself instead of starving the desktop";
 }

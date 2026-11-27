@@ -17,7 +17,7 @@ from recording.recorded_segment_manifest import parse_uploaded_segment_manifest
 
 
 def resolve_recording_worker_count():
-    return max(1, min(4, (os.cpu_count() or 1) // 2))
+    return max(1, min(2, (os.cpu_count() or 1) // 2))
 
 
 def capture_recorded_playlist(
@@ -47,6 +47,11 @@ def capture_recorded_playlist(
                 )
                 for worker_index in range(worker_count)
             ]
+            settled_recordings, _ = concurrent.futures.wait(
+                recordings, return_when=concurrent.futures.FIRST_EXCEPTION
+            )
+            for settled_recording in settled_recordings:
+                settled_recording.result()
             manifests = [recording.result() for recording in recordings]
         except Exception as recording_error:
             print(f"render-ambient-canvas-loop: {recording_error}", file=sys.stderr)

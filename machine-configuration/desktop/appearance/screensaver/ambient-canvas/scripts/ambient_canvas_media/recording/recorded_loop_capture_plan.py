@@ -1,3 +1,4 @@
+import os
 import urllib.parse
 from typing import NamedTuple
 
@@ -9,6 +10,7 @@ CAPTURE_PIXEL_HEIGHT = 1080
 FALLBACK_CAPTURE_PIXEL_WIDTH = 1920
 MINIMUM_RECORDED_BYTES_PER_SECOND = 2000
 RECORD_PASS_WALL_CLOCK_CEILING_SECONDS = 1800
+UNREACHABLE_SESSION_BUS_ADDRESS = "disabled:"
 
 
 class RecordingConfiguration(NamedTuple):
@@ -64,6 +66,12 @@ def resolve_upload_wait_budget_seconds():
 
 def resolve_minimum_recorded_bytes(duration_seconds):
     return duration_seconds * MINIMUM_RECORDED_BYTES_PER_SECOND
+
+
+def build_browser_environment_without_systemd_scope_escape():
+    if ambient_canvas_browser.resolve_platform().startswith("darwin"):
+        return dict(os.environ)
+    return {**os.environ, "DBUS_SESSION_BUS_ADDRESS": UNREACHABLE_SESSION_BUS_ADDRESS}
 
 
 def build_record_browser_arguments(
