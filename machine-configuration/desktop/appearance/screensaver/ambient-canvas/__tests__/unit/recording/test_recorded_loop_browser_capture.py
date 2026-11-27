@@ -65,13 +65,57 @@ def run_browser(target, cancellation_event, deadline):
     )
 
 
-def test_watchdog_cleans_up_without_deleting_progress(capture_dependencies, tmp_path):
+def end_wait_on_deadline(server, launch):
+    return 0.02, None
+
+
+def end_wait_on_browser_death(server, launch):
+    launch.return_value.poll.return_value = -9
+    launch.return_value.returncode = -9
+    return 60, browser_capture.RecordingBrowserExitedError
+
+
+def end_wait_on_browser_exit_after_upload(server, launch):
+    server.received_manifest_bytes = b"manifest"
+
+    def exit_after_upload():
+        server.manifest_received_event.set()
+        return 0
+
+    launch.return_value.poll.side_effect = exit_after_upload
+    return 60, b"manifest"
+
+
+@pytest.mark.parametrize(
+    "end_wait",
+    [
+        end_wait_on_deadline,
+        end_wait_on_browser_death,
+        end_wait_on_browser_exit_after_upload,
+    ],
+)
+def test_every_wait_ending_cleans_up_without_deleting_progress(
+    monkeypatch, capture_dependencies, tmp_path, end_wait
+):
     server, target, launch, terminate, profile_directory = capture_dependencies
+    monkeypatch.setattr(ambient_canvas_browser, "resolve_platform", lambda: "linux")
+    monkeypatch.setattr(
+        capture_plan.os,
+        "environ",
+        {"DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus", "HOME": "/home"},
+    )
     segment_path = tmp_path / "kept.mp4"
     segment_path.write_bytes(b"completed segment")
+    wait_seconds, expected_outcome = end_wait(server, launch)
     started = time.monotonic()
-    assert run_browser(target, threading.Event(), started + 0.02) is None
-    assert time.monotonic() - started < 1
+    if expected_outcome is browser_capture.RecordingBrowserExitedError:
+        with pytest.raises(expected_outcome, match="-9"):
+            run_browser(target, threading.Event(), started + wait_seconds)
+    else:
+        assert run_browser(target, threading.Event(), started + wait_seconds) == (
+            expected_outcome
+        )
+    assert time.monotonic() - started < 3
     terminate.assert_called_once_with(launch.return_value, str(profile_directory))
     server.shutdown.assert_called_once()
     server.server_close.assert_called_once()
@@ -84,39 +128,10 @@ def test_watchdog_cleans_up_without_deleting_progress(capture_dependencies, tmp_
     )
     assert "workerIndex=1" in record_url
     assert "workerCount=4" in record_url
-
-
-def test_a_browser_exit_fails_the_worker_at_once_unless_its_manifest_arrived(
-    monkeypatch, capture_dependencies
-):
-    server, target, launch, terminate, profile_directory = capture_dependencies
-    monkeypatch.setattr(ambient_canvas_browser, "resolve_platform", lambda: "linux")
-    monkeypatch.setattr(
-        capture_plan.os,
-        "environ",
-        {"DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus", "HOME": "/home"},
-    )
-    launch.return_value.poll.return_value = -9
-    launch.return_value.returncode = -9
-    started = time.monotonic()
-    with pytest.raises(browser_capture.RecordingBrowserExitedError, match="-9"):
-        run_browser(target, threading.Event(), started + 60)
-    assert time.monotonic() - started < 3
-    terminate.assert_called_once_with(launch.return_value, str(profile_directory))
-    assert not profile_directory.exists()
     assert launch.call_args.kwargs["env"] == {
         "DBUS_SESSION_BUS_ADDRESS": "disabled:",
         "HOME": "/home",
     }
-
-    server.received_manifest_bytes = b"manifest"
-
-    def exit_after_upload():
-        server.manifest_received_event.set()
-        return 0
-
-    launch.return_value.poll.side_effect = exit_after_upload
-    assert run_browser(target, threading.Event(), time.monotonic() + 60) == b"manifest"
 
 
 @pytest.mark.parametrize("termination_failure", [None, "timeout", "missing"])
