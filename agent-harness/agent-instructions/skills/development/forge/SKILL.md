@@ -29,3 +29,9 @@ configuration needs no new login flow.
 
 Use the [CI watcher](../ci-watcher/SKILL.md) for hosted verdicts and retained job evidence. A successful local build,
 missing pipeline, CLI error or unfinished run does not establish remote success.
+
+### Personal repositories
+
+In the user's own repositories on the `Castrozan` GitHub account, the dotfiles included, merge a pull request as soon as
+it is ready, without waiting for its CI. Keep watching that run in the background and fix a failure forward on the
+default branch.
