@@ -16,7 +16,7 @@ Moving a window between workspaces uses `hypr-move-window-to-workspace`, which d
 
 ## Show Desktop
 
-The show-desktop toggle (`scripts/windows/show_desktop.py`) saves all window addresses on the active workspace to a state file, moves them to `special:desktop`, and restores them on second invocation with focus preservation.
+The show-desktop toggle (`scripts/windows/show_desktop.py`) saves all window addresses on the active workspace to a state file, moves them to `special:desktop-<workspace id>`, and restores them on second invocation with focus preservation. The window switcher lists those hidden windows, and picking one restores the workspace first.
 
 ## Close Window History
 
