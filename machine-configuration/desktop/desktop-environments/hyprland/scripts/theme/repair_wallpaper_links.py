@@ -3,8 +3,9 @@
 from pathlib import Path
 
 
-def repair_wallpaper_links(theme_root: Path, wallpaper_roots: tuple[Path, ...]) -> int:
-    catalog = theme_root / "wallpapers"
+def repair_wallpaper_links(
+    theme_root: Path, catalog: Path, wallpaper_roots: tuple[Path, ...]
+) -> int:
     links = list((theme_root / "current/theme/backgrounds").glob("*"))
     links.extend((theme_root / "user-themes").glob("*/backgrounds/*"))
     links.append(theme_root / "current/background")
@@ -38,6 +39,7 @@ def main() -> None:
     desktop = home / ".dotfiles/machine-configuration/desktop"
     repaired = repair_wallpaper_links(
         home / ".config/hypr-theme",
+        home / ".local/share/wallpapers",
         (desktop / "theming/wallpapers", desktop / "appearance/theming/wallpapers"),
     )
     print(f"Repaired {repaired} moved wallpaper references")

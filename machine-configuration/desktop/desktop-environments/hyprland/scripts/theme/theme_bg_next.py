@@ -1,7 +1,7 @@
 import subprocess
 from pathlib import Path
 
-WALLPAPERS_DIRECTORY = Path.home() / ".config" / "hypr-theme" / "wallpapers"
+WALLPAPERS_DIRECTORY = Path.home() / ".local" / "share" / "wallpapers"
 CURRENT_BACKGROUND_LINK = (
     Path.home() / ".config" / "hypr-theme" / "current" / "background"
 )

@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 let
   wallpaperSources = import ../../../appearance/theming/wallpaper-sources.nix;
+  wallpapersDirectory = "${config.xdg.dataHome}/wallpapers";
   dotfilesThemingWallpapersPath = "${config.home.homeDirectory}/.dotfiles/machine-configuration/desktop/appearance/theming/wallpapers";
   wallpaperFiles = [
     "Milad-Fakurian-Abstract-Purple-Blue.jpg"
@@ -46,15 +47,15 @@ in
       mkdir -p $HOME/.config/hypr-theme/current/theme
       mkdir -p $HOME/.config/hypr-theme/user-themes
       mkdir -p $HOME/.config/hypr-theme/backgrounds
-      mkdir -p $HOME/.config/hypr-theme/wallpapers
+      mkdir -p ${wallpapersDirectory}
       touch $HOME/.config/hypr-theme/current/theme/hyprland.conf
 
-      find $HOME/.config/hypr-theme/wallpapers -maxdepth 1 -type l ! -exec test -e {} \; -delete
+      find ${wallpapersDirectory} -maxdepth 1 -type l ! -exec test -e {} \; -delete
 
       ${builtins.concatStringsSep "\n      " (
         map (
           file:
-          ''ln -sf "${dotfilesThemingWallpapersPath}/${wallpaperSources.${file}}" "$HOME/.config/hypr-theme/wallpapers/${file}"''
+          ''ln -sf "${dotfilesThemingWallpapersPath}/${wallpaperSources.${file}}" "${wallpapersDirectory}/${file}"''
         ) wallpaperFiles
       )}
 

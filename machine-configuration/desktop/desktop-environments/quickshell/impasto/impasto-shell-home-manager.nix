@@ -57,7 +57,7 @@ in
       "impasto/palette-board.json".source =
         "${impastoShellPackage}/share/impasto/data/palette-board.json";
       "impasto/palette-board.png".source = "${impastoShellPackage}/share/impasto/data/palette-board.png";
-      "wallpapers" = {
+      "wallpapers/impasto" = {
         source = "${impastoShellPackage}/share/impasto/wallpapers";
         recursive = true;
       };
