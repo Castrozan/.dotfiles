@@ -1,3 +1,4 @@
+import json
 import shutil
 import subprocess
 from pathlib import Path
@@ -26,6 +27,16 @@ def apply_current_background() -> None:
         )
         raise SystemExit(1)
 
+    wallpaper_shown_by_impasto = read_wallpaper_shown_by_impasto_shell()
+    if wallpaper_shown_by_impasto is None:
+        show_background_with_awww()
+        return
+    if Path(wallpaper_shown_by_impasto).name == resolved_background.name:
+        return
+    hand_background_to_impasto_shell(resolved_background)
+
+
+def show_background_with_awww() -> None:
     subprocess.run(
         [
             "awww",
@@ -39,13 +50,36 @@ def apply_current_background() -> None:
         capture_output=True,
         timeout=WALLPAPER_COMMAND_TIMEOUT_SECONDS,
     )
-    hand_background_to_impasto_shell(resolved_background)
+
+
+def read_wallpaper_shown_by_impasto_shell() -> str | None:
+    if shutil.which(IMPASTO_SHELL_COMMAND) is None:
+        return None
+    try:
+        result = subprocess.run(
+            [
+                IMPASTO_SHELL_COMMAND,
+                "ipc",
+                "--any-display",
+                "call",
+                "wallpaper",
+                "list",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=WALLPAPER_COMMAND_TIMEOUT_SECONDS,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if result.returncode != 0:
+        return None
+    try:
+        return json.loads(result.stdout).get("current") or ""
+    except (json.JSONDecodeError, AttributeError):
+        return None
 
 
 def hand_background_to_impasto_shell(background: Path) -> None:
-    if shutil.which(IMPASTO_SHELL_COMMAND) is None:
-        return
-
     subprocess.run(
         [
             IMPASTO_SHELL_COMMAND,

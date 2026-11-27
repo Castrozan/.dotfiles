@@ -1,4 +1,5 @@
-from unittest.mock import patch
+import json
+from unittest.mock import MagicMock, patch
 
 import pytest
 
@@ -44,7 +45,7 @@ class TestApplyCurrentBackground:
                 timeout=theme_bg_apply.WALLPAPER_COMMAND_TIMEOUT_SECONDS,
             )
 
-    def test_hands_the_resolved_background_to_impasto_when_it_is_installed(
+    def test_hands_the_background_to_impasto_only_when_it_shows_another(
         self, tmp_path, monkeypatch
     ):
         bg_file = tmp_path / "wallpaper.png"
@@ -55,19 +56,30 @@ class TestApplyCurrentBackground:
         monkeypatch.setattr(
             theme_bg_apply.shutil, "which", lambda command: f"/bin/{command}"
         )
+        set_command = [
+            "impasto-shell",
+            "ipc",
+            "--any-display",
+            "call",
+            "wallpaper",
+            "set",
+            str(bg_file),
+        ]
 
-        with patch("theme_bg_apply.subprocess.run") as mock_run:
-            theme_bg_apply.apply_current_background()
-
-            assert mock_run.call_args_list[-1].args[0] == [
-                "impasto-shell",
-                "ipc",
-                "--any-display",
-                "call",
-                "wallpaper",
-                "set",
-                str(bg_file),
-            ]
+        for shown_wallpaper, expected_to_hand_over in (
+            ("/elsewhere/other.png", True),
+            ("/elsewhere/wallpaper.png", False),
+        ):
+            listing = MagicMock(
+                returncode=0, stdout=json.dumps({"current": shown_wallpaper})
+            )
+            with patch(
+                "theme_bg_apply.subprocess.run", return_value=listing
+            ) as mock_run:
+                theme_bg_apply.apply_current_background()
+            commands = [call.args[0] for call in mock_run.call_args_list]
+            assert (set_command in commands) is expected_to_hand_over
+            assert not any(command[0] == "awww" for command in commands)
 
     def test_notifies_when_no_symlink(self, tmp_path, monkeypatch):
         monkeypatch.setattr(
