@@ -116,7 +116,7 @@ Status values: `migrated` (native in Impasto as configured), `migrated different
 | --- | --- | --- | --- | --- |
 | 77 | Colours from `quickshell-bar-colors.json`, rendered by the hypr-theme pipeline | Adaptive palette sampled from the wallpaper, or one of nine fixed palettes (`services/ThemeService.qml`, `scripts/theme_manager.py`) | migrated differently | hypr-theme renders `impasto-palette.json`, which Impasto reads through `paletteFile`; `themeTargets: []` stops it writing other programs. The overview reads its own `quickshell-overview-colors.json`. |
 | 78 | Font hardcoded to JetBrainsMono Nerd Font | `fontFamily` Inter, `fontMono` JetBrainsMono Nerd Font Mono (`services/SettingsService.qml`) | migrated differently | Configurable; set `fontFamily` to keep the old face. |
-| 79 | `bar toggle` on SUPER+J | `bar peek` (fork, `Commands.qml`), `bar pin`, `bar toggle` (zen) | migrated | SUPER+J shows the hidden bar for three seconds; pressing again hides it. |
+| 79 | `bar toggle` on SUPER+J | `bar peek` (fork, `Commands.qml`), `bar pin`, `bar toggle` (zen) | migrated | SUPER+J shows the hidden bar for three seconds; pressing again while it shows restarts the three seconds. |
 | 80 | `dashboard toggle` on SUPER+M | Global shortcut `quickshell:media` (`shell.qml`, `services/ShortcutService.qml:39-79`) | migrated differently | Opens the media panel rather than a tabbed dashboard. |
 | 81 | `launcher toggle` on SUPER+Q | Global shortcut `quickshell:launcher` | migrated | Same key. |
 | 82 | `sidebar toggle` on SUPER+A | Global shortcut `quickshell:controls` | migrated | Control centre with the notifications card. |
