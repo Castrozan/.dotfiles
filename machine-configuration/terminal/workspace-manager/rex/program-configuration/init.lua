@@ -89,6 +89,18 @@ rex.action({
 	end,
 })
 
+rex.action({
+	name = "write_key_sequence",
+	title = "Write Key Sequence",
+	category = "Pane",
+	args = { sequence = "string" },
+	run = function(ctx, args)
+		if ctx.block_id then
+			rex.block.call(terminal, "write", { block_id = ctx.block_id, data = args.sequence })
+		end
+	end,
+})
+
 local function bind_tab_step(key, tab_action)
 	rex.bind(key, "step_tab_unless_nvim", { key = key, tab_action = tab_action })
 end
@@ -135,6 +147,14 @@ bind_prefixed("shift+'", "pane.split.down")
 bind_prefixed("[", "pane.copy_mode.enter")
 bind_prefixed("ctrl+c", "pane.move_to_new_tab")
 bind_prefixed("shift+b", "client.sidebar.toggle")
+bind_prefixed("shift+/", "client.palette.toggle")
+bind_prefixed("shift+p", "pane.rename")
+bind_prefixed("shift+s", "session.new")
+bind_prefixed("shift+left", "client.tab.move.backward")
+bind_prefixed("shift+right", "client.tab.move.forward")
+for key, direction in pairs({ h = "left", j = "down", k = "up", l = "right" }) do
+	bind_prefixed("shift+" .. key, "pane.move", { direction = direction })
+end
 
 rex.mode("resize", { exclusive = true })
 bind_prefixed("shift+r", "client.mode.enter", { name = "resize" })
@@ -165,3 +185,13 @@ for key, command in pairs({
 end
 
 rex.bind("ctrl+g", "pane.send_key", { key = "ctrl+b" })
+
+for key, sequence in pairs({
+	["shift+enter"] = "\27[13;2u",
+	["ctrl+enter"] = "\27[13;5u",
+	["alt+enter"] = "\27[13;3u",
+	["ctrl+shift+up"] = "\27[1;6A",
+	["ctrl+shift+down"] = "\27[1;6B",
+}) do
+	rex.bind(key, "write_key_sequence", { sequence = sequence })
+end
