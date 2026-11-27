@@ -4,6 +4,7 @@
     impastoFirstRunSettings = {
       settingsScale = 1.25;
       clockShowsDate = true;
+      barStyle = "spread";
       vpnUnit = "openvpn-proton-paraguay.service";
       vpnConnectCommand = "vpn-py";
       vpnDisconnectCommand = "vpn-off";
