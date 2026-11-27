@@ -4,14 +4,10 @@ setup() {
 	TEMPORARY_ROOT="$(mktemp -d)"
 	FAKE_BINARY_DIRECTORY="$TEMPORARY_ROOT/bin"
 	GLOBAL_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/global-instructions.md"
-	PROFILE_INSTRUCTIONS_FILE="$TEMPORARY_ROOT/profile-instructions.md"
-	DISPATCH_FILE="$TEMPORARY_ROOT/workspace-profile-dispatch"
-	DISPATCH_MARKER="$TEMPORARY_ROOT/dispatch-was-sourced"
 	PRIVATE_LAUNCH_MARKER="$TEMPORARY_ROOT/private-launch"
 	HOOK_TRUST_ARGUMENTS_FILE="$TEMPORARY_ROOT/hook-trust-arguments"
 	mkdir -p "$FAKE_BINARY_DIRECTORY"
 	printf 'global instructions' >"$GLOBAL_INSTRUCTIONS_FILE"
-	printf 'profile instructions' >"$PROFILE_INSTRUCTIONS_FILE"
 
 	cat >"$FAKE_BINARY_DIRECTORY/codex" <<-'FAKE_CODEX'
 		#!/usr/bin/env bash
@@ -36,7 +32,6 @@ setup() {
 		exec "$CODEX_LAUNCHER_BINARY" "$@"
 	FAKE_PRIVATE
 	chmod +x "$FAKE_BINARY_DIRECTORY/private-session"
-	write_dispatch_file
 	return $?
 }
 
@@ -45,22 +40,12 @@ teardown() {
 	return $?
 }
 
-write_dispatch_file() {
-	{
-		printf 'touch "$DISPATCH_MARKER"\n'
-		printf '%s\n' "$@"
-	} >"$DISPATCH_FILE"
-	return $?
-}
-
 run_codex() {
 	run env -i \
 		PATH="$FAKE_BINARY_DIRECTORY:$PATH" \
-		DISPATCH_MARKER="$DISPATCH_MARKER" \
 		NPM_CONFIG_PREFIX="/nonexistent" \
 		CODEX_SESSION_SOCKET_PATH="/tmp/inherited-parent.sock" \
 		CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE="$GLOBAL_INSTRUCTIONS_FILE" \
-		CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE="$DISPATCH_FILE" \
 		PRIVATE_LAUNCH_MARKER="$PRIVATE_LAUNCH_MARKER" \
 		CODEX_LAUNCHER_SESSION_EXECUTABLE="$FAKE_BINARY_DIRECTORY/private-session" \
 		CODEX_LAUNCHER_BINARY="$FAKE_BINARY_DIRECTORY/codex" \

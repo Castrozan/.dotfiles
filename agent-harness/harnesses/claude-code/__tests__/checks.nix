@@ -34,17 +34,6 @@ let
   );
   updateEnabledPluginsActivation = cfg.home.activation.updateEnabledClaudePlugins.data;
 
-  workspaceProfilesDeclaringPlugins = lib.filter (
-    workspaceProfile: workspaceProfile.claudeCode ? settingsOverlay
-  ) cfg.agentWorkspaceProfiles.profiles;
-
-  everyEnabledPluginSourceReachesThePluginUpdate =
-    lib.hasInfix ".claude/settings.json.nix-source" updateEnabledPluginsActivation
-    && builtins.all (
-      workspaceProfile:
-      lib.hasInfix "claude-workspace-profile-${workspaceProfile.name}-settings.json" updateEnabledPluginsActivation
-    ) workspaceProfilesDeclaringPlugins;
-
   darwinCfg = helpers.homeManagerTestConfigurationForDarwin [
     self.homeManagerModules.claude-code
   ];
@@ -112,10 +101,10 @@ in
         touch "$out"
       '';
 
-  claude-plugin-update-reads-every-enabled-plugin-source =
-    mkEvalCheck "claude-plugin-update-reads-every-enabled-plugin-source"
-      everyEnabledPluginSourceReachesThePluginUpdate
-      "a workspace profile is the only place some machines turn a plugin on, so the update activation has to read every profile's settings overlay alongside the user-scope nix source; reading the nix source alone leaves each profile-scoped plugin frozen at the version it was first installed with, and no rebuild ever moves it";
+  claude-plugin-update-reads-native-settings-source =
+    mkEvalCheck "claude-plugin-update-reads-native-settings-source"
+      (lib.hasInfix ".claude/settings.json.nix-source" updateEnabledPluginsActivation)
+      "Plugin updates must use the declarative user settings source.";
 
   claude-home-carries-no-nix-modules =
     mkEvalCheck "claude-home-carries-no-nix-modules"

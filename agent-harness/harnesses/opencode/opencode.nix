@@ -21,19 +21,6 @@ let
         }
       );
 
-  workspaceProfileActivation = import ./workspace-profile-activation.nix {
-    inherit pkgs lib interactivePreferencesFile;
-  };
-
-  inherit (import ../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
-    mkWorkspaceProfileLaunchDispatch
-    ;
-
-  workspaceProfileLaunchDispatch = mkWorkspaceProfileLaunchDispatch {
-    inherit (config) agentWorkspaceProfiles;
-    inherit (workspaceProfileActivation) activationShellStatementsForProfile;
-  };
-
   authenticatedLauncher = pkgs.replaceVars ./scripts/launch_authenticated_opencode.sh {
     opencodeApiKeyFile = opencodeGo.apiKeyFile;
     opencodeUnwrapped = opencode-unwrapped;
@@ -44,7 +31,7 @@ let
   '';
 
   interactiveLauncher = pkgs.replaceVars ./scripts/launch_opencode.sh {
-    inherit interactiveSessionConfigOverlay workspaceProfileLaunchDispatch interactivePreferencesFile;
+    inherit interactiveSessionConfigOverlay interactivePreferencesFile;
     opencodeAuthenticated = opencode-authenticated;
   };
 

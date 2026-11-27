@@ -66,7 +66,7 @@ in
   claudex-rin-launches-the-interactive-claude-package =
     mkEvalCheck "claudex-rin-launches-the-interactive-claude-package"
       (lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudexPackage.text)
-      "claudex must inherit the same interactive prompt and workspace-profile setup as the plain Claude command";
+      "claudex must inherit the same interactive prompt and mod settings as the plain Claude command";
 }
 // lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
   claudex-linux-proxy-binary = pkgs.runCommandLocal "check-claudex-linux-proxy-binary" { } ''

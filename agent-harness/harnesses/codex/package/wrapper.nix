@@ -12,20 +12,16 @@ let
     inherit (config.home) homeDirectory;
   };
 
-  workspaceProfileActivation = import ../workspace-profile-activation.nix {
-    inherit pkgs lib interactivePreferencesFile;
-  };
+  profilePython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.tomli-w ]);
 
-  inherit (import ../../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
-    mkWorkspaceProfileLaunchDispatch
-    ;
+  interactiveProfile = pkgs.runCommand "dotfiles-interactive.config.toml" { } ''
+    ${profilePython}/bin/python3 ${../scripts/generate_interactive_profile.py} \
+      ${interactivePreferencesFile} "$out"
+  '';
 
-  workspaceProfileLaunchDispatch = mkWorkspaceProfileLaunchDispatch {
-    inherit (config) agentWorkspaceProfiles;
-    inherit (workspaceProfileActivation) activationShellStatementsForProfile;
-  };
-
-  workspaceProfileLaunchDispatchFile = pkgs.writeText "codex-workspace-profile-launch-dispatch" workspaceProfileLaunchDispatch;
+  profileSources = pkgs.writeText "codex-profile-sources.json" (
+    builtins.toJSON { dotfiles-interactive = interactiveProfile; }
+  );
 
   hookTrustExecutable = pkgs.writeShellScript "codex-approve-discovered-hooks" ''
     exec ${pkgs.python312}/bin/python3 ${../scripts/hook_trust}/approve.py "$@"
@@ -50,11 +46,9 @@ let
   codex = pkgs.writeShellApplication {
     name = "codex";
     bashOptions = [ ];
-    excludeShellChecks = [ "SC1090" ];
     runtimeEnv = {
       NPM_CONFIG_PREFIX = "/nonexistent";
       CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE = "${interactivePreferencesFile}";
-      CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CODEX_LAUNCHER_BINARY = "${codex-unwrapped}/bin/codex";
       CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE = "${hookTrustExecutable}";
       CODEX_LAUNCHER_SESSION_EXECUTABLE = "${sessionExecutable}";
@@ -72,10 +66,11 @@ in
 
   config.home = {
     packages = [ codex ];
-    activation.seedCodexProfilesAsMutableFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] (
-      workspaceProfileActivation.seedProfiles config.agentWorkspaceProfiles.profiles
-    );
-    file = workspaceProfileActivation.profileFiles config.agentWorkspaceProfiles.profiles // {
+    activation.seedCodexProfilesAsMutableFiles = lib.hm.dag.entryAfter [ "linkGeneration" ] ''
+      ${profilePython}/bin/python3 ${../config}/seed_interactive_profiles.py "$HOME/.codex" ${profileSources}
+    '';
+    file = {
+      ".codex/dotfiles-interactive.config.toml.nix-source".source = interactiveProfile;
       ".local/bin/codex".source = "${codex}/bin/codex";
     };
   };

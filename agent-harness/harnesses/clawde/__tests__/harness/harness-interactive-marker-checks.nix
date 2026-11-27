@@ -2,12 +2,12 @@
   pkgs,
   mkEvalCheck,
   cfgWithBothHarnesses,
-  cfgWithWorkspaceProfileAgent,
+  cfgWithClaudeAgents,
   claudeCommandsOf,
 }:
 let
   interactiveSessionSystemPromptFile = builtins.unsafeDiscardStringContext (
-    toString cfgWithWorkspaceProfileAgent.claude.interactiveSessionSystemPromptFile
+    toString cfgWithClaudeAgents.claude.interactiveSessionSystemPromptFile
   );
 
   exportsTheInteractiveMarker =
@@ -38,11 +38,11 @@ in
     mkEvalCheck "clawde-interactive-session-agent-launches-with-the-interactive-prompt-and-marker"
       (
         let
-          commands = claudeCommandsOf "agent-with-interactive-settings-and-workspace-profile";
+          commands = claudeCommandsOf "agent-with-interactive-settings";
         in
         exportsTheInteractiveMarker (builtins.elemAt commands 0)
         && builtins.all exportsAnEmptyInteractiveMarker (builtins.tail commands)
-        && builtins.all exportsAnEmptyInteractiveMarker (claudeCommandsOf "agent-without-workspace-profile")
+        && builtins.all exportsAnEmptyInteractiveMarker (claudeCommandsOf "agent-with-default-settings")
       )
       "a human-driven agent's persistent launch must append the interactive system prompt and export its marker so the interactive reply hooks judge its turns, while its run-once and channel turns and every other agent export an empty marker that an inherited one cannot leak through";
 

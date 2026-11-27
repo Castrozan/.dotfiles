@@ -5,8 +5,11 @@ from pathlib import Path
 
 settings = json.loads(Path(sys.argv[1]).read_text())
 expected = json.loads(Path(sys.argv[2]).read_text())
-for key in ("extraKnownMarketplaces", "enabledPlugins"):
+for key in ("extraKnownMarketplaces", "enabledPlugins", "pluginConfigs"):
     for entry_name, entry_value in expected.get(key, {}).items():
         assert settings.get(key, {}).get(entry_name) == entry_value, (
             f"{key}.{entry_name}"
         )
+denied_servers = settings["deniedMcpServers"]
+assert {"serverName": "claude.ai Gmail"} in denied_servers
+assert all(server in denied_servers for server in expected.get("deniedMcpServers", []))

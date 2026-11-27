@@ -17,6 +17,5 @@
     ./plugins/retired-marketplaces-home-manager.nix
     ./private.nix
     ./scripts
-    ../../workspace-profiles
   ];
 }

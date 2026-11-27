@@ -22,38 +22,16 @@ let
     builtins.toJSON interactiveSessionSettings
   );
 
-  workspaceProfileActivation = import ./workspace-profile-settings-and-instructions.nix {
-    inherit
-      pkgs
-      lib
-      interactiveSessionOnlySystemPromptSurfaces
-      interactiveSessionSettings
-      ;
-  };
-
-  inherit (import ../../../workspace-profiles/activation/harness-launch-dispatch.nix { inherit lib; })
-    mkWorkspaceProfileLaunchDispatch
-    ;
-
-  workspaceProfileLaunchDispatch = mkWorkspaceProfileLaunchDispatch {
-    inherit (config) agentWorkspaceProfiles;
-    inherit (workspaceProfileActivation) activationShellStatementsForProfile;
-  };
-
-  workspaceProfileLaunchDispatchFile = pkgs.writeText "claude-workspace-profile-launch-dispatch" workspaceProfileLaunchDispatch;
-
   # No servant wiring here on purpose. The Servant is derived at SessionStart from
   # the id Claude Code mints for itself, so this wrapper neither knows nor needs to
   # know which one a launch draws, and a resume lands on the same one for free.
   claudePackage = pkgs.writeShellApplication {
     name = "claude";
     bashOptions = [ ];
-    excludeShellChecks = [ "SC1090" ];
     runtimeEnv = {
       CLAUDE_LAUNCHER_BINARY = claudeExecutable;
       CLAUDE_LAUNCHER_SYSTEM_PROMPT_FILE = "${interactiveSessionOnlySystemPromptSurfaces}";
       CLAUDE_LAUNCHER_SETTINGS_FILE = "${interactiveSessionSettingsFile}";
-      CLAUDE_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE = "${workspaceProfileLaunchDispatchFile}";
       CLAUDE_LAUNCHER_PLUGIN_DIRECTORY = "${claudeMods.interactiveSessionModsDirectory}";
     };
     text = builtins.readFile ../scripts/launch-interactive-claude.sh;
@@ -65,14 +43,14 @@ in
       type = lib.types.package;
       default = claudePackage;
       readOnly = true;
-      description = "The package exposed as the plain claude command, carrying the interactive prompt and workspace profile.";
+      description = "The package exposed as the plain claude command, carrying the interactive prompt and mods.";
     };
 
     interactiveSessionSettings = lib.mkOption {
       type = lib.types.attrsOf lib.types.anything;
       default = interactiveSessionSettings;
       readOnly = true;
-      description = "The settings the plain claude command layers onto every interactive session before any workspace profile overlay, for a non-interactive launcher that must give its sessions the same plugins and plugin options.";
+      description = "The settings the plain claude command layers onto every interactive session, including interactive mod options.";
     };
 
     interactiveSessionModsDirectory = lib.mkOption {

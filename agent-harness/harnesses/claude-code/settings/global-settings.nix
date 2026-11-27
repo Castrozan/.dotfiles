@@ -56,7 +56,7 @@ let
     "anthropic-skills:xlsx"
   ];
 
-  claudeGlobalSettings = lib.recursiveUpdate {
+  sharedClaudeSettings = {
     ultracode = false;
     enableWorkflows = true;
     enabledPlugins = {
@@ -112,7 +112,13 @@ let
         }
       ];
     };
-  } privateMarketplacePlugins;
+  };
+
+  claudeGlobalSettings = lib.recursiveUpdate sharedClaudeSettings privateMarketplacePlugins // {
+    deniedMcpServers = lib.unique (
+      sharedClaudeSettings.deniedMcpServers ++ (privateMarketplacePlugins.deniedMcpServers or [ ])
+    );
+  };
 
   baseSettings = pkgs.writeText "claude-base-settings.json" (builtins.toJSON claudeGlobalSettings);
   claudeGlobalSettingsJson =

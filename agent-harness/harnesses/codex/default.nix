@@ -6,6 +6,5 @@
     ./rules.nix
     ./plugins.nix
     ./global-instructions.nix
-    ../../workspace-profiles
   ];
 }

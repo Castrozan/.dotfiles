@@ -6,15 +6,6 @@
   ...
 }:
 let
-  agentWorkspaceProfile = import ./agent-workspace-profile.nix { inherit config lib; };
-  inherit (agentWorkspaceProfile) workspaceProfilesCarryingClaudeSettings;
-
-  claudeLaunchSettingsOf =
-    agent:
-    lib.recursiveUpdate (lib.optionalAttrs agent.claudeInteractiveSessionSettings (
-      config.claude.interactiveSessionSettings or { }
-    )) (agentWorkspaceProfile.claudeSettingsOverlayOf agent);
-
   withClaudeLaunchSettings =
     agentName: agent: harnessCommand:
     if agent.claudeLaunchSettings == { } then
@@ -56,29 +47,13 @@ in
     type = lib.types.attrsOf (
       lib.types.submodule (agentModule: {
         options = {
-          claudeSettingsWorkspaceProfile = lib.mkOption {
-            type = lib.types.nullOr (
-              lib.types.enum (
-                map (workspaceProfile: workspaceProfile.name) workspaceProfilesCarryingClaudeSettings
-              )
-            );
-            default = null;
-            description = ''
-              Workspace profile whose Claude Code settings overlay this agent launches
-              with on the claude harness, so it loads the same plugins, plugin options
-              and marketplaces an interactive session in that workspace gets. Clawde
-              runs the unwrapped claude binary, which never resolves a workspace
-              profile on its own. Null adds no overlay; other harnesses ignore it.
-            '';
-          };
-
           claudeInteractiveSessionSettings = lib.mkOption {
             type = lib.types.bool;
             default = false;
             description = ''
               Whether a human drives this agent's claude window as an interactive
               session. Its claude commands receive the plugins and plugin options a
-              keyboard claude session gets, beneath any workspace profile overlay, and
+              keyboard claude session gets, and
               its window launch also appends the interactive system prompt and exports
               its marker, so every turn in that window, heartbeat ticks included,
               follows and is judged by the interactive reply rules. Run-once and
@@ -91,7 +66,9 @@ in
           claudeLaunchSettings = lib.mkOption {
             type = lib.types.attrsOf lib.types.anything;
             readOnly = true;
-            default = claudeLaunchSettingsOf agentModule.config;
+            default = lib.optionalAttrs agentModule.config.claudeInteractiveSessionSettings (
+              config.claude.interactiveSessionSettings or { }
+            );
             description = ''
               The settings this agent's claude commands receive as one --settings
               file. The agent workspace is often a repository whose committed
@@ -131,7 +108,7 @@ in
                         );
                       in
                       if name == "claude" then
-                        "${agentWorkspaceProfile.sessionEnvironmentAssignmentsOf arguments.agent}CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
+                        "CLAUDE_CODE_EFFORT_LEVEL=${lib.escapeShellArg arguments.agent.reasoningEffort} ${
                           withClaudeLaunchSettings arguments.name arguments.agent markedCommand
                         }"
                       else if

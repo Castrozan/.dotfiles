@@ -9,27 +9,24 @@ import pytest
 LAUNCHER = Path(__file__).resolve().parents[2] / "scripts/launch_opencode.sh"
 
 
-@pytest.mark.parametrize("workspace_profile", [False, True])
 @pytest.mark.parametrize(
-    ("arguments", "interactive", "expected"),
+    ("arguments", "interactive"),
     [
-        ([], True, []),
-        (
-            ["--server", "http://localhost:9000"],
-            True,
-            ["--server", "http://localhost:9000"],
-        ),
-        (["--standalone"], True, ["--standalone"]),
-        (["/workspace"], True, ["/workspace"]),
-        (["mini", "--continue"], True, ["mini", "--continue"]),
-        (["run", "hello"], False, ["run", "hello"]),
-        (["api", "get", "/api/agent"], False, ["api", "get", "/api/agent"]),
-        (["service", "status"], False, ["service", "status"]),
+        ([], True),
+        (["--server", "http://localhost:9000"], True),
+        (["--standalone"], True),
+        (["/workspace"], True),
+        (["mini", "--continue"], True),
+        (["run", "hello"], False),
+        (["api", "get", "/api/agent"], False),
+        (["service", "status"], False),
+        (["--help"], False),
+        (["-h"], False),
+        (["--version"], False),
+        (["-v"], False),
     ],
 )
-def test_launcher_isolates_interactive_configuration(
-    tmp_path, arguments, interactive, expected, workspace_profile
-):
+def test_launcher_isolates_interactive_configuration(tmp_path, arguments, interactive):
     executable = tmp_path / "bin/opencode"
     executable.parent.mkdir()
     executable.write_text(
@@ -41,11 +38,6 @@ def test_launcher_isolates_interactive_configuration(
     for key, value in {
         "interactiveSessionConfigOverlay": "/interactive.json",
         "interactivePreferencesFile": "/interactive.md",
-        "workspaceProfileLaunchDispatch": (
-            'opencodeConfigOverlayFile="/workspace-profile.json"'
-            if workspace_profile
-            else ":"
-        ),
         "opencodeAuthenticated": str(tmp_path),
     }.items():
         source = source.replace(f"@{key}@", value)
@@ -65,11 +57,10 @@ def test_launcher_isolates_interactive_configuration(
         check=True,
     )
     actual = json.loads(result.stdout)
-    assert actual["args"] == expected
-    selected_overlay = (
-        "/workspace-profile.json" if workspace_profile else "/interactive.json"
+    assert actual["args"] == arguments
+    assert actual["config"] == (
+        "/interactive.json" if interactive else "/autonomous.json"
     )
-    assert actual["config"] == (selected_overlay if interactive else "/autonomous.json")
     assert actual["preferences"] == ("/interactive.md" if interactive else None)
 
 

@@ -4,11 +4,11 @@ load '../../../../../repository/verification/helpers/bash-script-assertions'
 
 load '../support/codex_launcher_fixture'
 
-@test "passes shellcheck apart from the dispatch file it sources by path" {
+@test "passes shellcheck" {
 	if ! command -v shellcheck &>/dev/null; then
 		skip "shellcheck not installed"
 	fi
-	run shellcheck --exclude=SC1090 "$SCRIPT_UNDER_TEST"
+	run shellcheck "$SCRIPT_UNDER_TEST"
 	[ "$status" -eq 0 ]
 }
 
@@ -28,19 +28,6 @@ load '../support/codex_launcher_fixture'
 @test "hands the launcher environment through to codex" {
 	run_codex
 	[ "${lines[2]}" = 'NPM_CONFIG_PREFIX=</nonexistent>' ]
-}
-
-@test "sources the workspace profile dispatch on an interactive launch" {
-	run_codex
-	[ -f "$DISPATCH_MARKER" ]
-}
-
-@test "selects the workspace instruction profile the dispatch resolved" {
-	write_dispatch_file "codexDeveloperInstructionsFile=$PROFILE_INSTRUCTIONS_FILE" \
-		'codexInteractiveProfile=dotfiles-workspace-test'
-	run_codex
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test>" ]
-	[ "${lines[1]}" = "AGENT_INTERACTIVE_PREFERENCES_PATH=<$PROFILE_INSTRUCTIONS_FILE>" ]
 }
 
 @test "lets an explicit caller profile replace the generated default" {
@@ -83,11 +70,10 @@ load '../support/codex_launcher_fixture'
 	done
 }
 
-@test "leaves a subcommand launch without interactive preferences or profile activation" {
+@test "leaves a subcommand launch without interactive preferences" {
 	run_codex exec "do the thing"
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <do the thing>" ]
 	[ "${lines[1]}" = 'AGENT_INTERACTIVE_PREFERENCES_PATH=<unset>' ]
-	[ ! -f "$DISPATCH_MARKER" ]
 }
 
 @test "keeps global configuration options before app-server outside the interactive launch" {
@@ -97,7 +83,6 @@ load '../support/codex_launcher_fixture'
 		[ "${lines[0]}" = "argv: $(launcher_arguments) <$configuration_option> <features.code_mode_host=true> <app-server> <--listen> <unix://>" ]
 		[ "${lines[1]}" = 'AGENT_INTERACTIVE_PREFERENCES_PATH=<unset>' ]
 		[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
-		[ ! -f "$DISPATCH_MARKER" ]
 	done
 }
 
@@ -106,7 +91,6 @@ load '../support/codex_launcher_fixture'
 	[ "$status" -eq 0 ]
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <--config=features.code_mode_host=true> <app-server> <proxy>" ]
 	[ ! -f "$PRIVATE_LAUNCH_MARKER" ]
-	[ ! -f "$DISPATCH_MARKER" ]
 }
 
 @test "does not treat global option values as commands" {
@@ -128,14 +112,12 @@ load '../support/codex_launcher_fixture'
 	[ "${lines[0]}" = "argv: $(launcher_arguments) <exec> <a \"quoted\" argument>" ]
 }
 
-@test "keeps hook discovery overrides out of the interactive launch" {
-	write_dispatch_file 'codexInteractiveProfile=dotfiles-workspace-test' \
-		"workspaceProfileArguments+=(-c 'model_reasoning_effort=\"high\"')"
-	run_codex --no-daemon -C '/a project' resume --last
+@test "passes caller overrides and working directory to native hook approval" {
+	run_codex --no-daemon -C '/a project' -c 'model_reasoning_effort="high"' resume --last
 	[ "$status" -eq 0 ]
-	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-workspace-test> <--no-daemon> <-C> </a project> <resume> <--last>" ]
+	[ "${lines[0]}" = "argv: $(launcher_arguments) <--profile> <dotfiles-interactive> <--no-daemon> <-C> </a project> <-c> <model_reasoning_effort=\"high\"> <resume> <--last>" ]
 	run cat "$HOOK_TRUST_ARGUMENTS_FILE"
-	[ "$output" = $'<-c>\n<model_reasoning_effort="high">\n<--no-daemon>\n<-C>\n</a project>\n<resume>\n<--last>' ]
+	[ "$output" = $'<--no-daemon>\n<-C>\n</a project>\n<-c>\n<model_reasoning_effort="high">\n<resume>\n<--last>' ]
 }
 
 @test "does not mistake a positional prompt for an explicit profile flag" {

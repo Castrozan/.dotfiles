@@ -55,6 +55,6 @@ in
     type = lib.types.package;
     default = claude-code;
     readOnly = true;
-    description = "claude without the interactive wrapper that appends the human's own reply-shape system prompt and resolves a workspace profile, but still exporting the shared claude environment and pre-approving the workspace trust dialog. An autonomous harness must launch this, because the interactive reply rules apply only while the human drives the keyboard.";
+    description = "Claude Code with the shared environment and workspace trust setup. Autonomous agents use this package because the interactive reply rules apply while a human drives the keyboard.";
   };
 }

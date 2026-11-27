@@ -6,54 +6,22 @@
   cfgWithBothHarnesses,
 }:
 let
-  cfgWithWorkspaceProfileAgent = helpers.homeManagerTestConfiguration [
+  cfgWithClaudeAgents = helpers.homeManagerTestConfiguration [
     self.homeManagerModules.clawde
     self.homeManagerModules.claude-code
     {
-      disabledModules = [ ../../../../workspace-profiles ];
-      options.agentWorkspaceProfiles = pkgs.lib.mkOption {
-        type = pkgs.lib.types.attrsOf pkgs.lib.types.anything;
-      };
-      config.agentWorkspaceProfiles = {
-        profiles = [
-          {
-            name = "test-profile";
-            directoryPrefixes = [ ];
-            gitRemotePatterns = [ "gitlab.example.invalid" ];
-            instructionFiles = [ ];
-            sessionEnvironment.TOOLING_URL = "https://tooling.example.invalid";
-            sessionEnvironmentFromFiles.TOOLING_TOKEN = "~/.secrets/tooling-token";
-            claudeCode.settingsOverlay.enabledPlugins."test-profile-plugin@test-marketplace" = true;
-            codex = { };
-            opencode = { };
-          }
-        ];
-        routingTableFile = "/dev/null";
-        resolverExecutable = "/usr/bin/false";
-      };
-    }
-    {
       clawde.agents = {
-        agent-with-workspace-profile = {
+        agent-with-interactive-settings = {
           harness = "claude";
-          personality = "Claude agent carrying a workspace profile";
-          heartbeatPrompt = "Heartbeat tick.";
-          model = "sonnet";
-          permissionMode = "bypassPermissions";
-          claudeSettingsWorkspaceProfile = "test-profile";
-        };
-        agent-with-interactive-settings-and-workspace-profile = {
-          harness = "claude";
-          personality = "Claude agent carrying interactive settings and a workspace profile";
+          personality = "Claude agent carrying interactive settings";
           heartbeatPrompt = "Heartbeat tick.";
           model = "sonnet";
           permissionMode = "bypassPermissions";
           claudeInteractiveSessionSettings = true;
-          claudeSettingsWorkspaceProfile = "test-profile";
         };
-        agent-without-workspace-profile = {
+        agent-with-default-settings = {
           harness = "claude";
-          personality = "Claude agent carrying no workspace profile";
+          personality = "Claude agent carrying default settings";
           heartbeatPrompt = "Heartbeat tick.";
           model = "sonnet";
           permissionMode = "bypassPermissions";
@@ -65,10 +33,10 @@ let
   claudeCommandsOf =
     agentName:
     let
-      inherit (cfgWithWorkspaceProfileAgent.clawde.harnesses) claude;
+      inherit (cfgWithClaudeAgents.clawde.harnesses) claude;
       commandArguments = {
         name = agentName;
-        agent = cfgWithWorkspaceProfileAgent.clawde.agents.${agentName};
+        agent = cfgWithClaudeAgents.clawde.agents.${agentName};
         workspaceDirectory = "/tmp/${agentName}";
         instructionsFile = "/tmp/${agentName}/instructions.md";
         sessionArgvShellExpansion = "\${CLAWDE_SESSION_ARGV:-}";
@@ -94,59 +62,32 @@ let
       )
     ) (claudeCommandsOf agentName);
 
-  testProfileSettingsOverlay.enabledPlugins."test-profile-plugin@test-marketplace" = true;
+  inherit (cfgWithClaudeAgents.claude) interactiveSessionSettings;
 
-  inherit (cfgWithWorkspaceProfileAgent.claude) interactiveSessionSettings;
-
-  launchSettingsOf =
-    agentName: cfgWithWorkspaceProfileAgent.clawde.agents.${agentName}.claudeLaunchSettings;
+  launchSettingsOf = agentName: cfgWithClaudeAgents.clawde.agents.${agentName}.claudeLaunchSettings;
 in
 {
-  clawde-workspace-profile-agent-launches-claude-with-the-profile-settings =
-    mkEvalCheck "clawde-workspace-profile-agent-launches-claude-with-the-profile-settings"
-      (
-        launchSettingsOf "agent-with-workspace-profile" == testProfileSettingsOverlay
-        && everyClaudeCommandCarriesTheAgentSettingsFile "agent-with-workspace-profile"
-      )
-      "clawde runs the unwrapped claude binary, so an agent never resolves a workspace profile by itself; the launch, run-once and channel turn commands must each hand claude the named profile's settings overlay, or the agent silently runs without the profile's plugins";
-
-  clawde-interactive-settings-agent-layers-the-profile-over-the-interactive-settings =
-    mkEvalCheck "clawde-interactive-settings-agent-layers-the-profile-over-the-interactive-settings"
+  clawde-interactive-agent-receives-interactive-settings =
+    mkEvalCheck "clawde-interactive-agent-receives-interactive-settings"
       (
         interactiveSessionSettings.pluginConfigs != { }
-        && builtins.all (pkgs.lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfgWithWorkspaceProfileAgent.claude.interactiveSessionModsDirectory} ") (
-          claudeCommandsOf "agent-with-interactive-settings-and-workspace-profile"
+        && builtins.all (pkgs.lib.hasInfix "--plugin-dir ${builtins.unsafeDiscardStringContext cfgWithClaudeAgents.claude.interactiveSessionModsDirectory} ") (
+          claudeCommandsOf "agent-with-interactive-settings"
         )
-        &&
-          launchSettingsOf "agent-with-interactive-settings-and-workspace-profile"
-          == pkgs.lib.recursiveUpdate interactiveSessionSettings testProfileSettingsOverlay
-        && everyClaudeCommandCarriesTheAgentSettingsFile "agent-with-interactive-settings-and-workspace-profile"
+        && launchSettingsOf "agent-with-interactive-settings" == interactiveSessionSettings
+        && everyClaudeCommandCarriesTheAgentSettingsFile "agent-with-interactive-settings"
       )
-      "an agent asking for the interactive settings must launch with the same plugins and plugin options the plain claude command gives a keyboard session, with the workspace profile overlay winning where they overlap exactly as the interactive wrapper layers them";
+      "an agent asking for the interactive settings must launch with the same plugins and plugin options the plain claude command gives a keyboard session";
 
-  clawde-workspace-profile-agent-launches-claude-with-the-profile-environment =
-    mkEvalCheck "clawde-workspace-profile-agent-launches-claude-with-the-profile-environment"
+  clawde-default-agent-launches-with-native-settings =
+    mkEvalCheck "clawde-default-agent-launches-with-native-settings"
       (
-        builtins.all (
-          harnessCommand:
-          pkgs.lib.hasInfix "TOOLING_URL=https://tooling.example.invalid " harnessCommand
-          && pkgs.lib.hasInfix ''TOOLING_TOKEN="$(cat "$HOME"/.secrets/tooling-token 2>/dev/null)" '' harnessCommand
-        ) (claudeCommandsOf "agent-with-workspace-profile")
-        && builtins.all (harnessCommand: !(pkgs.lib.hasInfix "TOOLING_" harnessCommand)) (
-          claudeCommandsOf "agent-without-workspace-profile"
-        )
-      )
-      "a profile that turns a resident MCP server off hands its CLI replacement credentials through the session environment, and the unwrapped binary clawde runs never resolves a profile, so every claude command of a profile agent must carry that environment and read each secret file at launch rather than copying its value into the store";
-
-  clawde-agent-without-workspace-profile-launches-claude-without-settings =
-    mkEvalCheck "clawde-agent-without-workspace-profile-launches-claude-without-settings"
-      (
-        launchSettingsOf "agent-without-workspace-profile" == { }
+        launchSettingsOf "agent-with-default-settings" == { }
         && builtins.all (harnessCommand: !(pkgs.lib.hasInfix "--settings" harnessCommand)) (
-          claudeCommandsOf "agent-without-workspace-profile"
+          claudeCommandsOf "agent-with-default-settings"
         )
       )
-      "an agent asking for no launch settings must keep the plain launch, so the interactive and profile plugins reach only the agents that opted into them";
+      "An agent using default settings should launch Claude with its native user settings and without the interactive overlay.";
 
   clawde-machine-tier-registers-the-complete-plugin =
     mkEvalCheck "clawde-machine-tier-registers-the-complete-plugin"
@@ -168,7 +109,7 @@ in
     pkgs
     mkEvalCheck
     cfgWithBothHarnesses
-    cfgWithWorkspaceProfileAgent
+    cfgWithClaudeAgents
     claudeCommandsOf
     ;
 }

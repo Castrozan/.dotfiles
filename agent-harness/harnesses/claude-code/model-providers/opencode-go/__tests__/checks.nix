@@ -69,7 +69,7 @@ in
   opencode-go-rin-launches-the-interactive-claude-package =
     mkEvalCheck "opencode-go-rin-launches-the-interactive-claude-package"
       (lib.hasInfix (executableText rinConfiguration.claude.package) rinClaudeGoPackage.text)
-      "claude-go must inherit the same interactive prompt and workspace-profile setup as the plain Claude command";
+      "claude-go must inherit the same interactive prompt and mod settings as the plain Claude command";
 
   opencode-go-linux-translation-proxy-service =
     mkEvalCheck "opencode-go-linux-translation-proxy-service"

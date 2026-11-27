@@ -1,8 +1,5 @@
 #!/usr/bin/env bash
 
-codexDeveloperInstructionsFile="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
-codexInteractiveProfile="dotfiles-interactive"
-workspaceProfileArguments=()
 interactivePreferencesArguments=()
 codexLaunchExecutable="$CODEX_LAUNCHER_BINARY"
 unset CODEX_SESSION_SOCKET_PATH
@@ -31,10 +28,8 @@ done
 case "$codexCommand" in
 agents | exec | e | review | login | logout | mcp | plugin | app-server | remote-control | app | completion | update | doctor | sandbox | debug | apply | a | queue | archive | delete | migrate-rollouts | unarchive | cloud | exec-server | features | help) ;;
 *)
-	# shellcheck source=/dev/null
-	source "$CODEX_LAUNCHER_WORKSPACE_PROFILE_DISPATCH_FILE"
-	export AGENT_INTERACTIVE_PREFERENCES_PATH="$codexDeveloperInstructionsFile"
-	interactivePreferencesArguments=(--profile "$codexInteractiveProfile")
+	export AGENT_INTERACTIVE_PREFERENCES_PATH="$CODEX_LAUNCHER_DEVELOPER_INSTRUCTIONS_FILE"
+	interactivePreferencesArguments=(--profile dotfiles-interactive)
 	codexLaunchExecutable="$CODEX_LAUNCHER_SESSION_EXECUTABLE"
 	for argument in "$@"; do
 		case "$argument" in
@@ -48,8 +43,7 @@ agents | exec | e | review | login | logout | mcp | plugin | app-server | remote
 	;;
 esac
 if [[ "$codexLaunchExecutable" == "$CODEX_LAUNCHER_BINARY" ]]; then
-	"$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" \
-		"${workspaceProfileArguments[@]}" "$@" || exit "$?"
+	"$CODEX_LAUNCHER_HOOK_TRUST_EXECUTABLE" "$@" || exit "$?"
 fi
 exec "$codexLaunchExecutable" \
 	--config 'default_permissions=":danger-full-access"' \
