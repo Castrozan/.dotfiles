@@ -110,3 +110,34 @@ invalid:
   - "subprocess.check_output(command, text=True)"
   - "subprocess.call(command)"
   - "subprocess.check_call(command)"
+---
+id: python-unit-test-fixed-sleep
+valid:
+  - "await asyncio.sleep(0)"
+  - "clock.advance(seconds=30)"
+  - "finished.wait(timeout=5)"
+invalid:
+  - "time.sleep(0.05)"
+  - "await asyncio.sleep(0.01)"
+  - "sleep(1)"
+  - "time.sleep(TIMESTAMP_ORDERING_PAUSE_SECONDS)"
+---
+id: python-unit-test-clock-deadline-poll
+valid:
+  - "while not finished.is_set():\n    finished.wait(0.1)"
+  - "while attempts < 3:\n    attempts += 1"
+invalid:
+  - "while time.monotonic() < deadline:\n    pass"
+  - "while time.time() < started + 5:\n    pass"
+  - "while loop.time() < deadline:\n    pass"
+---
+id: python-unit-test-elapsed-time-bound
+valid:
+  - "assert first_started < second_finished"
+  - "assert elapsed_seconds >= 0"
+  - "assert parse_elapsed_time_to_seconds('05:06') == 306"
+invalid:
+  - "assert elapsed < 1.5"
+  - "assert elapsed_seconds < 0.28, 'gatherers must overlap'"
+  - "assert time.monotonic() - started < 1"
+  - "assert loop.time() - started <= 2"
