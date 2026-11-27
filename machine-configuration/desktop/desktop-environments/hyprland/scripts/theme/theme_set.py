@@ -7,6 +7,13 @@ import subprocess
 import sys
 from pathlib import Path
 
+INDEPENDENT_THEME_APPLIER_COMMANDS = (
+    "hypr-theme-bg-apply",
+    "hypr-restart-hyprctl",
+    "hypr-theme-set-herdr",
+    "hypr-theme-set-gnome",
+)
+
 CURRENT_THEME_PATH = Path.home() / ".config" / "hypr-theme" / "current" / "theme"
 NEXT_THEME_PATH = Path.home() / ".config" / "hypr-theme" / "current" / "next-theme"
 USER_THEMES_PATH = Path.home() / ".config" / "hypr-theme" / "user-themes"
@@ -155,6 +162,18 @@ def update_btop_theme_in_config() -> None:
     BTOP_CONF.write_text(content)
 
 
+def apply_theme_to_programs_concurrently() -> None:
+    theme_applier_processes = [
+        subprocess.Popen([command]) for command in INDEPENDENT_THEME_APPLIER_COMMANDS
+    ]
+    update_btop_theme_in_config()
+    update_clipse_custom_theme()
+    update_vscode_color_customizations()
+    reload_tmux_theme_if_running()
+    for theme_applier_process in theme_applier_processes:
+        theme_applier_process.wait()
+
+
 def main() -> None:
     if len(sys.argv) < 2:
         print("Usage: hypr-theme-set <theme-name>", file=sys.stderr)
@@ -173,14 +192,7 @@ def main() -> None:
     THEME_NAME_FILE.write_text(theme_name + "\n")
     touch_shell_watched_theme_files_if_present()
     set_background_symlink_from_current_theme()
-    subprocess.run(["hypr-theme-bg-apply"])
-    subprocess.run(["hypr-restart-hyprctl"])
-    update_btop_theme_in_config()
-    subprocess.run(["hypr-theme-set-herdr"])
-    update_clipse_custom_theme()
-    update_vscode_color_customizations()
-    subprocess.run(["hypr-theme-set-gnome"])
-    reload_tmux_theme_if_running()
+    apply_theme_to_programs_concurrently()
     subprocess.run(["notify-send", "Theme changed", theme_name, "-t", "2000"])
 
 
