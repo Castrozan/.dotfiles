@@ -126,18 +126,23 @@ id: python-unit-test-clock-deadline-poll
 valid:
   - "while not finished.is_set():\n    finished.wait(0.1)"
   - "while attempts < 3:\n    attempts += 1"
+  - "while fake_clock.monotonic() < deadline:\n    fake_clock.advance(1)"
 invalid:
   - "while time.monotonic() < deadline:\n    pass"
   - "while time.time() < started + 5:\n    pass"
   - "while loop.time() < deadline:\n    pass"
+  - "while monotonic() < deadline:\n    pass"
 ---
 id: python-unit-test-elapsed-time-bound
 valid:
   - "assert first_started < second_finished"
   - "assert elapsed_seconds >= 0"
   - "assert parse_elapsed_time_to_seconds('05:06') == 306"
+  - "assert plan.duration <= MAXIMUM_DURATION"
+  - "def test_parsed_span():\n    elapsed = parse_span('00:05')\n    assert elapsed < 10"
+  - "def test_fake_clock():\n    elapsed = fake_clock.monotonic() - started\n    assert elapsed < 1"
 invalid:
-  - "assert elapsed < 1.5"
-  - "assert elapsed_seconds < 0.28, 'gatherers must overlap'"
+  - "def test_probe():\n    elapsed = time.monotonic() - started\n    assert elapsed < 1.5"
+  - "def test_probe():\n    elapsed_seconds = time.perf_counter() - started_at\n    assert elapsed_seconds < 0.28, 'gatherers must overlap'"
   - "assert time.monotonic() - started < 1"
   - "assert loop.time() - started <= 2"
