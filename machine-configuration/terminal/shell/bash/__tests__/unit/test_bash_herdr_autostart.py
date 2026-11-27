@@ -16,10 +16,11 @@ HERDR_AUTOSTART_SCRIPT = (
     ("terminal_environment", "expected_output"),
     [
         ({"TERM_PROGRAM": "cockpit", "HERDR_ENV": "1"}, ""),
+        ({"REX_BLOCK": "block:01a21ef4-9648-7017-88ea-bdf946fb486b"}, ""),
         ({"TERM_PROGRAM": "WezTerm"}, "herdr-started"),
     ],
 )
-def test_managed_browser_terminal_keeps_shell_and_normal_terminal_starts_herdr(
+def test_hosted_terminal_keeps_shell_and_normal_terminal_starts_herdr(
     terminal_environment, expected_output
 ):
     completed = subprocess.run(

@@ -27,6 +27,7 @@
     ../development/system-rebuild/rebuild-nix-darwin.nix
     ../development/testing/python-interpreter-nix-darwin.nix
     ../desktop/input/karabiner/karabiner-nix-darwin.nix
+    ../terminal/workspace-manager/rex/rex-nix-darwin.nix
   ];
 
   users.users.${username} = {

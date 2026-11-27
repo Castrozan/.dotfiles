@@ -26,6 +26,7 @@
     ../terminal/terminal-command-packages-home-manager.nix
     ../terminal/multiplexer/tmux/tmux-home-manager.nix
     ../terminal/workspace-manager/herdr/herdr-home-manager.nix
+    ../terminal/workspace-manager/rex/rex-home-manager.nix
     ../terminal/emulators/wezterm/wezterm-home-manager.nix
     ../terminal/file-manager/yazi/yazi-home-manager.nix
 

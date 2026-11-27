@@ -9,6 +9,10 @@ _start_herdr() {
 		return
 	fi
 
+	if [ -n "${REX_BLOCK:-}" ]; then
+		return
+	fi
+
 	if ! command -v herdr >/dev/null 2>&1; then
 		return
 	fi
