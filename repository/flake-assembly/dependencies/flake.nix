@@ -60,6 +60,8 @@
     herdr.url = "github:Castrozan/herdr/8a1d2dd9a31f9c6382602e0b22d3e326ac570738";
     herdr-pace.url = "github:Castrozan/herdr-pace/ebc5f13ab98a589edff867e75a9cb9181131d1f0";
     herdr-pace.inputs.nixpkgs.follows = "nixpkgs";
+    rex.url = "https://pkgs.superlogical.com/rex/nix/preview.tar.gz";
+    rex.inputs.nixpkgs.follows = "nixpkgs";
 
     # Own forks — follow nixpkgs (tested, no version-sensitive deps)
     cbonsai.url = "github:castrozan/cbonsai";

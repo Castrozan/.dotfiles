@@ -36,6 +36,7 @@ in
     ../../terminal/shell/bash/bash-home-manager.nix
     ../../terminal/emulators/kitty/kitty-home-manager.nix
     ../../terminal/multiplexer/tmux/tmux-home-manager.nix
+    ../../terminal/multiplexer/rex/rex-home-manager.nix
     ../../terminal/workspace-manager/herdr/herdr-home-manager.nix
     ../../terminal/emulators/wezterm/wezterm-home-manager.nix
     ../../terminal/terminal-command-packages-home-manager.nix
