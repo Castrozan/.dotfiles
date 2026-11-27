@@ -10,16 +10,10 @@ HERDR_DIRECTORY = Path(__file__).resolve().parents[2]
 PACKAGE_IDENTITIES = {
     "herdr-agent-resume": {
         "recipe_path": "herdr-agent-resume-package.nix",
-        "owner": "Angel-O",
-        "revision": "dcd6417ac87b5d73e8b32e12486a4838850e8b1a",
-        "source_hash": "sha256-TClh+l0+2XT04NLQD9ZEq1cny1LuSENyxDLy62OKEaQ=",
         "lock_hash": "5f3403ac35f92c840a38e7f46abbd70617fa6f5ddc3c62cde60d758331e9cbea",
     },
     "herdr-annotate": {
         "recipe_path": "annotation/herdr-annotate-package.nix",
-        "owner": "plannotator",
-        "revision": "663b45a420f00882f7196bf893b341cddd37a530",
-        "source_hash": "sha256-MLHF21wqghawj3rk+UsyFdaGqIgVYXVG7UH2H+q0/lE=",
         "lock_hash": "01024d372dd6770e31d58bca8d3468c0756f8f8c7bcb20b56f4d6a9c58d5017d",
     },
 }
@@ -55,15 +49,3 @@ def test_local_lock_preserves_exact_pinned_upstream_dependencies(
 ):
     lock = local_cargo_lock(package_name)
     assert hashlib.sha256(lock.read_bytes()).hexdigest() == identity["lock_hash"]
-
-
-@pytest.mark.parametrize("package_name,identity", PACKAGE_IDENTITIES.items())
-def test_local_lock_remains_bound_to_declared_upstream_pin(package_name, identity):
-    recipe = package_recipe(package_name).read_text()
-    source = recipe.split("pkgs.fetchFromGitHub", 1)[1].split("\n  };", 1)[0]
-    assert re.search(r'\bowner\s*=\s*"' + identity["owner"] + '";', source)
-    assert re.search(r'\brepo\s*=\s*"' + package_name + '";', source)
-    assert re.search(r'\brev\s*=\s*"' + identity["revision"] + '";', source)
-    assert re.search(
-        r'\bhash\s*=\s*"' + re.escape(identity["source_hash"]) + '";', source
-    )

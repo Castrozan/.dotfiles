@@ -8,6 +8,7 @@ from pathlib import Path
 
 INSTALLED_APPLICATION_PATH = Path("/Applications/Rex.app")
 DISK_IMAGE_APPLICATION_NAME = "Rex.app"
+INSTALL_COMMAND_TIMEOUT_SECONDS = 600
 
 
 def installed_rex_build():
@@ -26,16 +27,21 @@ def installed_build_meets_minimum(minimum_build):
     return installed_build is not None and installed_build >= minimum_build
 
 
+def validated_disk_image(disk_image):
+    disk_image_path = Path(disk_image)
+    if (
+        disk_image_path.is_absolute()
+        and disk_image_path.suffix == ".dmg"
+        and disk_image_path.is_file()
+    ):
+        return disk_image_path
+    raise ValueError(f"Invalid Rex disk image: {disk_image!r}")
+
+
 def ensure_rex_application(minimum_build, disk_image, owner):
     if installed_build_meets_minimum(minimum_build):
         return
-    disk_image_path = Path(disk_image)
-    if (
-        not disk_image_path.is_absolute()
-        or disk_image_path.suffix != ".dmg"
-        or not disk_image_path.is_file()
-    ):
-        raise ValueError(f"Invalid Rex disk image: {disk_image!r}")
+    disk_image_path = validated_disk_image(disk_image)
     print(
         f"Installing Rex build >= {minimum_build} from the vendor disk image",
         flush=True,
@@ -44,7 +50,9 @@ def ensure_rex_application(minimum_build, disk_image, owner):
     shutil.rmtree(staged_application, ignore_errors=True)
     copy_application_from_disk_image(disk_image_path, staged_application)
     subprocess.run(
-        ["/usr/sbin/chown", "-R", owner, str(staged_application)], check=True
+        ["/usr/sbin/chown", "-R", owner, str(staged_application)],
+        check=True,
+        timeout=INSTALL_COMMAND_TIMEOUT_SECONDS,
     )
     shutil.rmtree(INSTALLED_APPLICATION_PATH, ignore_errors=True)
     staged_application.rename(INSTALLED_APPLICATION_PATH)
@@ -68,6 +76,7 @@ def copy_application_from_disk_image(disk_image_path, destination):
             ],
             check=True,
             stdout=subprocess.DEVNULL,
+            timeout=INSTALL_COMMAND_TIMEOUT_SECONDS,
         )
         try:
             subprocess.run(
@@ -77,12 +86,14 @@ def copy_application_from_disk_image(disk_image_path, destination):
                     str(destination),
                 ],
                 check=True,
+                timeout=INSTALL_COMMAND_TIMEOUT_SECONDS,
             )
         finally:
             subprocess.run(
                 ["/usr/bin/hdiutil", "detach", mount_point],
                 check=True,
                 stdout=subprocess.DEVNULL,
+                timeout=INSTALL_COMMAND_TIMEOUT_SECONDS,
             )
 
 

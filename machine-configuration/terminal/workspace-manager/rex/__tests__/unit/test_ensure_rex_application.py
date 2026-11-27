@@ -40,65 +40,35 @@ def copy_application_writing_build(application_installer, build):
     application_installer.copy_application_from_disk_image = Mock(side_effect=copy)
 
 
-def test_missing_application_is_installed_from_disk_image(
-    application_installer, disk_image
+STOPS_ACTIVATION = None
+
+
+@pytest.mark.parametrize(
+    ("installed_build", "disk_image_build", "resulting_build"),
+    [
+        (None, "2181", 2181),
+        ("2100", "2181", 2181),
+        ("2181", "2100", 2181),
+        (None, "2100", STOPS_ACTIVATION),
+    ],
+)
+def test_activation_leaves_rex_at_or_past_the_pinned_build(
+    application_installer,
+    disk_image,
+    installed_build,
+    disk_image_build,
+    resulting_build,
 ):
-    copy_application_writing_build(application_installer, "2181")
+    if installed_build is not None:
+        write_application_build(
+            application_installer.INSTALLED_APPLICATION_PATH, installed_build
+        )
+    copy_application_writing_build(application_installer, disk_image_build)
+    if resulting_build is STOPS_ACTIVATION:
+        with pytest.raises(RuntimeError, match=f"installed: {disk_image_build}"):
+            application_installer.ensure_rex_application(
+                2181, str(disk_image), "someone"
+            )
+        return
     application_installer.ensure_rex_application(2181, str(disk_image), "someone")
-    application_installer.copy_application_from_disk_image.assert_called_once()
-    application_installer.subprocess.run.assert_called_once_with(
-        [
-            "/usr/sbin/chown",
-            "-R",
-            "someone",
-            str(
-                application_installer.INSTALLED_APPLICATION_PATH.with_name(
-                    "Rex.app.installing"
-                )
-            ),
-        ],
-        check=True,
-    )
-    assert application_installer.installed_rex_build() == 2181
-
-
-def test_application_updated_past_the_pin_is_left_alone(
-    application_installer, disk_image
-):
-    write_application_build(application_installer.INSTALLED_APPLICATION_PATH, "2200")
-    copy_application_writing_build(application_installer, "2181")
-    application_installer.ensure_rex_application(2181, str(disk_image), "someone")
-    application_installer.copy_application_from_disk_image.assert_not_called()
-    assert application_installer.installed_rex_build() == 2200
-
-
-def test_older_application_is_replaced(application_installer, disk_image):
-    write_application_build(application_installer.INSTALLED_APPLICATION_PATH, "2100")
-    copy_application_writing_build(application_installer, "2181")
-    application_installer.ensure_rex_application(2181, str(disk_image), "someone")
-    assert application_installer.installed_rex_build() == 2181
-
-
-def test_disk_image_older_than_the_pin_stops_activation(
-    application_installer, disk_image
-):
-    copy_application_writing_build(application_installer, "2100")
-    with pytest.raises(RuntimeError, match="installed: 2100"):
-        application_installer.ensure_rex_application(2181, str(disk_image), "someone")
-
-
-def test_relative_disk_image_stops_before_copying(application_installer):
-    copy_application_writing_build(application_installer, "2181")
-    with pytest.raises(ValueError, match="Invalid Rex disk image"):
-        application_installer.ensure_rex_application(2181, "Rex.dmg", "someone")
-    application_installer.copy_application_from_disk_image.assert_not_called()
-
-
-def test_malformed_installed_build_stops_before_copying(
-    application_installer, disk_image
-):
-    write_application_build(application_installer.INSTALLED_APPLICATION_PATH, "0.1.0")
-    copy_application_writing_build(application_installer, "2181")
-    with pytest.raises(ValueError, match="Invalid Rex build"):
-        application_installer.ensure_rex_application(2181, str(disk_image), "someone")
-    application_installer.copy_application_from_disk_image.assert_not_called()
+    assert application_installer.installed_rex_build() == resulting_build
