@@ -3,6 +3,7 @@ import threading
 import session_context_git_status
 import session_context_handler
 import session_context_project_context
+from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 
 GIT_STATUS_PORCELAIN_V2 = (
     "# branch.oid 1234567890abcdef\n"
@@ -76,7 +77,7 @@ def test_project_context_runs_its_git_probes_concurrently(monkeypatch):
         monkeypatch,
         session_context_project_context,
         {("git", "worktree"): (0, "worktree /a\nworktree /b\n")},
-        overlap_barrier=threading.Barrier(2, timeout=5),
+        overlap_barrier=threading.Barrier(2, timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS),
     )
     session_context_project_context.check_project_context()
 
@@ -89,7 +90,9 @@ def test_handler_gathers_its_sections_concurrently(monkeypatch):
         "check_project_context",
         "get_system_info",
     )
-    all_sections_running = threading.Barrier(len(section_names), timeout=5)
+    all_sections_running = threading.Barrier(
+        len(section_names), timeout=HOOK_SUBPROCESS_TIMEOUT_SECONDS
+    )
 
     def section_that_waits_for_every_other_section(*_):
         all_sections_running.wait()
