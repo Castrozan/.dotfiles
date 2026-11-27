@@ -1,3 +1,4 @@
+import io
 import sys
 import tempfile
 from pathlib import Path
@@ -31,6 +32,8 @@ DARK_BACKGROUND_MAXIMUM_LIGHTNESS = 0.13
 
 MINIMUM_BACKGROUND_ANCHOR_SATURATION = 0.2
 
+COLOR_SAMPLE_MAXIMUM_SIDE_PIXELS = 400
+
 
 def extract_first_frame_if_gif(image_path: Path, first_frame_path: Path) -> Path:
     with Image.open(image_path) as image:
@@ -42,7 +45,15 @@ def extract_first_frame_if_gif(image_path: Path, first_frame_path: Path) -> Path
 
 
 def extract_dominant_colors_from_image(image_path: Path) -> list[tuple[int, int, int]]:
-    color_thief = ColorThief(str(image_path))
+    with Image.open(image_path) as image:
+        color_sample = image.convert("RGB")
+    color_sample.thumbnail(
+        (COLOR_SAMPLE_MAXIMUM_SIDE_PIXELS, COLOR_SAMPLE_MAXIMUM_SIDE_PIXELS)
+    )
+    color_sample_png = io.BytesIO()
+    color_sample.save(color_sample_png, "PNG")
+    color_sample_png.seek(0)
+    color_thief = ColorThief(color_sample_png)
     return color_thief.get_palette(color_count=16, quality=1)
 
 
