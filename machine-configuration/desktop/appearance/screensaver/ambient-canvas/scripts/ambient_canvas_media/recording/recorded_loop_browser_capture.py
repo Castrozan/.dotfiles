@@ -47,6 +47,25 @@ def terminate_browser_process(browser_process, throwaway_profile_directory):
     )
 
 
+def browser_exited_without_uploading(browser_process, upload_server):
+    return (
+        browser_process.poll() is not None
+        and not upload_server.manifest_received_event.is_set()
+    )
+
+
+def wait_for_uploaded_manifest(
+    browser_process, upload_server, deadline, cancellation_event
+):
+    while not cancellation_event.is_set() and time.monotonic() < deadline:
+        if upload_server.manifest_received_event.wait(
+            min(1, deadline - time.monotonic())
+        ):
+            return
+        if browser_exited_without_uploading(browser_process, upload_server):
+            raise RecordingBrowserExitedError(browser_process.returncode)
+
+
 def drive_record_browser(request, worker, deadline, cancellation_event):
     index_file_path = request.index_file_path
     capture_target = request.capture_target
@@ -81,17 +100,9 @@ def drive_record_browser(request, worker, deadline, cancellation_event):
             stderr=subprocess.DEVNULL,
             env=build_browser_environment_without_systemd_scope_escape(),
         )
-        while not cancellation_event.is_set():
-            remaining_seconds = deadline - time.monotonic()
-            if remaining_seconds <= 0:
-                break
-            if upload_server.manifest_received_event.wait(min(1, remaining_seconds)):
-                break
-            exit_status = browser_process.poll()
-            if exit_status is not None:
-                if upload_server.manifest_received_event.is_set():
-                    break
-                raise RecordingBrowserExitedError(exit_status)
+        wait_for_uploaded_manifest(
+            browser_process, upload_server, deadline, cancellation_event
+        )
     finally:
         if browser_process is not None:
             terminate_browser_process(browser_process, throwaway_profile_directory)

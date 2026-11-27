@@ -20,6 +20,15 @@ def resolve_recording_worker_count():
     return max(1, min(2, (os.cpu_count() or 1) // 2))
 
 
+def collect_manifests_failing_fast(recordings):
+    settled_recordings, _ = concurrent.futures.wait(
+        recordings, return_when=concurrent.futures.FIRST_EXCEPTION
+    )
+    for settled_recording in settled_recordings:
+        settled_recording.result()
+    return [recording.result() for recording in recordings]
+
+
 def capture_recorded_playlist(
     index_file_path,
     capture_target,
@@ -47,12 +56,7 @@ def capture_recorded_playlist(
                 )
                 for worker_index in range(worker_count)
             ]
-            settled_recordings, _ = concurrent.futures.wait(
-                recordings, return_when=concurrent.futures.FIRST_EXCEPTION
-            )
-            for settled_recording in settled_recordings:
-                settled_recording.result()
-            manifests = [recording.result() for recording in recordings]
+            manifests = collect_manifests_failing_fast(recordings)
         except Exception as recording_error:
             print(f"render-ambient-canvas-loop: {recording_error}", file=sys.stderr)
             return None

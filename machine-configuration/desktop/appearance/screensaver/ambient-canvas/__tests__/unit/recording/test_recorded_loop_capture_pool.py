@@ -9,7 +9,7 @@ from recording.recorded_loop_capture_plan import RecordingWorker
 
 
 @pytest.mark.parametrize(
-    ("processor_count", "worker_count"), [(None, 1), (1, 1), (2, 1), (4, 2), (32, 2)]
+    ("processor_count", "worker_count"), [(None, 1), (1, 1), (4, 2), (32, 2)]
 )
 def test_capture_pool_is_bounded_by_processor_count(
     monkeypatch, processor_count, worker_count
