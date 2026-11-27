@@ -1,4 +1,4 @@
-import time
+import threading
 
 import session_context_git_status
 import session_context_handler
@@ -15,13 +15,13 @@ GIT_STATUS_PORCELAIN_V2 = (
 )
 
 
-def record_invocations(monkeypatch, module, responses, delay_seconds=0.0):
+def record_invocations(monkeypatch, module, responses, overlap_barrier=None):
     invocations = []
 
     def fake_run_cmd(args, timeout=5):
         invocations.append(tuple(args))
-        if delay_seconds:
-            time.sleep(delay_seconds)
+        if overlap_barrier:
+            overlap_barrier.wait()
         for prefix, response in responses.items():
             if tuple(args)[: len(prefix)] == prefix:
                 return response
@@ -76,34 +76,29 @@ def test_project_context_runs_its_git_probes_concurrently(monkeypatch):
         monkeypatch,
         session_context_project_context,
         {("git", "worktree"): (0, "worktree /a\nworktree /b\n")},
-        delay_seconds=0.15,
+        overlap_barrier=threading.Barrier(2, timeout=5),
     )
-    started_at = time.perf_counter()
     session_context_project_context.check_project_context()
-    elapsed_seconds = time.perf_counter() - started_at
-    assert elapsed_seconds < 0.28, (
-        "the worktree listing and the WIP-commit search do not depend on each other, "
-        f"so running them sequentially doubles the wall time: {elapsed_seconds:.3f}s"
-    )
 
 
 def test_handler_gathers_its_sections_concurrently(monkeypatch):
-    for section_name in (
+    section_names = (
         "get_git_status",
         "check_environment",
         "detect_hyprland_workspace_context",
         "check_project_context",
         "get_system_info",
-    ):
+    )
+    all_sections_running = threading.Barrier(len(section_names), timeout=5)
+
+    def section_that_waits_for_every_other_section(*_):
+        all_sections_running.wait()
+        return {}
+
+    for section_name in section_names:
         monkeypatch.setattr(
             session_context_handler,
             section_name,
-            lambda *_: time.sleep(0.12) or {},
+            section_that_waits_for_every_other_section,
         )
-    started_at = time.perf_counter()
     session_context_handler.handle({"hook_event_name": "SessionStart"})
-    elapsed_seconds = time.perf_counter() - started_at
-    assert elapsed_seconds < 0.35, (
-        "the five context gatherers are independent and every one of them is blocked "
-        f"on a subprocess, so they must not run one after another: {elapsed_seconds:.3f}s"
-    )
