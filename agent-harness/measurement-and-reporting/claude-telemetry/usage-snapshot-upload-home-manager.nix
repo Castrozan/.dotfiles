@@ -11,7 +11,6 @@ let
 
   ingestApiBaseUrl = "https://lucaszanoni.com/ingest";
   ingestProducerSecretPath = "${config.home.homeDirectory}/.secrets/ingest-producer-secret";
-  ingestPublishIntervalSeconds = 300;
   ingestPublishTimeoutSeconds = 150;
 
   usageSnapshotSource = lib.fileset.toSource {
@@ -51,41 +50,24 @@ in
   config = lib.mkMerge [
     (lib.mkIf pkgs.stdenv.hostPlatform.isDarwin {
       launchd.agents.claude-usage-ingest-publish = {
-        enable = true;
+        enable = false;
         config = {
           Label = "com.dotfiles.claude-usage-ingest-publish";
           ProgramArguments = [ "${ingestPublishLauncher}" ];
           EnvironmentVariables = ingestPublishEnvironment;
-          RunAtLoad = true;
-          StartInterval = ingestPublishIntervalSeconds;
           StandardOutPath = "/tmp/claude-usage-ingest-publish.log";
           StandardErrorPath = "/tmp/claude-usage-ingest-publish.log";
         };
       };
     })
     (lib.mkIf pkgs.stdenv.hostPlatform.isLinux {
-      systemd.user = {
-        services = {
-          claude-usage-ingest-publish = {
-            Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
-            Service = {
-              Type = "oneshot";
-              ExecStart = "${ingestPublishLauncher}";
-              Environment = ingestPublishEnvironmentList;
-              TimeoutStartSec = "${toString ingestPublishTimeoutSeconds}s";
-            };
-          };
-        };
-        timers = {
-          claude-usage-ingest-publish = {
-            Unit.Description = "Periodic contracted Claude usage publish to the ingestion api";
-            Timer = {
-              OnBootSec = "3min";
-              OnUnitActiveSec = "${toString ingestPublishIntervalSeconds}s";
-              Persistent = true;
-            };
-            Install.WantedBy = [ "timers.target" ];
-          };
+      systemd.user.services.claude-usage-ingest-publish = {
+        Unit.Description = "Publish the anonymized Claude usage snapshot under its ingestion contract";
+        Service = {
+          Type = "oneshot";
+          ExecStart = "${ingestPublishLauncher}";
+          Environment = ingestPublishEnvironmentList;
+          TimeoutStartSec = "${toString ingestPublishTimeoutSeconds}s";
         };
       };
     })
