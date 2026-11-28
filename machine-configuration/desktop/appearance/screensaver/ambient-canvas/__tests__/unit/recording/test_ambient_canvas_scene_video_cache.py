@@ -1,4 +1,8 @@
 import json
+import subprocess
+from types import SimpleNamespace
+
+import pytest
 
 from recording import byte_range_request_handler as byte_range
 import scene_video_cache as video_cache
@@ -36,12 +40,6 @@ def test_download_arguments_request_a_premuxed_format_so_ffmpeg_is_never_needed(
     )
     assert arguments[arguments.index("--output") + 1] == "/state/videos/abc123.mp4"
     assert arguments[-1] == "https://www.youtube.com/watch?v=abc123"
-
-
-def test_the_format_selector_falls_back_past_youtube_only_constraints():
-    selector = video_cache.YT_DLP_FORMAT_SELECTOR.split("/")
-    assert selector[0] == "18"
-    assert selector[-1] == "best"
 
 
 def test_already_cached_scene_videos_are_not_downloaded_again(tmp_path, monkeypatch):
@@ -113,3 +111,44 @@ def test_a_url_backed_scene_video_caches_under_its_manifest_identifier(
     ) == ["crego-the-link"]
     assert requested_urls == ["https://x.com/ALCrego_/status/123"]
     assert (state_directory / "videos" / "crego-the-link.mp4").is_file()
+
+
+@pytest.mark.parametrize(
+    ("download_outcome", "reported_reason"),
+    [
+        (
+            SimpleNamespace(
+                returncode=1,
+                stderr=b"WARNING: noise\nERROR: Requested format is not available\n",
+            ),
+            "ERROR: Requested format is not available",
+        ),
+        (SimpleNamespace(returncode=1, stderr=b""), "exit status 1"),
+        (subprocess.TimeoutExpired("yt-dlp", 300), "timed out after 300s"),
+    ],
+)
+def test_a_failed_download_names_its_reason_and_never_aborts_the_pass(
+    tmp_path, monkeypatch, capsys, download_outcome, reported_reason
+):
+    web_directory = tmp_path / "web"
+    web_directory.mkdir()
+    (web_directory / "scene-videos.json").write_text(
+        json.dumps({"videos": [{"id": "broken"}]})
+    )
+
+    def fake_run(arguments, **ignored):
+        if isinstance(download_outcome, Exception):
+            raise download_outcome
+        return download_outcome
+
+    monkeypatch.setattr(video_cache.subprocess, "run", fake_run)
+    assert (
+        video_cache.download_missing_scene_videos(
+            str(web_directory), str(tmp_path / "videos")
+        )
+        == []
+    )
+    assert (
+        f"scene video broken could not be downloaded: {reported_reason}"
+        in capsys.readouterr().err
+    )

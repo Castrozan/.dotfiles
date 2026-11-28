@@ -41,6 +41,29 @@ def build_download_arguments(source_url, destination_path):
     ]
 
 
+def summarize_download_failure(completed_download):
+    stderr_lines = completed_download.stderr.decode(errors="replace").splitlines()
+    last_line = next((line for line in reversed(stderr_lines) if line.strip()), "")
+    return last_line or f"exit status {completed_download.returncode}"
+
+
+def attempt_download(scene_video, destination_path):
+    try:
+        completed_download = subprocess.run(
+            build_download_arguments(
+                resolve_scene_video_source_url(scene_video), destination_path
+            ),
+            check=False,
+            capture_output=True,
+            timeout=DOWNLOAD_TIMEOUT_SECONDS,
+        )
+    except subprocess.TimeoutExpired:
+        return f"timed out after {DOWNLOAD_TIMEOUT_SECONDS}s"
+    if completed_download.returncode != 0 or not os.path.isfile(destination_path):
+        return summarize_download_failure(completed_download)
+    return None
+
+
 def download_missing_scene_videos(served_web_directory, scene_video_directory):
     os.makedirs(scene_video_directory, exist_ok=True)
     downloaded_video_ids = []
@@ -49,17 +72,11 @@ def download_missing_scene_videos(served_web_directory, scene_video_directory):
         destination_path = os.path.join(scene_video_directory, f"{video_id}.mp4")
         if os.path.isfile(destination_path):
             continue
-        completed = subprocess.run(
-            build_download_arguments(
-                resolve_scene_video_source_url(scene_video), destination_path
-            ),
-            check=False,
-            capture_output=True,
-            timeout=DOWNLOAD_TIMEOUT_SECONDS,
-        )
-        if completed.returncode != 0 or not os.path.isfile(destination_path):
+        failure_reason = attempt_download(scene_video, destination_path)
+        if failure_reason is not None:
             print(
-                f"ambient-canvas: scene video {video_id} could not be downloaded",
+                f"ambient-canvas: scene video {video_id} could not be downloaded: "
+                f"{failure_reason}",
                 file=sys.stderr,
             )
             continue

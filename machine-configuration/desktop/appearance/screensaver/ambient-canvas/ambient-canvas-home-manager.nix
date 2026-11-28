@@ -15,7 +15,9 @@ let
   ambientCanvasPlaybackDwellSecondsPath = "${ambientCanvasStateDirectory}/playback-dwell-seconds";
   ambientCanvasDefaultPlaybackDwellSeconds = 30;
 
-  ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [ pkgs.yt-dlp ];
+  ambientCanvasSceneVideoDownloaderPath = lib.makeBinPath [
+    (import ./yt-dlp-with-current-youtube-player-support.nix { inherit pkgs; })
+  ];
   ambientCanvasPlayerRuntimePath = lib.makeBinPath (
     lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       pkgs.mpv
