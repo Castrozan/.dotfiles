@@ -46,6 +46,7 @@ SESSION_START_HANDLERS = [
     HookHandler(
         handler_module_name="codex_servant_status_handler", surfaces=(CODEX_SURFACE,)
     ),
+    HookHandler(handler_module_name="compute_placement_guidance_handler"),
 ]
 
 
