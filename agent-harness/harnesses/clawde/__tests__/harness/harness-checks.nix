@@ -1,5 +1,6 @@
 {
   pkgs,
+  inputs,
   mkEvalCheck,
   helpers,
   self,
@@ -137,6 +138,7 @@ in
           {
             hostname = "test";
             inherit pkgs;
+            rilSkillDirectory = inputs.read-it-later.skill;
           }
         ).defaultInteractiveSkillNames
       )

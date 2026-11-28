@@ -103,7 +103,13 @@ def test_merge_request_discussion_ignores_system_notes_and_other_branches(monkey
                 },
             ]
         return [
-            {"iid": 9, "source_branch": "ril-capture", "title": "RIL: capture"},
+            {
+                "iid": 9,
+                "source_branch": "ril-capture",
+                "title": "RIL: capture",
+                "description": "Cards",
+                "web_url": "https://gitlab.example/merge_requests/9",
+            },
             {"iid": 10, "source_branch": "other", "title": "other"},
         ]
 
@@ -114,6 +120,8 @@ def test_merge_request_discussion_ignores_system_notes_and_other_branches(monkey
             "number": 9,
             "headRefName": "ril-capture",
             "title": "RIL: capture",
+            "body": "Cards",
+            "url": "https://gitlab.example/merge_requests/9",
             "comments": [{"id": 2, "body": "why this approach?", "createdAt": "later"}],
         }
     ]

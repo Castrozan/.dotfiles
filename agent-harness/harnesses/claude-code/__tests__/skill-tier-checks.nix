@@ -1,5 +1,6 @@
 {
   pkgs,
+  inputs,
   lib,
   mkEvalCheck,
   cfg,
@@ -12,6 +13,7 @@ let
       {
         hostname = "test";
         inherit pkgs;
+        rilSkillDirectory = inputs.read-it-later.skill;
       };
 
   claudeInteractiveSkillNames = interactiveAgentSkills.effectiveInteractiveSkillNames { };
@@ -57,6 +59,7 @@ let
           {
             hostname = machineName;
             inherit pkgs;
+            rilSkillDirectory = inputs.read-it-later.skill;
           }
         ).allSkillNames;
     in

@@ -1,6 +1,7 @@
 {
   helpers,
   pkgs,
+  inputs,
   lib,
   self,
   ...
@@ -13,6 +14,7 @@ let
       {
         hostname = "test";
         inherit pkgs;
+        rilSkillDirectory = inputs.read-it-later.skill;
       };
 
   cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];

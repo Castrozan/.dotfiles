@@ -159,7 +159,7 @@ def open_change_requests(repository, branch_prefix):
                 "--limit",
                 "100",
                 "--json",
-                "number,headRefName,title,comments",
+                "number,headRefName,title,body,url,comments",
             ]
         )
     proposals = gitlab_pages(
@@ -178,6 +178,8 @@ def open_change_requests(repository, branch_prefix):
                 "number": proposal["iid"],
                 "headRefName": proposal["source_branch"],
                 "title": proposal["title"],
+                "body": proposal.get("description") or "",
+                "url": proposal.get("web_url", ""),
                 "comments": [
                     {
                         "id": note["id"],

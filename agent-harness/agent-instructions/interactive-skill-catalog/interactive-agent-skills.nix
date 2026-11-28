@@ -1,6 +1,7 @@
 {
   hostname,
   pkgs,
+  rilSkillDirectory,
 }:
 let
   skillSetBuilders = import ./skill-set-builders.nix {
@@ -8,6 +9,7 @@ let
       hostname
       pkgs
       defaultInteractiveSkillNames
+      rilSkillDirectory
       ;
   };
 

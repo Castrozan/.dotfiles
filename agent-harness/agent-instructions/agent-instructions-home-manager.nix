@@ -1,4 +1,9 @@
-{ inputs, pkgs, ... }:
+{
+  hostname ? "",
+  inputs,
+  pkgs,
+  ...
+}:
 let
   codingSkillInstall = import ./skills/development/coding/install {
     inherit pkgs;
@@ -18,11 +23,17 @@ in
     ./skills/media/twitter/install/twitter-home-manager.nix
     ./skills/services/phone-status/phone-status-cli-home-manager.nix
     ./skills/services/url-shortener/url-shortener-cli-home-manager.nix
-    ../read-it-later/cli-home-manager.nix
+    inputs.read-it-later.homeManagerModules.default
     ./skills/knowledge/todo/install/todo-home-manager.nix
   ];
 
   programs.orchestrator.userModelPath = "~/.dotfiles/private-configuration/agent-harness/user-model/USER.md";
+
+  programs.ril = {
+    forgePythonPath = ./skills/development/forge/scripts;
+    machineName = hostname;
+    repositoryName = ".dotfiles";
+  };
 
   home.packages = codingSkillInstall.packages;
 }

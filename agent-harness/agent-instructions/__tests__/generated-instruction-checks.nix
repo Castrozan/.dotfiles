@@ -28,6 +28,7 @@ let
       ;
     hostname = "test";
     chromePackage = pkgs.google-chrome;
+    rilSkillDirectory = inputs.read-it-later.skill;
   };
   productionBundle = (import ../../plugin-distribution { inherit pkgs; }).buildPlugin {
     source = productionSource;

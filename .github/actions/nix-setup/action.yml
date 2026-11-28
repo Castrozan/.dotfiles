@@ -55,6 +55,10 @@ runs:
       shell: bash
       run: printf 'ORCHESTRATOR_STUB_OVERRIDE=--override-input dependencies/orchestrator path:%s/repository/verification/nix-checks/orchestrator-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+    - name: Stub the private read-it-later input
+      shell: bash
+      run: printf 'READ_IT_LATER_STUB_OVERRIDE=--override-input dependencies/read-it-later path:%s/repository/verification/nix-checks/read-it-later-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
     - name: Stub the private darwin assets input
       shell: bash
       run: printf 'PRIVATE_CONFIG_STUB_OVERRIDE=--override-input dependencies/private-config path:%s/repository/verification/nix-checks/private-config-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"

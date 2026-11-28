@@ -45,7 +45,6 @@ class TestDocumentationFileClassification:
             "/tmp/scratch.txt",
             "/home/lucas.zanoni/.dotfiles/HEARTBEAT.md",
             "/home/lucas.zanoni/.dotfiles/briefings/2026-08-02.md",
-            "/home/lucas.zanoni/.dotfiles/agent-harness/read-it-later/decisions/tweet-from-2026-07-25-10-16-14.md",
             "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/dashboard/node_modules/@algolia/client-search/README.md",
             "/home/lucas.zanoni/.dotfiles/agent-harness/measurement-and-reporting/infrastructure/.terraform/providers/google/6.50.0/darwin_arm64/README.md",
             "/home/lucas.zanoni/.dotfiles/machine-configuration/network/network-optimization/network-policy.md",

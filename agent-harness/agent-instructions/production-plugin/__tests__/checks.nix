@@ -11,6 +11,7 @@ let
     hostname = "test";
     homeDirectory = "/home/test";
     chromePackage = pkgs.google-chrome;
+    rilSkillDirectory = inputs.read-it-later.skill;
     isDarwin = false;
   };
   bundle = (import ../../../plugin-distribution { inherit pkgs; }).buildPlugin {
@@ -24,6 +25,7 @@ let
   skillCatalog = import ../../interactive-skill-catalog/interactive-agent-skills.nix {
     inherit pkgs;
     hostname = "test";
+    rilSkillDirectory = inputs.read-it-later.skill;
   };
   avatarPluginShipsItsSkillOnce =
     builtins.all (manifest: builtins.pathExists "${inputs.avatar}/${manifest}") [

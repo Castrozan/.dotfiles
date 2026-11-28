@@ -128,7 +128,7 @@ in
   inherit lib mkEvalCheck cfg;
 }
 // import ./skill-tier-checks.nix {
-  inherit pkgs lib;
+  inherit pkgs lib inputs;
   inherit mkEvalCheck cfg hasFilePrefix;
 }
 // import ./mcp-server-injection-checks.nix {

@@ -26,6 +26,7 @@ let
   interactiveAgentSkills = import ../interactive-skill-catalog/interactive-agent-skills.nix {
     hostname = "test";
     inherit pkgs;
+    rilSkillDirectory = inputs.read-it-later.skill;
   };
 
   harnessProjectSkillDirectoriesInRepository = [

@@ -127,3 +127,15 @@ def merge_change_request(repository, number):
     gitlab_write(
         repository, "PUT", f"{merge_request_endpoint(repository, number)}/merge", {}
     )
+
+
+def close_change_request(repository, number):
+    if repository.provider == "github":
+        run_text(["gh", "pr", "close", str(number), "--repo", repository.url])
+        return
+    gitlab_write(
+        repository,
+        "PUT",
+        merge_request_endpoint(repository, number),
+        {"state_event": "close"},
+    )

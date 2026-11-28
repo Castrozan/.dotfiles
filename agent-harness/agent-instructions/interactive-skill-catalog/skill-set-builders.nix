@@ -2,6 +2,7 @@
   hostname,
   pkgs,
   defaultInteractiveSkillNames,
+  rilSkillDirectory,
 }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
@@ -55,7 +56,7 @@ let
   vendoredSkillNames = builtins.attrNames vendoredSkillSourceDirectoryByName;
 
   componentSkillSourceDirectoryByName = {
-    ril = ../../read-it-later/skill;
+    ril = rilSkillDirectory;
   };
 
   skillSourceDirectoryByName =

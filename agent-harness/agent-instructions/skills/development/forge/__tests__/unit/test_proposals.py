@@ -36,6 +36,7 @@ def test_github_proposal_writes_pass_the_body_on_standard_input(recorded_command
     proposal_writing.comment_on_change_request(GITHUB, 12, "reply")
     proposal_writing.replace_change_request_body(GITHUB, 12, "new body")
     proposal_writing.merge_change_request(GITHUB, 12)
+    proposal_writing.close_change_request(GITHUB, 12)
 
     assert created == {
         "number": 12,
@@ -46,11 +47,13 @@ def test_github_proposal_writes_pass_the_body_on_standard_input(recorded_command
         "comment",
         "edit",
         "merge",
+        "close",
     ]
     assert [body for _, body in recorded_commands] == [
         "| table |",
         "reply",
         "new body",
+        None,
         None,
     ]
     assert all(
@@ -65,6 +68,7 @@ def test_gitlab_proposal_writes_use_the_api_with_an_explicit_host(recorded_comma
     )
     proposal_writing.comment_on_change_request(GITLAB, 5, "reply")
     proposal_writing.merge_change_request(GITLAB, 5)
+    proposal_writing.close_change_request(GITLAB, 5)
 
     assert created == {"number": 5, "url": "https://gitlab.example/mr/5"}
     endpoints = [command[4] for command, _ in recorded_commands]
@@ -72,7 +76,9 @@ def test_gitlab_proposal_writes_use_the_api_with_an_explicit_host(recorded_comma
         "projects/group%2Fproject/merge_requests",
         "projects/group%2Fproject/merge_requests/5/notes",
         "projects/group%2Fproject/merge_requests/5/merge",
+        "projects/group%2Fproject/merge_requests/5",
     ]
+    assert "state_event=close" in recorded_commands[-1][0]
     assert all(
         command[-2:] == ["--hostname", "gitlab.example"]
         for command, _ in recorded_commands

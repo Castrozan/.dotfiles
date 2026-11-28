@@ -20,6 +20,7 @@ let
       ;
     inherit (config.home) homeDirectory;
     chromePackage = latest.google-chrome;
+    rilSkillDirectory = inputs.read-it-later.skill;
   };
 in
 {

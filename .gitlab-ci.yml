@@ -15,17 +15,15 @@ agent-forge:
       machine-configuration/development/version-control/glab-home-manager.nix
       machine-configuration/development/version-control/git-home-manager.nix
       machine-configuration/machines/chise/home.nix
+      machine-configuration/machines/chise/home/ril-watcher.nix
       machine-configuration/machines/user-packages-lucas-zanoni-home-manager.nix
       machine-configuration/security/secrets/public-secret-sources.nix
       secrets/secrets.nix
       agent-harness/agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       agent-harness/agent-instructions/skills/development/forge/install/default.nix
       agent-harness/agent-instructions/skills/development/ci-watcher/install/default.nix
-      agent-harness/read-it-later/package.nix
-      agent-harness/read-it-later/cli-home-manager.nix
       agent-harness/harnesses/clawde/agents/steward.nix
       agent-harness/harnesses/clawde/agents/steward/forge-tools.nix
-      agent-harness/read-it-later/watcher/home-manager.nix
       || validation_status=1
     - >-
       nix shell nixpkgs#python312Packages.pytest nixpkgs#python312Packages.hypothesis --command pytest
@@ -35,7 +33,6 @@ agent-forge:
       agent-harness/agent-instructions/skills/development/ci-watcher/__tests__/unit/test_ci_watcher.py
       agent-harness/agent-instructions/skills/development/ci-watcher/__tests__/unit/test_gitlab_watcher.py
       agent-harness/harnesses/clawde/agents/steward/__tests__/unit/test_forge_ci_status.py
-      agent-harness/agent-instructions/skills/development/forge/__tests__/unit/test_proposals.py
-      agent-harness/read-it-later/__tests__/unit/test_forge_adapter.py -q
+      agent-harness/agent-instructions/skills/development/forge/__tests__/unit/test_proposals.py -q
       || validation_status=1
     - exit "$validation_status"

@@ -14,7 +14,7 @@ in
     ./home/chrome-default-browser.nix
     ./home/home-assistant.nix
     ../../../agent-harness/harnesses/clawde/agents/steward.nix
-    ../../../agent-harness/read-it-later/watcher/home-manager.nix
+    ./home/ril-watcher.nix
 
     ../shared-home-manager-core.nix
 

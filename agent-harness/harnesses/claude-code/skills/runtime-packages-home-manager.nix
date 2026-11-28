@@ -1,6 +1,7 @@
 {
   hostname,
   pkgs,
+  inputs,
   ...
 }:
 let
@@ -8,6 +9,7 @@ let
     import ../../../agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
         inherit hostname pkgs;
+        rilSkillDirectory = inputs.read-it-later.skill;
       };
 
   skillInstallModuleDirectory =

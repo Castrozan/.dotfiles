@@ -455,6 +455,7 @@
         "nixpkgs-unstable": "nixpkgs-unstable",
         "orchestrator": "orchestrator",
         "private-config": "private-config",
+        "read-it-later": "read-it-later",
         "rex": "rex",
         "stylix": "stylix",
         "systemd-manager-tui": "systemd-manager-tui",
@@ -2084,6 +2085,28 @@
         "owner": "pyproject-nix",
         "repo": "pyproject.nix",
         "type": "github"
+      }
+    },
+    "read-it-later": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842667,
+        "narHash": "sha256-4UXWfO6YyOXHEm5JygcFJ977ICzqSJL1mneM0lKkGYU=",
+        "ref": "refs/heads/main",
+        "rev": "0df55c61667ae42b26a19f985b5e73346c9dfcf0",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/read-it-later"
+      },
+      "original": {
+        "rev": "0df55c61667ae42b26a19f985b5e73346c9dfcf0",
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/read-it-later"
       }
     },
     "rex": {

@@ -55,6 +55,11 @@
     agent-evals.url = "github:Castrozan/agent-evals/dc8600fc5f8ec9adc16c5f39af5e15176bb630f5";
     agent-evals.inputs.nixpkgs.follows = "nixpkgs";
 
+    read-it-later = {
+      url = "git+ssh://git@github.com/Castrozan/read-it-later?rev=0df55c61667ae42b26a19f985b5e73346c9dfcf0";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     neovim = {
       url = "git+ssh://git@github.com/Castrozan/neovim?rev=1a2b6491bde018afdff52cf31e878d44c791b670";
       inputs.nixpkgs.follows = "nixpkgs";
