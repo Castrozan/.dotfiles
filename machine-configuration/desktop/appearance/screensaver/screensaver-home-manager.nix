@@ -24,7 +24,7 @@ let
   equationArtPython = pkgs.python312.withPackages (pythonPackages: [ pythonPackages.numpy ]);
 in
 {
-  imports = [ ./ambient-canvas/ambient-canvas-home-manager.nix ];
+  # imports = [ ./ambient-canvas/ambient-canvas-home-manager.nix ];
 
   home.packages = [
     precomputeLoop
