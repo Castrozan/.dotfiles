@@ -1056,18 +1056,18 @@
         ]
       },
       "locked": {
-        "lastModified": 1795845265,
-        "narHash": "sha256-bOqBSMXnuwIir5f+4aT285CvYMxqtUhhrEmDuoPRnJI=",
-        "ref": "refs/heads/main",
-        "rev": "43f3b0003b76e2cbafeb8ed2d64a19c200da5ed7",
-        "revCount": 2,
-        "type": "git",
-        "url": "ssh://git@github.com/Castrozan/home-assistant"
+        "lastModified": 1795845470,
+        "narHash": "sha256-Cet/ZFPAfdSCi95XKWLlckDp8pdAJX7IwDghkMC3Gf0=",
+        "owner": "Castrozan",
+        "repo": "home-assistant",
+        "rev": "4118267d43166a5b52d0836b72a9e93ab82cab5a",
+        "type": "github"
       },
       "original": {
-        "rev": "43f3b0003b76e2cbafeb8ed2d64a19c200da5ed7",
-        "type": "git",
-        "url": "ssh://git@github.com/Castrozan/home-assistant"
+        "owner": "Castrozan",
+        "repo": "home-assistant",
+        "rev": "4118267d43166a5b52d0836b72a9e93ab82cab5a",
+        "type": "github"
       }
     },
     "home-manager": {

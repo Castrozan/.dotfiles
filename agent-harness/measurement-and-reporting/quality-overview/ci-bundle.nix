@@ -16,7 +16,7 @@ let
     homeDirectory = "/var/empty/verdr-ci";
     chromePackage = pkgs.google-chrome;
     componentSkillSourceDirectoryByName = {
-      home-assistant = ../../../repository/verification/nix-checks/home-assistant-stub/skill;
+      home-assistant = dependencies.home-assistant.skill;
       ril = ../../../repository/verification/nix-checks/read-it-later-stub/skill;
     };
     isDarwin = false;

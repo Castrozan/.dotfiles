@@ -47,10 +47,6 @@ runs:
       shell: bash
       run: printf 'HAMMERSPOON_STUB_OVERRIDE=--override-input dependencies/hammerspoon path:%s/repository/verification/nix-checks/hammerspoon-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
-    - name: Stub the private Home Assistant input
-      shell: bash
-      run: printf 'HOME_ASSISTANT_STUB_OVERRIDE=--override-input dependencies/home-assistant path:%s/repository/verification/nix-checks/home-assistant-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
-
     - name: Stub the private orchestrator input
       shell: bash
       run: printf 'ORCHESTRATOR_STUB_OVERRIDE=--override-input dependencies/orchestrator path:%s/repository/verification/nix-checks/orchestrator-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
