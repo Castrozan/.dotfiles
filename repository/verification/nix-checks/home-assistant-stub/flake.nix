@@ -17,6 +17,7 @@
         };
     in
     {
+      skill = ./skill;
       nixosModules.default = homeAssistantModule;
       homeManagerModules = {
         default = homeAssistantModule;

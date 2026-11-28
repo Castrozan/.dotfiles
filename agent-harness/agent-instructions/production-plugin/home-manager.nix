@@ -20,7 +20,9 @@ let
       ;
     inherit (config.home) homeDirectory;
     chromePackage = latest.google-chrome;
-    rilSkillDirectory = inputs.read-it-later.skill;
+    componentSkillSourceDirectoryByName = import ../interactive-skill-catalog/component-skills.nix {
+      inherit inputs;
+    };
   };
 in
 {

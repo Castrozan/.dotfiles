@@ -28,7 +28,9 @@ let
       ;
     hostname = "test";
     chromePackage = pkgs.google-chrome;
-    rilSkillDirectory = inputs.read-it-later.skill;
+    componentSkillSourceDirectoryByName = import ../interactive-skill-catalog/component-skills.nix {
+      inherit inputs;
+    };
   };
   productionBundle = (import ../../plugin-distribution { inherit pkgs; }).buildPlugin {
     source = productionSource;

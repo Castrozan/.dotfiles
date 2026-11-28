@@ -4,7 +4,7 @@
   hostname,
   homeDirectory,
   chromePackage,
-  rilSkillDirectory,
+  componentSkillSourceDirectoryByName,
   isDarwin ? pkgs.stdenv.isDarwin,
 }:
 let
@@ -16,7 +16,7 @@ let
     nodejs = pkgs.nodejs_22;
   };
   skillCatalog = import ../interactive-skill-catalog/interactive-agent-skills.nix {
-    inherit pkgs hostname rilSkillDirectory;
+    inherit pkgs hostname componentSkillSourceDirectoryByName;
   };
   interactiveSkillNames = skillCatalog.effectiveInteractiveSkillNames { };
   skillPath =

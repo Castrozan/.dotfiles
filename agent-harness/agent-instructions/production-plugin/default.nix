@@ -4,7 +4,7 @@
   hostname,
   homeDirectory,
   chromePackage,
-  rilSkillDirectory,
+  componentSkillSourceDirectoryByName,
   isDarwin ? pkgs.stdenv.isDarwin,
 }:
 let
@@ -16,7 +16,7 @@ let
       hostname
       homeDirectory
       chromePackage
-      rilSkillDirectory
+      componentSkillSourceDirectoryByName
       isDarwin
       ;
   };

@@ -14,13 +14,13 @@ let
       {
         hostname = "test";
         inherit pkgs;
-        rilSkillDirectory = inputs.read-it-later.skill;
+        componentSkillSourceDirectoryByName =
+          import ../../../agent-instructions/interactive-skill-catalog/component-skills.nix
+            { inherit inputs; };
       };
 
   cfg = helpers.homeManagerTestConfigurationForEvaluatingSystem [ self.homeManagerModules.codex ];
-
   codexPackage = cfg.codex.unwrappedPackage;
-
   fileNames = builtins.attrNames cfg.home.file;
 
   hasFilePrefix =

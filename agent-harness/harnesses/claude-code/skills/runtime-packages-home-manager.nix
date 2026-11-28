@@ -9,7 +9,9 @@ let
     import ../../../agent-instructions/interactive-skill-catalog/interactive-agent-skills.nix
       {
         inherit hostname pkgs;
-        rilSkillDirectory = inputs.read-it-later.skill;
+        componentSkillSourceDirectoryByName =
+          import ../../../agent-instructions/interactive-skill-catalog/component-skills.nix
+            { inherit inputs; };
       };
 
   skillInstallModuleDirectory =

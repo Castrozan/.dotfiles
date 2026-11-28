@@ -2,7 +2,7 @@
   hostname,
   pkgs,
   defaultInteractiveSkillNames,
-  rilSkillDirectory,
+  componentSkillSourceDirectoryByName,
 }:
 let
   projection = import ../instruction-projection.nix { inherit pkgs; };
@@ -54,10 +54,6 @@ let
   vendoredSkillSourceDirectoryByName = import ../vendored-skills/upstream.nix { inherit pkgs; };
 
   vendoredSkillNames = builtins.attrNames vendoredSkillSourceDirectoryByName;
-
-  componentSkillSourceDirectoryByName = {
-    ril = rilSkillDirectory;
-  };
 
   skillSourceDirectoryByName =
     assert builtins.all (skillName: !(builtins.hasAttr skillName authoredSkillSourceDirectoryByName)) (

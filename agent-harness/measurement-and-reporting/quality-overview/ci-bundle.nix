@@ -15,7 +15,10 @@ let
     hostname = "ci";
     homeDirectory = "/var/empty/verdr-ci";
     chromePackage = pkgs.google-chrome;
-    rilSkillDirectory = ../../../repository/verification/nix-checks/read-it-later-stub/skill;
+    componentSkillSourceDirectoryByName = {
+      home-assistant = ../../../repository/verification/nix-checks/home-assistant-stub/skill;
+      ril = ../../../repository/verification/nix-checks/read-it-later-stub/skill;
+    };
     isDarwin = false;
   };
 in
