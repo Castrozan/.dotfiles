@@ -1,7 +1,7 @@
 ---
 targets: [claudecode, codexcli, opencode]
 name: runner
-description: Runs an already-decided command sequence such as a rebuild, a CI wait or a verification pass, and returns the verdict with a log path instead of the log. Use when the next step is run, wait and report, so waiting turns stay off the expensive session.
+description: Runs an already-decided command sequence, such as a rebuild or CI wait, and returns its verdict and log path. Use for run, wait and report work.
 claudecode:
   disallowedTools: Write, Edit, NotebookEdit
   model: haiku
