@@ -18,44 +18,6 @@ let
   darwinInstallsHerdrScreensaver = packageIsInstalled "herdr-screensaver" darwinCfg;
   aliasGuardedByCommandExistence = lib.hasInfix "command -v herdr-screensaver" aliasesContent;
 
-  /*
-    darwinInstallsAmbientCanvas = packageIsInstalled "ambient-canvas" darwinCfg;
-    linuxInstallsAmbientCanvas = packageIsInstalled "ambient-canvas" linuxCfg;
-    darwinInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" darwinCfg;
-    linuxInstallsAmbientCanvasLoopRenderer = packageIsInstalled "ambient-canvas-render" linuxCfg;
-
-    darwinCompilesAmbientCanvasNativePlayer = darwinCfg.home.activation ? compileAmbientCanvasPlayer;
-    linuxCompilesAmbientCanvasNativePlayer = linuxCfg.home.activation ? compileAmbientCanvasPlayer;
-
-    linuxInstallsAmbientCanvasMpvPlayer =
-      linuxCfg.home.file ? "${linuxCfg.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
-    darwinInstallsAmbientCanvasMpvPlayer =
-      darwinCfg.home.file ? "${darwinCfg.home.homeDirectory}/.local/bin/ᓚᘏᗢ";
-
-    linuxWiresAmbientCanvasKeepAlive =
-      (linuxCfg.systemd.user.services ? ambient-canvas)
-      && (linuxCfg.systemd.user.timers ? ambient-canvas);
-    linuxAmbientCanvasKeepAliveAvoidsActivationRestart =
-      let
-        ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas;
-      in
-      !ambientCanvasService.Unit.X-RestartIfChanged && !ambientCanvasService.Unit.X-StopIfChanged;
-    linuxAmbientCanvasRecordingYieldsToTheDesktop =
-      let
-        ambientCanvasService = linuxCfg.systemd.user.services.ambient-canvas.Service;
-      in
-      ambientCanvasService.Slice == "background.slice"
-      && ambientCanvasService.CPUWeight == "idle"
-      && ambientCanvasService ? MemoryMax
-      && ambientCanvasService.OOMPolicy == "continue";
-    darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
-    ambientCanvasPlayerRunsInItsOwnRestartingService =
-      linuxCfg.systemd.user.services ? ambient-canvas-player
-      && linuxCfg.systemd.user.services.ambient-canvas-player.Service.Restart == "always"
-      && !(linuxCfg.systemd.user.services.ambient-canvas.Service ? KillMode)
-      && darwinCfg.launchd.agents ? ambient-canvas-player
-      && darwinCfg.launchd.agents.ambient-canvas-player.config.KeepAlive;
-  */
 in
 {
   domain-screensaver-herdr-launcher-installed-on-linux =
@@ -77,45 +39,4 @@ in
       (darwinInstallsHerdrScreensaver || aliasGuardedByCommandExistence)
       "aliases.sh defines h for every platform that sources it, but herdr-screensaver installs only on Linux, so on darwin the alias must be guarded by command -v herdr-screensaver or typing h runs a missing binary";
 
-  /*
-    domain-screensaver-ambient-canvas-launcher-installed-on-both =
-      mkEvalCheck "domain-screensaver-ambient-canvas-launcher-installed-on-both"
-        (darwinInstallsAmbientCanvas && linuxInstallsAmbientCanvas)
-        "the ambient-canvas launcher drives the pre-recorded loop on both platforms, so it must be a home package on darwin and on Linux";
-
-    domain-screensaver-ambient-canvas-loop-renderer-installed-on-both =
-      mkEvalCheck "domain-screensaver-ambient-canvas-loop-renderer-installed-on-both"
-        (darwinInstallsAmbientCanvasLoopRenderer && linuxInstallsAmbientCanvasLoopRenderer)
-        "the ambient-canvas-render command regenerates the pre-recorded loop video from the web scenes and is the shared recording pipeline on both platforms, so it must install on darwin and on Linux";
-
-    domain-screensaver-ambient-canvas-native-player-compiled-on-darwin-only =
-      mkEvalCheck "domain-screensaver-ambient-canvas-native-player-compiled-on-darwin-only"
-        (darwinCompilesAmbientCanvasNativePlayer && !linuxCompilesAmbientCanvasNativePlayer)
-        "the ambient-canvas-player Swift AVPlayer binary is the darwin playback backend, so its compile activation must run only on darwin, where swiftc and AVFoundation exist, and never on Linux, whose backend is the mpv driver";
-
-    domain-screensaver-ambient-canvas-mpv-player-installed-on-linux-only =
-      mkEvalCheck "domain-screensaver-ambient-canvas-mpv-player-installed-on-linux-only"
-        (linuxInstallsAmbientCanvasMpvPlayer && !darwinInstallsAmbientCanvasMpvPlayer)
-        "the mpv-based player must be installed as ~/.local/bin/ᓚᘏᗢ only on Linux, where it replaces the Swift AVPlayer as the recorded-loop playback backend";
-
-    domain-screensaver-ambient-canvas-keep-alive-wired-per-platform =
-      mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-wired-per-platform"
-        (linuxWiresAmbientCanvasKeepAlive && darwinWiresAmbientCanvasKeepAlive)
-        "the ambient-canvas keep-alive must be wired on every platform: a systemd user service on Linux and a launchd agent on darwin, or a died player is never respawned";
-
-    domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation =
-      mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation"
-        linuxAmbientCanvasKeepAliveAvoidsActivationRestart
-        "the timer-driven ambient-canvas oneshot can record for minutes, so a rebuild must neither stop nor restart it and wait for the record pass";
-
-    domain-screensaver-ambient-canvas-player-has-its-own-restarting-service =
-      mkEvalCheck "domain-screensaver-ambient-canvas-player-has-its-own-restarting-service"
-        ambientCanvasPlayerRunsInItsOwnRestartingService
-        "the player must run as its own always-restarting service on every platform and never as a child of the recording oneshot, or the recording fence throttles playback and a dead player stays dead until the next timer tick";
-
-    domain-screensaver-ambient-canvas-recording-yields-to-the-desktop =
-      mkEvalCheck "domain-screensaver-ambient-canvas-recording-yields-to-the-desktop"
-        linuxAmbientCanvasRecordingYieldsToTheDesktop
-        "a theme change re-records the loop with headless Chrome workers, so the keep-alive must run in background.slice at idle CPU weight under a memory ceiling, and survive a worker OOM kill so the launcher fails the pass itself instead of starving the desktop";
-  */
 }

@@ -18,6 +18,7 @@
           clawde.agents.ril-watcher = {
             harness = "claude";
             model = "sonnet";
+            personality = "Read-it-later watcher stub for public CI.";
             inherit (config.programs.ril.watcher) skillDirectories;
           };
         };
