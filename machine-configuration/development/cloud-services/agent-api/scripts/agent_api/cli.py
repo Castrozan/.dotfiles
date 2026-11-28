@@ -7,6 +7,7 @@ from pathlib import Path
 
 from agent_api.catalog import describe, discover, providers
 from agent_api.contract import MAXIMUM_REQUEST_BYTES, CapabilityError, OperationRequest
+from agent_api.directives import DirectiveStore
 from agent_api.files import private_directory
 from agent_api.service import CapabilityService
 
@@ -36,6 +37,15 @@ def build_parser():
         "inspect", help="Show one capability's input schema and payment requirements."
     )
     inspect.add_argument("capability")
+    commands.add_parser(
+        "directives",
+        help="Show every directive with its targets and current target; creates no state.",
+    )
+    direct = commands.add_parser(
+        "direct", help="Point one directive at one of its targets."
+    )
+    direct.add_argument("directive")
+    direct.add_argument("target")
     run = commands.add_parser(
         "run",
         help="Execute one capability; inspect failed jobs before selecting another UUID.",
@@ -109,9 +119,18 @@ def execute_discovery(args):
         return describe(args.capability)
 
 
+def execute_directive(args):
+    store = DirectiveStore(args.state_directory)
+    if args.command == "directives":
+        return {"directives": store.listing()}
+    return store.direct(args.directive, args.target)
+
+
 def execute(args):
     if args.command in ("providers", "discover", "inspect"):
         return execute_discovery(args)
+    if args.command in ("directives", "direct"):
+        return execute_directive(args)
     service = CapabilityService(args.state_directory)
     if args.command == "operation":
         return service.store.inspect(args.operation_id)

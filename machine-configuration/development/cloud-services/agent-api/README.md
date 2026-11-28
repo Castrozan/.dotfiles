@@ -13,6 +13,8 @@ agent-api run web.extract --input '{"url":"https://example.com"}'
 agent-api run web.search --input '{"query":"Crawl4AI documentation","limit":3}'
 agent-api run audio.transcribe --input-file transcription.json
 agent-api operation OPERATION_UUID
+agent-api directives
+agent-api direct compute.placement local
 ```
 
 Discovery returns compact descriptions; inspect returns the selected input schema. Neither executes providers or creates
@@ -88,6 +90,65 @@ interrupted without resubmitting them. Retention is persistent; this interface d
 Media child IDs are recorded before dispatch. A local timeout does not cancel a cloud job or establish that it was free.
 Inspect the retained operation and its media child receipt before deciding how to recover. The gateway never retries
 submission.
+
+## Directives
+
+A directive is a standing order with a fixed target set, chosen by the user. When a capability's entry names a directive
+and the request leaves the governed input out, the service fills that input with the directive's current target before
+the operation is claimed. An explicit input value always wins. The first directive, `compute.placement`, governs the
+`host` input of `compute.submit`; its targets are the inventory hosts and its default is `local`.
+
+```sh
+agent-api directives
+agent-api direct compute.placement <host>
+```
+
+`directives` lists every directive with its targets and current target, and creates no state. `direct` accepts only a
+target from the inventory; any other target fails with `unsupported_target` and leaves the previous target in place.
+Choices are stored in `directives.json` in the state directory. That file is per machine; nothing synchronises it
+between machines.
+
+The resolved target is part of the request identity, so replaying one UUID after its directive moved conflicts. A
+stored target that has left the inventory fails with `unsupported_target` instead of falling back to the default.
+Discovery shows which directive governs each capability. The HTTP transport does not expose directives.
+
+## Remote compute
+
+`compute.hosts` lists the compute hosts with their system, size and trust tier, and contacts none of them.
+`compute.submit` starts a command as a resource-limited job on a host and returns at once. `compute.status`,
+`compute.logs` and `compute.cancel` take the `job` returned by submit, which is the submit operation's UUID.
+
+```sh
+agent-api run compute.submit --input '{"command":["nix","run","nixpkgs#hello"]}'
+agent-api run compute.status --input '{"job":"<submit operation UUID>"}'
+agent-api run compute.logs --input '{"job":"<submit operation UUID>"}'
+agent-api run compute.cancel --input '{"job":"<submit operation UUID>"}'
+```
+
+Each job runs as the transient user unit `agent-api-<uuid>.service` on its host, with `MemoryMax`, `CPUQuota` and
+`RuntimeMaxSec` set from the request. Defaults are 2048 MiB, 100 percent of one core and 3600 seconds; the accepted
+ranges are 64 to 65536 MiB, 10 to 6400 percent and 1 to 86400 seconds. Tools that size their parallelism from the
+cgroup quota see one core at the default, so a build needs `cpu_percent` raised to use more. The job's runtime limit is
+separate from the 1 to 600 second deadline of the submit operation itself, which bounds that operation alone.
+
+Arguments reach the job verbatim. The `local` host runs no shell, remote arguments are shell-quoted before ssh sends
+them, and the unit is created with environment expansion disabled. The job inherits the user manager's environment, not
+the caller's, so it brings its own tools through `nix shell` or `nix run`. The `local` host needs `systemd-run`; where
+it is absent, including Darwin, submit to `local` fails with `unsupported_host`.
+
+Remote hosts come from the JSON file named by `AGENT_API_COMPUTE_INVENTORY`: an array of at most 32 objects with
+`name`, `ssh_alias`, `system` and `trust` (`owned` or `rented`), plus optional `cores` and `memory_gigabytes`. Other
+keys are rejected. Names are lowercase, unique and never `local`. A host is reached as
+`ssh -o BatchMode=yes -o ConnectTimeout=10 <ssh_alias> -- <quoted command>`. Nothing is copied to a host yet, so
+`directory` must already exist there.
+
+Job state lives in the host's systemd user manager. A finished job stays inspectable until `compute.cancel` releases
+its unit, after which status reports `unknown`. Status reports `running`, `succeeded`, `failed` or `unknown`, with the
+exit code once the job has finished. Logs return the last `lines` journal lines (default 200, at most 2000), keeping at
+most 1,048,576 characters from the end.
+
+Status, logs and cancel find the host from the retained submit request, not from the current directive. The gateway
+never retries a submit.
 
 ## Private HTTP transport
 

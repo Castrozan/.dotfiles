@@ -1,8 +1,9 @@
 import time
-from dataclasses import asdict
+from dataclasses import asdict, replace
 
 from agent_api.catalog import describe, validate_input, validate_request
 from agent_api.contract import MAXIMUM_RESULT_BYTES, CapabilityError, canonical_json
+from agent_api.directives import DirectiveStore
 from agent_api.files import file_digest, input_file, write_json
 from agent_api.operations import OperationStore
 from agent_api.providers.factory import create_provider
@@ -32,6 +33,7 @@ class CapabilityService:
 
     def run(self, operation_id, request):
         validate_input(request)
+        request = self.directed(request)
         fingerprints = fingerprint_inputs(request)
         replay = self.replay(operation_id, request, fingerprints)
         if replay is not None:
@@ -42,6 +44,13 @@ class CapabilityService:
         if replay is not None:
             return replay
         return self.execute_claimed(operation_id, request, fingerprints)
+
+    def directed(self, request):
+        directive = describe(request.capability).get("directive")
+        if directive is None or directive["input"] in request.input:
+            return request
+        target = DirectiveStore(self.store.state_directory).target(directive["id"])
+        return replace(request, input={**request.input, directive["input"]: target})
 
     def replay(self, operation_id, request, fingerprints):
         try:

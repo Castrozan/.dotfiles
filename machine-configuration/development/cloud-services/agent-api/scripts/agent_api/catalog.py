@@ -1,6 +1,7 @@
 from jsonschema import Draft202012Validator
 
 from agent_api.catalogs.cloud import cloud_capabilities
+from agent_api.catalogs.compute import compute_capabilities
 from agent_api.catalogs.local import local_capabilities
 from agent_api.catalogs.media import media_capabilities
 from agent_api.contract import CapabilityError
@@ -37,6 +38,10 @@ PROVIDERS = {
         "documentation": "https://docs.firecrawl.dev/",
         "unauthenticated_access": "limited",
     },
+    "systemd": {
+        "execution": "local_and_remote",
+        "documentation": "https://www.freedesktop.org/software/systemd/man/latest/systemd-run.html",
+    },
 }
 
 
@@ -45,7 +50,12 @@ def providers():
 
 
 def capabilities(query="", provider=None):
-    entries = local_capabilities() + media_capabilities() + cloud_capabilities()
+    entries = (
+        local_capabilities()
+        + media_capabilities()
+        + cloud_capabilities()
+        + compute_capabilities()
+    )
     words = query.lower().split()
     return [
         entry

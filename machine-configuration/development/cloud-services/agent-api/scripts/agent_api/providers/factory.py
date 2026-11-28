@@ -1,4 +1,5 @@
 from agent_api.contract import CapabilityError
+from agent_api.providers.compute import ComputeProvider
 from agent_api.providers.downloading import DownloadProvider
 from agent_api.providers.firecrawl import FirecrawlProvider
 from agent_api.providers.media import MediaProvider
@@ -14,6 +15,7 @@ PROVIDER_TYPES = {
     "pandoc": ProcessingProvider,
     "media": MediaProvider,
     "firecrawl": FirecrawlProvider,
+    "systemd": ComputeProvider,
 }
 
 
