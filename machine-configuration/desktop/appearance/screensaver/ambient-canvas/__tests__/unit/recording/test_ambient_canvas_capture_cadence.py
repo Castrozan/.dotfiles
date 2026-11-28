@@ -39,6 +39,8 @@ window.AmbientCanvasRecordingEncoder = {
       },
     };
   },
+  reportRecordingProgress() {},
+  async applyEncoderBackpressure() {},
   async uploadRecordedSegment() {},
   async uploadSegmentManifest() {
     process.stdout.write(JSON.stringify({frames, configuredEncoders}));

@@ -1,18 +1,25 @@
-window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
+{
+  const encoderQueueHighWatermark = 8;
+  const encoderQueueDrainTarget = 4;
+  const microsecondsPerSecond = 1000000;
+
   const createVideoFrame = (canvas, frameIndex, framesPerSecond) =>
     new VideoFrame(canvas, {
-      timestamp: Math.round((frameIndex * 1000000) / framesPerSecond),
+      timestamp: Math.round(
+        (frameIndex * microsecondsPerSecond) / framesPerSecond,
+      ),
       duration:
-        Math.round(((frameIndex + 1) * 1000000) / framesPerSecond) -
-        Math.round((frameIndex * 1000000) / framesPerSecond),
+        Math.round(
+          ((frameIndex + 1) * microsecondsPerSecond) / framesPerSecond,
+        ) - Math.round((frameIndex * microsecondsPerSecond) / framesPerSecond),
     });
 
-  function createConfiguredMuxerAndEncoder(
+  const createConfiguredMuxerAndEncoder = (
     outputPixelWidth,
     outputPixelHeight,
     captureFramesPerSecond,
     targetBitsPerPixelPerFrame,
-  ) {
+  ) => {
     const muxer = new Mp4Muxer.Muxer({
       target: new Mp4Muxer.ArrayBufferTarget(),
       video: {
@@ -23,12 +30,10 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
       fastStart: "in-memory",
     });
     const videoEncoder = new VideoEncoder({
-      output: function muxEncodedChunk(encodedChunk, chunkMetadata) {
-        muxer.addVideoChunk(encodedChunk, chunkMetadata);
-      },
-      error: function reportEncodeError(encodeError) {
-        console.error("ambient-canvas record: encode error", encodeError);
-      },
+      output: (encodedChunk, chunkMetadata) =>
+        muxer.addVideoChunk(encodedChunk, chunkMetadata),
+      error: (encodeError) =>
+        console.error("ambient-canvas record: encode error", encodeError),
     });
     videoEncoder.configure({
       codec: "avc1.640033",
@@ -43,78 +48,70 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
       framerate: captureFramesPerSecond,
     });
     return { muxer, videoEncoder };
-  }
+  };
 
-  function waitForEncoderQueueToDrain(videoEncoder, encoderQueueDrainTarget) {
-    return new Promise(function resolveWhenDrained(resolve) {
-      function checkQueueDepth() {
-        if (videoEncoder.encodeQueueSize <= encoderQueueDrainTarget) {
-          resolve();
-          return;
-        }
-        window.setTimeout(checkQueueDepth, 4);
-      }
-      checkQueueDepth();
-    });
-  }
+  const applyEncoderBackpressure = async (videoEncoder) => {
+    if (videoEncoder.encodeQueueSize <= encoderQueueHighWatermark) {
+      return;
+    }
+    while (videoEncoder.encodeQueueSize > encoderQueueDrainTarget) {
+      await new Promise((resolve) => window.setTimeout(resolve, 4));
+    }
+  };
 
-  function uploadRecordedSegment(
+  const uploadRecordedSegment = async (
     encodedBuffer,
     segmentFingerprint,
     durationSeconds,
     uploadUrl,
-  ) {
+  ) => {
     if (!uploadUrl) {
-      return Promise.resolve(false);
+      return false;
     }
     const segmentQuery = new URLSearchParams({
       extension: "mp4",
       fingerprint: segmentFingerprint,
       seconds: String(durationSeconds),
     });
-    return fetch(uploadUrl + "?" + segmentQuery.toString(), {
-      method: "POST",
-      body: new Blob([encodedBuffer], { type: "video/mp4" }),
-    })
-      .then(function reportStorageOutcome(response) {
-        return response.ok;
-      })
-      .catch(function ignoreSegmentUploadFailure() {
-        return false;
+    try {
+      const response = await fetch(`${uploadUrl}?${segmentQuery}`, {
+        method: "POST",
+        body: new Blob([encodedBuffer], { type: "video/mp4" }),
       });
-  }
+      return response.ok;
+    } catch {
+      return false;
+    }
+  };
 
-  function reportRecordingProgress(uploadUrl) {
+  const reportRecordingProgress = (uploadUrl) => {
+    if (uploadUrl) {
+      fetch(`${uploadUrl}?kind=progress`, { method: "POST" }).catch(() => {});
+    }
+  };
+
+  const uploadSegmentManifest = async (manifestSegments, uploadUrl) => {
     if (!uploadUrl) {
       return;
     }
-    fetch(uploadUrl + "?kind=progress", { method: "POST" }).catch(
-      function ignoreProgressReportFailure() {},
-    );
-  }
-
-  function uploadSegmentManifest(manifestSegments, uploadUrl) {
-    if (!uploadUrl) {
-      return Promise.resolve();
-    }
-    return fetch(uploadUrl + "?kind=manifest", {
-      method: "POST",
-      body: JSON.stringify({ segments: manifestSegments }),
-    })
-      .catch(function ignoreManifestUploadFailure() {})
-      .finally(function closeAfterManifestUpload() {
-        window.setTimeout(function requestWindowClose() {
-          window.close();
-        }, 250);
+    try {
+      await fetch(`${uploadUrl}?kind=manifest`, {
+        method: "POST",
+        body: JSON.stringify({ segments: manifestSegments }),
       });
-  }
+    } catch {
+      console.error("ambient-canvas record: manifest upload failed");
+    } finally {
+      window.setTimeout(() => window.close(), 250);
+    }
+  };
 
-  return {
+  window.AmbientCanvasRecordingEncoder = {
     createVideoFrame,
     createConfiguredMuxerAndEncoder,
-    waitForEncoderQueueToDrain,
+    applyEncoderBackpressure,
     uploadRecordedSegment,
     reportRecordingProgress,
     uploadSegmentManifest,
   };
-})();
+}

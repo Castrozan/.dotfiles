@@ -1,8 +1,8 @@
+import http.client
 import json
 import pathlib
 import subprocess
 import threading
-import urllib.request
 from types import SimpleNamespace
 
 import pytest
@@ -168,17 +168,17 @@ def test_every_request_counts_as_recording_progress(tmp_path):
         str(tmp_path), str(WEB_DIRECTORY), str(tmp_path / "videos")
     )
     try:
-        base_url = f"http://127.0.0.1:{server.upload_port}"
+        connection = http.client.HTTPConnection("127.0.0.1", server.upload_port)
         for method, path, body in (
             ("POST", "/upload?kind=progress", b"{}"),
             ("POST", "/upload?kind=manifest", b"{}"),
             ("GET", "/recorded-segment-fingerprints", None),
         ):
             server.last_progress_monotonic = 0
-            urllib.request.urlopen(
-                urllib.request.Request(base_url + path, data=body, method=method)
-            )
+            connection.request(method, path, body=body)
+            connection.getresponse().read()
             assert server.last_progress_monotonic > 0
     finally:
+        connection.close()
         server.shutdown()
         server.server_close()

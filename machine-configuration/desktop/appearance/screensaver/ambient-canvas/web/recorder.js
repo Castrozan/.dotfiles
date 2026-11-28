@@ -3,8 +3,6 @@
   const recorderPlan = window.AmbientCanvasRecordingPlan;
   const recorderTargetBitsPerPixelPerFrame = 0.16;
   const recorderKeyFrameIntervalSeconds = 2;
-  const recorderEncoderQueueHighWatermark = 8;
-  const recorderEncoderQueueDrainTarget = 4;
 
   const recorderCompositor = window.AmbientCanvasRecordingCompositor;
   const recorderEncoder = window.AmbientCanvasRecordingEncoder;
@@ -75,12 +73,7 @@
       if (frameIndex % captureFramesPerSecond === 0) {
         recorderEncoder.reportRecordingProgress(recordingParameters.uploadUrl);
       }
-      if (videoEncoder.encodeQueueSize > recorderEncoderQueueHighWatermark) {
-        await recorderEncoder.waitForEncoderQueueToDrain(
-          videoEncoder,
-          recorderEncoderQueueDrainTarget,
-        );
-      }
+      await recorderEncoder.applyEncoderBackpressure(videoEncoder);
     }
 
     playbackController.destroySegment(segmentHandle);

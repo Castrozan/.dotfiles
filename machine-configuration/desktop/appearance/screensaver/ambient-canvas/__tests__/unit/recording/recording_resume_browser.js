@@ -47,6 +47,7 @@ window.AmbientCanvasRecordingEncoder = {
     };
   },
   reportRecordingProgress() {},
+  async applyEncoderBackpressure() {},
   async uploadRecordedSegment(...uploadArguments) {
     const stored = await originalEncoder.uploadRecordedSegment(
       ...uploadArguments,
