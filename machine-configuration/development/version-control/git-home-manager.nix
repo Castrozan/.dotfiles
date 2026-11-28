@@ -1,4 +1,9 @@
-{ pkgs, ... }:
+{
+  inputs,
+  hostname,
+  pkgs,
+  ...
+}:
 let
   personalRepositoryForge = "github";
   personalRepositoryRouting = import ./personal-repository-routing.nix personalRepositoryForge;
@@ -8,9 +13,14 @@ let
 in
 {
   imports = [
-    ../../../agent-harness/commit-provenance/commit-provenance-home-manager.nix
+    inputs.commit-provenance.homeManagerModules.default
     ./github-home-manager.nix
   ];
+
+  programs.commit-provenance = {
+    machineName = hostname;
+    sessionControlPythonPath = ../../../agent-harness/session-control;
+  };
 
   home.packages = with pkgs; [
     delta

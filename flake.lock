@@ -327,6 +327,32 @@
         "type": "github"
       }
     },
+    "commit-provenance": {
+      "inputs": {
+        "home-manager": [
+          "dependencies",
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842059,
+        "narHash": "sha256-Yb4abke+PYOOiR7ZCqY6JvOdrN2nwY7gaMXKc40ji8s=",
+        "ref": "refs/heads/main",
+        "rev": "0d7a6e0d35b922571597cbaa9d9b718ae040f3cb",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/commit-provenance"
+      },
+      "original": {
+        "rev": "0d7a6e0d35b922571597cbaa9d9b718ae040f3cb",
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/commit-provenance"
+      }
+    },
     "crane": {
       "locked": {
         "lastModified": 1794962885,
@@ -407,6 +433,7 @@
         "cbonsai": "cbonsai",
         "clawde": "clawde",
         "cmatrix": "cmatrix",
+        "commit-provenance": "commit-provenance",
         "devenv": "devenv",
         "google-workspace-cli": "google-workspace-cli",
         "hammerspoon": "hammerspoon",

@@ -35,6 +35,10 @@ runs:
       shell: bash
       run: printf 'ARR_STACK_STUB_OVERRIDE=--override-input dependencies/arr-stack path:%s/repository/verification/nix-checks/arr-stack-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+    - name: Stub the private commit provenance input
+      shell: bash
+      run: printf 'COMMIT_PROVENANCE_STUB_OVERRIDE=--override-input dependencies/commit-provenance path:%s/repository/verification/nix-checks/commit-provenance-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
     - name: Stub the private Neovim input
       shell: bash
       run: printf 'NEOVIM_STUB_OVERRIDE=--override-input dependencies/neovim path:%s/repository/verification/nix-checks/neovim-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"

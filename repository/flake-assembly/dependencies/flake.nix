@@ -25,6 +25,12 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    commit-provenance = {
+      url = "git+ssh://git@github.com/Castrozan/commit-provenance?rev=0d7a6e0d35b922571597cbaa9d9b718ae040f3cb";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     hammerspoon = {
       url = "git+ssh://git@github.com/Castrozan/hammerspoon-config?ref=main&rev=8fd88976e812f34fe0a56b074b1e767d13fffb4b";
       inputs.nixpkgs.follows = "nixpkgs";

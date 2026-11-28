@@ -65,7 +65,7 @@
     "coverage": [
       {
         "kind": "cli",
-        "total": 237,
+        "total": 236,
         "covered": 1
       },
       {
@@ -7037,12 +7037,6 @@
       "kind": "cli",
       "path": "agent-harness/agent-instructions/skills/workstation/notify/scripts/speech_text.py",
       "name": "speech_text",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "agent-harness/commit-provenance/scripts/record_agent_commit_provenance_trailers.py",
-      "name": "record_agent_commit_provenance_trailers",
       "onlyPending": false
     },
     {

@@ -2,8 +2,6 @@
   "agent-harness/agent-instructions/skills/development/coding/__tests__/integration/test_git_history.py": 28.151,
   "agent-harness/agent-to-agent-communication/server/a2a_server/__tests__/integration/test_a2a_server.py": 7.031,
   "agent-harness/agent-to-agent-communication/server/a2a_server/__tests__/integration/test_subprocess_backend.py": 0.407,
-  "agent-harness/commit-provenance/__tests__/integration/test_agent_commit_provenance_hook_boundaries.py": 3.162,
-  "agent-harness/commit-provenance/__tests__/integration/test_agent_commit_provenance_hook_records.py": 2.403,
   "agent-harness/harnesses/claude-code/scripts/__tests__/integration/test_merge_discord_agent_access_reconcile.py": 0.008,
   "agent-harness/harnesses/claude-code/scripts/__tests__/integration/test_public_tree_excludes_private_discord_identity.py": 0.001,
   "agent-harness/harnesses/clawde/__tests__/integration/test_a2a_mailbox_delivery.py": 0.001,
