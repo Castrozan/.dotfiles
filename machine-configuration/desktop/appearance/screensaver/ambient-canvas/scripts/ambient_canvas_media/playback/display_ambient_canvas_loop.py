@@ -2,10 +2,14 @@ import argparse
 import logging
 import os
 from pathlib import Path
-import subprocess
 import sys
 
 from playback.player_diagnostics import create_player_run
+from playback.player_processes import (
+    stop_every_display,
+    wait_for_every_display_to_exit,
+)
+from playback.supervise_ambient_canvas_player import supervise_player
 from recording.recorded_loop_capture_target import resolve_recorded_loop_capture_target
 from recording.recorded_segment_store import resolve_playable_segment_manifest_path
 
@@ -19,7 +23,9 @@ def build_player_process_arguments(
     return [player_binary_path, segment_manifest_path, playback_dwell_override_path]
 
 
-def launch_display(player_binary_path, loop_directory, playback_dwell_override_path):
+def play_recorded_loop(
+    player_binary_path, loop_directory, playback_dwell_override_path
+):
     if not os.path.isfile(player_binary_path):
         logging.getLogger(LAUNCHER_LOGGER_NAME).error(
             "player_binary_missing path=%s", player_binary_path
@@ -36,31 +42,15 @@ def launch_display(player_binary_path, loop_directory, playback_dwell_override_p
         )
         print("display-ambient-canvas-loop: no recorded loop to play", file=sys.stderr)
         return 1
+    stop_every_display(player_binary_path)
+    wait_for_every_display_to_exit(player_binary_path)
     run_directory = create_player_run(Path(playback_dwell_override_path).parent)
-    supervisor_path = Path(__file__).with_name("supervise_ambient_canvas_player.py")
-    with (run_directory / "supervisor.log").open("ab") as supervisor_log:
-        supervisor_process = subprocess.Popen(
-            [
-                sys.executable,
-                str(supervisor_path),
-                str(run_directory),
-                *build_player_process_arguments(
-                    player_binary_path,
-                    segment_manifest_path,
-                    playback_dwell_override_path,
-                ),
-            ],
-            stdin=subprocess.DEVNULL,
-            stdout=supervisor_log,
-            stderr=subprocess.STDOUT,
-            start_new_session=True,
-        )
-    logging.getLogger(LAUNCHER_LOGGER_NAME).info(
-        "player_supervisor_started pid=%s report=%s",
-        supervisor_process.pid,
-        run_directory / "report.json",
+    return supervise_player(
+        run_directory,
+        build_player_process_arguments(
+            player_binary_path, segment_manifest_path, playback_dwell_override_path
+        ),
     )
-    return 0
 
 
 def main():
@@ -71,7 +61,7 @@ def main():
     capture_target = resolve_recorded_loop_capture_target(
         parsed_arguments.output_directory
     )
-    return launch_display(
+    return play_recorded_loop(
         parsed_arguments.player_binary,
         capture_target.loop_directory,
         capture_target.playback_dwell_override_path,

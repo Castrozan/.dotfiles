@@ -9,7 +9,7 @@ import sys
 import threading
 import time
 
-from player_diagnostics import (
+from playback.player_diagnostics import (
     OUTPUT_TAIL_BYTES,
     create_diagnostic_logger,
     diagnostic_timestamp,

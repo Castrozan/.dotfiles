@@ -6,17 +6,9 @@ import signal
 import sys
 from typing import NamedTuple
 
-from playback.display_ambient_canvas_loop import (
-    DEFAULT_PLAYER_BINARY_PATH,
-    launch_display,
-)
 from playback.player_diagnostics import create_diagnostic_logger
-from playback.player_processes import (
-    a_record_pass_is_running,
-    is_display_running_for_loop,
-    stop_every_display,
-    wait_for_every_display_to_exit,
-)
+from playback.player_processes import a_record_pass_is_running
+from playback.player_service import restart_player_service
 from recording.recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
@@ -57,7 +49,6 @@ def ensure_screensaver(
     index_file_path,
     capture_target,
     rendering_source_identifier,
-    player_binary_path,
     duration_seconds,
     frames_per_second,
 ):
@@ -66,12 +57,7 @@ def ensure_screensaver(
         rendering_source_identifier, capture_target.capture_signature
     )
     recorded_loop_was_replaced = False
-    LOGGER.info(
-        "launcher_check loop=%s source=%s player=%s",
-        loop_directory,
-        source_identifier,
-        player_binary_path,
-    )
+    LOGGER.info("launcher_check loop=%s source=%s", loop_directory, source_identifier)
     if not recorded_loop_is_fresh(loop_directory, source_identifier):
         recording_result = record_stale_loop(
             index_file_path,
@@ -87,15 +73,9 @@ def ensure_screensaver(
         capture_target, source_identifier, rendering_source_identifier
     )
 
-    if not recorded_loop_was_replaced and is_display_running_for_loop(loop_directory):
-        LOGGER.info("player_already_running loop=%s", loop_directory)
-        return 0
-    LOGGER.info("player_replacement_started loop=%s", loop_directory)
-    stop_every_display(player_binary_path)
-    wait_for_every_display_to_exit(player_binary_path)
-    return launch_display(
-        player_binary_path, loop_directory, capture_target.playback_dwell_override_path
-    )
+    if recorded_loop_was_replaced:
+        restart_player_service()
+    return 0
 
 
 def discard_leftovers_for_fresh_loop(
@@ -139,7 +119,6 @@ def main():
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--output-directory", required=True)
     argument_parser.add_argument("--source-identifier", required=True)
-    argument_parser.add_argument("--player-binary", default=DEFAULT_PLAYER_BINARY_PATH)
     argument_parser.add_argument(
         "--seconds", type=int, default=DEFAULT_CAPTURE_DURATION_SECONDS
     )
@@ -167,7 +146,6 @@ def main():
         index_file_path,
         capture_target,
         parsed_arguments.source_identifier,
-        parsed_arguments.player_binary,
         parsed_arguments.seconds,
         parsed_arguments.fps,
     )

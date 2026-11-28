@@ -1,9 +1,6 @@
-import pytest
-
 import ensure_ambient_canvas_screensaver as ensure
 from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
 
-PLAYER_BINARY_PATH = "/home/user/.local/bin/player"
 LAPTOP_CAPTURE_TARGET = RecordedLoopCaptureTarget(
     loop_directory="/state/loops/1660x1080",
     scene_video_directory="/state/videos",
@@ -19,7 +16,6 @@ def _install_orchestration_stubs(
     *,
     fresh,
     render_result,
-    display_running,
     loop_exists=True,
     record_pass_running=False,
 ):
@@ -34,22 +30,8 @@ def _install_orchestration_stubs(
     monkeypatch.setattr(ensure, "render_recorded_loop", fake_render)
     monkeypatch.setattr(ensure, "a_record_pass_is_running", lambda: record_pass_running)
     monkeypatch.setattr(
-        ensure, "is_display_running_for_loop", lambda *ignored: display_running
+        ensure, "restart_player_service", lambda: observed_calls.append("restart")
     )
-    monkeypatch.setattr(
-        ensure, "stop_every_display", lambda *ignored: observed_calls.append("stop")
-    )
-    monkeypatch.setattr(
-        ensure,
-        "wait_for_every_display_to_exit",
-        lambda *ignored: observed_calls.append("wait"),
-    )
-
-    def fake_launch(*ignored):
-        observed_calls.append("launch")
-        return 0
-
-    monkeypatch.setattr(ensure, "launch_display", fake_launch)
 
     def fake_discard(capture_target, rendering_source_identifier):
         observed_calls.append(("discard", rendering_source_identifier))
@@ -65,100 +47,60 @@ def _run_ensure(monkeypatch, **stub_arguments):
         "index",
         LAPTOP_CAPTURE_TARGET,
         "source",
-        PLAYER_BINARY_PATH,
         30,
         30,
     )
     return result, observed_calls
 
 
-def test_fresh_loop_with_running_display_only_discards_render_leftovers(monkeypatch):
-    result, calls = _run_ensure(
-        monkeypatch, fresh=True, render_result=None, display_running=True
-    )
+def test_fresh_loop_only_discards_render_leftovers_and_leaves_the_player_alone(
+    monkeypatch,
+):
+    result, calls = _run_ensure(monkeypatch, fresh=True, render_result=None)
     assert result == 0
     assert calls == [("discard", "source")]
 
 
-def test_fresh_loop_with_stopped_display_relaunches(monkeypatch):
-    result, calls = _run_ensure(
-        monkeypatch, fresh=True, render_result=None, display_running=False
-    )
-    assert result == 0
-    assert calls == [("discard", "source"), "stop", "wait", "launch"]
-
-
 def test_stale_render_failure_without_existing_loop_exits_nonzero(monkeypatch):
     result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result=None,
-        display_running=False,
-        loop_exists=False,
+        monkeypatch, fresh=False, render_result=None, loop_exists=False
     )
     assert result == 1
     assert calls == ["render"]
 
 
-@pytest.mark.parametrize(
-    ("display_running", "expected_calls"),
-    [(False, ["render", "stop", "wait", "launch"]), (True, ["render"])],
-)
-def test_stale_render_failure_preserves_existing_loop(
-    monkeypatch, display_running, expected_calls
-):
+def test_stale_render_failure_preserves_the_playing_loop(monkeypatch):
     result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result=None,
-        display_running=display_running,
-        loop_exists=True,
+        monkeypatch, fresh=False, render_result=None, loop_exists=True
     )
     assert result == 0
-    assert calls == expected_calls
+    assert calls == ["render"]
 
 
 def test_stale_loop_skips_render_while_a_record_pass_is_running(monkeypatch):
     result, calls = _run_ensure(
-        monkeypatch,
-        fresh=False,
-        render_result=None,
-        display_running=False,
-        record_pass_running=True,
+        monkeypatch, fresh=False, render_result=None, record_pass_running=True
     )
     assert result == 0
     assert calls == []
 
 
-def test_a_render_that_makes_the_loop_current_discards_leftovers_before_launch(
-    monkeypatch,
-):
+def test_a_render_that_makes_the_loop_current_restarts_the_player_on_it(monkeypatch):
     observed_calls = _install_orchestration_stubs(
-        monkeypatch,
-        fresh=False,
-        render_result="loop.segments.json",
-        display_running=False,
+        monkeypatch, fresh=False, render_result="loop.segments.json"
     )
     freshness_answers = iter([False, True])
     monkeypatch.setattr(
         ensure, "recorded_loop_is_fresh", lambda *ignored: next(freshness_answers)
     )
-    result = ensure.ensure_screensaver(
-        "index", LAPTOP_CAPTURE_TARGET, "source", PLAYER_BINARY_PATH, 30, 30
-    )
+    result = ensure.ensure_screensaver("index", LAPTOP_CAPTURE_TARGET, "source", 30, 30)
     assert result == 0
-    assert observed_calls == [
-        "render",
-        ("discard", "source"),
-        "stop",
-        "wait",
-        "launch",
-    ]
+    assert observed_calls == ["render", ("discard", "source"), "restart"]
 
 
 def test_freshness_is_judged_against_the_capture_geometry(monkeypatch):
     observed_calls = _install_orchestration_stubs(
-        monkeypatch, fresh=True, render_result=None, display_running=True
+        monkeypatch, fresh=True, render_result=None
     )
     checked_identifiers = []
     monkeypatch.setattr(
@@ -168,8 +110,6 @@ def test_freshness_is_judged_against_the_capture_geometry(monkeypatch):
             checked_identifiers.append(identifier) or True
         ),
     )
-    ensure.ensure_screensaver(
-        "index", LAPTOP_CAPTURE_TARGET, "source", PLAYER_BINARY_PATH, 30, 30
-    )
+    ensure.ensure_screensaver("index", LAPTOP_CAPTURE_TARGET, "source", 30, 30)
     assert set(checked_identifiers) == {"source capture=1660x1080"}
     assert observed_calls == [("discard", "source")]

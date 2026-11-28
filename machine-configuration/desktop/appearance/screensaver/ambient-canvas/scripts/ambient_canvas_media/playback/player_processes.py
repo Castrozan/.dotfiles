@@ -3,15 +3,9 @@ import shutil
 import subprocess
 import time
 
-from recording.recorded_segment_store import resolve_recorded_segment_manifest_path
-
 
 def resolve_display_process_name(player_binary_path):
     return os.path.basename(player_binary_path)
-
-
-def resolve_loop_display_process_marker(loop_directory):
-    return resolve_recorded_segment_manifest_path(loop_directory)
 
 
 def resolve_process_tool(tool_name):
@@ -29,12 +23,6 @@ def a_process_matches(match_arguments):
 
 def any_display_is_running(player_binary_path):
     return a_process_matches(["-x", resolve_display_process_name(player_binary_path)])
-
-
-def is_display_running_for_loop(loop_directory):
-    return a_process_matches(
-        ["-f", resolve_loop_display_process_marker(loop_directory)]
-    )
 
 
 def stop_every_display(player_binary_path):

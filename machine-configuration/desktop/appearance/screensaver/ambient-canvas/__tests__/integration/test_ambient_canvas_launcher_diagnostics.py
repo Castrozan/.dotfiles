@@ -3,7 +3,6 @@ import os
 from pathlib import Path
 import subprocess
 import sys
-import time
 
 
 MEDIA_SCRIPTS_DIRECTORY = (
@@ -35,8 +34,8 @@ def test_launcher_records_missing_assets_before_attempting_display_queries(tmp_p
     assert "launcher_finished exit_code=1" in log
 
 
-def test_detached_launch_persists_failure_after_the_launcher_returns(tmp_path):
-    player_path = tmp_path / "player"
+def test_the_foreground_player_run_persists_a_failing_player_report(tmp_path):
+    player_path = tmp_path / "ambient-canvas-test-player-for-failure-report"
     player_path.write_text(
         f"#!{sys.executable}\nimport sys\nprint('failed player', file=sys.stderr)\nsys.exit(23)\n"
     )
@@ -51,7 +50,7 @@ def test_detached_launch_persists_failure_after_the_launcher_returns(tmp_path):
         [
             sys.executable,
             "-c",
-            "import sys; from playback.display_ambient_canvas_loop import launch_display; sys.exit(launch_display(*sys.argv[1:]))",
+            "import sys; from playback.display_ambient_canvas_loop import play_recorded_loop; sys.exit(play_recorded_loop(*sys.argv[1:]))",
             str(player_path),
             str(loop_directory),
             str(tmp_path / "playback-dwell-seconds"),
@@ -59,18 +58,12 @@ def test_detached_launch_persists_failure_after_the_launcher_returns(tmp_path):
         env={**os.environ, "PYTHONPATH": str(MEDIA_SCRIPTS_DIRECTORY)},
         capture_output=True,
         text=True,
-        timeout=5,
+        timeout=15,
     )
     assert completed.returncode == 0, completed.stderr
-    deadline = time.monotonic() + 5
-    while time.monotonic() < deadline:
-        reports = list((tmp_path / "player-runs").glob("*/report.json"))
-        if reports:
-            report = json.loads(reports[0].read_text())
-            if report["status"] == "failed":
-                break
-        time.sleep(0.05)
-    else:
-        raise AssertionError("Detached player exit was not reported")
+    report = json.loads(
+        next((tmp_path / "player-runs").glob("*/report.json")).read_text()
+    )
+    assert report["status"] == "failed"
     assert report["exit_code"] == 23
     assert "failed player" in report["output_tail"]

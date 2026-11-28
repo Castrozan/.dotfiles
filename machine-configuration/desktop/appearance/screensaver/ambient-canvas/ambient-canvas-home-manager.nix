@@ -22,6 +22,7 @@ let
     lib.optionals pkgs.stdenv.hostPlatform.isLinux [
       pkgs.mpv
       pkgs.hyprland
+      pkgs.procps
     ]
   );
 
@@ -34,6 +35,16 @@ let
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
+      "$@"
+  '';
+
+  ambientCanvasPlayerLauncher = pkgs.writeShellScriptBin "ambient-canvas-play" ''
+    export PATH="${ambientCanvasPlayerRuntimePathPrefix}$PATH"
+    export PYTHONPATH="${ambientCanvasMediaScriptsDirectory}"
+    export AMBIENT_CANVAS_THEME_COLORS_PATH="${ambientCanvasThemeColorsPath}"
+    exec ${pkgs.python312}/bin/python3 \
+      ${ambientCanvasMediaScriptsDirectory}/playback/display_ambient_canvas_loop.py \
+      --output-directory "${ambientCanvasStateDirectory}" \
       --player-binary "${ambientCanvasPlayerBinaryPath}" \
       "$@"
   '';
@@ -93,11 +104,23 @@ in
         config = {
           Label = "com.dotfiles.ambient-canvas";
           ProgramArguments = [ "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas" ];
-          EnvironmentVariables.AMBIENT_CANVAS_THEME_COLORS_PATH = ambientCanvasThemeColorsPath;
           RunAtLoad = true;
           StartInterval = 300;
           StandardOutPath = "${ambientCanvasStateDirectory}/keep-alive.log";
           StandardErrorPath = "${ambientCanvasStateDirectory}/keep-alive.log";
+        };
+      };
+
+      launchd.agents.ambient-canvas-player = {
+        enable = true;
+        config = {
+          Label = "com.dotfiles.ambient-canvas-player";
+          ProgramArguments = [ "${ambientCanvasPlayerLauncher}/bin/ambient-canvas-play" ];
+          RunAtLoad = true;
+          KeepAlive = true;
+          ThrottleInterval = 10;
+          StandardOutPath = "${ambientCanvasStateDirectory}/player-service.log";
+          StandardErrorPath = "${ambientCanvasStateDirectory}/player-service.log";
         };
       };
     })
@@ -106,44 +129,62 @@ in
       home.file."${config.home.homeDirectory}/.local/bin/ᓚᘏᗢ".source =
         "${ambientCanvasMpvPlayer}/bin/ᓚᘏᗢ";
 
-      systemd.user.timers.ambient-canvas = {
-        Unit = {
-          Description = "ambient-canvas screensaver keep-alive timer";
+      systemd.user = {
+        timers.ambient-canvas = {
+          Unit = {
+            Description = "ambient-canvas screensaver keep-alive timer";
+          };
+          Timer = {
+            OnBootSec = "1min";
+            OnUnitActiveSec = "5min";
+            OnCalendar = "*:0/5";
+            Persistent = true;
+          };
+          Install = {
+            WantedBy = [ "timers.target" ];
+          };
         };
-        Timer = {
-          OnBootSec = "1min";
-          OnUnitActiveSec = "5min";
-          OnCalendar = "*:0/5";
-          Persistent = true;
-        };
-        Install = {
-          WantedBy = [ "timers.target" ];
-        };
-      };
 
-      systemd.user.services.ambient-canvas = {
-        Unit = {
-          Description = "ambient-canvas screensaver keep-alive";
-          After = [ "graphical-session.target" ];
-          PartOf = [ "graphical-session.target" ];
-          ConditionEnvironment = "WAYLAND_DISPLAY";
-          X-RestartIfChanged = false;
-          X-StopIfChanged = false;
+        services.ambient-canvas-player = {
+          Unit = {
+            Description = "ambient-canvas screensaver player";
+            After = [ "graphical-session.target" ];
+            PartOf = [ "graphical-session.target" ];
+            ConditionEnvironment = "WAYLAND_DISPLAY";
+          };
+          Service = {
+            ExecStart = "${ambientCanvasPlayerLauncher}/bin/ambient-canvas-play";
+            Restart = "always";
+            RestartSec = 10;
+          };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
         };
-        Service = {
-          Type = "oneshot";
-          KillMode = "process";
-          Slice = "background.slice";
-          Nice = 19;
-          CPUWeight = "idle";
-          IOWeight = 10;
-          MemoryHigh = "2G";
-          MemoryMax = "3G";
-          OOMPolicy = "continue";
-          ExecStart = "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas";
-        };
-        Install = {
-          WantedBy = [ "graphical-session.target" ];
+
+        services.ambient-canvas = {
+          Unit = {
+            Description = "ambient-canvas screensaver keep-alive";
+            After = [ "graphical-session.target" ];
+            PartOf = [ "graphical-session.target" ];
+            ConditionEnvironment = "WAYLAND_DISPLAY";
+            X-RestartIfChanged = false;
+            X-StopIfChanged = false;
+          };
+          Service = {
+            Type = "oneshot";
+            Slice = "background.slice";
+            Nice = 19;
+            CPUWeight = "idle";
+            IOWeight = 10;
+            MemoryHigh = "2G";
+            MemoryMax = "3G";
+            OOMPolicy = "continue";
+            ExecStart = "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas";
+          };
+          Install = {
+            WantedBy = [ "graphical-session.target" ];
+          };
         };
       };
     })

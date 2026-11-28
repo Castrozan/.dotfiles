@@ -48,6 +48,12 @@ let
     && ambientCanvasService ? MemoryMax
     && ambientCanvasService.OOMPolicy == "continue";
   darwinWiresAmbientCanvasKeepAlive = darwinCfg.launchd.agents ? ambient-canvas;
+  ambientCanvasPlayerRunsInItsOwnRestartingService =
+    linuxCfg.systemd.user.services ? ambient-canvas-player
+    && linuxCfg.systemd.user.services.ambient-canvas-player.Service.Restart == "always"
+    && !(linuxCfg.systemd.user.services.ambient-canvas.Service ? KillMode)
+    && darwinCfg.launchd.agents ? ambient-canvas-player
+    && darwinCfg.launchd.agents.ambient-canvas-player.config.KeepAlive;
 in
 {
   domain-screensaver-herdr-launcher-installed-on-linux =
@@ -98,6 +104,11 @@ in
     mkEvalCheck "domain-screensaver-ambient-canvas-keep-alive-does-not-block-activation"
       linuxAmbientCanvasKeepAliveAvoidsActivationRestart
       "the timer-driven ambient-canvas oneshot can record for minutes, so a rebuild must neither stop nor restart it and wait for the record pass";
+
+  domain-screensaver-ambient-canvas-player-has-its-own-restarting-service =
+    mkEvalCheck "domain-screensaver-ambient-canvas-player-has-its-own-restarting-service"
+      ambientCanvasPlayerRunsInItsOwnRestartingService
+      "the player must run as its own always-restarting service on every platform and never as a child of the recording oneshot, or the recording fence throttles playback and a dead player stays dead until the next timer tick";
 
   domain-screensaver-ambient-canvas-recording-yields-to-the-desktop =
     mkEvalCheck "domain-screensaver-ambient-canvas-recording-yields-to-the-desktop"

@@ -8,10 +8,13 @@ import sys
 import pytest
 
 
-SUPERVISOR_PATH = (
-    pathlib.Path(__file__).resolve().parents[2]
-    / "scripts/ambient_canvas_media/playback/supervise_ambient_canvas_player.py"
+MEDIA_SCRIPTS_DIRECTORY = (
+    pathlib.Path(__file__).resolve().parents[2] / "scripts/ambient_canvas_media"
 )
+SUPERVISOR_PATH = (
+    MEDIA_SCRIPTS_DIRECTORY / "playback/supervise_ambient_canvas_player.py"
+)
+SUPERVISOR_ENVIRONMENT = {**os.environ, "PYTHONPATH": str(MEDIA_SCRIPTS_DIRECTORY)}
 
 
 @pytest.mark.parametrize("exit_code", [0, 17])
@@ -25,6 +28,7 @@ def test_player_output_and_exit_status_survive_the_player(tmp_path, exit_code):
             "-c",
             f"import sys; print('player output'); print('player error', file=sys.stderr); sys.exit({exit_code})",
         ],
+        env=SUPERVISOR_ENVIRONMENT,
         capture_output=True,
         text=True,
         timeout=10,
@@ -55,6 +59,7 @@ def test_an_uncatchable_player_signal_is_reported_by_the_supervisor(tmp_path):
             "-c",
             "import os, signal; print('before kill', flush=True); os.kill(os.getpid(), signal.SIGKILL)",
         ],
+        env=SUPERVISOR_ENVIRONMENT,
         capture_output=True,
         text=True,
         timeout=10,
@@ -70,6 +75,7 @@ def test_an_uncatchable_player_signal_is_reported_by_the_supervisor(tmp_path):
 def test_a_player_that_cannot_start_leaves_a_report(tmp_path):
     completed = subprocess.run(
         [sys.executable, str(SUPERVISOR_PATH), str(tmp_path), "/missing/player"],
+        env=SUPERVISOR_ENVIRONMENT,
         capture_output=True,
         text=True,
         timeout=10,
@@ -90,6 +96,7 @@ def test_noisy_player_logs_and_report_tail_have_bounded_size(tmp_path):
             "-c",
             "import sys; sys.stdout.write('x' * (5 * 1024 * 1024)); sys.stdout.write('last output'); sys.exit(3)",
         ],
+        env=SUPERVISOR_ENVIRONMENT,
         capture_output=True,
         text=True,
         timeout=15,
@@ -115,6 +122,7 @@ def test_inherited_output_pipe_does_not_hide_the_player_exit(tmp_path):
         ],
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
+        env=SUPERVISOR_ENVIRONMENT,
         start_new_session=True,
     )
     try:
