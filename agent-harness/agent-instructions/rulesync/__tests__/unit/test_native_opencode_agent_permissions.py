@@ -47,14 +47,18 @@ def native_agent(verifier, name, browser_effect):
     }
 
 
-@pytest.mark.parametrize("name", ("software-engineer", "quality-assurance", "explore"))
+@pytest.mark.parametrize(
+    "name", ("software-engineer", "quality-assurance", "explore", "runner")
+)
 def test_native_browser_denial_preserves_declared_agent_permissions(
     verifier, agent_source, name
 ):
     verifier.verify_agent(native_agent(verifier, name, "deny"), name, agent_source)
 
 
-@pytest.mark.parametrize("name", ("software-engineer", "quality-assurance", "explore"))
+@pytest.mark.parametrize(
+    "name", ("software-engineer", "quality-assurance", "explore", "runner")
+)
 @pytest.mark.parametrize("browser_effect", (None, "allow", "ask"))
 def test_missing_or_relaxed_browser_denial_is_rejected(
     verifier, agent_source, name, browser_effect
@@ -65,7 +69,9 @@ def test_missing_or_relaxed_browser_denial_is_rejected(
         )
 
 
-@pytest.mark.parametrize("name", ("software-engineer", "quality-assurance", "explore"))
+@pytest.mark.parametrize(
+    "name", ("software-engineer", "quality-assurance", "explore", "runner")
+)
 def test_later_browser_permission_override_is_rejected(verifier, agent_source, name):
     agent = native_agent(verifier, name, "deny")
     agent["permissions"].append(

@@ -10,7 +10,7 @@ from pathlib import Path
 import yaml
 
 
-EXPECTED_AGENT_NAMES = {"explore", "quality-assurance", "software-engineer"}
+EXPECTED_AGENT_NAMES = {"explore", "quality-assurance", "runner", "software-engineer"}
 
 
 def read_agent(path: Path) -> tuple[dict, str]:
@@ -185,7 +185,7 @@ def main() -> None:
         arguments.core_instructions,
     )
     print(
-        "Verified four core rule outputs, three Claude, Codex and OpenCode agents each, "
+        "Verified four core rule outputs, four Claude, Codex and OpenCode agents each, "
         "malformed-agent rejection, partial-output cleanup and ambient-state preservation"
     )
 

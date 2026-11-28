@@ -16,6 +16,7 @@ AGENT_PERMISSIONS = {
     "software-engineer": {"*": "deny", **COMMON_PERMISSIONS, "edit": "allow"},
     "quality-assurance": {"*": "deny", **COMMON_PERMISSIONS},
     "explore": {"*": "allow", "edit": "deny"},
+    "runner": {"*": "allow", "edit": "deny"},
 }
 
 
@@ -82,7 +83,7 @@ def verify_positive(executable, sources, root):
                 server, "software-engineer", "read", {"path": str(marker)}, True
             )
             assert "native-write-control" in json.dumps(result)
-            for name in ("quality-assurance", "explore"):
+            for name in ("quality-assurance", "explore", "runner"):
                 absent_marker = workspace / f"{name}-forbidden.txt"
                 verify_tool(
                     server,
@@ -164,7 +165,7 @@ def main():
                     directory.chmod(0o755)
     assert original == identities(sources)
     print(
-        "Verified 3 native V2 agents, 6 native tool cases and 6 ambient-fallback controls"
+        "Verified 4 native V2 agents, 8 native tool cases and 8 ambient-fallback controls"
     )
 
 
