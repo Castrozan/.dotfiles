@@ -225,3 +225,131 @@ rule:
             - has:
                 field: right
                 matches: elapsed-since-clock-reading
+---
+id: python-comments
+language: Python
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^#!|^#\s*ast-grep-ignore\b|^#\s*-\*-\s*coding[:=]|^#\s*(fmt|isort|mypy|noqa|nosec|pragma|pyright|ruff|type)\s*(:|$)
+---
+id: python-docstrings
+language: Python
+severity: error
+message: Remove the docstring. Say it through names and types, or move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: expression_statement
+  has:
+    kind: string
+    nthChild: 1
+  nthChild:
+    position: 1
+    ofRule:
+      not:
+        kind: comment
+  any:
+    - inside:
+        kind: module
+    - inside:
+        kind: block
+        inside:
+          any:
+            - kind: function_definition
+            - kind: class_definition
+---
+id: bash-comments
+language: Bash
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^#!|^#\s*ast-grep-ignore\b|^#\s*shellcheck\s+(disable|enable|source|source-path|shell|external-sources)=
+---
+id: nix-comments
+language: Nix
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^#!|^#\s*ast-grep-ignore\b|^#\s*shellcheck\s+(disable|enable|source|source-path|shell|external-sources)=
+---
+id: lua-comments
+language: Lua
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^--\s*ast-grep-ignore\b
+---
+id: javascript-comments
+language: JavaScript
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+utils:
+  userscript-metadata:
+    all:
+      - regex: ^//\s*@[\w:-]+
+      - follows:
+          regex: ^//\s*==UserScript==
+          stopBy: end
+      - precedes:
+          regex: ^//\s*==/UserScript==
+          stopBy: end
+rule:
+  kind: comment
+  not:
+    any:
+      - regex: ^#!|^//\s*==/?UserScript==\s*$|^(//|/\*)\s*(ast-grep-ignore\b|biome-ignore|eslint-|@ts-)
+      - matches: userscript-metadata
+---
+id: typescript-comments
+language: TypeScript
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^#!|^(//|/\*)\s*(ast-grep-ignore\b|biome-ignore|eslint-|@ts-)
+---
+id: tsx-comments
+language: Tsx
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  kind: comment
+  not:
+    regex: ^#!|^(//|/\*)\s*(ast-grep-ignore\b|biome-ignore|eslint-|@ts-)
+---
+id: swift-comments
+language: Swift
+severity: error
+message: Remove the comment. Delete a tautology or stale note, fix the code an excuse covers, and move a decision record into the commit message.
+metadata:
+  source: https://github.com/cursor/plugins/blob/main/pstack/skills/no-comments/SKILL.md
+rule:
+  any:
+    - kind: comment
+    - kind: multiline_comment
+  not:
+    regex: '^#!|^//\s*(ast-grep-ignore\b|swift-tools-version:)'

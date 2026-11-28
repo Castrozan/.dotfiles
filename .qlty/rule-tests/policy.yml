@@ -147,3 +147,110 @@ invalid:
   - "def test_probe():\n    elapsed_seconds = time.perf_counter() - started_at\n    assert elapsed_seconds < 0.28, 'gatherers must overlap'"
   - "assert time.monotonic() - started < 1"
   - "assert loop.time() - started <= 2"
+---
+id: python-comments
+valid:
+  - "os.fchmod(descriptor, mode)  # ast-grep-ignore: python-world-writable-file-mode"
+  - "#!/usr/bin/env python3\nimport sys"
+  - "# -*- coding: utf-8 -*-\nACCOUNT_LABEL = 'conta'"
+  - "from late_module import helper  # noqa: E402"
+  - "def build_account_label(account):  # noqa\n    return account.label"
+  - "total = source.total  # type: ignore[attr-defined]"
+  - "def unreachable_branch():  # pragma: no cover\n    return None"
+  - "ACCOUNT_COLUMNS = [1, 2, 3]  # fmt: skip"
+  - "label = '# not a comment'"
+invalid:
+  - "# Read the account total\ntotal = source.total"
+  - "total = source.total  # cached elsewhere"
+  - "# TODO: handle overdrafts\ntotal = source.total"
+  - "# type of account is checked upstream\ntotal = source.total"
+  - "# noqa explains why the import is late\nimport sys"
+---
+id: python-docstrings
+valid:
+  - "def read_total(source):\n    return source.total"
+  - "ACCOUNT_LABEL = 'conta'"
+  - "def render():\n    template = 'body'\n    'stray expression'\n    return template"
+  - "def render():\n    return \"\"\"body\"\"\""
+invalid:
+  - "\"\"\"Account helpers.\"\"\"\nimport sys"
+  - "#!/usr/bin/env python3\n\"\"\"Account helpers.\"\"\"\nimport sys"
+  - "def read_total(source):\n    \"\"\"Return the total.\"\"\"\n    return source.total"
+  - "async def read_total(source):\n    \"\"\"Return the total.\"\"\"\n    return await source.total()"
+  - "class Account:\n    \"\"\"An account.\"\"\"\n    label = 'conta'"
+  - "def read_total(source):\n    # explanation\n    \"\"\"Return the total.\"\"\"\n    return source.total"
+---
+id: bash-comments
+valid:
+  - "# ast-grep-ignore: bash-comments\necho done"
+  - "#!/usr/bin/env bash\nset -euo pipefail"
+  - "# shellcheck disable=SC2016\necho '$HOME'"
+  - "# shellcheck source=runner/bats.sh\nsource runner/bats.sh"
+  - "echo '# not a comment'"
+invalid:
+  - "# Install the hooks\ninstall_hooks"
+  - "install_hooks  # runs once"
+  - "# shellcheck is noisy here because of quoting\necho \"$1\""
+---
+id: nix-comments
+valid:
+  - "# ast-grep-ignore\n{ }"
+  - "{ pkgs, ... }: { home.packages = [ pkgs.git ]; }"
+  - "#! nix-shell -i python3\n{ }"
+  - "{ text = \"# not a comment\"; }"
+invalid:
+  - "# Enable git\n{ programs.git.enable = true; }"
+  - "{ programs.git.enable = true; /* default off */ }"
+---
+id: lua-comments
+valid:
+  - "-- ast-grep-ignore: lua-dynamic-evaluation\nload(content)"
+  - "local label = '-- not a comment'"
+invalid:
+  - "-- Rooting at the config directory\nlocal root = vim.fn.stdpath('config')"
+  - "local root = vim.fn.stdpath('config') --[[ cached ]]"
+---
+id: javascript-comments
+valid:
+  - "// ast-grep-ignore: javascript-dynamic-evaluation\neval(content);"
+  - "#!/usr/bin/env node\nconsole.log(1);"
+  - "// ==UserScript==\n// @name         Feed Removal\n// @match        https://example.com/*\n// ==/UserScript==\nrun();"
+  - "// biome-ignore lint/correctness/noUnusedVariables: exported to the page\nconst handler = run;"
+  - "// @ts-check\nrun();"
+  - "const label = '// not a comment';"
+invalid:
+  - "// Strip the feed\nrun();"
+  - "/** Strips the feed. */\nfunction strip() {}"
+  - "// @name Feed Removal\nrun();"
+  - "// ==UserScript==\n// @name         Feed Removal\n// ==/UserScript==\n// @todo remove\nrun();"
+  - "// ==UserScript==\n// the header explains\n// ==/UserScript==\nrun();"
+---
+id: typescript-comments
+valid:
+  - "// ast-grep-ignore: typescript-dynamic-evaluation\neval(content);"
+  - "// @ts-expect-error the library types lag the runtime\nrun();"
+  - "// biome-ignore lint/style/noNonNullAssertion: checked above\nrun()!;"
+  - "const label: string = '// not a comment';"
+invalid:
+  - "// Strip the feed\nrun();"
+  - "/** Strips the feed. */\nfunction strip(): void {}"
+---
+id: tsx-comments
+valid:
+  - "// ast-grep-ignore\nconst card = <Card />;"
+  - "// @ts-expect-error the library types lag the runtime\nconst card = <Card />;"
+  - "const card = <Card label=\"// not a comment\" />;"
+invalid:
+  - "// Render the card\nconst card = <Card />;"
+  - "const card = <Card>{/* placeholder */}</Card>;"
+---
+id: swift-comments
+valid:
+  - "// ast-grep-ignore\nlet desktop = current()"
+  - "// swift-tools-version:5.9\nimport PackageDescription"
+  - "#!/usr/bin/env swift\nprint(1)"
+  - "let label = \"// not a comment\""
+invalid:
+  - "// Sources the current virtual desktop\nlet desktop = current()"
+  - "let desktop = current() /* cached */"
+  - "/// The current desktop.\nlet desktop = current()"
