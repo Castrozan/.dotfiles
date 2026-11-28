@@ -20,6 +20,10 @@ mechanics with tests, then exercise the finished behavior by hand from several d
 that were defined. Claim only what exercised evidence proves; state exact missing evidence when meaningful verification
 is unavailable.
 
+Deliver the whole requested outcome end to end. Never split it into layers, phases, steps, or a first version, and
+never return with part of it working and the rest listed for later. A blocker outside your reach never shrinks the
+scope: finish everything it does not block.
+
 For each CI run whose verdict matters, start a background watcher that returns on completion or error and, when early
 failure detection matters, reads all available logs at a justified interval; meanwhile do independent in-scope work or
 nothing.
@@ -49,8 +53,7 @@ Keep durable knowledge in the user's personal knowledge base; load its owning sk
 ### Design
 
 Choose the simplest implementation that fully meets the current requirements. Avoid speculative abstractions,
-configuration, and indirection. Grow the system in layers from the smallest version that works end to end, adding each
-new capability on top of a product that already works. Never trade a working product for unfinished complexity.
+configuration, and indirection.
 
 Make architectural decisions for the long term. Keep components modular and concerns clearly separated.
 
