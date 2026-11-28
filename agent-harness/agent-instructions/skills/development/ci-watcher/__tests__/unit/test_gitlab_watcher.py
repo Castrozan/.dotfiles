@@ -70,17 +70,20 @@ def test_terminal_verdict_retains_every_job(
     assert len(capsys.readouterr().out.splitlines()) == 2
 
 
-def test_pending_run_retains_failed_job_early_and_waits_for_final_verdict(
+def test_pending_run_survives_a_failed_read_and_waits_for_final_verdict(
     pipeline, monkeypatch, tmp_path
 ):
     result, jobs, calls = pipeline
-    states = iter(["running", "failed"])
+    states = iter(["running", subprocess.CalledProcessError(1, "glab"), "failed"])
     jobs[0]["status"] = "failed"
-    monkeypatch.setattr(
-        gitlab,
-        "gitlab_json",
-        lambda *args, **options: {**result, "status": next(states)},
-    )
+
+    def read_pipeline(*args, **options):
+        state = next(states)
+        if isinstance(state, Exception):
+            raise state
+        return {**result, "status": state}
+
+    monkeypatch.setattr(gitlab, "gitlab_json", read_pipeline)
 
     def wait(interval):
         assert interval <= 30
@@ -90,7 +93,9 @@ def test_pending_run_retains_failed_job_early_and_waits_for_final_verdict(
     monkeypatch.setattr(gitlab.time, "sleep", wait)
     assert watcher.watch(42) == 1
     assert len(calls) == 2
-    assert (tmp_path / "watch.log").read_text() == "running\nfailed\n"
+    assert (tmp_path / "watch.log").read_text() == (
+        "running\nreading the pipeline failed; retrying\nfailed\n"
+    )
 
 
 def test_skipped_unstarted_job_has_no_trace_request(pipeline, tmp_path):
@@ -121,6 +126,7 @@ def test_local_error_does_not_cancel_remote_pipeline(
         raise error
 
     monkeypatch.setattr(gitlab, "gitlab_json", fail)
+    monkeypatch.setattr(gitlab.time, "sleep", lambda seconds: None)
     assert watcher.watch(42) == status
     assert json.loads((tmp_path / "result.json").read_text())["outcome"] == outcome
     assert calls == []

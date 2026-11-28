@@ -8,6 +8,10 @@ from forge.native import (
     project_endpoint,
     remaining_timeout,
 )
+from ci_watcher.transient_failures import (
+    RETRY_PAUSE_SECONDS,
+    ConsecutiveTransientFailures,
+)
 
 
 def retain_gitlab_trace(repository, directory, job, deadline):
@@ -36,25 +40,52 @@ def retain_gitlab_trace(repository, directory, job, deadline):
         )
 
 
+def _pipeline_and_jobs(repository, run, deadline):
+    pipeline = gitlab_json(
+        repository,
+        f"{project_endpoint(repository)}/pipelines/{run}",
+        timeout=min(30, deadline - time.monotonic()),
+    )
+    jobs = gitlab_pages(
+        repository,
+        f"{project_endpoint(repository)}/pipelines/{run}/jobs",
+        deadline=deadline,
+    )
+    return pipeline, jobs
+
+
+def _pipeline_snapshot_or_none(repository, run, deadline, failures, progress):
+    try:
+        snapshot = _pipeline_and_jobs(repository, run, deadline)
+    except subprocess.CalledProcessError as error:
+        failures.record(f"reading pipeline {run} failed: {error}")
+        progress.write("reading the pipeline failed; retrying\n")
+        progress.flush()
+        return None
+    failures.reset()
+    return snapshot
+
+
+def _pause_until_next_read(deadline):
+    time.sleep(min(RETRY_PAUSE_SECONDS, max(0, deadline - time.monotonic())))
+
+
 def watch_gitlab(repository, run, directory, timeout):
     deadline = time.monotonic() + timeout
     retained_jobs = set()
+    failures = ConsecutiveTransientFailures()
     with (directory / "watch.log").open("w") as progress:
         while True:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
+            if deadline - time.monotonic() <= 0:
                 raise subprocess.TimeoutExpired("glab", timeout)
-            pipeline = gitlab_json(
-                repository,
-                f"{project_endpoint(repository)}/pipelines/{run}",
-                timeout=min(30, remaining),
+            snapshot = _pipeline_snapshot_or_none(
+                repository, run, deadline, failures, progress
             )
+            if snapshot is None:
+                _pause_until_next_read(deadline)
+                continue
+            pipeline, jobs = snapshot
             result = pipeline_result(pipeline)
-            jobs = gitlab_pages(
-                repository,
-                f"{project_endpoint(repository)}/pipelines/{run}/jobs",
-                deadline=deadline,
-            )
             progress.write(f"{pipeline['status']}\n")
             progress.flush()
             _retain_failed_job_traces(

@@ -4,6 +4,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from ci_watcher import github
 from ci_watcher import watcher as ci_watcher
 from forge.repository import Repository
 
@@ -80,19 +81,54 @@ def test_collects_one_terminal_verdict_and_all_job_logs(
     ]
     assert calls[-1][-3:] == ["--attempt", "2", "--log"]
     assert len(capsys.readouterr().out.splitlines()) == 2
-    process.wait.assert_called_once_with(timeout=3600)
+    process.wait.assert_called_once_with(timeout=pytest.approx(3600, abs=5))
 
 
-def test_watcher_error_does_not_claim_an_active_run_failed(github_run, tmp_path):
+@pytest.mark.parametrize(
+    "watch_exits,run_statuses,outcome,status,watch_count",
+    [
+        ([1, 0], ["in_progress"], "passed", 0, 2),
+        ([1], ["completed"], "passed", 0, 1),
+        ([1] * 5, ["in_progress"] * 5, "error", 2, 5),
+    ],
+)
+def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
+    github_run,
+    monkeypatch,
+    tmp_path,
+    watch_exits,
+    run_statuses,
+    outcome,
+    status,
+    watch_count,
+):
     result, process, calls = github_run
-    result["status"] = "in_progress"
-    result["conclusion"] = ""
-    process.wait.return_value = 1
+    process.wait.side_effect = watch_exits
+    statuses = iter(run_statuses)
+    verdict_reads = iter([subprocess.CalledProcessError(1, "gh"), result])
+    monkeypatch.setattr(github.time, "sleep", lambda seconds: None)
 
-    assert ci_watcher.watch(42) == 2
+    def finish(command, **options):
+        calls.append(command)
+        if command[-2:] == ["--json", "status,conclusion"]:
+            run_status = next(statuses)
+            conclusion = "success" if run_status == "completed" else ""
+            return subprocess.CompletedProcess(
+                command, 0, json.dumps({"status": run_status, "conclusion": conclusion})
+            )
+        if "--json" in command:
+            verdict = next(verdict_reads)
+            if isinstance(verdict, Exception):
+                raise verdict
+            return subprocess.CompletedProcess(command, 0, json.dumps(verdict))
+        return subprocess.CompletedProcess(command, 0)
 
-    assert json.loads((tmp_path / "result.json").read_text())["outcome"] == "error"
-    assert len(calls) == 2
+    monkeypatch.setattr(ci_watcher.subprocess, "run", finish)
+
+    assert ci_watcher.watch(42) == status
+
+    assert json.loads((tmp_path / "result.json").read_text())["outcome"] == outcome
+    assert [command[2] for command in calls].count("watch") == watch_count
 
 
 @pytest.mark.parametrize(
