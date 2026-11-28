@@ -58,7 +58,8 @@ def contention_diagnostics(lock_name, lock_path):
         print(f"{'owner_type:':<22}unknown", file=sys.stderr)
     print(
         "\nThis request was rejected; nothing was queued.\n"
-        f"Run '{lock_name}' again intentionally after the owning run and its children finish.\n"
+        "Do not wait for this lock: commit and push your work and leave it for the next run, which\n"
+        "builds every pushed commit. Run again intentionally only if you need the result live after the owner finishes.\n"
         "The lock can remain held after the metadata PID exits.\n"
         f"Recommended wait: at least {remaining + 30}s.",
         file=sys.stderr,
