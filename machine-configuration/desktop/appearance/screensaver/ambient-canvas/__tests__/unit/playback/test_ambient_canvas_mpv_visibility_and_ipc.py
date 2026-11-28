@@ -108,8 +108,11 @@ def test_visibility_controller_sends_only_transitions_and_releases_on_unknown(
         lambda *args: next(visibility),
     )
     controller = VisibilityGatedPlaybackController(RecordingClient(), 14534, 11)
+    visible_after_each_check = []
     for _ in range(6):
         controller._synchronize_with_visibility()
+        visible_after_each_check.append(controller.visible_event.is_set())
     assert sent_commands == (
         VISIBLE_PLAYER_COMMANDS + HIDDEN_PLAYER_COMMANDS + VISIBLE_PLAYER_COMMANDS
     )
+    assert visible_after_each_check == [True, True, False, False, False, True]

@@ -46,10 +46,31 @@ def test_empty_segment_order_returns_no_indices():
     assert segment_order.next_segment_indices() == []
 
 
-def test_linux_player_finishes_each_sequence_before_choosing_another():
-    assert "for segment_index in segment_order.next_segment_indices():" in (
-        PYTHON_PLAYBACK_SOURCE
-    )
+def test_a_hidden_player_loads_no_segment_until_it_is_visible_again(monkeypatch):
+    class StillHidden(Exception):
+        pass
+
+    class HiddenGate:
+        def wait_until_visible(self):
+            raise StillHidden
+
+    class RecordingMpvClient:
+        def __init__(self):
+            self.commands = []
+
+        def send_command(self, command):
+            self.commands.append(command)
+
+    mpv_client = RecordingMpvClient()
+    with pytest.raises(StillHidden):
+        mpv_player.play_shuffled_loop(
+            mpv_client,
+            [{"durationSeconds": 30}, {"durationSeconds": 30}],
+            ["first.mp4", "second.mp4"],
+            "/nonexistent/dwell",
+            HiddenGate(),
+        )
+    assert mpv_client.commands == []
 
 
 def test_linux_player_plays_each_video_sequence_contiguously(monkeypatch):
@@ -91,6 +112,7 @@ def test_linux_player_plays_each_video_sequence_contiguously(monkeypatch):
             ],
             ["eva-first.mp4", "other-scene.mp4", "eva-final.mp4"],
             "/nonexistent/dwell",
+            type("AlwaysVisible", (), {"wait_until_visible": lambda self: None})(),
         )
 
     loaded_segments = [

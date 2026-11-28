@@ -50,11 +50,15 @@ class VisibilityGatedPlaybackController:
         self.player_process_id = player_process_id
         self.target_workspace_id = target_workspace_id
         self._previous_should_play = None
+        self.visible_event = threading.Event()
         self._stop_event = threading.Event()
         self._thread = threading.Thread(target=self._watch_visibility, daemon=True)
 
     def start(self):
         self._thread.start()
+
+    def wait_until_visible(self):
+        self.visible_event.wait()
 
     def stop(self):
         self._stop_event.set()
@@ -75,4 +79,8 @@ class VisibilityGatedPlaybackController:
             VISIBLE_PLAYER_COMMANDS if should_play else HIDDEN_PLAYER_COMMANDS
         ):
             self.mpv_client.send_command(command)
+        if should_play:
+            self.visible_event.set()
+        else:
+            self.visible_event.clear()
         self._previous_should_play = should_play

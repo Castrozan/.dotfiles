@@ -78,12 +78,15 @@ def play_single_segment_forever(
     mpv_client.send_command(["set_property", "length", str(dwell)])
 
 
-def play_shuffled_loop(mpv_client, segments, segment_file_paths, dwell_override_path):
+def play_shuffled_loop(
+    mpv_client, segments, segment_file_paths, dwell_override_path, visibility_gate
+):
     segment_order = ShuffledSegmentOrder(
         [segment.get("sequence") for segment in segments]
     )
     while True:
         for segment_index in segment_order.next_segment_indices():
+            visibility_gate.wait_until_visible()
             segment = segments[segment_index]
             mpv_client.send_command(
                 ["loadfile", segment_file_paths[segment_index], "replace"]
@@ -144,6 +147,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
                 segments,
                 segment_file_paths,
                 playback_dwell_override_path,
+                visibility_controller,
             )
     finally:
         theme_screen_blend.stop()
