@@ -25,6 +25,12 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    hammerspoon = {
+      url = "git+ssh://git@github.com/Castrozan/hammerspoon-config?ref=main&rev=8fd88976e812f34fe0a56b074b1e767d13fffb4b";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.home-manager.follows = "home-manager";
+    };
+
     clawde.url = "github:Castrozan/clawde/d707cf1441140c49a3cd2d62387d51297dcfd9e8";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 

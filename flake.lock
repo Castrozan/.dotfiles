@@ -409,6 +409,7 @@
         "cmatrix": "cmatrix",
         "devenv": "devenv",
         "google-workspace-cli": "google-workspace-cli",
+        "hammerspoon": "hammerspoon",
         "herdr": "herdr",
         "herdr-pace": "herdr-pace",
         "hermes": "hermes",
@@ -896,6 +897,33 @@
         "repo": "cli",
         "rev": "a3768d0e82ad83cca2da97724e46bea4ff0e6dbd",
         "type": "github"
+      }
+    },
+    "hammerspoon": {
+      "inputs": {
+        "home-manager": [
+          "dependencies",
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842392,
+        "narHash": "sha256-lBucov0ZMWWKC7LDLPHfxqBK3oyUOxbwIe0Ff+DWS1E=",
+        "ref": "main",
+        "rev": "8fd88976e812f34fe0a56b074b1e767d13fffb4b",
+        "revCount": 2,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/hammerspoon-config"
+      },
+      "original": {
+        "ref": "main",
+        "rev": "8fd88976e812f34fe0a56b074b1e767d13fffb4b",
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/hammerspoon-config"
       }
     },
     "herdr": {

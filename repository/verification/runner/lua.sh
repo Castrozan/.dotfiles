@@ -21,10 +21,6 @@ _run_lua_unit_tests() {
 		luaInterpreter=(nix run nixpkgs#lua5_4 --)
 	fi
 
-	local isolatedWorkspaceStateFile
-	isolatedWorkspaceStateFile="$(mktemp "${TMPDIR:-/tmp}/hammerspoon-workspace-state-test.XXXXXX")"
-	export HAMMERSPOON_WORKSPACE_STATE_FILE="$isolatedWorkspaceStateFile"
-
 	echo "--- Lua Unit Tests ---"
 	local failCount=0
 	local testCount=0
@@ -48,9 +44,6 @@ _run_lua_unit_tests() {
 		printf '<?xml version="1.0" encoding="UTF-8"?>\n<testsuite name="lua" tests="%d" failures="%d">%s</testsuite>\n' \
 			"$testCount" "$failCount" "$junitCases" >"$DOTFILES_TEST_REPORT_DIRECTORY/lua-junit.xml"
 	fi
-
-	rm -f "$isolatedWorkspaceStateFile"
-	unset HAMMERSPOON_WORKSPACE_STATE_FILE
 
 	if [[ "$failCount" -gt 0 ]]; then
 		echo "Lua tests: $failCount file(s) failed" >&2

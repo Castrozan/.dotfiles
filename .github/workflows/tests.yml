@@ -43,8 +43,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Nix
-        uses: cachix/install-nix-action@13d8dd58da0234aa297dedd986986ccb8e7f3e24
+      - uses: ./.github/actions/nix-setup
+        with:
+          cache-key: quick-tests
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Run quick tests
         run: |

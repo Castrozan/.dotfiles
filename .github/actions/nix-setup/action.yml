@@ -39,6 +39,10 @@ runs:
       shell: bash
       run: printf 'NEOVIM_STUB_OVERRIDE=--override-input dependencies/neovim path:%s/repository/verification/nix-checks/neovim-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
 
+    - name: Stub the private Hammerspoon input
+      shell: bash
+      run: printf 'HAMMERSPOON_STUB_OVERRIDE=--override-input dependencies/hammerspoon path:%s/repository/verification/nix-checks/hammerspoon-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"
+
     - name: Stub the private darwin assets input
       shell: bash
       run: printf 'PRIVATE_CONFIG_STUB_OVERRIDE=--override-input dependencies/private-config path:%s/repository/verification/nix-checks/private-config-stub\n' "$GITHUB_WORKSPACE" >> "$GITHUB_ENV"

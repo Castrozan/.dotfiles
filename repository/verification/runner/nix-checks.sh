@@ -20,7 +20,7 @@ _detect_nix_system_double_from_kernel_and_machine() {
 
 _flake_exposes_checks_for_system() {
 	local nixSystemDouble="$1"
-	nix eval ".#checks.${nixSystemDouble}" --apply 'cs: builtins.attrNames cs' --json >/dev/null 2>&1
+	nix eval "${@:2}" ".#checks.${nixSystemDouble}" --apply 'cs: builtins.attrNames cs' --json >/dev/null 2>&1
 }
 
 _run_nix_flake_checks() {
@@ -29,22 +29,25 @@ _run_nix_flake_checks() {
 		return 0
 	fi
 
+	local -a sourceOverrides
+	read -r -a sourceOverrides <<<"${ARR_STACK_STUB_OVERRIDE:-} ${NEOVIM_STUB_OVERRIDE:-} ${HAMMERSPOON_STUB_OVERRIDE:-} ${PRIVATE_CONFIG_STUB_OVERRIDE:-}"
+
 	local currentSystem
 	currentSystem="$(_detect_nix_system_double_from_kernel_and_machine)"
 
 	echo "--- Nix Flake Checks (${currentSystem}) ---"
 
-	if ! _flake_exposes_checks_for_system "${currentSystem}"; then
+	if ! _flake_exposes_checks_for_system "${currentSystem}" "${sourceOverrides[@]}"; then
 		echo "SKIP: flake does not expose checks.${currentSystem} (only checks for other systems are defined)"
 		echo ""
 		return 0
 	fi
 
 	local checkNames
-	checkNames=$(nix eval ".#checks.${currentSystem}" --apply 'builtins.attrNames' --json 2>/dev/null | jq -r '.[]')
+	checkNames=$(nix eval "${sourceOverrides[@]}" ".#checks.${currentSystem}" --apply 'builtins.attrNames' --json 2>/dev/null | jq -r '.[]')
 	local failedChecks=0
 	for checkName in $checkNames; do
-		if nix build ".#checks.${currentSystem}.${checkName}" --no-link --print-build-logs 2>&1; then
+		if nix build "${sourceOverrides[@]}" ".#checks.${currentSystem}.${checkName}" --no-link --print-build-logs 2>&1; then
 			echo "  PASS: ${checkName}"
 		else
 			echo "  FAIL: ${checkName}"
