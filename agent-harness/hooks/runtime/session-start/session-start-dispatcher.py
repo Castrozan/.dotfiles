@@ -6,11 +6,17 @@ import os
 import sys
 
 hook_script_directory = os.path.dirname(os.path.realpath(__file__))
-for importable_directory in (
+importable_directories = [
     hook_script_directory,
     os.path.join(os.path.dirname(hook_script_directory), "common"),
     os.path.join(os.path.dirname(hook_script_directory), "wellput"),
-):
+]
+importable_directories.extend(
+    child_entry.path
+    for child_entry in os.scandir(hook_script_directory)
+    if child_entry.is_dir()
+)
+for importable_directory in importable_directories:
     if os.path.isdir(importable_directory) and importable_directory not in sys.path:
         sys.path.insert(0, importable_directory)
 
