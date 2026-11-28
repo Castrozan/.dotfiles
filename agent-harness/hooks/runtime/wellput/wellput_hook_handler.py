@@ -7,6 +7,9 @@ from hook_dispatch import HandlerResult
 from interactive_session_detection import is_keyboard_driven_interactive_session
 
 
+PUBLIC_HOOK_TIMEOUT_SECONDS_BY_EVENT = {"SessionStart": 5, "Stop": 10}
+
+
 def run_public_hook(hook_input):
     completed = subprocess.run(
         [sys.executable, "-S", os.environ["DOTFILES_WELLPUT_HOOK"]],
@@ -14,7 +17,7 @@ def run_public_hook(hook_input):
         capture_output=True,
         text=True,
         check=True,
-        timeout=5,
+        timeout=PUBLIC_HOOK_TIMEOUT_SECONDS_BY_EVENT[hook_input["hook_event_name"]],
     )
     output = json.loads(completed.stdout)
     if not isinstance(output, dict):

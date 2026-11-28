@@ -32,16 +32,17 @@ def test_stop_delegates_the_original_payload_to_the_public_hook(public_hook):
     command, arguments = calls[0]
     assert command[1:] == ["-S", "/wellput/hooks/reply_hook.py"]
     assert json.loads(arguments["input"]) == payload
-    assert arguments["timeout"] == 5
+    assert arguments["timeout"] == 10
     assert result.decision == "block"
     assert result.reason == "repair from Wellput"
 
 
 def test_session_start_uses_the_public_configuration_context(public_hook):
-    _, respond = public_hook
+    calls, respond = public_hook
     respond({"hookSpecificOutput": {"additionalContext": "configured Wellput rules"}})
     result = wellput_hook_handler.handle({"hook_event_name": "SessionStart"})
     assert result.additional_context == "configured Wellput rules"
+    assert calls[0][1]["timeout"] == 5
 
 
 @pytest.mark.parametrize("interactive,background", [(False, False), (True, True)])
