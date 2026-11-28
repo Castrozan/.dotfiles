@@ -1,17 +1,3 @@
-"""The nix rebuild reminder speaks once per turn, and only when it is right.
-
-The shape it replaced fired on every Edit of a .nix file and emitted the same
-demand as both additional context and system message, so five edited files
-produced five doubled copies. It fired at the one moment the demanded action
-cannot be taken, and it never checked whether the obligation was outstanding,
-so it also fired at an agent that had already committed and rebuilt.
-
-A silent recorder appends to a per-session ledger, and a Stop handler reads the
-ledger once and speaks only if the work is genuinely unfinished, meaning the
-files are still uncommitted or no system activation has happened since they
-were edited.
-"""
-
 import os
 import subprocess
 import sys

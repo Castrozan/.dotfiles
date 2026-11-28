@@ -1,11 +1,3 @@
-"""Splitting a path into its parts without paying for pathlib.
-
-The routers that ask whether an edited file sits under a skills, docs or
-node_modules directory run on every Edit, and pathlib.PurePath.parts costs
-urllib.parse, ipaddress and fnmatch to answer it. These cover the shapes where
-a naive split on the separator disagrees with what pathlib returns.
-"""
-
 from file_path_components import path_components
 
 

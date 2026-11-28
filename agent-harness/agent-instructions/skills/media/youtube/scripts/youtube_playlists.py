@@ -4,7 +4,6 @@ from youtube_authentication import get_authenticated_service
 
 
 def list_my_playlists(max_results=25):
-    """List the authenticated user's playlists."""
     youtube = get_authenticated_service()
     request = youtube.playlists().list(
         part="snippet,contentDetails", mine=True, maxResults=max_results
@@ -27,7 +26,6 @@ def list_my_playlists(max_results=25):
 
 
 def create_playlist(title, description="", privacy="private"):
-    """Create a new playlist."""
     youtube = get_authenticated_service()
     request = youtube.playlists().insert(
         part="snippet,status",

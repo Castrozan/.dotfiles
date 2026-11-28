@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Copies agenix-decrypted obsidian-headless secrets into CONFIG_DIR and patches
-# the sync config to point at VAULT_PATH. Driven by SECRETS_DIR, CONFIG_DIR,
-# VAULT_PATH env vars; expects sed on PATH.
 
 set -euo pipefail
 

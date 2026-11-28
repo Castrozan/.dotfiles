@@ -1,10 +1,3 @@
-"""Sanitized Herdr 0.9.1 field shape reported by fleet live acceptance.
-
-The producer omits false launch_pending and interactive_ready values
-(src/api/schema/agents.rs, serde default + skip_serializing_if=is_false).
-Identifiers are synthetic; these tests perform no live dispatch.
-"""
-
 import pytest
 from a2a_cli.fleet.registry import DispatchIntent, Observation
 from fleet_test_support import FakeTransport, inventory, send

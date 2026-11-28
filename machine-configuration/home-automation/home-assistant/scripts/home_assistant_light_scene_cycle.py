@@ -14,10 +14,6 @@ MINIMUM_COLOR_TEMPERATURE_KELVIN = 2000
 MAXIMUM_COLOR_TEMPERATURE_KELVIN = 6500
 MAXIMUM_BRIGHTNESS = 255
 
-# Each step drives the lights directly rather than activating a scene.* entity.
-# The Tuya scenes this cycle used to call carry no targets, so scene/turn_on
-# returned success and changed nothing. Brightness uses the Home Assistant
-# 0-255 scale; temperature is Kelvin inside the range the bulbs report.
 LIGHT_SCENE_CYCLE_STEPS = [
     {"name": "minimum_warm", "brightness": 3, "color_temp_kelvin": 2000},
     {"name": "low_warm", "brightness": 64, "color_temp_kelvin": 2000},

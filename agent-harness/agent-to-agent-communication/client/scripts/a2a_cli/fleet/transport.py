@@ -1,5 +1,3 @@
-"""Deadline and output bounded local/SSH command execution."""
-
 import os
 import selectors
 import shlex

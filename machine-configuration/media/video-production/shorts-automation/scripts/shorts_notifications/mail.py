@@ -49,8 +49,6 @@ def attempt(path, record, password_file, connector=connect):
 
 
 def dispatch(server, message, path, record):
-    # Persist before DATA: a crash or lost acknowledgement cannot trigger an
-    # automatic duplicate. Explicit SMTP rejection is safe to retry separately.
     record.update(status="delivery_uncertain", message_id=message["Message-ID"])
     save(path, record)
     try:

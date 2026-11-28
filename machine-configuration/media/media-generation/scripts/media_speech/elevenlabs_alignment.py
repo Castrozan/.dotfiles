@@ -1,5 +1,3 @@
-"""Normalize bounded trailing separator timestamps from ElevenLabs."""
-
 import unicodedata
 
 from media_speech.contract import CharacterAlignment, SpeechError

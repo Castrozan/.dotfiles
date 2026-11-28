@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Installs tailscale via Homebrew on macOS if no tailscale binary is already
-# present on a known path. Driven by TAILSCALE_CANDIDATE_PATHS and
-# BREW_CANDIDATE_PATHS env vars (space-separated absolute paths).
-
 # shellcheck disable=SC2086  # intentional word splitting on candidate path lists
 for candidate in $TAILSCALE_CANDIDATE_PATHS; do
 	if [ -x "$candidate" ]; then

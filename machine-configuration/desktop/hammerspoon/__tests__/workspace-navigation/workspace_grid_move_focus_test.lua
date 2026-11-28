@@ -1,8 +1,3 @@
--- Reproduces the move-window-with-me focus-handoff bug: moving the focused
--- window into a workspace that already contains another window must leave the
--- moved window focused, so a subsequent ctrl-alt-shift carries the SAME window
--- onward instead of grabbing the pre-existing window on the intermediate space.
-
 local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 

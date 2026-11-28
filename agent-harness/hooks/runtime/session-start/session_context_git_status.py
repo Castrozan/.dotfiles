@@ -1,5 +1,3 @@
-"""Collect git repository status for the session start banner."""
-
 from __future__ import annotations
 
 from typing import Any, Dict

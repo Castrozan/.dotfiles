@@ -10,8 +10,6 @@ retiredLinkHandlerApplicationPath="$6"
 
 mkdir -p "$chromeGlobalUserDataDirectory"
 
-# macOS refuses a third-party write to the https handler, the scheme that is the default-browser
-# setting, so asking again once it already points at Chrome only prints permErr on every rebuild.
 currentDefaultHandlerFor() {
 	/usr/bin/defaults read com.apple.LaunchServices/com.apple.launchservices.secure LSHandlers 2>/dev/null |
 		/usr/bin/awk -v urlScheme="$1" '

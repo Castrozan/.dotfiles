@@ -3,7 +3,6 @@
   hostname,
   ...
 }:
-# Adds private-configuration/machines/<hostname>/git-user.nix when that file exists.
 let
   privateConfigRoot = ../../../private-configuration;
   privateConfigExists = builtins.pathExists privateConfigRoot;

@@ -1,5 +1,3 @@
-"""Opt-in CLI. Default status is a local cached read with no network calls."""
-
 from __future__ import annotations
 
 import os

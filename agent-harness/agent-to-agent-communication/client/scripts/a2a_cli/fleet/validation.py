@@ -1,5 +1,3 @@
-"""Validation shared by registry input boundaries."""
-
 import math
 import re
 

@@ -32,13 +32,6 @@ def every_deployed_hook_script():
 
 
 def flatten_into_single_runtime_directory(directory, source_files=None):
-    """Flatten the hook tree, then apply the substitutions the nix builder applies.
-
-    flat-hook-scripts-directory.nix rewrites @servantsDomainDirectory@ to the store
-    path holding the servants domain. A flatten that skipped it would deploy a
-    handler that can never import its catalog, and the dispatcher swallows a failed
-    handler, so the test would read that silence as a pass.
-    """
     for source_file in (
         source_files if source_files is not None else every_deployed_hook_script()
     ):

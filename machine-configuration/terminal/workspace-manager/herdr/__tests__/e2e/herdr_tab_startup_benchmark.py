@@ -1,19 +1,4 @@
 #!/usr/bin/env python3
-"""E2E benchmark: wall time from `herdr tab create` until the pane's bash is writable.
-
-Decomposes the path so the slow stage can be named. The writable phase is
-measured in-band: the probe makes the pane's bash print its own `date +%s%N`
-when it executes the first queued command, so client polling latency drops
-out. Server phases come from the herdr server log, matched by tab id. Phase
-measurement lives in herdr_bench_phases.py.
-
-Non-invasive by construction: creates its own tabs labelled perf-bench-*,
-always closes them even on failure, never focuses a window (--focus is
-opt-in), reads the server log read-only, and touches no config, environment,
-or shell profile. Requires a live herdr server; skips gracefully when the CLI
-or server is absent.
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -22,6 +7,9 @@ import sys
 
 from herdr_bench_phases import herdr_cli_available, run_single_run
 
+COMMAND_DESCRIPTION = (
+    "Measure wall time from herdr tab create until the new pane's bash accepts input."
+)
 PHASE_METRICS = [
     "create_roundtrip",
     "server_spawn",
@@ -65,7 +53,7 @@ def print_phase_row(run_index: int, result: dict) -> None:
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=COMMAND_DESCRIPTION)
     parser.add_argument("--runs", type=int, default=10)
     parser.add_argument(
         "--focus",

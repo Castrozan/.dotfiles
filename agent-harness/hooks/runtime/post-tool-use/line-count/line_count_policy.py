@@ -1,5 +1,3 @@
-"""Shared policy for file-length limits enforced by hook and CI scanner."""
-
 from __future__ import annotations
 
 import os

@@ -1,5 +1,3 @@
-"""Bounded cached projection; no network activity or inferred task completion."""
-
 import json
 
 COLLECTION_QUERIES = {

@@ -1,5 +1,3 @@
-"""Bounded fleet refresh, dispatch and result workflows."""
-
 import json
 import time
 

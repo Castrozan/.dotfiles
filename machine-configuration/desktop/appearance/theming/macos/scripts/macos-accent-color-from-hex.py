@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-"""Maps a 6-char RGB hex color (argv[1], no leading #) to a macOS
-AppleAccentColor index. Prints -1 for graphite (low saturation), or 0-6
-for red/orange/yellow/green/blue/purple/pink depending on hue bucket."""
 
 import colorsys
 import sys

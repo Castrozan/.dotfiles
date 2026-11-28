@@ -1,5 +1,3 @@
-"""Command handlers independent from argument declarations."""
-
 import json
 import sqlite3
 import sys

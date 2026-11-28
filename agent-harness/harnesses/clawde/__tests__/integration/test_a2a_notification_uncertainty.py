@@ -1,5 +1,3 @@
-"""Accepted-but-unconfirmed delivery must never be automatically replayed."""
-
 import pytest
 from a2a_test_client import request_json
 

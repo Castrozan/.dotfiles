@@ -39,8 +39,6 @@ def _injected_context(
 
 
 def test_session_start_dispatcher_names_the_servant_after_flat_deploy(tmp_path):
-    """The Servant reaches the session as a value here and as a rule in the appended
-    system prompt, so the flat deploy has to reach the servants domain to name one."""
     assert "Servant: " in _injected_context(tmp_path, "servant-flat-probe")
 
 
@@ -52,9 +50,6 @@ def test_openclaw_receives_no_servant_after_flat_deploy(tmp_path):
 
 
 def test_a_repeated_session_id_names_the_same_servant(tmp_path):
-    """The whole resume story. Nothing is persisted between launches, so a resumed
-    conversation keeps its Servant only because the harness hands the hook back the
-    same session id and the draw is a pure function of it."""
     first = _injected_context(tmp_path / "first", "servant-resume-probe")
     second = _injected_context(tmp_path / "second", "servant-resume-probe")
     assert "Servant: " in first
@@ -76,8 +71,6 @@ def test_a_different_session_id_can_name_a_different_servant(tmp_path):
 def test_session_start_dispatcher_stays_silent_for_clawde_agent_after_flat_deploy(
     tmp_path,
 ):
-    """A clawde agent already carries its own name and personality, so it must never
-    be handed a Servant that would compete with them."""
     injected_context = _injected_context(
         tmp_path,
         "servant-flat-clawde-probe",

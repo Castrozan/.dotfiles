@@ -9,7 +9,6 @@ from .scenario_results import TestResult
 
 
 def test_mru_interleaved_six_windows(r: TestResult) -> None:
-    """Focus 0,2,4,1,3,5. Close 5→3, 3→1, 1→4."""
     print("\n--- Test: Interleaved 6-window focus ---")
     cleanup_test_workspace()
     addrs = [spawn_kitty(f"il-{i}") for i in range(6)]
@@ -37,7 +36,6 @@ def test_mru_interleaved_six_windows(r: TestResult) -> None:
 
 
 def test_eight_windows_complex_pattern(r: TestResult) -> None:
-    """Focus 0,3,7,2,5,1,6,4. Close 4→6, 6→1."""
     print("\n--- Test: 8 windows complex focus pattern ---")
     cleanup_test_workspace()
     addrs = [spawn_kitty(f"many-{i}") for i in range(8)]

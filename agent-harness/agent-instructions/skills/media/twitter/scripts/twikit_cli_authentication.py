@@ -1,5 +1,3 @@
-"""Cookie loading, credential-based login, and authenticated client construction."""
-
 import asyncio
 import getpass
 import json

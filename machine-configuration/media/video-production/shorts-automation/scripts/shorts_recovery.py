@@ -1,5 +1,3 @@
-"""Explicit recovery of inspected held slots; scheduled runs never backfill."""
-
 import fcntl
 import os
 import re
@@ -72,7 +70,6 @@ def window_available(configuration, now=None):
     recent_slot = max((slot for slot in slots if slot <= now), default=None)
     if recent_slot is not None and (now - recent_slot).total_seconds() <= 120:
         return False
-    # Leave the full systemd deadline plus one minute of scheduler accuracy.
     return (next_slot - now).total_seconds() > RUN_BUDGET_SECONDS + 60
 
 
@@ -158,8 +155,6 @@ def launch_pending(root, configuration):
     if "running" in statuses or "queued" not in statuses:
         return
     if window_available(configuration):
-        # A daemon reexec can disconnect a blocking D-Bus wait after accepting a
-        # job. Observe the durable queue before another request instead.
         try:
             subprocess.run(
                 [

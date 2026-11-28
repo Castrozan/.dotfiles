@@ -34,10 +34,6 @@ class TestNamingTheServant:
 
 
 class TestResumeKeepsOneServant:
-    """Nothing is written down anywhere, so these are the only guarantees a resumed
-    conversation has: the harness replays its session id, and the draw is a pure
-    function of it."""
-
     def test_the_same_id_always_draws_the_same_servant(self):
         assert (
             _handle("same-id").additional_context
@@ -108,10 +104,6 @@ class TestSessionsThatGetNoServant:
 
 
 class TestOtherHarnessPayloads:
-    """Codex registers the same hook config shape as Claude Code but the harnesses
-    have not all settled on one key for the conversation, so the handler reads the
-    plausible ones rather than going silent on a surface that names it differently."""
-
     @pytest.mark.parametrize(
         "payload_key", ["session_id", "conversation_id", "thread_id"]
     )

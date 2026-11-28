@@ -1,5 +1,3 @@
-"""SQLite metadata facade; never reads harness session stores."""
-
 import time
 
 from . import host_records, job_records, session_records, status_view, storage

@@ -1,5 +1,4 @@
 {
-  # Dependency injection
   pkgs,
   lib,
   latest,
@@ -34,10 +33,8 @@
       insomnia
       jq
       kubectl
-      # lens TODO: fix lens, im using the snap version for now
       micronaut
       mongosh
-      # nix # leave the manually installed version
       nix-output-monitor
       (import ../development/system-rebuild/nh-package.nix { inherit pkgs; })
       nixd
@@ -95,10 +92,8 @@
         ydotool
       ]
     )
-    # Appending to list
     ++ (with latest; [
       lazydocker
-      # gemini-cli TODO: fix gemini-cli, im using the npm version for now
       suwayomi-server
     ]);
 }

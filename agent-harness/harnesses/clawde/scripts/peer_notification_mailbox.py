@@ -69,7 +69,6 @@ class PeerNotificationMailbox:
             self._unread_notifications_by_identifier.pop(notification_identifier, None)
 
     def claim(self, identifiers: list[str]) -> bool:
-        """Fence the batch before external input; an interrupted attempt stays uncertain."""
         with self._lock:
             if not all(self._is_pending(identifier) for identifier in identifiers):
                 return False
@@ -77,7 +76,6 @@ class PeerNotificationMailbox:
             return True
 
     def defer(self, identifiers: list[str]) -> None:
-        """Only the coordinator's definite pre-input refusal permits another attempt."""
         with self._lock:
             self._set_delivery_state(identifiers, "pending")
 

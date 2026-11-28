@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# TODO: this should not be done in the shell
-
 if [ ! -d "$HOME/repo" ]; then
 	mkdir -p "$HOME/repo"
 fi

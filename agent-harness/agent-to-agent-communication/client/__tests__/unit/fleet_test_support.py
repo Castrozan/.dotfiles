@@ -1,5 +1,3 @@
-"""Synthetic fleet inventories and transport; no live peer calls."""
-
 import json
 import pytest
 from a2a_cli.fleet import operations

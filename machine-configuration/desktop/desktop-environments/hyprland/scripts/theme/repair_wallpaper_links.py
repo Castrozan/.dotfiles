@@ -1,5 +1,3 @@
-"""Repair saved theme links after the repository wallpaper layout moves."""
-
 from pathlib import Path
 
 

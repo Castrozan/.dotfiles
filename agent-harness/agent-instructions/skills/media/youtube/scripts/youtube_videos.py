@@ -6,7 +6,6 @@ from youtube_authentication import get_authenticated_service
 
 
 def search_videos(query, max_results=10):
-    """Search YouTube using yt-dlp (no auth needed)."""
     search_query = f"ytsearch{max_results}:{query}"
     result = subprocess.run(
         [
@@ -50,7 +49,6 @@ def _video_from_search_result(data):
 
 
 def video_info(video_ids):
-    """Get detailed info about specific videos."""
     youtube = get_authenticated_service()
     request = youtube.videos().list(
         part="snippet,contentDetails,statistics", id=",".join(video_ids)

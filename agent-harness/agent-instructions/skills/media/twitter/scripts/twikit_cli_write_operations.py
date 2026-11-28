@@ -1,5 +1,3 @@
-"""Write twikit commands: post, like, retweet, bookmark, dm."""
-
 from twikit_cli_authentication import get_client
 from twikit_cli_serializers import output_json, serialize_tweet
 

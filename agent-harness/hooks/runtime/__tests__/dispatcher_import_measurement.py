@@ -1,16 +1,3 @@
-"""What a single hook invocation loads, measured the way the interpreter sees it.
-
-Every dispatcher runs as a fresh interpreter, so its import set is its cost,
-and unlike wall time that set is exactly reproducible on any machine. The
-budgets are the measured counts plus a few slots of headroom: tight enough
-that re-adding pathlib to a hot path, or importing a handler the matcher
-cannot select, fails in a test rather than showing up as an agent that feels
-slow.
-
-Raising a budget is a deliberate act. Measure first, and if the new module is
-genuinely needed on that path, move the number and say what bought it.
-"""
-
 import json
 import subprocess
 import sys

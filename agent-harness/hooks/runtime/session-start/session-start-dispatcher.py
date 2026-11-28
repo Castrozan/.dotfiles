@@ -43,8 +43,6 @@ SESSION_START_HANDLERS = [
         handler_module_name="rex_terminal_context_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE, PI_SURFACE),
     ),
-    # Only the surfaces whose interactive prompt carries core-rules/servant-identity.md,
-    # because the name this injects is inert without the rule that claims it.
     HookHandler(
         handler_module_name="servant_identity_handler",
         surfaces=(CLAUDE_SURFACE, CODEX_SURFACE, OPENCODE_SURFACE),

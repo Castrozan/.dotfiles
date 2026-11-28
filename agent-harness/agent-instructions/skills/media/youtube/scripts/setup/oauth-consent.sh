@@ -8,7 +8,6 @@ _configure_oauth_consent_screen() {
 	local access_token
 	access_token=$(_gcloud auth print-access-token 2>/dev/null)
 
-	# Check if brand already exists
 	local existing_brand
 	existing_brand=$(curl -s -H "Authorization: Bearer $access_token" \
 		"https://iap.googleapis.com/v1/projects/${project_id}/brands" 2>/dev/null |
@@ -20,11 +19,9 @@ _configure_oauth_consent_screen() {
 		return
 	fi
 
-	# Get project number
 	local project_number
 	project_number=$(_gcloud projects describe "$project_id" --format="value(projectNumber)" 2>/dev/null)
 
-	# Create OAuth brand (consent screen)
 	local brand_response
 	brand_response=$(curl -s -X POST \
 		-H "Authorization: Bearer $access_token" \

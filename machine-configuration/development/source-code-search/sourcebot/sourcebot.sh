@@ -12,7 +12,6 @@ case "${1:-}" in
 start | "")
 	mkdir -p "$DATA_DIR"
 
-	# Create minimal config if missing (required by sourcebot)
 	if [ ! -f "$DATA_DIR/config.json" ]; then
 		cat >"$DATA_DIR/config.json" <<'EOFCONFIG'
 {

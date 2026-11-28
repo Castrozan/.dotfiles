@@ -5,9 +5,6 @@
   ...
 }:
 let
-  # kcov drives bash coverage but is Linux-only in nixpkgs. Omit it from the
-  # darwin closures so home-manager can still build dotfiles-test there; the
-  # coverage helper is omitted entirely.
   kcovPackages = lib.optional pkgs.stdenv.hostPlatform.isLinux pkgs.kcov;
 
   testSuiteEnvironment = import ./test-suite-environment.nix { inherit pkgs; };

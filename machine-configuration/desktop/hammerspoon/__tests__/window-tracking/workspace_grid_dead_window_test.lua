@@ -1,10 +1,3 @@
--- Reproduces the stale-filter-cache bug: hs.window.filter.default keeps
--- returning a window object after it stops appearing in the live window set
--- (a closed window whose destroy event never fired). Operating on that dead
--- object hung the switch loop on an AX setFrame and surfaced it as a phantom
--- "exec" tile in the Cmd+Tab switcher. The grid must skip any window the live
--- lookup no longer resolves.
-
 local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 

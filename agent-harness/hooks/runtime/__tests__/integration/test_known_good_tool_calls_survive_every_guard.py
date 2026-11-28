@@ -1,11 +1,3 @@
-"""Every deny-emitting PreToolUse guard, run against the known-good corpus.
-
-The dispatcher is invoked whole rather than one guard at a time, so a guard
-added later is covered the day it is registered, without anyone remembering to
-extend this file. A denial here names the call it broke, which is the piece a
-pattern author cannot see from inside their own rule.
-"""
-
 import json
 
 import pytest

@@ -8,8 +8,6 @@ end
 
 require("application_watcher_element_cache").install()
 
--- Wiring only: bind the prior AeroSpace keybinds to the virtual-workspace grid
--- defined in workspace_grid.lua, and feed it window create/focus events.
 local workspaceGrid = require("workspace_grid")
 local menuBarIndicator = require("workspace_grid_menubar")
 local menuBarReveal = require("workspace_grid_menu_bar_reveal")
@@ -82,9 +80,6 @@ for arrowKey, deltaWithinGrid in pairs(navigationDeltasByArrowKey) do
 	end)
 end
 
--- Cmd+Tab is handled by the Swift window-switcher daemon (overlay + hold-cmd /
--- cycle / release-to-commit), routed via karabiner; this module only feeds it the
--- active workspace's windows and performs the focus it requests.
 require("switcher_bridge")
 
 require("smart_home_media_key_control").start()
@@ -93,10 +88,6 @@ require("prevent_window_minimize").start()
 
 require("stuck_mouse_button_advisor").start()
 
--- Summon is triggered from karabiner (Cmd+B / Cmd+C) rather than an hs.hotkey,
--- because karabiner remaps Ctrl+C to Cmd+C: a global Cmd+C hotkey here would also
--- catch the remapped Ctrl+C and steal copy. Karabiner matches Cmd+C before that
--- remap and invokes these via `hs -c`, so Ctrl+C still copies.
 function summonPersonalChromeToCurrentWorkspace()
 	workspaceGrid.summonApplicationProfileWindowToCurrentWorkspace(
 		"com.google.Chrome",

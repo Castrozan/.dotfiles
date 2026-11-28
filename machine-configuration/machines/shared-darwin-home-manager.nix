@@ -60,7 +60,6 @@
 
     ../devices/mice/corsair-mouse/corsair-mouse-home-manager.nix
 
-    # ../terminal/visual-effects/bad-apple/bad-apple-chise-home-manager.nix  # disabled on darwin: pulls latest.yt-dlp -> deno -> rusty-v8 (V8 build takes 30+ min on aarch64-darwin)
     ../terminal/visual-effects/cbonsai/cbonsai-home-manager.nix
     ../terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 

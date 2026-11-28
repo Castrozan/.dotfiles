@@ -24,7 +24,6 @@ class PeerNotificationDelivery:
         try:
             accepted = self._coordinator.deliver_notification_if_idle(content)
         except Exception:
-            # Input may already have reached the harness. Never replay on an ACK error.
             return
         if not accepted:
             self._mailbox.defer(identifiers)

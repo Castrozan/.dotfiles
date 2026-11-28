@@ -1,5 +1,3 @@
-"""Standalone thin client; imports no harness or local session-control code."""
-
 import argparse
 import sys
 

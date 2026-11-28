@@ -1,5 +1,3 @@
-"""Confirmed transport identities and observation failures/events."""
-
 import json
 
 from .validation import label, validate_transport

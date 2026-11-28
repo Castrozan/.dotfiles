@@ -24,8 +24,6 @@ def prefetch_command(directory, name):
     ]
 
 
-# The fixture performs several isolated process launches; this bounds setup
-# without conflating it with the lock's fail-closed behavior.
 REBUILD_TIMEOUT_SECONDS = 15
 
 

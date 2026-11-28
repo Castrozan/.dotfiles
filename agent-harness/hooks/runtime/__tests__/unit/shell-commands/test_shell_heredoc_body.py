@@ -1,15 +1,3 @@
-"""A heredoc body is data, unless the command it feeds runs what it reads.
-
-Writing a commit message that quotes a prohibited command was denied as if the
-message were the command. The body of a heredoc is stdin for the command that
-opened it, so for git commit, gh issue create or cat it is inert text, and the
-guards that forbid RUNNING something have nothing to forbid there.
-
-The exception is the command that executes its input. A body fed to bash, sh
-or python is a script, and piping an inert body into one of those is the same
-thing by another route.
-"""
-
 import sys
 from pathlib import Path
 
