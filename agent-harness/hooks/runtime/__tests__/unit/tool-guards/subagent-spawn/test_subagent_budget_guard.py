@@ -66,6 +66,12 @@ def test_denies_the_spawn_that_passes_the_ceiling_without_a_declaration(
 def test_a_denied_spawn_does_not_count_against_the_budget(
     interactive_session_with_isolated_state,
 ):
+    for _ in range(3):
+        top_tier_spawn = {"tool_name": "Agent", "tool_input": {"model": "opus"}}
+        subagent_budget_guard_handler.handle(
+            {**top_tier_spawn, "session_id": "session-under-test"}
+        )
+    assert subagent_budget_guard_handler.handle(spawn_hook_input()) is None
     for _ in range(4):
         subagent_budget_guard_handler.handle(spawn_hook_input())
     state = subagent_spawn_budget_state.read_subagent_spawn_budget_state(
@@ -101,39 +107,37 @@ def test_an_orchestrated_declaration_unlocks_the_rest_of_the_session(
     assert subagent_budget_guard_handler.handle(spawn_hook_input()) is None
 
 
-def test_ignores_tool_calls_that_are_not_a_subagent_spawn(
-    interactive_session_with_isolated_state,
-):
-    assert (
-        subagent_budget_guard_handler.handle(
-            {"tool_name": "Bash", "tool_input": {"command": "echo orchestrated"}}
-        )
-        is None
-    )
-
-
-def test_does_not_hold_the_ceiling_for_a_background_clawde_agent(monkeypatch, tmp_path):
-    monkeypatch.setenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, "golden")
-    monkeypatch.setenv(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE, "")
-    monkeypatch.setenv(
-        subagent_spawn_budget_state.STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE,
-        str(tmp_path),
-    )
-    for _ in range(5):
-        assert subagent_budget_guard_handler.handle(spawn_hook_input()) is None
-
-
-def test_does_not_hold_the_ceiling_outside_an_interactive_session(
-    monkeypatch, tmp_path
+@pytest.mark.parametrize(
+    "session_environment, tool_name",
+    [
+        (
+            {
+                INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE: "",
+                CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER: "golden",
+            },
+            "Agent",
+        ),
+        ({}, "Agent"),
+        (
+            {INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE: "/nix/store/interactive.md"},
+            "Bash",
+        ),
+    ],
+)
+def test_does_not_hold_the_ceiling_outside_an_interactive_spawn(
+    monkeypatch, tmp_path, session_environment, tool_name
 ):
     monkeypatch.delenv(INTERACTIVE_SESSION_ENVIRONMENT_VARIABLE, raising=False)
     monkeypatch.delenv(CLAWDE_BACKGROUND_AGENT_ENVIRONMENT_MARKER, raising=False)
+    for name, value in session_environment.items():
+        monkeypatch.setenv(name, value)
     monkeypatch.setenv(
         subagent_spawn_budget_state.STATE_DIRECTORY_OVERRIDE_ENVIRONMENT_VARIABLE,
         str(tmp_path),
     )
     for _ in range(5):
-        assert subagent_budget_guard_handler.handle(spawn_hook_input()) is None
+        hook_input = {**spawn_hook_input(), "tool_name": tool_name}
+        assert subagent_budget_guard_handler.handle(hook_input) is None
 
 
 def test_separate_sessions_hold_separate_budgets(

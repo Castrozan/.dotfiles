@@ -71,23 +71,53 @@ def build_unpinned_agent_type_message(subagent_type):
     )
 
 
-def model_policy_denial_message(hook_input):
-    if hook_input.get("tool_name", "") != SUBAGENT_SPAWN_TOOL_NAME:
-        return None
-    if not is_keyboard_driven_interactive_session():
-        return None
-    tool_input = hook_input.get("tool_input", {}) or {}
-    subagent_type = (tool_input.get("subagent_type", "") or "").strip()
+def text_field(tool_input, field_name):
+    return (tool_input.get(field_name, "") or "").strip()
+
+
+def fork_denial(subagent_type, requested_model):
     if subagent_type == FORK_AGENT_TYPE:
         return build_fork_message()
-    requested_model = (tool_input.get("model", "") or "").strip()
-    if requested_model:
-        if names_a_cheap_model(requested_model):
-            return None
+    return None
+
+
+def top_tier_model_denial(subagent_type, requested_model):
+    if requested_model and not names_a_cheap_model(requested_model):
         return build_top_tier_model_message(requested_model)
-    if is_a_cheap_pinned_agent_type(subagent_type):
+    return None
+
+
+def unpinned_agent_type_denial(subagent_type, requested_model):
+    if not requested_model and not is_a_cheap_pinned_agent_type(subagent_type):
+        return build_unpinned_agent_type_message(subagent_type)
+    return None
+
+
+SPAWN_POLICY_RULES = (fork_denial, top_tier_model_denial, unpinned_agent_type_denial)
+
+
+def first_denial(subagent_type, requested_model):
+    for rule in SPAWN_POLICY_RULES:
+        denial = rule(subagent_type, requested_model)
+        if denial:
+            return denial
+    return None
+
+
+def is_a_governed_spawn(hook_input):
+    return (
+        hook_input.get("tool_name", "") == SUBAGENT_SPAWN_TOOL_NAME
+        and is_keyboard_driven_interactive_session()
+    )
+
+
+def model_policy_denial_message(hook_input):
+    if not is_a_governed_spawn(hook_input):
         return None
-    return build_unpinned_agent_type_message(subagent_type)
+    tool_input = hook_input.get("tool_input") or {}
+    return first_denial(
+        text_field(tool_input, "subagent_type"), text_field(tool_input, "model")
+    )
 
 
 def handle(hook_input):
