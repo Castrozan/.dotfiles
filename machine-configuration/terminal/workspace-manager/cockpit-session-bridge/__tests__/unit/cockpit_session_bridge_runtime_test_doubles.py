@@ -33,9 +33,11 @@ class RecordingClosingWebsocket:
 class OutputCollectingWebsocket:
     def __init__(self):
         self.sent_messages = []
+        self.first_message_sent = asyncio.Event()
 
     async def send(self, message):
         self.sent_messages.append(message)
+        self.first_message_sent.set()
 
 
 class ScriptedInputWebsocket:
@@ -66,5 +68,5 @@ class FakeSessionProcess:
     async def wait(self):
         self.wait_call_count += 1
         if self._first_wait_hangs and self.wait_call_count == 1:
-            await asyncio.sleep(3600)
+            await asyncio.Event().wait()
         return self.returncode

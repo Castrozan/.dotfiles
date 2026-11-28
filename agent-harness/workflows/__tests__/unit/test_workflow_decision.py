@@ -1,7 +1,7 @@
 import json
 import math
 import re
-import time
+import threading
 
 import pytest
 from hypothesis import given
@@ -126,9 +126,15 @@ def test_the_port_bounds_a_slow_reply(monkeypatch, tmp_path):
     key_file = tmp_path / "openai-api-key"
     key_file.write_text("test-key\n")
     monkeypatch.setattr(openai_decisions_api, "KEY_FILE", key_file)
-    monkeypatch.setattr(openai_decisions_api, "posted", lambda *_: time.sleep(1))
-    with pytest.raises(TimeoutError):
-        openai_decisions_api.reply([], [], timeout_seconds=0.05)
+    reply_released = threading.Event()
+    monkeypatch.setattr(
+        openai_decisions_api, "posted", lambda *_: reply_released.wait()
+    )
+    try:
+        with pytest.raises(TimeoutError):
+            openai_decisions_api.reply([], [], timeout_seconds=0.05)
+    finally:
+        reply_released.set()
 
 
 def test_a_missing_key_file_falls_back(monkeypatch, tmp_path):

@@ -91,7 +91,9 @@ def test_output_streamer_forwards_pty_bytes_then_returns_on_eof():
                 pseudoterminal_read_descriptor, output_collecting_websocket, event_loop
             )
         )
-        await asyncio.sleep(0.05)
+        await asyncio.wait_for(
+            output_collecting_websocket.first_message_sent.wait(), timeout=2
+        )
         os.close(pseudoterminal_write_descriptor)
         await asyncio.wait_for(streaming_task, timeout=2)
 
