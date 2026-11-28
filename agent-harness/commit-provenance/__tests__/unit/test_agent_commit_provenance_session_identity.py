@@ -14,9 +14,15 @@ CLAUDE_SESSION_ENVIRONMENT = {
 
 class TestResolveFromEnvironment:
     def test_claude_session_identifier_wins_without_touching_process_ancestry(self):
-        with patch(
-            "agent_commit_provenance.session_identity.find_agent_session"
-        ) as ancestry_lookup:
+        with (
+            patch(
+                "agent_commit_provenance.session_identity.find_agent_session"
+            ) as ancestry_lookup,
+            patch(
+                "agent_commit_provenance.session_identity.servant_name",
+                return_value="",
+            ),
+        ):
             identity = resolve_agent_session_identity(
                 CLAUDE_SESSION_ENVIRONMENT, 4242, Path("/repo")
             )
@@ -28,17 +34,38 @@ class TestResolveFromEnvironment:
             agent_name=None,
         )
 
-    def test_clawde_agent_name_is_recorded(self):
+    def test_clawde_agent_name_is_recorded_without_a_servant_lookup(self):
         environment = CLAUDE_SESSION_ENVIRONMENT | {
             "CLAWDE_AGENT_NAME": "dotfiles-steward"
         }
-        identity = resolve_agent_session_identity(environment, 4242, Path("/repo"))
+        with patch(
+            "agent_commit_provenance.session_identity.servant_name"
+        ) as servant_lookup:
+            identity = resolve_agent_session_identity(environment, 4242, Path("/repo"))
+        servant_lookup.assert_not_called()
         assert identity.agent_name == "dotfiles-steward"
 
-    def test_codex_thread_identifier_wins_without_touching_process_ancestry(self):
+    def test_interactive_session_is_named_after_its_servant(self):
         with patch(
-            "agent_commit_provenance.session_identity.find_agent_session"
-        ) as ancestry_lookup:
+            "agent_commit_provenance.session_identity.servant_name",
+            return_value="Abigail Williams",
+        ) as servant_lookup:
+            identity = resolve_agent_session_identity(
+                CLAUDE_SESSION_ENVIRONMENT, 4242, Path("/repo")
+            )
+        servant_lookup.assert_called_once_with("c0f2de6b-80e4-4f90-9c6c-7a43a55aa5d9")
+        assert identity.agent_name == "Abigail Williams"
+
+    def test_codex_thread_identifier_wins_without_touching_process_ancestry(self):
+        with (
+            patch(
+                "agent_commit_provenance.session_identity.find_agent_session"
+            ) as ancestry_lookup,
+            patch(
+                "agent_commit_provenance.session_identity.servant_name",
+                return_value="",
+            ),
+        ):
             identity = resolve_agent_session_identity(
                 {
                     "CODEX_THREAD_ID": "019fafd2-8d5c-70a2",

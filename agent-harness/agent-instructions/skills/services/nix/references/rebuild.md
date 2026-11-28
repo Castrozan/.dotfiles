@@ -29,7 +29,8 @@ five. Rebuild yourself only when the lock is free and you need the result live t
 
 ### Commit attribution
 
-End every commit message with an `Agent: <Servant name>` trailer so a failed build maps to the commit's author.
+The `prepare-commit-msg` hook stamps every agent commit with an `Agent-Name` trailer, so a failed build maps to its
+author. Never write the trailer by hand; the hook owns it.
 
 ### Failed build duty
 
@@ -40,7 +41,7 @@ your commit, push, and redo the change off `main`. Never repair or revert a peer
 ### Rebuild coordination
 
 Coordinate over `a2a`: tell the lock holder when you push behind its running rebuild, tell peers when your commit broke a
-build or you reverted it, and `a2a send` a failing commit's `Agent:` author the log path.
+build or you reverted it, and `a2a send` a failing commit's `Agent-Name` author the log path.
 
 ### Platform difference
 

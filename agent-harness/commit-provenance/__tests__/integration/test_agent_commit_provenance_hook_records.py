@@ -23,6 +23,7 @@ def test_a_commit_made_inside_an_agent_session_carries_its_resume_command(reposi
         "feat: first\n"
         "\n"
         "Agent-Machine: testmachine\n"
+        "Agent-Name: Stub Servant\n"
         f"Agent-Resume: claude --resume {RECORDED_SESSION_IDENTIFIER}"
     )
 

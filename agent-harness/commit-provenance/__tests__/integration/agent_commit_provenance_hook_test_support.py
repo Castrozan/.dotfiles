@@ -17,11 +17,13 @@ AGENT_SESSION_SCRIPTS_DIRECTORY = (
 
 RECORDED_SESSION_IDENTIFIER = "11111111-2222-3333-4444-555555555555"
 AMENDED_SESSION_IDENTIFIER = "99999999-2222-3333-4444-555555555555"
+STUB_SERVANT_NAME_DIRECTORY = Path(__file__).resolve().parents[1] / "stubs"
 
 
 def agent_session_environment(session_identifier=RECORDED_SESSION_IDENTIFIER):
     return {
         **os.environ,
+        "PATH": os.pathsep.join([str(STUB_SERVANT_NAME_DIRECTORY), os.environ["PATH"]]),
         "PYTHONPATH": os.pathsep.join(
             [str(PROVENANCE_SCRIPTS_DIRECTORY), str(AGENT_SESSION_SCRIPTS_DIRECTORY)]
         ),

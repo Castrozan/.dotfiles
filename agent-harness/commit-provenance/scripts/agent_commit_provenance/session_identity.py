@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Mapping
 
+from exclusive_run_owner import servant_name
 from agent_session.harness import (
     find_agent_session,
     resume_command_for,
@@ -114,5 +115,7 @@ def resolve_agent_session_identity(
         harness_name=harness_name,
         machine_name=machine_name_from_environment(environment),
         session_identifier=session_identifier,
-        agent_name=agent_name_from_environment(environment),
+        agent_name=agent_name_from_environment(environment)
+        or servant_name(session_identifier)
+        or None,
     )
