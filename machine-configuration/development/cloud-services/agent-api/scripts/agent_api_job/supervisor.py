@@ -1,10 +1,11 @@
+import fcntl
 import os
 import signal
 import subprocess
 import time
 from contextlib import suppress
 
-from agent_api_job.model import CANCEL_MARKER
+from agent_api_job.model import CANCEL_MARKER, LOCK_FILE
 from agent_api_job.storage import write_json
 
 POLL_SECONDS = 0.2
@@ -65,7 +66,13 @@ def launch(job_directory, working_directory, command):
         os.close(log)
 
 
+def hold_lock(job_directory):
+    descriptor = os.open(job_directory / LOCK_FILE, os.O_WRONLY | os.O_CREAT, 0o600)
+    fcntl.flock(descriptor, fcntl.LOCK_EX)
+
+
 def supervise(job_directory, working_directory, runtime_seconds, command):
+    hold_lock(job_directory)
     child = launch(job_directory, working_directory, command)
     if child is None:
         write_json(
@@ -73,8 +80,6 @@ def supervise(job_directory, working_directory, runtime_seconds, command):
             {"exit_code": COMMAND_NOT_RUNNABLE_EXIT_CODE, "result": "exit-code"},
         )
         return
-    write_json(
-        job_directory / "process.json", {"supervisor": os.getpid(), "group": child.pid}
-    )
+    write_json(job_directory / "process.json", {"group": child.pid})
     return_code, timed_out = wait_for_child(child, job_directory, runtime_seconds)
     write_json(job_directory / "exit.json", outcome_for(return_code, timed_out))

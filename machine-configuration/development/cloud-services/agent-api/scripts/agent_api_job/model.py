@@ -6,6 +6,7 @@ from pathlib import Path
 from agent_api_job.errors import JobError
 
 CANCEL_MARKER = "cancelled"
+LOCK_FILE = "lock"
 MAXIMUM_LOG_CHARACTERS = 262144
 TREE_KEY_PATTERN = re.compile(r"[a-f0-9]{16,64}")
 

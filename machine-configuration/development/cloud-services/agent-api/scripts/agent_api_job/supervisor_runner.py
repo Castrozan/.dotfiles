@@ -1,3 +1,4 @@
+import fcntl
 import os
 import signal
 import sys
@@ -6,7 +7,12 @@ from pathlib import Path
 
 from agent_api_job.detach import spawn_detached
 from agent_api_job.errors import JobError
-from agent_api_job.model import CANCEL_MARKER, MAXIMUM_LOG_CHARACTERS, job_outcome
+from agent_api_job.model import (
+    CANCEL_MARKER,
+    LOCK_FILE,
+    MAXIMUM_LOG_CHARACTERS,
+    job_outcome,
+)
 from agent_api_job.storage import read_json
 from agent_api_job.supervisor import signal_group
 
@@ -26,17 +32,18 @@ def await_started(job_directory):
     raise JobError("start_failed")
 
 
-def supervisor_alive(job):
-    process = read_json(job.directory / "process.json")
-    if process is None:
+def supervisor_running(job):
+    try:
+        descriptor = os.open(job.directory / LOCK_FILE, os.O_RDONLY)
+    except FileNotFoundError:
         return False
     try:
-        os.kill(process["supervisor"], 0)
-    except ProcessLookupError:
-        return False
-    except PermissionError:
+        fcntl.flock(descriptor, fcntl.LOCK_SH | fcntl.LOCK_NB)
+    except BlockingIOError:
         return True
-    return True
+    finally:
+        os.close(descriptor)
+    return False
 
 
 class SupervisorRunner:
@@ -64,12 +71,12 @@ class SupervisorRunner:
     def status(self, job):
         if (job.directory / CANCEL_MARKER).exists():
             return job_outcome("unknown")
-        alive = supervisor_alive(job)
+        running = supervisor_running(job)
         outcome = read_json(job.directory / "exit.json")
         if outcome:
             state = "succeeded" if outcome["result"] == "success" else "failed"
             return job_outcome(state, outcome["exit_code"], outcome["result"])
-        return job_outcome("running" if alive else "unknown")
+        return job_outcome("running" if running else "unknown")
 
     def logs(self, job, lines):
         try:
@@ -88,8 +95,8 @@ class SupervisorRunner:
         marker = job.directory / CANCEL_MARKER
         if marker.exists():
             raise JobError("job_not_loaded")
-        running = self.status(job)["state"] == "running"
+        running = supervisor_running(job)
         process = read_json(job.directory / "process.json")
         marker.touch(mode=0o600)
-        if running:
+        if running and process:
             signal_group(process["group"], signal.SIGTERM)
