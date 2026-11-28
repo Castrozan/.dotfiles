@@ -27,28 +27,44 @@ class TestMain:
                 theme_generate_and_apply.main()
             assert exc_info.value.code == 1
 
-    def test_generates_and_applies_new_theme(self, tmp_path, monkeypatch):
-        image_file = tmp_path / "sunset.png"
-        image_file.write_bytes(b"png")
-
+    def test_generates_and_applies_theme_from_still_or_video(
+        self, tmp_path, monkeypatch
+    ):
         themes_path = tmp_path / "user-themes"
         themes_path.mkdir()
         monkeypatch.setattr(theme_generate_and_apply, "HYPR_THEMES_PATH", themes_path)
+        colors = 'primary = "#aabbcc"\n'
 
-        mock_result = MagicMock()
-        mock_result.returncode = 0
-        mock_result.stdout = 'primary = "#aabbcc"\n'
+        for suffix in (".png", ".gif", ".mp4", ".webm", ".mkv", ".mov"):
+            wallpaper = tmp_path / f"sunset-{suffix[1:]}{suffix}"
+            wallpaper.write_bytes(b"wallpaper")
+            theme_name = f"auto-{wallpaper.stem}"
+            theme_dir = themes_path / theme_name
+            preview = theme_dir / "preview.png"
+            is_video = suffix not in {".png", ".gif"}
 
-        with patch("theme_generate_and_apply.sys.argv", ["cmd", str(image_file)]):
-            with patch(
-                "theme_generate_and_apply.subprocess.run",
-                return_value=mock_result,
-            ):
-                theme_generate_and_apply.main()
+            def run(command, **kwargs):
+                if command[0] == "ffmpeg":
+                    assert command[command.index("-i") + 1] == str(wallpaper)
+                    assert command[-1] == str(preview)
+                    preview.write_bytes(b"frame")
+                elif command[0] == "hypr-theme-generate-from-wallpaper":
+                    assert command[1] == str(preview if is_video else wallpaper)
+                    if is_video:
+                        assert preview.read_bytes() == b"frame"
+                    return MagicMock(returncode=0, stdout=colors)
+                else:
+                    assert command == ["hypr-theme-set", theme_name]
+                    assert (theme_dir / "colors.toml").read_text() == colors
+                    assert preview.is_file()
+                    assert (
+                        theme_dir / "backgrounds" / wallpaper.name
+                    ).resolve() == wallpaper
+                return MagicMock(returncode=0)
 
-        theme_dir = themes_path / "auto-sunset"
-        assert theme_dir.is_dir()
-        assert (theme_dir / "colors.toml").read_text() == 'primary = "#aabbcc"\n'
+            with patch("theme_generate_and_apply.sys.argv", ["cmd", str(wallpaper)]):
+                with patch("theme_generate_and_apply.subprocess.run", side_effect=run):
+                    theme_generate_and_apply.main()
 
     def test_skips_generation_when_cached_theme_still_resolves(
         self, tmp_path, monkeypatch

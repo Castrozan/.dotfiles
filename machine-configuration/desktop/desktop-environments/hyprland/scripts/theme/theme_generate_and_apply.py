@@ -26,6 +26,7 @@ VSCODE_TOKYO_NIGHT_THEME = """\
 """
 
 DEFAULT_ICON_THEME_NAME = "Yaru-purple"
+VIDEO_EXTENSIONS = {".mp4", ".webm", ".mkv", ".mov"}
 
 
 def derive_theme_name_from_image_path(image_path: Path) -> str:
@@ -52,7 +53,8 @@ def generate_colors_toml_for_wallpaper(image_path: Path) -> str:
 def create_preview_image_from_source(
     source_image_path: Path, preview_destination: Path
 ) -> None:
-    if source_image_path.suffix.lower() == ".gif":
+    preview_destination.unlink(missing_ok=True)
+    if source_image_path.suffix.lower() in VIDEO_EXTENSIONS | {".gif"}:
         subprocess.run(
             [
                 "ffmpeg",
@@ -66,9 +68,10 @@ def create_preview_image_from_source(
                 str(preview_destination),
             ],
             capture_output=True,
+            check=True,
+            timeout=15,
         )
     else:
-        preview_destination.unlink(missing_ok=True)
         shutil.copyfile(source_image_path, preview_destination)
 
 
@@ -94,7 +97,6 @@ def write_theme_configuration_files(
     (theme_directory / "icons.theme").write_text(DEFAULT_ICON_THEME_NAME + "\n")
     (theme_directory / "neovim.lua").write_text(NEOVIM_KANAGAWA_COLORSCHEME)
     (theme_directory / "vscode.json").write_text(VSCODE_TOKYO_NIGHT_THEME)
-    create_preview_image_from_source(source_image_path, theme_directory / "preview.png")
     place_wallpaper_in_backgrounds_directory(
         source_image_path, theme_directory / "backgrounds"
     )
@@ -125,7 +127,14 @@ def main() -> None:
 
     if not cached_theme_still_resolves(theme_directory, wallpaper_image_path):
         create_theme_directory_structure(theme_directory)
-        colors_toml_content = generate_colors_toml_for_wallpaper(wallpaper_image_path)
+        preview_path = theme_directory / "preview.png"
+        create_preview_image_from_source(wallpaper_image_path, preview_path)
+        palette_source = (
+            preview_path
+            if wallpaper_image_path.suffix.lower() in VIDEO_EXTENSIONS
+            else wallpaper_image_path
+        )
+        colors_toml_content = generate_colors_toml_for_wallpaper(palette_source)
         write_theme_configuration_files(
             theme_directory, colors_toml_content, wallpaper_image_path
         )

@@ -87,6 +87,8 @@ class TestCreatePreviewImageFromSource:
                     str(preview),
                 ],
                 capture_output=True,
+                check=True,
+                timeout=15,
             )
 
 
@@ -174,5 +176,4 @@ class TestWriteThemeConfigurationFiles:
         assert (theme_dir / "icons.theme").read_text() == "Yaru-purple\n"
         assert "kanagawa" in (theme_dir / "neovim.lua").read_text()
         assert "Tokyo Night" in (theme_dir / "vscode.json").read_text()
-        assert (theme_dir / "preview.png").read_bytes() == b"png-data"
         assert (theme_dir / "backgrounds" / "wall.png").is_symlink()
