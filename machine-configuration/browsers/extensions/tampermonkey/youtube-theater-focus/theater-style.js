@@ -10,7 +10,6 @@
     "html.ytweak-header-below-video ytd-page-manager.ytd-app { margin-top: 0 !important; }",
     "html.ytweak-header-below-video #masthead-container.ytd-app { visibility: hidden !important; position: relative !important; inset: auto !important; width: 100% !important; margin: 8px auto 16px !important; transform: none !important; }",
     "html.ytweak-header-below-video #masthead-container.ytd-app:has(+ ytd-watch-metadata) { visibility: visible !important; }",
-    "html.ytweak-header-below-video #masthead-container.ytd-app, html.ytweak-header-below-video #masthead-container ytd-masthead#masthead, html.ytweak-header-below-video #masthead-container ytd-masthead#masthead #background.ytd-masthead, html.ytweak-header-below-video #masthead-container ytd-masthead#masthead #container.ytd-masthead { background: transparent !important; background-color: transparent !important; box-shadow: none !important; border: none !important; }",
     "html.ytweak-header-below-video #skip-navigation:not(:focus-within) { clip-path: inset(50%) !important; }",
     "ytd-watch-flexy[theater] #full-bleed-container { height: calc(100vh - 53px) !important; max-height: calc(100vh - 53px) !important; }",
     "html.ytweak-header-below-video ytd-watch-flexy[theater] #full-bleed-container { height: 100vh !important; max-height: 100vh !important; }",
