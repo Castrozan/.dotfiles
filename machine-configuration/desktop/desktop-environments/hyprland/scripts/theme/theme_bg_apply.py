@@ -52,11 +52,11 @@ def show_background_with_awww() -> None:
     )
 
 
-def read_wallpaper_shown_by_impasto_shell() -> str | None:
+def run_impasto_wallpaper_list() -> subprocess.CompletedProcess[str] | None:
     if shutil.which(IMPASTO_SHELL_COMMAND) is None:
         return None
     try:
-        result = subprocess.run(
+        return subprocess.run(
             [
                 IMPASTO_SHELL_COMMAND,
                 "ipc",
@@ -71,12 +71,20 @@ def read_wallpaper_shown_by_impasto_shell() -> str | None:
         )
     except (OSError, subprocess.TimeoutExpired):
         return None
-    if result.returncode != 0:
-        return None
+
+
+def parse_current_wallpaper(wallpaper_list_output: str) -> str | None:
     try:
-        return json.loads(result.stdout).get("current") or ""
+        return json.loads(wallpaper_list_output).get("current") or ""
     except (json.JSONDecodeError, AttributeError):
         return None
+
+
+def read_wallpaper_shown_by_impasto_shell() -> str | None:
+    result = run_impasto_wallpaper_list()
+    if result is None or result.returncode != 0:
+        return None
+    return parse_current_wallpaper(result.stdout)
 
 
 def hand_background_to_impasto_shell(background: Path) -> None:
