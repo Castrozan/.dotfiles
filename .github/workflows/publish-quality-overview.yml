@@ -20,6 +20,7 @@ jobs:
       SOURCE_RUN_ATTEMPT: ${{ github.event.workflow_run.run_attempt }}
       REPORT_ARTIFACT_BASE_URL: https://lucaszanoni.com/engineering/dotfiles/reports/data/reports/
       PUBLISHING_SCRIPTS: agent-harness/measurement-and-reporting/quality-overview/publishing
+      USAGE_REPORTING_PUBLISHERS: .quality-results/usage-reporting/publishers
     steps:
       - uses: actions/checkout@v4
       - name: Require the private publishing configuration
@@ -119,15 +120,30 @@ jobs:
         run: |
           promote=$(python3 "$PUBLISHING_SCRIPTS/promote_snapshot.py")
           echo "current=$promote" >> "$GITHUB_OUTPUT"
+      - name: Resolve the pinned usage reporting revision
+        id: usage_reporting_revision
+        if: ${{ steps.publication_eligibility.outputs.current == 'true' }}
+        run: |
+          revision=$(jq -er '.nodes[.nodes.dependencies.inputs["usage-reporting"]].locked.rev | select(test("^[0-9a-f]{40}$"))' flake.lock)
+          printf 'revision=%s\n' "$revision" >> "$GITHUB_OUTPUT"
+      - name: Check out the pinned snapshot publishers
+        id: usage_reporting_checkout
+        if: ${{ steps.publication_eligibility.outputs.current == 'true' }}
+        uses: actions/checkout@v4
+        with:
+          repository: Castrozan/usage-reporting
+          ref: ${{ steps.usage_reporting_revision.outputs.revision }}
+          path: .quality-results/usage-reporting
+          persist-credentials: false
       - name: Publish versioned overview artifacts
         id: overview_artifacts
-        if: ${{ !cancelled() && steps.publication_eligibility.outputs.current == 'true' }}
+        if: ${{ !cancelled() && steps.publication_eligibility.outputs.current == 'true' && steps.usage_reporting_checkout.outcome == 'success' }}
         env:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
         run: |
           mkdir -p .quality-results/publications
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
+          python3 "$USAGE_REPORTING_PUBLISHERS/publish_report_artifacts.py" \
             .quality-results/overview/payload.json .quality-results/overview/site \
             "reports/overview/$SOURCE_RUN_ID/$SOURCE_RUN_ATTEMPT/" > .quality-results/publications/overview.json
       - name: Recheck this snapshot before replacing current report files
@@ -144,7 +160,7 @@ jobs:
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
         run: |
           mkdir -p .quality-results/publications
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_report_artifacts.py \
+          python3 "$USAGE_REPORTING_PUBLISHERS/publish_report_artifacts.py" \
             .quality-results/overview/payload.json agent-harness/measurement-and-reporting/reports/site \
             reports/ > .quality-results/publications/current.json
       - name: Check this snapshot is still current after all file uploads
@@ -159,7 +175,7 @@ jobs:
           INGEST_BASE_URL: ${{ vars.INGEST_BASE_URL }}
           INGEST_PRODUCER_SECRET: ${{ secrets.INGEST_PRODUCER_SECRET }}
           INGEST_PRODUCER_LABEL: dotfiles-github-actions
-        run: python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_quality_overview_snapshot.py
+        run: python3 "$USAGE_REPORTING_PUBLISHERS/publish_quality_overview_snapshot.py"
       - name: Publish the current coverage snapshot to the ingestion API
         if: ${{ !cancelled() && steps.reports.outcome == 'success' && steps.current_artifacts.outcome == 'success' && steps.overview_artifacts.outcome == 'success' && steps.promotion.outputs.current == 'true' }}
         env:
@@ -169,7 +185,7 @@ jobs:
         run: |
           export GITHUB_SHA="$SOURCE_REVISION"
           export GITHUB_RUN_ID="$SOURCE_RUN_ID"
-          python3 agent-harness/measurement-and-reporting/snapshot-ingestion/publish_test_coverage_snapshot.py .quality-results/downloads/coverage-report/bats/coverage.json
+          python3 "$USAGE_REPORTING_PUBLISHERS/publish_test_coverage_snapshot.py" .quality-results/downloads/coverage-report/bats/coverage.json
       - name: Retain private artifact publication manifests
         if: ${{ always() }}
         uses: actions/upload-artifact@v4

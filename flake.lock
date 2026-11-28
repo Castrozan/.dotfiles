@@ -459,6 +459,7 @@
         "stylix": "stylix",
         "systemd-manager-tui": "systemd-manager-tui",
         "tuisvn": "tuisvn",
+        "usage-reporting": "usage-reporting",
         "viu": "viu",
         "voxtype": "voxtype",
         "whisp-away": "whisp-away"
@@ -2549,6 +2550,28 @@
       "original": {
         "owner": "castrozan",
         "repo": "tuisvn",
+        "type": "github"
+      }
+    },
+    "usage-reporting": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842145,
+        "narHash": "sha256-Y4psBwXGWqBS7GiXcRp29TfAZrOrDkq314lPLQPyHAs=",
+        "owner": "Castrozan",
+        "repo": "usage-reporting",
+        "rev": "5beb8ea582737ade306cc2c6af4856d74293b34b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "Castrozan",
+        "repo": "usage-reporting",
+        "rev": "5beb8ea582737ade306cc2c6af4856d74293b34b",
         "type": "github"
       }
     },

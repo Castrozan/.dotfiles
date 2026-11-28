@@ -106,5 +106,10 @@
     voxtype.url = "github:peteonrails/voxtype";
     whisp-away.url = "github:madjinn/whisp-away";
     google-workspace-cli.url = "github:googleworkspace/cli/a3768d0e82ad83cca2da97724e46bea4ff0e6dbd";
+
+    usage-reporting = {
+      url = "github:Castrozan/usage-reporting/5beb8ea582737ade306cc2c6af4856d74293b34b";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 }

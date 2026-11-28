@@ -1,7 +1,0 @@
-# Seeds for failure cases proptest has generated in the past. It is
-# automatically read and these particular cases re-run before any
-# novel cases are generated.
-#
-# It is recommended to check this file in to source control so that
-# everyone who runs the test benefits from these saved cases.
-cc 73abc5e8060081fbc5557d741ab88c8d4bb4295a8211d31ca9dcaa0b3fa65a92 # shrinks to usages = [SampleUsage { message: 4, request: Some(0), is_sidechain: true, day: 0, model: "claude-opus-5-5", input: 0, output: 0 }, SampleUsage { message: 4, request: None, is_sidechain: false, day: 0, model: "claude-opus-5-5", input: 0, output: 1 }]

@@ -2,12 +2,11 @@
   pkgs,
   lib,
   config,
+  inputs,
   ...
 }:
 let
-  usageCollector = import ../usage-collection/claude-usage-collector-package.nix {
-    inherit pkgs lib;
-  };
+  usageCollector = inputs.usage-reporting.packages.${pkgs.stdenv.hostPlatform.system}.default;
 
   litellmModelPrices = pkgs.fetchurl {
     url = "https://raw.githubusercontent.com/BerriAI/litellm/36d3fa37f74b9b96f05487a82eee7a94143e4e05/model_prices_and_context_window.json";

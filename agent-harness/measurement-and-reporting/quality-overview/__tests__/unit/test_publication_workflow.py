@@ -50,6 +50,22 @@ def test_all_file_uploads_require_eligibility_and_not_cancelled():
         assert "!cancelled()" in terms
 
 
+def test_publication_waits_for_the_pinned_publisher_checkout():
+    steps = workflow_steps()
+    revision = by_identifier(steps, "usage_reporting_revision")
+    checkout = by_identifier(steps, "usage_reporting_checkout")
+    upload = by_identifier(steps, "overview_artifacts")
+
+    assert steps.index(revision) < steps.index(checkout) < steps.index(upload)
+    assert 'inputs["usage-reporting"]].locked.rev' in revision["run"]
+    assert (
+        checkout["with"]["ref"]
+        == "${{ steps.usage_reporting_revision.outputs.revision }}"
+    )
+    assert checkout["with"]["persist-credentials"] is False
+    assert "steps.usage_reporting_checkout.outcome == 'success'" in conjuncts(upload)
+
+
 def test_current_artifacts_require_successful_versioned_publication():
     steps = workflow_steps()
     current = by_identifier(steps, "current_artifacts")
