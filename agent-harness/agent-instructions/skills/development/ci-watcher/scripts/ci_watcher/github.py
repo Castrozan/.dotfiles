@@ -8,6 +8,7 @@ from ci_watcher.transient_failures import (
 )
 
 RUN_VERDICT_FIELDS = "databaseId,attempt,headSha,status,conclusion,url,jobs"
+WATCH_PROGRESS_SECONDS = 60
 
 
 def stop_process(process):
@@ -60,6 +61,15 @@ def _completed_run_conclusion(target):
     return run["conclusion"] if run["status"] == "completed" else None
 
 
+def _final_status_or_none(target, watcher_status):
+    if watcher_status == 0:
+        return 0
+    conclusion = _completed_run_conclusion(target)
+    if conclusion is None:
+        return None
+    return 0 if conclusion == "success" else watcher_status
+
+
 def _pause_before_retry(output, description, deadline):
     output.write(f"{description}; retrying\n")
     output.flush()
@@ -71,12 +81,13 @@ def wait_for_run(target, directory, timeout):
     failures = ConsecutiveTransientFailures()
     with (directory / "watch.log").open("w") as output:
         while True:
+            watch_started = time.monotonic()
             watcher_status = _watch_once(target, output, deadline)
-            if watcher_status == 0:
-                return 0
-            conclusion = _completed_run_conclusion(target)
-            if conclusion is not None:
-                return 0 if conclusion == "success" else watcher_status
+            final_status = _final_status_or_none(target, watcher_status)
+            if final_status is not None:
+                return final_status
+            if time.monotonic() - watch_started > WATCH_PROGRESS_SECONDS:
+                failures.reset()
             description = (
                 f"the native watcher exited {watcher_status} before the run completed"
             )

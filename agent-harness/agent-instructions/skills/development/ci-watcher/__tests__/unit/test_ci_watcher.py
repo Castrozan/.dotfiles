@@ -85,11 +85,12 @@ def test_collects_one_terminal_verdict_and_all_job_logs(
 
 
 @pytest.mark.parametrize(
-    "watch_exits,run_statuses,outcome,status,watch_count",
+    "watch_exits,run_statuses,outcome,status,watch_count,seconds_per_clock_read",
     [
-        ([1, 0], ["in_progress"], "passed", 0, 2),
-        ([1], ["completed"], "passed", 0, 1),
-        ([1] * 5, ["in_progress"] * 5, "error", 2, 5),
+        ([1, 0], ["in_progress"], "passed", 0, 2, 0),
+        ([1], ["completed"], "passed", 0, 1, 0),
+        ([1] * 5, ["in_progress"] * 5, "error", 2, 5, 0),
+        ([1] * 6 + [0], ["in_progress"] * 6, "passed", 0, 7, 31),
     ],
 )
 def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
@@ -101,9 +102,13 @@ def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
     outcome,
     status,
     watch_count,
+    seconds_per_clock_read,
 ):
     result, process, calls = github_run
     process.wait.side_effect = watch_exits
+    clock_reads = iter(range(0, 10**6, seconds_per_clock_read or 1))
+    if seconds_per_clock_read:
+        monkeypatch.setattr(github.time, "monotonic", lambda: next(clock_reads))
     statuses = iter(run_statuses)
     verdict_reads = iter([subprocess.CalledProcessError(1, "gh"), result])
     monkeypatch.setattr(github.time, "sleep", lambda seconds: None)
