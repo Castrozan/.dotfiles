@@ -163,19 +163,20 @@ def test_changed_capture_inputs_never_reuse_old_segments(
     assert not old_files.intersection((tmp_path / "segments").glob("*.mp4"))
 
 
-def test_every_upload_request_counts_as_recording_progress(tmp_path):
+def test_every_request_counts_as_recording_progress(tmp_path):
     server = start_recorded_loop_upload_server(
         str(tmp_path), str(WEB_DIRECTORY), str(tmp_path / "videos")
     )
     try:
-        for query in ("kind=progress", "kind=manifest"):
+        base_url = f"http://127.0.0.1:{server.upload_port}"
+        for method, path, body in (
+            ("POST", "/upload?kind=progress", b"{}"),
+            ("POST", "/upload?kind=manifest", b"{}"),
+            ("GET", "/recorded-segment-fingerprints", None),
+        ):
             server.last_progress_monotonic = 0
             urllib.request.urlopen(
-                urllib.request.Request(
-                    f"http://127.0.0.1:{server.upload_port}/upload?{query}",
-                    data=b"{}",
-                    method="POST",
-                )
+                urllib.request.Request(base_url + path, data=body, method=method)
             )
             assert server.last_progress_monotonic > 0
     finally:

@@ -31,6 +31,7 @@ class RecordedLoopRequestHandler(ByteRangeRequestHandler):
         return os.path.join(self.server.served_video_directory, requested_filename)
 
     def do_GET(self):
+        self.server.note_recording_progress()
         requested_path = urllib.parse.urlparse(self.path).path
         if requested_path == SEGMENT_FINGERPRINT_INVENTORY_URL:
             self.send_json_response(
