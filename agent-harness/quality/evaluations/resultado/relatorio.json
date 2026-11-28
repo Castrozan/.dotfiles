@@ -65,7 +65,7 @@
     "coverage": [
       {
         "kind": "cli",
-        "total": 242,
+        "total": 237,
         "covered": 1
       },
       {
@@ -7763,36 +7763,6 @@
       "kind": "cli",
       "path": "machine-configuration/gaming/minecraft/scripts/configure_minecraft_gpu.sh",
       "name": "configure_minecraft_gpu",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/home-automation/home-assistant/scripts/home_assistant_air_conditioner_control.py",
-      "name": "home_assistant_air_conditioner_control",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/home-automation/home-assistant/scripts/home_assistant_air_conditioner_recover_ip.py",
-      "name": "home_assistant_air_conditioner_recover_ip",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/home-automation/home-assistant/scripts/home_assistant_air_conditioner_toggle.py",
-      "name": "home_assistant_air_conditioner_toggle",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/home-automation/home-assistant/scripts/home_assistant_light_control.py",
-      "name": "home_assistant_light_control",
-      "onlyPending": false
-    },
-    {
-      "kind": "cli",
-      "path": "machine-configuration/home-automation/home-assistant/scripts/home_assistant_light_scene_cycle.py",
-      "name": "home_assistant_light_scene_cycle",
       "onlyPending": false
     },
     {
