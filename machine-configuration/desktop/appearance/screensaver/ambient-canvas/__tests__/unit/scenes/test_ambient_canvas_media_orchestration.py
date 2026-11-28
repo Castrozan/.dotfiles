@@ -65,7 +65,6 @@ def _run_ensure(monkeypatch, **stub_arguments):
         "index",
         LAPTOP_CAPTURE_TARGET,
         "source",
-        "#241010",
         PLAYER_BINARY_PATH,
         30,
         30,
@@ -145,7 +144,7 @@ def test_a_render_that_makes_the_loop_current_discards_leftovers_before_launch(
         ensure, "recorded_loop_is_fresh", lambda *ignored: next(freshness_answers)
     )
     result = ensure.ensure_screensaver(
-        "index", LAPTOP_CAPTURE_TARGET, "source", "#241010", PLAYER_BINARY_PATH, 30, 30
+        "index", LAPTOP_CAPTURE_TARGET, "source", PLAYER_BINARY_PATH, 30, 30
     )
     assert result == 0
     assert observed_calls == [
@@ -170,7 +169,7 @@ def test_freshness_is_judged_against_the_capture_geometry(monkeypatch):
         ),
     )
     ensure.ensure_screensaver(
-        "index", LAPTOP_CAPTURE_TARGET, "source", "#241010", PLAYER_BINARY_PATH, 30, 30
+        "index", LAPTOP_CAPTURE_TARGET, "source", PLAYER_BINARY_PATH, 30, 30
     )
     assert set(checked_identifiers) == {"source capture=1660x1080"}
     assert observed_calls == [("discard", "source")]

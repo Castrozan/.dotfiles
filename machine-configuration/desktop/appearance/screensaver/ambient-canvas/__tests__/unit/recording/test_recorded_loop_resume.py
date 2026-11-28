@@ -94,7 +94,7 @@ def capture_target(tmp_path):
 
 def render_pass(target, source="current"):
     return render.render_recorded_loop(
-        str(WEB_DIRECTORY / "index.html"), target, source, 1, 1, "#041c38"
+        str(WEB_DIRECTORY / "index.html"), target, source, 1, 1
     )
 
 

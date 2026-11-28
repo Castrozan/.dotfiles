@@ -1,4 +1,5 @@
 import AVFoundation
+import AppKit
 import Foundation
 
 @main
@@ -58,6 +59,24 @@ enum AmbientCanvasContracts {
       precondition(choices == [0, 2, 3])
     }
     precondition(birdSegments == Array(repeating: [0, 1], count: 30).flatMap { $0 })
-    print("Ambient canvas manifest, dwell and shuffle contracts passed")
+    let themeColors = directory.appendingPathComponent("colors.toml")
+    let navy = AmbientCanvasPlayerWindowController.deepNavyBackgroundColor
+    precondition(AmbientCanvasThemeBackground.resolveColor(readFrom: nil) == navy)
+    precondition(AmbientCanvasThemeBackground.resolveColor(readFrom: themeColors) == navy)
+    for invalid in ["garbage", "background = \"navy\"", "foreground = \"#112233\""] {
+      try invalid.write(to: themeColors, atomically: true, encoding: .utf8)
+      precondition(AmbientCanvasThemeBackground.resolveColor(readFrom: themeColors) == navy)
+    }
+    try "accent = \"#d65d5d\"\nbackground = \"#445566\"\n"
+      .write(to: themeColors, atomically: true, encoding: .utf8)
+    precondition(
+      AmbientCanvasThemeBackground.resolveColor(readFrom: themeColors)
+        == NSColor(red: 0x44 / 255.0, green: 0x55 / 255.0, blue: 0x66 / 255.0, alpha: 1.0))
+    precondition(AmbientCanvasThemeBackground.colorsFileUrl(environment: [:]) == nil)
+    precondition(
+      AmbientCanvasThemeBackground.colorsFileUrl(
+        environment: [AmbientCanvasThemeBackground.colorsFilePathEnvironmentVariable: "/colors.toml"])
+        == URL(fileURLWithPath: "/colors.toml"))
+    print("Ambient canvas manifest, dwell, shuffle and theme contracts passed")
   }
 }

@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import shutil
 import subprocess
 import tempfile
 import time
@@ -13,12 +14,14 @@ from mpv_ambient_canvas_ipc import (
     MpvIpcClient,
     wait_for_end_of_file,
 )
+from playback.mpv_theme_screen_blend import ThemeScreenBlend
 from recording.recorded_segment_store import (
     read_recorded_segment_manifest,
     resolve_manifest_segment_paths,
 )
 
 TARGET_WORKSPACE_ID = 11
+THEME_COLORS_PATH_VARIABLE = "AMBIENT_CANVAS_THEME_COLORS_PATH"
 MPV_INPUT_CONFIGURATION_PATH = (
     Path(__file__).parent / "playback" / "ambient_canvas_mpv_input.conf"
 )
@@ -105,6 +108,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
     socket_path = os.path.join(
         tempfile.gettempdir(), f"ambient-canvas-{os.getpid()}.sock"
     )
+    shader_directory = tempfile.mkdtemp(prefix="ambient-canvas-theme-")
     mpv_process = subprocess.Popen(
         build_mpv_arguments(socket_path),
         env=build_mpv_environment(os.environ),
@@ -112,6 +116,12 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
         stderr=subprocess.DEVNULL,
     )
     mpv_client = MpvIpcClient(socket_path).connect()
+
+    theme_screen_blend = ThemeScreenBlend(
+        mpv_client, os.environ.get(THEME_COLORS_PATH_VARIABLE), shader_directory
+    )
+    theme_screen_blend.synchronize()
+    theme_screen_blend.start()
 
     visibility_controller = VisibilityGatedPlaybackController(
         mpv_client, mpv_process.pid, TARGET_WORKSPACE_ID
@@ -136,6 +146,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
                 playback_dwell_override_path,
             )
     finally:
+        theme_screen_blend.stop()
         visibility_controller.stop()
         mpv_client.close()
         mpv_process.terminate()
@@ -143,6 +154,7 @@ def run_player(segment_manifest_path, playback_dwell_override_path):
             mpv_process.wait(timeout=3)
         except subprocess.TimeoutExpired:
             mpv_process.kill()
+        shutil.rmtree(shader_directory, ignore_errors=True)
         try:
             os.remove(socket_path)
         except OSError:

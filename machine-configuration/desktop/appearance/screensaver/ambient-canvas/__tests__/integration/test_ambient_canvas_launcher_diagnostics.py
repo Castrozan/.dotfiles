@@ -22,8 +22,6 @@ def test_launcher_records_missing_assets_before_attempting_display_queries(tmp_p
             str(tmp_path),
             "--source-identifier",
             "test-source",
-            "--theme-colors-path",
-            str(tmp_path / "colors.toml"),
         ],
         env=environment,
         capture_output=True,

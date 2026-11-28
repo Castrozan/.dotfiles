@@ -8,28 +8,51 @@ final class AmbientCanvasRecordedLoopVideoView: NSView {
     private var shuffledSegmentPlayback: AmbientCanvasShuffledSegmentPlayback?
     private var pendingPresentationRelease: DispatchWorkItem?
     private var isPlaybackPaused = false
+    private var themeBackgroundTimer: Timer?
+    private var appliedThemeBackgroundColor: NSColor?
 
     private let playbackDwellOverrideFileUrl: URL
+    private let themeColorsFileUrl: URL?
 
     init(recordedSegmentManifestFileUrl: URL, playbackDwellOverrideFileUrl: URL) {
         self.playbackDwellOverrideFileUrl = playbackDwellOverrideFileUrl
+        themeColorsFileUrl = AmbientCanvasThemeBackground.colorsFileUrl(
+            environment: ProcessInfo.processInfo.environment
+        )
         super.init(frame: .zero)
         wantsLayer = true
         let backingLayer = CALayer()
-        backingLayer.backgroundColor =
-            AmbientCanvasPlayerWindowController
-            .deepNavyBackgroundColor.cgColor
         layer = backingLayer
+        applyThemeBackground()
+        themeBackgroundTimer = Timer.scheduledTimer(
+            withTimeInterval: AmbientCanvasThemeBackground.pollIntervalSeconds,
+            repeats: true
+        ) { [weak self] _ in
+            self?.applyThemeBackground()
+        }
 
         recordedLoopPlayerLayer.player = recordedLoopQueuePlayer
         recordedLoopPlayerLayer.videoGravity = .resizeAspect
-        recordedLoopPlayerLayer.backgroundColor =
-            AmbientCanvasPlayerWindowController
-            .deepNavyBackgroundColor.cgColor
+        recordedLoopPlayerLayer.backgroundColor = NSColor.black.cgColor
+        recordedLoopPlayerLayer.compositingFilter = "screenBlendMode"
         backingLayer.addSublayer(recordedLoopPlayerLayer)
 
         recordedLoopQueuePlayer.isMuted = true
         startPlayback(of: recordedSegmentManifestFileUrl)
+    }
+
+    private func applyThemeBackground() {
+        let themeBackgroundColor = AmbientCanvasThemeBackground.resolveColor(
+            readFrom: themeColorsFileUrl
+        )
+        guard themeBackgroundColor != appliedThemeBackgroundColor else {
+            return
+        }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        layer?.backgroundColor = themeBackgroundColor.cgColor
+        CATransaction.commit()
+        appliedThemeBackgroundColor = themeBackgroundColor
     }
 
     required init?(coder: NSCoder) {

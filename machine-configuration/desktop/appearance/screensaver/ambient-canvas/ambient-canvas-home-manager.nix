@@ -34,7 +34,6 @@ let
       ${ambientCanvasMediaScriptsDirectory}/ensure_ambient_canvas_screensaver.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
-      --theme-colors-path "${ambientCanvasThemeColorsPath}" \
       --player-binary "${ambientCanvasPlayerBinaryPath}" \
       "$@"
   '';
@@ -46,12 +45,12 @@ let
       ${ambientCanvasMediaScriptsDirectory}/render_ambient_canvas_loop.py \
       --output-directory "${ambientCanvasStateDirectory}" \
       --source-identifier "${ambientCanvasSourceIdentifier}" \
-      --theme-colors-path "${ambientCanvasThemeColorsPath}" \
       "$@"
   '';
 
   ambientCanvasMpvPlayer = pkgs.writeShellScriptBin "ᓚᘏᗢ" ''
     export PATH="${ambientCanvasPlayerRuntimePath}:$PATH"
+    export AMBIENT_CANVAS_THEME_COLORS_PATH="${ambientCanvasThemeColorsPath}"
     export PYTHONPATH="${ambientCanvasMediaScriptsDirectory}"
     exec ${pkgs.python312}/bin/python3 \
       ${ambientCanvasMediaScriptsDirectory}/play_ambient_canvas_loop_mpv.py "$@"
@@ -94,6 +93,7 @@ in
         config = {
           Label = "com.dotfiles.ambient-canvas";
           ProgramArguments = [ "${ambientCanvasScreensaverLauncher}/bin/ambient-canvas" ];
+          EnvironmentVariables.AMBIENT_CANVAS_THEME_COLORS_PATH = ambientCanvasThemeColorsPath;
           RunAtLoad = true;
           StartInterval = 300;
           StandardOutPath = "${ambientCanvasStateDirectory}/keep-alive.log";

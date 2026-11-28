@@ -6,10 +6,7 @@ import sys
 from ambient_canvas_browser import (
     resolve_chromium_browser_application,
 )
-from ambient_canvas_theme import (
-    compose_theme_source_identifier,
-    resolve_theme_background_color,
-)
+from ambient_canvas_theme import RECORDING_BACKGROUND_COLOR_HEX
 from recording.recorded_loop_capture_plan import (
     DEFAULT_CAPTURE_DURATION_SECONDS,
     DEFAULT_CAPTURE_FRAMES_PER_SECOND,
@@ -31,7 +28,6 @@ def render_recorded_loop(
     source_identifier,
     duration_seconds,
     frames_per_second,
-    theme_background_hex,
 ):
     browser_application = resolve_chromium_browser_application()
     if browser_application is None:
@@ -49,7 +45,7 @@ def render_recorded_loop(
         capture_target,
         browser_application,
         RecordingConfiguration(
-            duration_seconds, frames_per_second, theme_background_hex
+            duration_seconds, frames_per_second, RECORDING_BACKGROUND_COLOR_HEX
         ),
     )
     return commit_recorded_segment_manifest(
@@ -70,7 +66,6 @@ def main():
     argument_parser = argparse.ArgumentParser()
     argument_parser.add_argument("--output-directory", required=True)
     argument_parser.add_argument("--source-identifier", required=True)
-    argument_parser.add_argument("--theme-colors-path", required=True)
     argument_parser.add_argument(
         "--seconds", type=int, default=DEFAULT_CAPTURE_DURATION_SECONDS
     )
@@ -87,25 +82,18 @@ def main():
     capture_target = resolve_recorded_loop_capture_target(
         parsed_arguments.output_directory
     )
-    theme_background_hex = resolve_theme_background_color(
-        parsed_arguments.theme_colors_path
-    )
-    rendering_source_identifier = compose_theme_source_identifier(
-        parsed_arguments.source_identifier, theme_background_hex
-    )
     manifest_path = render_recorded_loop(
         index_file_path,
         capture_target,
         compose_recorded_source_identifier(
-            rendering_source_identifier, capture_target.capture_signature
+            parsed_arguments.source_identifier, capture_target.capture_signature
         ),
         parsed_arguments.seconds,
         parsed_arguments.fps,
-        theme_background_hex,
     )
     if manifest_path is None:
         return 1
-    discard_rendering_leftovers(capture_target, rendering_source_identifier)
+    discard_rendering_leftovers(capture_target, parsed_arguments.source_identifier)
     print(manifest_path)
     return 0
 

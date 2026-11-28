@@ -2,6 +2,7 @@ import re
 import tomllib
 
 DEFAULT_BACKGROUND_COLOR_HEX = "#0a1a2f"
+RECORDING_BACKGROUND_COLOR_HEX = "#000000"
 HEX_COLOR_PATTERN = re.compile(r"#[0-9a-fA-F]{6}\Z")
 
 
@@ -19,7 +20,3 @@ def resolve_theme_background_color(theme_colors_path):
     ):
         return DEFAULT_BACKGROUND_COLOR_HEX
     return background_color.lower()
-
-
-def compose_theme_source_identifier(source_identifier, background_color_hex):
-    return f"{source_identifier} theme-background={background_color_hex}"
