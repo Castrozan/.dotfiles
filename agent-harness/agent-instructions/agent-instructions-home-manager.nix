@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ inputs, pkgs, ... }:
 let
   codingSkillInstall = import ./skills/development/coding/install {
     inherit pkgs;
@@ -9,7 +9,7 @@ in
     ../plugin-distribution/home-manager.nix
     ./production-plugin/home-manager.nix
     ../agent-to-agent-communication/client/a2a-client-home-manager.nix
-    ../orchestration/orchestrator-home-manager.nix
+    inputs.orchestrator.homeManagerModules.default
     ../servants/servants-home-manager.nix
     ../session-control/agent-session-control-home-manager.nix
     ../workflows/workflows-home-manager.nix
@@ -21,6 +21,8 @@ in
     ../read-it-later/cli-home-manager.nix
     ./skills/knowledge/todo/install/todo-home-manager.nix
   ];
+
+  programs.orchestrator.userModelPath = "~/.dotfiles/private-configuration/agent-harness/user-model/USER.md";
 
   home.packages = codingSkillInstall.packages;
 }

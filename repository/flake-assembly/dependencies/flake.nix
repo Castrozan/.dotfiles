@@ -55,6 +55,9 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    orchestrator.url = "git+ssh://git@github.com/Castrozan/orchestrator?rev=377cf0edb12f707ed52d87042664275ccc6c9ef7";
+    orchestrator.inputs.nixpkgs.follows = "nixpkgs";
+
     hermes.url = "github:NousResearch/hermes-agent/8fc0374447313e276f6b9a2764bfc750190c966a";
 
     systemd-manager-tui.url = "github:matheus-git/systemd-manager-tui";

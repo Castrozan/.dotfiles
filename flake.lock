@@ -426,6 +426,7 @@
         "nixpkgs": "nixpkgs_9",
         "nixpkgs-latest": "nixpkgs-latest",
         "nixpkgs-unstable": "nixpkgs-unstable",
+        "orchestrator": "orchestrator",
         "private-config": "private-config",
         "rex": "rex",
         "stylix": "stylix",
@@ -1939,6 +1940,28 @@
         "owner": "nix-community",
         "repo": "NUR",
         "type": "github"
+      }
+    },
+    "orchestrator": {
+      "inputs": {
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842128,
+        "narHash": "sha256-MT1poVq2XEO54Lhgtg0bamuihS1x/USMs9NG35b+Rgk=",
+        "ref": "refs/heads/main",
+        "rev": "377cf0edb12f707ed52d87042664275ccc6c9ef7",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/orchestrator"
+      },
+      "original": {
+        "rev": "377cf0edb12f707ed52d87042664275ccc6c9ef7",
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/orchestrator"
       }
     },
     "pre-commit-hooks": {
