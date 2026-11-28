@@ -145,7 +145,7 @@ keys are rejected. Names are lowercase, unique and never `local`. A host is reac
 Job state lives in the host's systemd user manager. A finished job stays inspectable until `compute.cancel` releases
 its unit, after which status reports `unknown`. Status reports `running`, `succeeded`, `failed` or `unknown`, with the
 exit code once the job has finished. Logs return the last `lines` journal lines (default 200, at most 2000), keeping at
-most 1,048,576 characters from the end.
+most 262,144 characters from the end, so the escaped result stays under the 4 MiB result limit.
 
 Status, logs and cancel find the host from the retained submit request, not from the current directive. The gateway
 never retries a submit.

@@ -7,8 +7,8 @@ from agent_api.contract import CapabilityError, validate_operation_id
 from agent_api.inventory import host, hosts
 from agent_api.providers.host_transport import run_on_host
 
-MAXIMUM_LOG_CHARACTERS = 1024 * 1024
-STATUS_PROPERTIES = ("LoadState", "ActiveState", "SubState", "Result", "ExecMainStatus")
+MAXIMUM_LOG_CHARACTERS = 256 * 1024
+STATUS_PROPERTIES = ("ActiveState", "SubState", "Result", "ExecMainStatus")
 
 
 def unit_name(job):
