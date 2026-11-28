@@ -74,7 +74,7 @@ Conversation-history re-read (`cache_read`) dominates token cost: every tool res
 Caching invariants worth not breaking: on a Claude subscription the 1-hour cache TTL is auto-requested for free, so never set `FORCE_PROMPT_CACHING_5M` (it shortens the TTL, expires warm prefixes, and drops the hit ratio). The cache key includes both model and effort, so switching either mid-session, or using the `opusplan` alias that toggles Opus and Sonnet, reprocesses the entire history uncached. Keeping MCP tools deferred via Tool Search means a server connecting or disconnecting only appends and leaves the cached prefix intact, so never force tools upfront or add an `alwaysLoad` exemption.
 
 Measure where tokens go and replay a compaction threshold against real sessions with the transcript analysis in the
-`agent-harness` skill, [token analysis](../../../agent-instructions/skills/agent-workflows/agent-harness/references/token-analysis.md).
+`agent-harness` skill, [token analysis](../../../agent-instructions/skills/agent-workflows/agent-harness/references/knowledge.md#token-analysis-question-and-tool).
 It holds the method, the traps and the recorded baseline.
 
 ## Scrollback and Session History

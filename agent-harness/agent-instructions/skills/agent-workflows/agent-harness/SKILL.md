@@ -49,9 +49,9 @@ budget its control flow.
 
 ### Token usage analysis
 
-Before judging where tokens go or tuning compaction, read [token analysis](references/token-analysis.md). Run its script
-through a read-only `explore` subagent so transcript volume stays out of this context, and compare against the recorded
-baseline.
+Before judging where tokens go or tuning compaction, read
+[token analysis](references/knowledge.md#token-analysis-question-and-tool). Run its script through a read-only `explore`
+subagent so transcript volume stays out of this context, and compare against the recorded baseline.
 
 ### Knowledge
 
