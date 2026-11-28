@@ -105,11 +105,11 @@ rest drift silently.
 ### Neovim configuration activation
 
 Home Manager links `~/.config/nvim` to the pinned Neovim flake. LazyVim settings, the plugin lockfile and the spell
-directory stay writable under `$XDG_STATE_HOME/nvim/configuration`. A successful rebuild verifies activation. Press
-the affected key in a new Herdr pane to verify editor behavior.
+directory stay writable under `$XDG_STATE_HOME/nvim/configuration`. After rebuilding, resolve `~/.config/nvim` to
+check the active target. Press the affected key in a new Herdr pane to verify editor behavior.
 
-`~/.dotfiles/.githooks` points into the working tree. Resolve `core.hooksPath` before editing a hook: it selects the
-live source, and a local override in `~/.dotfiles/.git/config` can leave the repo running no hook at all.
+`~/.dotfiles/.githooks` points into the working tree. Resolve `core.hooksPath` before editing a hook: it can select
+the installed store source, and a local override in `~/.dotfiles/.git/config` can leave the repo running no hook at all.
 
 ### Test tiers and report publishing
 
