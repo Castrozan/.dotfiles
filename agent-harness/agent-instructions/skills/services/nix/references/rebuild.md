@@ -22,10 +22,11 @@ eats the entire agent timeout budget and bricks the session.
 
 ### Rebuild contention
 
-The rebuild lock rejects a second `rebuild` instead of queueing it and names its holder in the `LOCKED_BY_CONCURRENT_RUN`
-output. Do not wait in line and do not compete for the lock: commit, push, and leave the change for the next rebuild.
-Every rebuild builds the shared `main`, so one rebuild deploys every pushed commit; five agents need one rebuild, not
-five. Rebuild yourself only when the lock is free and you need the result live to verify your own work.
+The rebuild lock rejects a second `rebuild` instead of queueing it and names its holder in the
+`LOCKED_BY_CONCURRENT_RUN` output. Do not wait in line and do not compete for the lock: commit, push, and leave the
+change for the next rebuild. Every rebuild builds the shared `main`, so one rebuild deploys every pushed commit; five
+agents need one rebuild, not five. Rebuild yourself only when the lock is free and you need the result live to verify
+your own work.
 
 ### Commit attribution
 
@@ -40,8 +41,8 @@ your commit, push, and redo the change off `main`. Never repair or revert a peer
 
 ### Rebuild coordination
 
-Coordinate over `a2a`: tell the lock holder when you push behind its running rebuild, tell peers when your commit broke a
-build or you reverted it, and `a2a send` a failing commit's `Agent-Name` author the log path.
+Coordinate over `a2a`: tell the lock holder when you push behind its running rebuild, tell peers when your commit broke
+a build or you reverted it, and `a2a send` a failing commit's `Agent-Name` author the log path.
 
 ### Platform difference
 
