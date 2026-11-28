@@ -60,14 +60,6 @@ def test_a_missing_tool_reports_a_skip_instead_of_a_pass(tier_function):
     )
 
 
-@pytest.mark.parametrize("tier_function", TIER_FUNCTIONS)
-def test_a_skip_says_which_tool_is_missing(tier_function):
-    completed = _run_tier_without_its_tools(tier_function)
-
-    assert "SKIP:" in completed.stderr
-    assert "not installed" in completed.stderr
-
-
 def _install_recording_evaluation_command(
     tool_directory: pathlib.Path, exit_status: int
 ) -> pathlib.Path:

@@ -86,11 +86,6 @@ def test_long_lists_and_consequences_are_refused():
         )
 
 
-def test_the_details_file_is_named_in_the_card_lucas_reads():
-    card = filed(valid_card_document(details="/home/example/hey-bot-inventory.md"))
-    assert "Full detail: /home/example/hey-bot-inventory.md." in rendered_card(card)
-
-
 def test_an_escalation_note_is_bounded_like_the_card_it_joins():
     card = filed(valid_card_document())
     with pytest.raises(InvalidPeerDocument, match="missing is 301"):

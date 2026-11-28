@@ -1,5 +1,7 @@
 import json
 
+import pytest
+
 from compaction_replay import replay_session
 from session_parsing import parse_session
 from turn_cost import Turn
@@ -74,21 +76,16 @@ def turn_with_context(context):
     return Turn(0, context, 0, 0, 0)
 
 
-def test_replay_compacts_once_when_context_crosses_the_threshold():
+@pytest.mark.parametrize(
+    ("threshold", "expected_compactions"), [(100_000, 1), (1_000_000, 0)]
+)
+def test_replay_compacts_only_when_the_context_crosses_the_threshold(
+    threshold, expected_compactions
+):
     turns = [
         turn_with_context(context) for context in (10_000, 60_000, 110_000, 160_000)
     ]
 
-    _, compactions = replay_session(turns, threshold=100_000)
+    _, compactions = replay_session(turns, threshold=threshold)
 
-    assert compactions == 1
-
-
-def test_replay_never_compacts_below_the_threshold():
-    turns = [
-        turn_with_context(context) for context in (10_000, 60_000, 110_000, 160_000)
-    ]
-
-    _, compactions = replay_session(turns, threshold=1_000_000)
-
-    assert compactions == 0
+    assert compactions == expected_compactions

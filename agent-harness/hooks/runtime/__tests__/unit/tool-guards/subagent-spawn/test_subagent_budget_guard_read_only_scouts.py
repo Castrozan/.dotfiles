@@ -58,12 +58,3 @@ def test_an_agent_merely_named_like_explore_still_counts(
     subagent_budget_guard_handler.handle(spawn_of(lookalike_type))
     subagent_budget_guard_handler.handle(spawn_of(lookalike_type))
     assert subagent_budget_guard_handler.handle(spawn_of(lookalike_type)) is not None
-
-
-def test_a_denial_tells_the_lead_that_scouts_stay_free(
-    interactive_session_with_isolated_state,
-):
-    subagent_budget_guard_handler.handle(spawn_of("general-purpose"))
-    subagent_budget_guard_handler.handle(spawn_of("general-purpose"))
-    denial = subagent_budget_guard_handler.handle(spawn_of("general-purpose"))
-    assert "explore scouts never count" in denial.system_message

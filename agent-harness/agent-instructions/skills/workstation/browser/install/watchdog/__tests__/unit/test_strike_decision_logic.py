@@ -48,20 +48,12 @@ def test_process_dropping_below_threshold_loses_accumulated_strikes(watchdog_mod
     assert second == {"400:2": 0}
 
 
-def test_terminates_process_at_or_above_strike_limit(watchdog_module):
+def test_terminates_only_the_process_at_the_strike_limit(watchdog_module):
     to_terminate = watchdog_module.select_process_keys_to_terminate(
-        strike_counts={"100:5": 4, "200:6": 2},
+        strike_counts={"100:5": 4, "200:6": 3},
         consecutive_strikes_before_termination=4,
     )
     assert to_terminate == ["100:5"]
-
-
-def test_does_not_terminate_process_one_strike_below_limit(watchdog_module):
-    to_terminate = watchdog_module.select_process_keys_to_terminate(
-        strike_counts={"100:5": 3},
-        consecutive_strikes_before_termination=4,
-    )
-    assert to_terminate == []
 
 
 def test_terminates_every_process_over_the_limit(watchdog_module):

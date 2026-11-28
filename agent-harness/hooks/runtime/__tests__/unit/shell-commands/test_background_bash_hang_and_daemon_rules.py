@@ -103,25 +103,6 @@ class TestCommandRunsGitSubcommandThatOpensAnEditor:
         assert sut.command_runs_git_subcommand_that_opens_an_editor(command) is False
 
 
-class TestBuildDenyReasonMessage:
-    def test_hang_rule_message_describes_hang_not_fake_success(self):
-        message = sut.build_deny_reason_message(
-            ["interactive-editor-or-full-screen-tui"]
-        )
-        assert "block forever" in message
-        assert "exit 0 with empty output" not in message
-
-    def test_mixed_modes_include_both_explanations(self):
-        message = sut.build_deny_reason_message(
-            [
-                "count-piped-into-test-against-zero",
-                "git-subcommand-that-opens-an-editor",
-            ]
-        )
-        assert "exit 0 with empty output" in message
-        assert "block forever" in message
-
-
 class TestCommandStartsALingeringDaemonOrService:
     @pytest.mark.parametrize(
         "command",

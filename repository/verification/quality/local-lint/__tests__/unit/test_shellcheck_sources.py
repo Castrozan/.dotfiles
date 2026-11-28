@@ -60,17 +60,16 @@ def test_source_following_preserves_unused_variable_findings(tmp_path):
     assert [entry["code"] for entry in diagnostics] == [2034]
 
 
-def test_missing_sourced_files_still_fail(tmp_path):
+@pytest.mark.parametrize(
+    ("library_contents", "expected_code"),
+    [(None, 1091), ("if; then\n", 1094)],
+)
+def test_unusable_sourced_files_still_fail(tmp_path, library_contents, expected_code):
     main, library = sourced_script(tmp_path / "scripts")
-    library.unlink()
+    if library_contents is None:
+        library.unlink()
+    else:
+        library.write_text(library_contents)
     status, diagnostics = run_shellcheck_driver(tmp_path, [main])
     assert status == 1
-    assert 1091 in {entry["code"] for entry in diagnostics}
-
-
-def test_malformed_sourced_files_still_fail(tmp_path):
-    main, library = sourced_script(tmp_path / "scripts")
-    library.write_text("if; then\n")
-    status, diagnostics = run_shellcheck_driver(tmp_path, [main])
-    assert status == 1
-    assert 1094 in {entry["code"] for entry in diagnostics}
+    assert expected_code in {entry["code"] for entry in diagnostics}

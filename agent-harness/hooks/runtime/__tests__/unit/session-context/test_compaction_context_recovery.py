@@ -3,6 +3,7 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
 from hook_module_loader import HOOK_SUBPROCESS_TIMEOUT_SECONDS
 
 HOOKS_ROOT = Path(__file__).resolve().parents[3]
@@ -33,16 +34,10 @@ def test_concatenates_session_context_then_recovery_on_compact_source():
     )
 
 
-def test_recovery_directive_absent_on_startup_source():
+@pytest.mark.parametrize("source", ["startup", "resume"])
+def test_recovery_directive_absent_unless_the_session_was_compacted(source):
     result = invoke_session_start_dispatcher(
-        {"hook_event_name": "SessionStart", "source": "startup"}
-    )
-    assert "POST-COMPACTION RECOVERY" not in result.stdout
-
-
-def test_recovery_directive_absent_on_resume_source():
-    result = invoke_session_start_dispatcher(
-        {"hook_event_name": "SessionStart", "source": "resume"}
+        {"hook_event_name": "SessionStart", "source": source}
     )
     assert "POST-COMPACTION RECOVERY" not in result.stdout
 

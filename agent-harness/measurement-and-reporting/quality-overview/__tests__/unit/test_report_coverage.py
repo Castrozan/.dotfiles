@@ -111,22 +111,21 @@ def test_successful_upload_from_another_job_cannot_publish(
     assert not (tmp_path / "site").exists()
 
 
-def test_missing_coverage_html_cannot_publish(run, coverage_producer, tmp_path):
+@pytest.mark.parametrize(
+    ("missing_file", "expected_error"),
+    [
+        ("index.html", "coverage HTML"),
+        ("coverage.json", "coverage document"),
+    ],
+)
+def test_missing_coverage_output_cannot_publish(
+    run, coverage_producer, tmp_path, missing_file, expected_error
+):
     context = CONTEXT.collect_context({"workflow_run": run})
     downloads = tmp_path / "downloads"
     DOWNLOAD.download_selected(context, downloads)
-    (downloads / "coverage-report/bats/index.html").unlink()
-    with pytest.raises(ValueError, match="coverage HTML"):
-        REPORTS.prepare_reports(context, downloads, tmp_path / "site")
-    assert not (tmp_path / "site").exists()
-
-
-def test_missing_coverage_document_cannot_publish(run, coverage_producer, tmp_path):
-    context = CONTEXT.collect_context({"workflow_run": run})
-    downloads = tmp_path / "downloads"
-    DOWNLOAD.download_selected(context, downloads)
-    (downloads / "coverage-report/bats/coverage.json").unlink()
-    with pytest.raises(ValueError, match="coverage document"):
+    (downloads / "coverage-report/bats" / missing_file).unlink()
+    with pytest.raises(ValueError, match=expected_error):
         REPORTS.prepare_reports(context, downloads, tmp_path / "site")
     assert not (tmp_path / "site").exists()
 

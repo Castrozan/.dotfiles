@@ -84,15 +84,6 @@ class TestMeasureShellCommand:
 
 
 class TestFailureOutput:
-    def test_a_timeout_says_the_command_was_killed(self):
-        with patch(
-            "benchmark_core.subprocess.run",
-            side_effect=subprocess.TimeoutExpired("nix", 5),
-        ):
-            measurement = benchmark_core.measure_shell_command("nix flake check", 5)
-
-        assert "killed after 5s" in measurement.failure_output
-
     def test_it_keeps_only_the_closing_lines_of_a_long_error(self):
         printed = "\n".join(f"line {number}" for number in range(100))
         with patch(

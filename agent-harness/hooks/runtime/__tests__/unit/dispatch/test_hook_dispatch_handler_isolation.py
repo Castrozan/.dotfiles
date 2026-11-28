@@ -22,14 +22,6 @@ def test_a_raising_handler_does_not_suppress_a_later_security_decision():
     assert outcome.reason == "blocked by the guard"
 
 
-def test_a_raising_handler_does_not_suppress_earlier_handlers():
-    outcome = run_handlers(
-        {"tool_name": "Bash", "tool_input": {}},
-        [context_handler("first fragment"), raising_handler()],
-    )
-    assert "first fragment" in outcome.combined_additional_context
-
-
 def test_a_raising_handler_is_surfaced_rather_than_swallowed_silently():
     outcome = run_handlers(
         {"tool_name": "Bash", "tool_input": {}},

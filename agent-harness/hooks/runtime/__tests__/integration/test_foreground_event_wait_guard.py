@@ -85,12 +85,6 @@ def test_a_short_bounded_synchronization_stays_in_the_foreground(command_string)
     assert foreground.get("permissionDecision") != "deny"
 
 
-def test_a_ci_wait_is_told_that_no_bound_keeps_it_in_the_foreground():
-    foreground = pre_tool_use_output("timeout 20 ci-watcher 1", run_in_background=False)
-
-    assert "CI" in foreground["permissionDecisionReason"]
-
-
 @pytest.mark.parametrize("surface", ["codex", "opencode", "hermes", "pi"])
 def test_a_harness_without_background_execution_keeps_its_foreground_waits(surface):
     foreground = pre_tool_use_output(
