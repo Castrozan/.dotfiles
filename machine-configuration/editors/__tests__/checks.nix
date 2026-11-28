@@ -1,22 +1,12 @@
-{
-  helpers,
-  pkgs,
-  lib,
-  ...
-}:
+{ helpers, ... }:
 let
-  inherit (helpers) mkEvalCheck;
-
-  cfg = helpers.homeManagerTestConfiguration [
-    ../neovim/neovim-home-manager.nix
-    ../zed/zed-home-manager.nix
-  ];
-
-  hasFile = name: builtins.hasAttr name cfg.home.file;
-  hasDataFile = name: builtins.hasAttr name cfg.xdg.dataFile;
+  configuration = helpers.homeManagerTestConfiguration [ ../neovim-home-manager.nix ];
+  settings = configuration.neovimConfiguration;
 in
 {
-  domain-editor-neovim-config = mkEvalCheck "domain-editor-neovim-config" (
-    cfg.programs.neovim.enable && hasFile ".config/nvim" && hasDataFile "nvim/site/spell/pt.utf-8.spl"
-  ) "neovim should be enabled with config directory and the pt_br spell dictionary on runtimepath";
+  domain-editor-neovim-host-settings = helpers.mkEvalCheck "domain-editor-neovim-host-settings" (
+    settings.wallpaperThemeDirectory == "/home/test/.config/hypr-theme/current"
+    && settings.obsidianWorkspaceName == "Zanoni"
+    && settings.obsidianVaultDirectory == "/home/test/vault"
+  ) "dotfiles must supply Neovim with the shared theme and Obsidian workspace settings";
 }

@@ -418,6 +418,7 @@
         "impasto": "impasto",
         "install-nothing": "install-nothing",
         "lazygit": "lazygit",
+        "neovim": "neovim",
         "nix-darwin": "nix-darwin",
         "nixgl": "nixgl",
         "nixpkgs": "nixpkgs_9",
@@ -1473,6 +1474,32 @@
         "owner": "Castrozan",
         "repo": "lazygit",
         "type": "github"
+      }
+    },
+    "neovim": {
+      "inputs": {
+        "home-manager": [
+          "dependencies",
+          "home-manager"
+        ],
+        "nixpkgs": [
+          "dependencies",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795842090,
+        "narHash": "sha256-oGH9GEd1tUAI0/ZMak/dS+Wq6+lxkHkC3gj7myKrt9Y=",
+        "ref": "refs/heads/main",
+        "rev": "1a2b6491bde018afdff52cf31e878d44c791b670",
+        "revCount": 1,
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/neovim"
+      },
+      "original": {
+        "rev": "1a2b6491bde018afdff52cf31e878d44c791b670",
+        "type": "git",
+        "url": "ssh://git@github.com/Castrozan/neovim"
       }
     },
     "nix": {

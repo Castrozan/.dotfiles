@@ -41,7 +41,7 @@ in
     ../../terminal/terminal-command-packages-home-manager.nix
     ../../terminal/visual-effects/cmatrix/cmatrix-home-manager.nix
 
-    ../../editors/neovim/neovim-home-manager.nix
+    ../../editors/neovim-home-manager.nix
     ../../editors/visual-studio-code/visual-studio-code-home-manager.nix
     ../../editors/editor-command-packages-home-manager.nix
 

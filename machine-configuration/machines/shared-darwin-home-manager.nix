@@ -30,7 +30,7 @@
     ../terminal/emulators/wezterm/wezterm-home-manager.nix
     ../terminal/file-manager/yazi/yazi-home-manager.nix
 
-    ../editors/neovim/neovim-home-manager.nix
+    ../editors/neovim-home-manager.nix
 
     ../desktop/appearance/theming/theming-home-manager.nix
     ../desktop/applications/installation/darwin-application-links-home-manager.nix

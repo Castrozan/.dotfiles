@@ -30,7 +30,7 @@ Fresh desktop captures and animated architecture, with English narration and an 
 
 <p align="center"><sub>NixOS on the left, macOS on the right. Open either image for the full capture.</sub></p>
 
-The [terminal modules](machine-configuration/terminal), [Neovim configuration](machine-configuration/editors/neovim) and [appearance modules](machine-configuration/desktop/appearance) own the setup shown here. Desktop automation is declared in the [Hyprland](machine-configuration/desktop/desktop-environments/hyprland) and [Hammerspoon](machine-configuration/desktop/hammerspoon) modules.
+The [terminal modules](machine-configuration/terminal), [Neovim configuration](https://github.com/Castrozan/neovim) and [appearance modules](machine-configuration/desktop/appearance) own the setup shown here. Desktop automation is declared in the [Hyprland](machine-configuration/desktop/desktop-environments/hyprland) and [Hammerspoon](machine-configuration/desktop/hammerspoon) modules.
 
 ## The agents
 
