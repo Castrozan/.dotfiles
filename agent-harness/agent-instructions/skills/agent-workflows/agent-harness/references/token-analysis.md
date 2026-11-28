@@ -49,8 +49,8 @@ dominates by 50k.
 
 ### Decision
 
-The trigger was set to 200k with `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=20` on the 1M window, keeping the 1M window as headroom
-as [context management](../../../../../harnesses/claude-code/docs/context-management.md) records.
+The trigger was set to 200k with `CLAUDE_AUTOCOMPACT_PCT_OVERRIDE=20` on the 1M window, keeping the 1M window as
+headroom as [context management](../../../../../harnesses/claude-code/docs/context-management.md) records.
 
 ### Reduction levers
 
