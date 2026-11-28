@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 hook_script_directory = Path(__file__).resolve().parent
-shared_common_hook_modules_directory = hook_script_directory.parent / "common"
+shared_common_hook_modules_directory = hook_script_directory.parent.parent / "common"
 for importable_directory in (
     hook_script_directory,
     shared_common_hook_modules_directory,

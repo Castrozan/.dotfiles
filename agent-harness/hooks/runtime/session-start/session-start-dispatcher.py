@@ -8,6 +8,7 @@ import sys
 hook_script_directory = os.path.dirname(os.path.realpath(__file__))
 importable_directories = [
     hook_script_directory,
+    os.path.join(hook_script_directory, "session-guidance"),
     os.path.join(os.path.dirname(hook_script_directory), "common"),
     os.path.join(os.path.dirname(hook_script_directory), "wellput"),
 ]
