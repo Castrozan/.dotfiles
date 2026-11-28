@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Compiles the workspace-window-switcher swift daemon from SWIFT_SOURCES_DIR
-# and writes the binary to SWIFT_BINARY_PATH, then kicks the launchd agent so
-# the new binary takes effect immediately. Driven by SWIFT_BINARY_PATH,
-# SWIFT_SOURCES_DIR, OWNER_USERNAME env vars.
-
 swiftDaemonSourceStamp="$SWIFT_SOURCES_DIR $(/usr/bin/swiftc --version 2>/dev/null | head -1) ${SWIFT_COMPILE_RECIPE_HASH:-}"
 swiftDaemonSourceStampPath="$SWIFT_BINARY_PATH.sourcehash"
 if [ -x "$SWIFT_BINARY_PATH" ] && [ "$(cat "$swiftDaemonSourceStampPath" 2>/dev/null)" = "$swiftDaemonSourceStamp" ]; then

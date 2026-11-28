@@ -5,7 +5,6 @@
   ...
 }:
 {
-  # List of pkgs installed from nixpkgs. To search, run: nix search wget
   environment.systemPackages =
     with pkgs;
     [
@@ -63,7 +62,7 @@
       shellcheck
       shfmt
       sqlite
-      tig # git log visualizer
+      tig
       tealdeer
       tmux
       tree
@@ -84,7 +83,6 @@
       zip
       zoxide
     ]
-    # Unstable packages
     ++ (with unstable; [
       cargo
       gcc
@@ -96,9 +94,8 @@
       alsa-lib.dev
       pkg-config
       supabase-cli
-      terraform # Removed: its broken on nixpkgs
+      terraform
     ])
-    # Latest packages
     ++ (with latest; [
       brave
       gemini-cli

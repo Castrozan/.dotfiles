@@ -1,5 +1,3 @@
-"""Cookie/secret paths, secret reading, and JSON serialization helpers."""
-
 import json
 import os
 from pathlib import Path

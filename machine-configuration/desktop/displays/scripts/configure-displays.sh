@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Applies macOS display preferences: BezelServices auto-dim, CoreBrightness blue
-# light reduction schedule, keyboard dim time. Driven by USERNAME env var.
 
 echo "configuring display settings..." >&2
 

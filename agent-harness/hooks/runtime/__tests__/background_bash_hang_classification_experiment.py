@@ -1,21 +1,4 @@
 #!/usr/bin/env python3
-"""Empirically classify background-bash command patterns and assert the hook's
-static hang detectors agree with real runtime behavior.
-
-Run patterns under setsid (start_new_session=True) with stdin at EOF, which
-faithfully replicates the Claude Code background-bash environment (no
-controlling terminal, stdin returns EOF immediately). For each pattern we
-compare three things:
-
-  * empirical runtime behavior   - does it terminate on its own, or hang?
-  * the hook's static prediction - would background_bash_hang_detectors deny it?
-  * the intended policy           - deny, or allow?
-
-This is the regression check behind the deny rules: if a tool upgrade changes
-behavior (a pager that starts paging, a git that stops opening an editor), the
-empirical column drifts and this harness exits non-zero so the cron can alert.
-"""
-
 import shutil
 import subprocess
 import sys

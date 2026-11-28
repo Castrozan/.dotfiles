@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# vpn-work - Connect to work VPN via SAML
-# Uses openfortivpn with SAML authentication for FortiGate VPN
-# Set OPENFORTIVPN_WORK_HOST to override the default VPN host on first run,
-# or use 'vpn-work --set-host <hostname>' to persist it.
-
 export PATH="@openfortivpn@/bin:@procps@/bin:@coreutils@/bin:@gnugrep@/bin:@xdgUtils@/bin:$PATH"
 
 VPN_HOST_CACHE_FILE="${XDG_CACHE_HOME:-$HOME/.cache}/vpn-work/host"
@@ -93,20 +88,17 @@ case "${1:-}" in
 	echo "A browser window will open for authentication."
 	echo ""
 
-	# Clear old log and create with proper permissions
 	install -d -m 700 "$(dirname "$LOG_FILE")"
 	rm -f "$LOG_FILE"
 	umask 077
 	touch "$LOG_FILE"
 	chmod 600 "$LOG_FILE"
 
-	# Start openfortivpn in background
 	sudo nohup "$OPENFORTIVPN" "$VPN_HOST:$VPN_PORT" --saml-login >>"$LOG_FILE" 2>&1 &
 	VPN_PID=$!
 
 	echo "Waiting for SAML server to start..."
 
-	# Wait for SAML URL to appear in log, then open browser as user
 	SAML_URL=""
 	for i in $(seq 1 30); do
 		if grep -q "Authenticate at" "$LOG_FILE" 2>/dev/null; then
@@ -125,7 +117,6 @@ case "${1:-}" in
 		echo "Warning: Could not detect SAML URL. Check log with --log"
 	fi
 
-	# Wait silently for tunnel
 	while true; do
 		if grep -q "Tunnel is up and running" "$LOG_FILE" 2>/dev/null; then
 			IP=$(grep "Got addresses" "$LOG_FILE" | sed 's/.*\[\([0-9.]*\)\].*/\1/' | head -1)
@@ -140,7 +131,6 @@ case "${1:-}" in
 			grep -E "ERROR:|error:" "$LOG_FILE"
 			exit 1
 		fi
-		# Check if process is still running (give it time to start)
 		sleep 1
 		if ! kill -0 $VPN_PID 2>/dev/null && ! pgrep -x openfortivpn >/dev/null; then
 			echo ""

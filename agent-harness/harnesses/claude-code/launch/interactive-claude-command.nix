@@ -22,9 +22,6 @@ let
     builtins.toJSON interactiveSessionSettings
   );
 
-  # No servant wiring here on purpose. The Servant is derived at SessionStart from
-  # the id Claude Code mints for itself, so this wrapper neither knows nor needs to
-  # know which one a launch draws, and a resume lands on the same one for free.
   claudePackage = pkgs.writeShellApplication {
     name = "claude";
     bashOptions = [ ];

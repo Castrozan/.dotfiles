@@ -67,7 +67,6 @@ def neovim_lua_path(neovim_lua_directory):
 
 @pytest.fixture
 def merged_java_opts_lua(neovim_lua_path):
-    """Lua prelude that merges java.lua's override into LazyVim's jdtls defaults."""
 
     def build_prelude():
         java_plugin_path = neovim_lua_path("plugins", "java.lua")

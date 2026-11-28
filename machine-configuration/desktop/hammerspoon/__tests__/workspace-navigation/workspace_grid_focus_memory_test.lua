@@ -1,8 +1,3 @@
--- Reproduces the workspace-switch focus-memory bug: navigating away from a
--- workspace and back must restore the window that was last focused on THAT
--- workspace, and each workspace must remember its own focus independently,
--- instead of grabbing an arbitrary window in iteration order.
-
 local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 

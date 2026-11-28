@@ -61,7 +61,6 @@ _create_or_select_project() {
 	_log "Creating project: $project_id"
 	_gcloud projects create "$project_id" --name="$APP_NAME" --set-as-default 2>&1 | grep -v "^$" >&2 || true
 
-	# Wait for project to be ready
 	sleep 3
 	echo "$project_id"
 }

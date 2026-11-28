@@ -1,17 +1,3 @@
-"""Shell splitting is quote-aware, because a separator inside quotes is text.
-
-The guards that route through this module forbid RUNNING something, so they
-exempt a match that sits inside a read-only inspection segment. Finding that
-segment means splitting the command the way a shell would: a semicolon or a
-pipe inside quotes is an argument character, not a boundary. Splitting on it
-blindly cut a grep in half and blamed the far end for what the grep was only
-reading about.
-
-Quoting does not disarm everything. Command substitution stays live inside
-double quotes, so the parentheses and backticks that open it keep splitting
-there, and only single quotes or a backslash make them literal.
-"""
-
 import sys
 from pathlib import Path
 

@@ -1,22 +1,3 @@
-"""Unit-level latency test for the herdr pane shell startup path.
-
-Measures the same problem as the herdr e2e benchmark at the shell layer: how
-long after spawn a login interactive bash in a fresh PTY processes queued
-input, under the herdr pane environment (HERDR_ENV=1). The shell runs the
-repo's rc with the flyline line editor loaded, so the probe also answers the
-cursor position queries (DSR) that flyline's inline viewport issues during
-startup, exactly as herdr's emulator does; flyline issues several, and each
-unanswered one blocks for its full timeout, which is the failure mode this
-test guards. The bound also catches regressions like flyline versions whose
-startup work blocks the editor (v1.3.0's PATH cache scan delayed the first
-prompt by ~0.4s; the v1.4.0 upgrade moved it off the critical path).
-
-Runs hermetically: spawns its own PTY, queues an in-band timestamped marker
-whose exec time is read from the shell's own output, kills the child. On CI
-(no user rc present) it measures a fraction of a second; on the user's machine
-it measures the real rc with flyline loaded.
-"""
-
 from __future__ import annotations
 
 import fcntl

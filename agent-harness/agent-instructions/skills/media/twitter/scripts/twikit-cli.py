@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-"""twikit-cli: CLI wrapper for twikit, optimized for agent use.
-
-Outputs JSON for machine consumption. Loads cookies from
-~/.config/twikit/cookies.json (login once, reuse forever).
-Credentials read from agenix-managed secret files.
-"""
 
 import argparse
 import asyncio

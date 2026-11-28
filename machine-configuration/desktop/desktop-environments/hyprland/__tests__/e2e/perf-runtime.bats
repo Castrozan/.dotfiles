@@ -23,8 +23,6 @@ _measure_ms() {
 	echo $(((end - start) / 1000000))
 }
 
-# ── Hyprland IPC ──────────────────────────────────────────────────────────────
-
 @test "perf: hyprctl version < 100ms" {
 	ms=$(_measure_ms hyprctl version)
 	echo "# hyprctl version: ${ms}ms" >&3
@@ -43,8 +41,6 @@ _measure_ms() {
 	[ "$ms" -lt 100 ]
 }
 
-# ── Workspace switch ───────────���─────────────────────────────────────────────
-
 @test "perf: workspace switch < 150ms" {
 	local current target
 	current=$(hyprctl activeworkspace -j | jq '.id')
@@ -57,8 +53,6 @@ _measure_ms() {
 	[ "$ms" -lt 150 ]
 }
 
-# ── QuickShell IPC (window switcher) ─────────────────────────────────────────
-
 @test "perf: window switcher open < 300ms" {
 	ms=$(_measure_ms qs -c switcher ipc --any-display call switcher open)
 	qs -c switcher ipc --any-display call switcher cancel >/dev/null 2>&1
@@ -68,8 +62,6 @@ _measure_ms() {
 	[ "$ms" -lt 300 ]
 }
 
-# ── QuickShell IPC (workspace overview) ──────────────────────────────────────
-
 @test "perf: workspace overview toggle < 300ms" {
 	ms=$(_measure_ms qs -c overview ipc --any-display call overview toggle)
 	sleep 0.15
@@ -78,8 +70,6 @@ _measure_ms() {
 	echo "# workspace overview: ${ms}ms" >&3
 	[ "$ms" -lt 300 ]
 }
-
-# ── Audio ───────────��────────────────────────────────────────────────────────
 
 @test "perf: volume control < 500ms" {
 	if ! command -v volume &>/dev/null; then
@@ -93,15 +83,11 @@ _measure_ms() {
 	[ "$ms" -lt 500 ]
 }
 
-# ── Terminal ────���────────────────────────��───────────────────────────────────
-
 @test "perf: bash interactive startup < 500ms" {
 	ms=$(_measure_ms bash -i -c exit)
 	echo "# bash startup: ${ms}ms" >&3
 	[ "$ms" -lt 500 ]
 }
-
-# ── Tmux ───��─────────────────────────────────���───────────────────────────────
 
 @test "perf: tmux new session < 500ms" {
 	tmux kill-session -t _bats_perf_test >/dev/null 2>&1 || true

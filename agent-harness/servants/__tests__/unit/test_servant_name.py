@@ -17,9 +17,6 @@ class TestPrintingTheName:
 
 
 class TestNoSessionId:
-    """Every id-less caller would otherwise be handed the same Servant, which is
-    worse than a statusline segment that simply does not appear."""
-
     def test_a_missing_id_prints_nothing_and_fails(self, capsys):
         assert servant_name.main(["servant-name"]) == 1
         assert capsys.readouterr().out == ""
@@ -30,9 +27,6 @@ class TestNoSessionId:
 
 
 class TestRunningAsItsOwnProcess:
-    """The packaged command execs this file directly with no PYTHONPATH, so the
-    sibling import has to resolve off the script's own directory."""
-
     def _run(self, *arguments):
         return subprocess.run(
             [sys.executable, str(SERVANT_NAME_SCRIPT), *arguments],

@@ -48,11 +48,7 @@ class TestServantSelection:
 
 
 class TestSelectionSurvivesRosterEdits:
-    """The reason selection is scored per name instead of indexed by position.
-
-    `hash % len(catalog)` tied every session to the roster's size, so adding one
-    name re-drew every session on the fleet and reordering the file did the same.
-    """
+    pass
 
 
 @pytest.mark.parametrize("banned_key", ["class", "catchphrase", "manner"])
@@ -74,8 +70,5 @@ ACCENTED_SERVANT_NAMES = [
 
 @pytest.mark.parametrize("accented_name", ACCENTED_SERVANT_NAMES)
 def test_an_accented_name_is_never_flattened_to_ascii(accented_name):
-    """Selection is keyed on the exact name, so dropping a diacritic silently
-    re-draws every live session holding that Servant. A bulk rewrite of the
-    personalities is exactly where that slips through."""
     names = {entry["name"] for entry in catalog.SERVANT_CATALOG}
     assert accented_name in names

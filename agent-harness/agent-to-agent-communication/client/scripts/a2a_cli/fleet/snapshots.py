@@ -1,5 +1,3 @@
-"""Join allowlisted A2A and Herdr metadata by structural identity."""
-
 from .validation import label
 
 STATES = {"idle", "working", "blocked", "done", "unknown"}
@@ -48,7 +46,6 @@ def session_id(agent):
     identity = agent.get("agent_session") or {}
     if not isinstance(identity, dict):
         raise ValueError("invalid Herdr session reference")
-    # Path references are deliberately neither retained nor opened.
     if identity.get("kind") == "id":
         return label(identity.get("value"), "session ID")
     return None

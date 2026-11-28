@@ -79,19 +79,6 @@ in
     }
   ) availableSecrets;
 
-  # Upstream agenix-home-manager ships the activate-agenix launchd plist with
-  # KeepAlive {Crashed: false, SuccessfulExit: false}. Both subkeys evaluate
-  # to "kept alive" under launchd's dict semantics, so the mount script
-  # reruns every throttle window (~10s) for the entire login session even
-  # after a clean exit. Rewrite the plist to a single boolean KeepAlive: false
-  # after home-manager's own setupLaunchAgents step writes it, then re-bootstrap
-  # the agent so the new policy takes effect immediately.
-  # A mount killed mid-run also leaves its half-written secret behind as a 0400
-  # .tmp file, which age cannot reopen for writing, so every later mount dies on
-  # that same secret and every secret after it silently never appears. The
-  # generation the agenix symlink points at is the live one; anything else under
-  # agenix.d is wreckage from such a run, and with the agent booted out nothing
-  # is writing to it, so it goes before the agent comes back up.
   home.activation.disableAgenixLaunchdRestartLoop = lib.mkIf pkgs.stdenv.hostPlatform.isDarwin (
     lib.hm.dag.entryAfter [ "setupLaunchAgents" ] ''
       $DRY_RUN_CMD ${pkgs.python312}/bin/python3 ${./scripts/restart_agenix_launch_agent.py} ${lib.escapeShellArg config.home.homeDirectory}

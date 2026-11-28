@@ -1,5 +1,3 @@
-"""Run independent, subprocess-bound context probes at the same time."""
-
 from __future__ import annotations
 
 from concurrent.futures import ThreadPoolExecutor

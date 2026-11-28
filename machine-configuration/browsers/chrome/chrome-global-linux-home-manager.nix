@@ -45,9 +45,6 @@ in
     desktopItem
   ];
 
-  # Also place in ~/.local/share/applications/ (XDG_DATA_HOME) so xdg-open
-  # finds it first. Without this, it only lives in ~/.nix-profile/share/
-  # which is late in the search order and can be missed during rebuilds.
   xdg.dataFile."applications/chrome-global.desktop".source =
     "${desktopItem}/share/applications/chrome-global.desktop";
 }

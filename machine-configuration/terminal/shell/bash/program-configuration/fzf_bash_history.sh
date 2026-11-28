@@ -1,9 +1,4 @@
 #!/usr/bin/env bash
-# Fuzzy find history search
-# ctrl-f to search history
-# enter to select command
-# Inspired from https://github.com/junegunn/fzf/wiki/examples#searching-file-contents
-
 bind '"\C-f": "\C-x1\e^\er"'
 bind -x '"\C-x1": fzf_history'
 

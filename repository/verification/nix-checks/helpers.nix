@@ -22,9 +22,6 @@ let
       )
     ) checks;
 
-  # Every test configuration needs `unstable` and `latest` for the system it targets. Instantiating
-  # them inside the builder below re-imported both channels once per call site, so the check suite
-  # paid for hundreds of nixpkgs instantiations. Keyed attribute sets are forced once and reused.
   testSystems = lib.unique [
     "x86_64-linux"
     "aarch64-darwin"

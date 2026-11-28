@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-"""Merge a colors JSON file into VS Code settings.json under
-workbench.colorCustomizations. Argv: settings_path, colors_path."""
 
 import json
 import sys

@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Adds every key in INBOUND_AUTHORIZED_KEYS (newline-separated env var) to
-# ~/.ssh/authorized_keys if not already present. Idempotent.
 
 set -euo pipefail
 SSH_DIR="$HOME/.ssh"

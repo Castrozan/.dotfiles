@@ -1,13 +1,3 @@
--- jdtls turns its root directory into a single Eclipse project, so the root decides
--- whether the import succeeds at all. Rooting a maven submodule at its own pom.xml
--- leaves the sibling modules of the reactor outside the workspace, their artifacts
--- never resolve, and the import dies before it configures the java nature: the
--- project keeps only maven2Nature, writes no .classpath, and every request fails with
--- "<module> does not exist". Rooting at the git root instead collapses unrelated loose
--- files into one project, where duplicate types poison the compile. No single marker
--- separates a reactor root from a submodule, so maven walks the unbroken chain of
--- pom.xml parents and takes the outermost one.
-
 local gradle_reactor_root_markers = {
   "settings.gradle",
   "settings.gradle.kts",
@@ -31,9 +21,6 @@ local directories_the_java_server_must_not_import = {
   "**/result/**",
 }
 
--- jdtls runs on jdk21 and compiles every project with it unless a matching runtime is
--- registered, so a project pinned to source and target 1.8 reports errors its own build never
--- sees. The nix module exports the java 8 home this points at.
 local function java_runtimes()
   local java_eight_home = vim.env.JAVA_8_HOME
   if not java_eight_home or java_eight_home == "" then

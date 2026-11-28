@@ -1,16 +1,5 @@
 #!/usr/bin/env python3
 
-"""The name of the Servant a session is, for callers that cannot import Python.
-
-The Claude statusline redraws several times a minute holding nothing about the
-session but its id, so it re-derives the name here rather than reading one the
-SessionStart hook wrote down. That keeps a single implementation of the draw: the
-name on screen is the one the session was given and cannot drift from it.
-
-Prints nothing and exits non-zero without a session id, because every id-less caller
-would otherwise be handed the same Servant.
-"""
-
 from __future__ import annotations
 
 import sys

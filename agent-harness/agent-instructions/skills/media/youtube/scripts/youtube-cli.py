@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""YouTube CLI — search videos and manage playlists via YouTube Data API v3."""
 
 import argparse
 

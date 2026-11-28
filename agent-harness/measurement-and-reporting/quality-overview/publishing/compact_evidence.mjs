@@ -1,8 +1,6 @@
 import { readdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-// Verdr emits generated evidence as indented JSON; compact only these derived
-// documents so the original, hashed source artifacts remain byte-for-byte intact.
 export async function compactEvidence(site) {
   const directory = join(site, "evidence");
   for (const name of await readdir(directory)) {

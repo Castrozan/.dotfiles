@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-"""git-history: dump git log layers to /tmp for fast text search.
-
-Portable - works on any git repo. Uses repo root path as cache key.
-"""
 
 import argparse
 import sys

@@ -1,5 +1,3 @@
-"""Durable reservation, receipt and independently attested result transactions."""
-
 import json
 import sqlite3
 

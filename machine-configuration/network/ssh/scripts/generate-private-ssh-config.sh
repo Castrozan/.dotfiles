@@ -1,8 +1,4 @@
 #!/usr/bin/env bash
-# Generates ~/.ssh/config.d/private-hosts from the agenix-decrypted
-# SSH_HOSTS_FILE. If the hosts file is missing, removes the generated
-# artifact so the host returns to a clean state.
-
 set -euo pipefail
 HOSTS="$SSH_HOSTS_FILE"
 SSH_DIR="$HOME/.ssh"

@@ -1,16 +1,3 @@
-"""A foreground wait on CI parks the agent for the length of the run.
-
-`gh run watch` blocks until the run finishes, which is minutes, and every
-progress redraw it prints lands in the agent's context. The agent cannot do
-anything else while it waits, so the whole run is dead time bought with
-tokens. The command is fine backgrounded, where the harness notifies on exit,
-so the guard denies only the foreground shape.
-
-Paired the way the read-only inspection cases are: allowed shapes first, then
-the shapes that must stay denied, so a later widening of the pattern cannot
-quietly take the allowed ones with it.
-"""
-
 import json
 
 import pytest

@@ -1,12 +1,9 @@
 #!/usr/bin/env bash
 
-# Enable alias expansion in non-interactive shells (for Claude Code BASH_ENV)
 shopt -s expand_aliases
 
-# NixOS setuid wrappers (sudo, ping, etc) — non-login shells miss this
 [[ -d /run/wrappers/bin ]] && [[ ":$PATH:" != *":/run/wrappers/bin:"* ]] && export PATH="/run/wrappers/bin:$PATH"
 
-# Personal aliases
 alias clebr='cd $HOME/.clebr'
 alias bashrc='nvim ~/.bashrc'
 alias b='btop'
@@ -58,7 +55,6 @@ alias todo='cd $HOME/vault'
 alias vial='Vial'
 alias workbench='cd $HOME/workbench || $EDITOR $HOME/workbench'
 alias y='yazi'
-# TODO: fix vivaldi, it should not be running as flatpak
 alias vivaldi="flatpak run com.vivaldi.Vivaldi"
 
 PRIVATE_SHELL_ALIASES="$HOME/.dotfiles/private-configuration/shell/aliases.sh"

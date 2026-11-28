@@ -1,17 +1,3 @@
-"""Shared phase measurement for the herdr tab startup benchmark.
-
-The benchmark drives `herdr tab create` and decomposes the wall time until the
-new pane's bash is writable. This module owns the herdr CLI interaction, the
-server-log phase extraction, and the per-run measurement loop; the benchmark
-script owns the run schedule and the reporting.
-
-The writable phase is in-band: the probe command makes the pane's bash print
-its own `date +%s%N` at execution, so client polling latency never pollutes
-it. Server phases come from the append-only herdr server log, matched by the
-created tab id. Every phase is monotonic or wall-clock based but always
-compared against a clock of the same origin.
-"""
-
 from __future__ import annotations
 
 import datetime

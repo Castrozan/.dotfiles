@@ -9,7 +9,6 @@ _create_oauth_credentials() {
 	access_token=$(_gcloud auth print-access-token 2>/dev/null)
 
 	if [[ "$brand_name" != "manual" ]]; then
-		# Try creating via IAP API (works for internal brands)
 		local client_response
 		client_response=$(curl -s -X POST \
 			-H "Authorization: Bearer $access_token" \
@@ -29,11 +28,9 @@ _create_oauth_credentials() {
 		_log "IAP client creation didn't return expected format. Trying REST API..."
 	fi
 
-	# Fallback: use the OAuth2 REST API to create a Desktop client
 	local project_number
 	project_number=$(_gcloud projects describe "$project_id" --format="value(projectNumber)" 2>/dev/null)
 
-	# Try creating via the Cloud Console internal API
 	local create_response
 	create_response=$(curl -s -X POST \
 		-H "Authorization: Bearer $access_token" \

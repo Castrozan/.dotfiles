@@ -1,12 +1,3 @@
-"""Pull candidate GIFs down so the agent can look at them before sending one.
-
-A search engine ranks by tags, not by whether the thing is actually funny in the
-room it is about to land in. So this downloads a handful of candidates into the
-agent's workspace and prints their paths: one small file to open and judge, one
-send-quality file to attach once a candidate wins. Choosing is the agent's job
-and stays out of this script.
-"""
-
 import argparse
 import datetime
 import sys
@@ -22,6 +13,10 @@ from agent_media_workspace import (
     write_media_file,
 )
 
+COMMAND_DESCRIPTION = (
+    "Download candidate GIFs into the agent workspace and print their paths: "
+    "a small preview to judge and a send-quality copy to attach."
+)
 SEARCH_URL = "https://api.klipy.com/api/v1/{key}/gifs/search?q={query}"
 TRENDING_URL = "https://api.klipy.com/api/v1/{key}/gifs/trending?"
 SECRET_NAME = "klipy-api-key"
@@ -35,7 +30,7 @@ TIER_ORDER = ("hd", "md", "sm", "xs")
 
 
 def parse_arguments(argv):
-    parser = argparse.ArgumentParser(description=__doc__)
+    parser = argparse.ArgumentParser(description=COMMAND_DESCRIPTION)
     parser.add_argument("--query", default="", help="what to search for")
     parser.add_argument(
         "--count",
@@ -65,7 +60,6 @@ def request_candidates(key, query, count, customer):
 
 
 def choose_rendition(item, size_limit):
-    """The largest tier that still fits, so quality drops only when it must."""
     renditions = item.get("file", {})
     for tier in TIER_ORDER:
         rendition = renditions.get(tier, {}).get("gif", {})
@@ -76,7 +70,6 @@ def choose_rendition(item, size_limit):
 
 
 def download_candidate(media_directory, item):
-    """One file to judge by, plus the good copy when the small one is not it."""
     preview_url = choose_rendition(item, PREVIEW_SIZE_LIMIT)
     sendable_url = choose_rendition(item, ATTACHMENT_SIZE_LIMIT)
     if not preview_url or not sendable_url:
@@ -129,8 +122,6 @@ def main(argv):
         if not candidates:
             raise MediaRequestRefused("every candidate came back too big to send")
     except MediaRequestRefused as refusal:
-        # The key rides in the request path, so anything the provider echoes back
-        # could carry it into the channel.
         reported = str(refusal)
         print(reported.replace(key, "***") if key else reported, file=sys.stderr)
         return 1

@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-"""Extract X/Twitter cookies from a browser cookies file and save in twikit format.
-
-Reads cookies from a Chromium-based browser's cookie database
-and exports them as JSON for twikit's load_cookies().
-"""
 
 import json
 import os
@@ -32,7 +27,6 @@ X_DOMAINS = [".x.com", ".twitter.com", "x.com", "twitter.com"]
 
 
 def find_browser_cookies_database():
-    """Find the first available browser cookies database."""
     for cookie_path in BROWSER_COOKIE_PATHS:
         if cookie_path.exists():
             return cookie_path
@@ -40,7 +34,6 @@ def find_browser_cookies_database():
 
 
 def extract_x_cookies_from_database(database_path):
-    """Extract X/Twitter cookies from a Chromium cookies database."""
     with tempfile.NamedTemporaryFile(suffix=".db") as temporary_copy:
         with Path(database_path).open("rb") as database:
             shutil.copyfileobj(database, temporary_copy)

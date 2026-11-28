@@ -4,7 +4,6 @@
   const nativeMediaPlay = HTMLMediaElement.prototype.play;
   const nativeMediaPause = HTMLMediaElement.prototype.pause;
 
-  // Always arm the hold during startup.
   let playbackIsHeld = true;
   let heldVideo = null;
   let heldVideoWasMuted = false;
@@ -49,7 +48,6 @@
 
     if (!isActuallyForeground()) return;
 
-    // Require the foreground state to remain stable for two frames.
     requestAnimationFrame(() => {
       if (epoch !== foregroundEpoch || !isActuallyForeground()) return;
 
@@ -68,7 +66,6 @@
 
     holdVideo(this);
 
-    // Prevent YouTube from treating the hold as an autoplay error.
     return Promise.resolve();
   };
 

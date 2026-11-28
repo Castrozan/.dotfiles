@@ -1,12 +1,3 @@
-"""The workspace injector reads one state file and prefixes one command.
-
-It loads on every Bash call an agent makes, so it reads that file with open()
-and os.path rather than pathlib, whose import bills urllib.parse, ipaddress
-and math to every shell command. These cover the states the file can be in,
-because a guard that throws on a missing file would break every Bash call
-instead of just declining to inject.
-"""
-
 import sys
 from pathlib import Path
 

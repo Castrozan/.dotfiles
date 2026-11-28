@@ -28,7 +28,6 @@ in
     };
   };
 
-  # The signed 3.0.0 release exposes settings through the running app only.
   home.activation.hexSettings = lib.hm.dag.entryAfter [ "writeBoundary" ] ''
     if [ -x /Applications/Hex.app/Contents/MacOS/hex ] && ${hexCommand} status --json >/dev/null 2>&1; then
       run ${hexCommand} settings set dictation_hotkey control+option+space

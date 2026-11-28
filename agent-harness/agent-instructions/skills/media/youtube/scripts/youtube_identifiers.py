@@ -1,5 +1,4 @@
 def extract_video_id_from_url(url):
-    """Extract video ID from various YouTube URL formats."""
     import re
 
     patterns = [
@@ -14,7 +13,6 @@ def extract_video_id_from_url(url):
 
 
 def extract_playlist_id_from_url(url):
-    """Extract playlist ID from YouTube URL or return as-is."""
     import re
 
     match = re.search(r"[?&]list=([a-zA-Z0-9_-]+)", url)

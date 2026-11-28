@@ -1,11 +1,3 @@
-"""Workspace, secret and budget rules for the agent media tools.
-
-A media tool writes a file into the calling agent's own workspace and prints its
-absolute path, which is what the channel plugin's reply tool takes as an
-attachment. Everything a guest can influence, the prompt and how often it runs,
-is bounded here rather than in the agent's judgement.
-"""
-
 import json
 import os
 import time
@@ -65,7 +57,6 @@ def flatten_prompt(prompt, limit):
 
 
 def claim_daily_allowance(media_directory, kind, limit, today):
-    """Count one use against today's budget, refusing once the day is spent."""
     media_directory.mkdir(parents=True, exist_ok=True)
     usage_file = media_directory / USAGE_FILE_NAME
     try:
@@ -85,7 +76,6 @@ def claim_daily_allowance(media_directory, kind, limit, today):
 
 
 def prune_expired_media(media_directory, now):
-    """Generated media is disposable once Discord holds its own copy."""
     cutoff = now - RETENTION_DAYS * 86400
     for path in media_directory.glob("*"):
         if path.name == USAGE_FILE_NAME or not path.is_file():

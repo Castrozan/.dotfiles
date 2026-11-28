@@ -1,5 +1,3 @@
-"""Apply complete observations atomically, retaining historical identities."""
-
 from dataclasses import dataclass
 import json
 

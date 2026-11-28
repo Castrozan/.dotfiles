@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
-# Zoxide
 if command -v zoxide &>/dev/null; then
-	# TODO: add alias cd to zoxide after training
-	# eval "$(zoxide init --cmd cd bash)"
 	eval "$(zoxide init bash)"
-	# fzf integration and theme
 	export _ZO_FZF_OPTS="--height 40% \
     --layout=reverse --border --preview='command -p ls -ACp \
     --color=always --group-directories-first {2..}' \

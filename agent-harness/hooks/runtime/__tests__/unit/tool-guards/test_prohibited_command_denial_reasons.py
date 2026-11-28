@@ -1,11 +1,3 @@
-"""A denial says what is blocked and where to read the rest.
-
-A reason is pasted into the agent's context every time the guard fires, so a
-recipe inlined there is paid for on every repeat offence and competes with the
-work in view. The detail belongs where it is already maintained: a reference
-file beside the hook, or the skill that owns the tool.
-"""
-
 import sys
 from pathlib import Path
 

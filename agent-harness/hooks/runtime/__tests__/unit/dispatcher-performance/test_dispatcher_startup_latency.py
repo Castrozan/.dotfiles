@@ -1,27 +1,3 @@
-"""Wall-clock backstop for the hook that runs on every single tool call.
-
-PreToolUse is registered with a `.*` matcher, so a fresh interpreter starts
-for every Read, Bash, Grep and Edit an agent issues, and whatever that
-interpreter does before dispatching is charged to the agent's turn.
-
-The bound is deliberately coarse, because the ratio of dispatch cost to
-interpreter cost does not survive a change of machine. Both terms are timed
-here, but they are not made of the same work: the floor is mostly an already
-resident interpreter binary, while dispatch is module reads, so slower
-storage inflates the ratio rather than cancelling out. A first attempt at
-0.65 measured 0.45 to 0.51 locally and 0.72 on CI and went red. Warming both
-sides removes the bytecode-compile and cold-cache asymmetry, which is also
-the honest thing to measure, since a session pays the warm cost hundreds of
-times and the cold one once.
-
-What survives is one memorable invariant: dispatching a Read must cost less
-than starting the interpreter it runs in. The shape this replaced, a pathlib
-bootstrap with twelve eagerly imported handlers, measured 1.11 floors. The
-precise regression detector is test_dispatcher_import_budget.py, which counts
-modules and is exact on any hardware; this file only catches a regression
-gross enough to show up through timing noise.
-"""
-
 import json
 import statistics
 import subprocess

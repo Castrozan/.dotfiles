@@ -1,10 +1,3 @@
-"""Speak one line into a WAV file in the calling agent's workspace and print its path.
-
-Discord renders an attached WAV with a player, so a voice note is the same
-outbound call as any other attachment. The provider answers with headerless PCM,
-which is why the container is written here rather than shelled out to a codec.
-"""
-
 import argparse
 import base64
 import io

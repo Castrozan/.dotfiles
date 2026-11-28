@@ -1,5 +1,3 @@
-"""Read-only twikit commands: search, user profile, tweets, replies, threads, trends."""
-
 from twikit_cli_authentication import get_client
 from twikit_cli_serializers import output_json, serialize_tweet, serialize_user
 

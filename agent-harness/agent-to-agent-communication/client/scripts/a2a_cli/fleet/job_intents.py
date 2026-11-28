@@ -1,5 +1,3 @@
-"""A self-contained dispatch intent and the readiness/transition rules it needs."""
-
 from dataclasses import dataclass
 import hashlib
 import json

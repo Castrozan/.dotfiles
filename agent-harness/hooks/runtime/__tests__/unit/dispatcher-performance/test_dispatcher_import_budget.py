@@ -1,11 +1,3 @@
-"""The module count each hook invocation is allowed to pay.
-
-The budget is the reproducible half of hook cost: wall time moves with the
-machine, but the set of modules an invocation imports does not. What each
-number means, and what it takes to raise one, is in
-dispatcher_import_measurement.py alongside the table itself.
-"""
-
 import pytest
 from dispatcher_import_measurement import (
     INVOCATIONS_UNDER_BUDGET,

@@ -7,7 +7,6 @@
   isNixOS,
   ...
 }:
-# Adds private-configuration/machines/<hostname>/ssh.nix when that file exists.
 let
   sshHostsSecretExists = builtins.pathExists ../../../secrets/infrastructure/ssh-hosts.age;
 

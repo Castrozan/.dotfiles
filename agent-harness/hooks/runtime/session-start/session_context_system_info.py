@@ -1,5 +1,3 @@
-"""Resolve user and operating system identity for the session banner."""
-
 from __future__ import annotations
 
 import json

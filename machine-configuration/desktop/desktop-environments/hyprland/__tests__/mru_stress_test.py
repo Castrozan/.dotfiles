@@ -1,12 +1,4 @@
 #!/usr/bin/env python3
-"""
-Live stress test for Hyprland MRU focus-on-close + scrolling layout.
-
-Opens real windows on a test workspace, manipulates focus, closes them,
-and verifies that focus goes to the MRU window. Requires a running Hyprland session.
-
-Usage: python3 test_mru_stress.py
-"""
 
 import os
 import sys

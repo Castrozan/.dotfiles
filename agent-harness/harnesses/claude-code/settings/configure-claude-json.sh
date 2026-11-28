@@ -1,11 +1,4 @@
 #!/usr/bin/env bash
-# Configures $HOME/.claude.json safely from one activation pass:
-# - creates with installMethod=native when missing
-# - patches installMethod and accepts trust dialog for known paths when valid
-# - preserves the file untouched on any read/write/parse failure (no clobber)
-# - applies all edits in a single jq invocation, then atomic-mv via temp file
-# Driven by TRUSTED_PARENT_DIRECTORIES, TRUSTED_DIRECTORIES, JQ_BIN env vars
-# (newline-separated lists). Parent dirs trust each immediate child directory.
 
 set -u
 
@@ -40,9 +33,6 @@ done <<<"$TRUSTED_DIRECTORIES"
 jq_arguments=(--arg install_method native)
 # shellcheck disable=SC2016 # jq variables expand inside jq, not in bash
 jq_filter='.installMethod = $install_method'
-# Seed onboarding flags so a fresh .claude.json on a new machine does not
-# show the first-run wizard on every `claude` launch. Each key uses //=
-# (jq's "set if null") so a user's later changes are preserved.
 jq_filter+=' | .theme //= "dark"'
 jq_filter+=' | .hasCompletedOnboarding //= true'
 jq_filter+=' | .hasOnboardedInPrevSession //= true'

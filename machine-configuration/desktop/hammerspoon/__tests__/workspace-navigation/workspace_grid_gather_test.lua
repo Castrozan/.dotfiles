@@ -1,7 +1,3 @@
--- Verifies the gather escape hatch: a single command must reclaim every live
--- window onto the current workspace and lay each one back on-screen, so windows
--- stranded on a hotkey-less workspace are always recoverable.
-
 local moduleDirectory = arg[0]:gsub("__tests__/.*$", "")
 dofile(moduleDirectory .. "__tests__/hammerspoon_module_paths.lua")(moduleDirectory)
 

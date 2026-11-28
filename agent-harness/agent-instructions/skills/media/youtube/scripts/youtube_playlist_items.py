@@ -5,7 +5,6 @@ from youtube_identifiers import extract_video_id_from_url
 
 
 def list_playlist(playlist_id, max_results=50):
-    """List videos in a playlist."""
     youtube = get_authenticated_service()
     videos = []
     next_page_token = None
@@ -40,7 +39,6 @@ def list_playlist(playlist_id, max_results=50):
 
 
 def add_to_playlist(playlist_id, video_ids):
-    """Add one or more videos to a playlist."""
     youtube = get_authenticated_service()
     results = []
 
@@ -77,7 +75,6 @@ def add_to_playlist(playlist_id, video_ids):
 
 
 def remove_from_playlist(playlist_item_ids):
-    """Remove videos from a playlist by playlist item ID."""
     youtube = get_authenticated_service()
     results = []
 

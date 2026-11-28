@@ -1,5 +1,3 @@
-"""Measure the edited speech stem, independently of padded music and container length."""
-
 import array
 import math
 import sys

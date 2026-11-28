@@ -1,5 +1,3 @@
-"""Private SQLite connection and version-one schema initialization."""
-
 import os
 import sqlite3
 from pathlib import Path

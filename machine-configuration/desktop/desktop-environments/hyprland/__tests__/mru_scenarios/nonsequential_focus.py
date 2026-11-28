@@ -9,7 +9,6 @@ from .scenario_results import TestResult
 
 
 def test_mru_non_sequential_focus(r: TestResult) -> None:
-    """A→B→C→A→C, close C → should focus A (not B)."""
     print("\n--- Test: Non-sequential focus pattern ---")
     cleanup_test_workspace()
     addr_a = spawn_kitty("ns-A")
@@ -30,7 +29,6 @@ def test_mru_non_sequential_focus(r: TestResult) -> None:
 
 
 def test_scrolling_layout_mru_vs_spatial(r: TestResult) -> None:
-    """MRU should win over spatial adjacency in scrolling layout."""
     print("\n--- Test: MRU vs spatial adjacency ---")
     cleanup_test_workspace()
     addr_a = spawn_kitty("scroll-A")
@@ -48,7 +46,6 @@ def test_scrolling_layout_mru_vs_spatial(r: TestResult) -> None:
 
 
 def test_mru_zigzag_focus(r: TestResult) -> None:
-    """A→C→B→A→C, close C → A."""
     print("\n--- Test: Zigzag focus pattern ---")
     cleanup_test_workspace()
     addr_a = spawn_kitty("zz-A")
@@ -69,7 +66,6 @@ def test_mru_zigzag_focus(r: TestResult) -> None:
 
 
 def test_mru_reverse_spatial_order(r: TestResult) -> None:
-    """Focus D→C→B→A (reverse spatial). Close A → B, close B → C."""
     print("\n--- Test: Reverse spatial focus order ---")
     cleanup_test_workspace()
     addr_a = spawn_kitty("rev-A")

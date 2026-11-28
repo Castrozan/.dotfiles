@@ -1,9 +1,5 @@
 { config, pkgs, ... }:
 {
-  # Hammerspoon is notarized (Developer ID), so Sophos endpoint security trusts
-  # it - unlike the ad-hoc-signed AeroSpace fork, whose disk access SophosCryptoGuard
-  # holds, deadlocking it. init.lua reimplements the prior AeroSpace virtual-
-  # workspace grid by show/hiding windows on a single macOS Space.
   home = {
     file = {
       ".hammerspoon/init.lua".source = ./init.lua;
@@ -64,8 +60,6 @@
           (builtins.readFile ./input/smart_home_media_key_control.lua);
     };
 
-    # Stop Hammerspoon popping its Console window every launch/reload (a config
-    # redeploy on rebuild triggers a reload).
     activation.suppressHammerspoonConsoleAtLaunch = config.lib.dag.entryAfter [ "writeBoundary" ] ''
       ${pkgs.coreutils}/bin/timeout 5 /usr/bin/defaults write org.hammerspoon.Hammerspoon MJShowWindowAtLaunchKey -bool false 2>/dev/null || true
     '';

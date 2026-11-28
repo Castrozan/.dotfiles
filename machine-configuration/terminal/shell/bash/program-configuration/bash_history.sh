@@ -4,11 +4,9 @@ export HISTCONTROL=ignorespace
 export HISTTIMEFORMAT='%F %T '
 shopt -s histappend
 
-# Increase the size of the history file
 export HISTSIZE=10000
 export HISTFILESIZE=20000
 
-# Function to trim trailing spaces and replace the last command
 trim_and_save_history() {
 	local history_entry entry_number normalized_command
 	history_entry=$(HISTTIMEFORMAT='' builtin history 1)
@@ -36,7 +34,6 @@ record_recalled_command() {
 	fi
 }
 
-# Set PROMPT_COMMAND to the custom function
 _last_trimmed_histcmd=0
 _history_prompt_command() {
 	trim_and_save_history

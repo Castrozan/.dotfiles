@@ -54,7 +54,6 @@ def test_close_unfocused_window(r: TestResult) -> None:
 
 
 def test_close_unfocused_then_mru_chain(r: TestResult) -> None:
-    """Close middle of chain, then verify remaining chain."""
     print("\n--- Test: Close middle of chain ---")
     cleanup_test_workspace()
     addr_a = spawn_kitty("cm-A")

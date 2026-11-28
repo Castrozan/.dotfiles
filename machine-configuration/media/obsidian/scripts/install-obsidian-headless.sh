@@ -1,7 +1,4 @@
 #!/usr/bin/env bash
-# Installs the obsidian-headless npm package globally into NPM_PREFIX at
-# version OB_VERSION. No-op if the desired version is already installed.
-# Driven by NODE_GYP_PATH, NPM_PREFIX, OB_VERSION, NPM_BIN env vars.
 
 set -euo pipefail
 export PATH="$NODE_GYP_PATH${PATH:+:$PATH}"

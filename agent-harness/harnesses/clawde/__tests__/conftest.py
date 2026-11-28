@@ -16,7 +16,6 @@ def media_secrets_directory(tmp_path, monkeypatch):
 
 @pytest.fixture
 def media_agent_workspace(tmp_path, monkeypatch, media_secrets_directory):
-    """An agent workspace with the media keys on hand, as a rebuilt machine has."""
     agents_directory = tmp_path / "clawde"
     workspace = agents_directory / "monster"
     workspace.mkdir(parents=True)

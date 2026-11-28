@@ -1,21 +1,3 @@
-"""Tool calls an agent makes all day, which no guard may ever deny.
-
-Every guard here is written as a pattern over raw command text, and a pattern
-widened to catch one more evasion catches ordinary work with it. The failure
-is invisible from inside the rule that caused it: the guard looks correct, the
-new case is denied, and the agent that hit it has no way to tell a rule from a
-bug.
-
-So the corpus lives outside any one guard and every deny-emitting hook is run
-against all of it. A rule that costs a known-good call fails here, in the name
-of the call it broke, rather than in a session weeks later.
-
-Entries are whole tool calls rather than command strings because context
-decides: a rebuild in the foreground is correct and the same rebuild
-backgrounded is denied, and a guard can only be judged against the call the
-agent actually makes.
-"""
-
 DOTFILES_REPOSITORY_PATH = "/Users/lucas.zanoni/.dotfiles"
 
 KNOWN_GOOD_BASH_COMMANDS = (

@@ -1,16 +1,3 @@
-"""What must never appear on a hot hook path, whatever the count says.
-
-A budget catches drift in aggregate. These catch the specific mistakes that
-made the budget necessary: a pathlib bootstrap dragging three modules behind
-it, a handler imported before its matcher could select it, and a third-party
-import that ties the hooks to an environment rather than the bare interpreter
-run-hook.sh pins.
-
-Read, Bash and Edit are all checked because they cost differently. A Read
-selects only the two matcher-less guards; a Bash selects four more; an Edit is
-the one tool call that also spawns the PostToolUse dispatcher behind it.
-"""
-
 import sys
 
 import pytest
