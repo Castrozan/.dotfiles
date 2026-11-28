@@ -1,6 +1,6 @@
 ---
 name: agent-harness
-description: Debug and configure the Claude Code, Codex, or OpenCode harness instead of the project it edits. Use for settings, skills, hooks, model routing, transcripts, MCPs, session state, or tool-targeting failures.
+description: Debug and configure the Claude Code, Codex, or OpenCode harness instead of the project it edits. Use for settings, skills, hooks, model routing, token usage, transcripts, MCPs, session state, or tool-targeting failures.
 ---
 
 ### Scope
@@ -46,6 +46,12 @@ authority](references/instruction-authority.md) and trace the rule through live 
 
 Before authoring or reviewing a workflow that calls agents or models, read [workflows](references/workflows.md) and
 budget its control flow.
+
+### Token usage analysis
+
+Before judging where tokens go or tuning compaction, read [token analysis](references/token-analysis.md). Run its script
+through a read-only `explore` subagent so transcript volume stays out of this context, and compare against the recorded
+baseline.
 
 ### Knowledge
 

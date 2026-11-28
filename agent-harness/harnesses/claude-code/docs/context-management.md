@@ -73,6 +73,10 @@ Conversation-history re-read (`cache_read`) dominates token cost: every tool res
 
 Caching invariants worth not breaking: on a Claude subscription the 1-hour cache TTL is auto-requested for free, so never set `FORCE_PROMPT_CACHING_5M` (it shortens the TTL, expires warm prefixes, and drops the hit ratio). The cache key includes both model and effort, so switching either mid-session, or using the `opusplan` alias that toggles Opus and Sonnet, reprocesses the entire history uncached. Keeping MCP tools deferred via Tool Search means a server connecting or disconnecting only appends and leaves the cached prefix intact, so never force tools upfront or add an `alwaysLoad` exemption.
 
+Measure where tokens go and replay a compaction threshold against real sessions with the transcript analysis in the
+`agent-harness` skill, [token analysis](../../../agent-instructions/skills/agent-workflows/agent-harness/references/token-analysis.md).
+It holds the method, the traps and the recorded baseline.
+
 ## Scrollback and Session History
 
 Claude Code's fullscreen TUI renders on the terminal's alternate screen and uses DEC scroll-region escapes (DECSTBM), so streamed output never reaches the terminal's native scrollback; stripping alt-screen at the multiplexer does not stop the DECSTBM escapes. The durable record of a conversation is its session jsonl under `~/.claude/projects/<encoded-cwd>/`, reachable via `claude --resume <uuid>` or a direct `Read`. That file, not multiplexer scrollback, is where "search the whole session" or "grab text from much earlier" is answered, and it is independent of the multiplexer, so conversations from another window or a background agent are reachable the same way.
