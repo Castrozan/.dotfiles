@@ -80,7 +80,8 @@ set -Eeuo pipefail
 source "{EXCLUSIVE_RUN_LOCK_HELPER_PATH}"
 acquire_exclusive_run_lock_or_emit_retry_instructions "{lock_name}" 60
 sleep 30 &
-echo $! > "{child_started}"
+echo $! > "{child_started}.pending"
+mv "{child_started}.pending" "{child_started}"
 wait || true
 sleep 30
 """
