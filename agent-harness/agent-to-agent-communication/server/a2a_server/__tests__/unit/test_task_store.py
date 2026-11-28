@@ -1,6 +1,22 @@
-import time
+import pytest
 
+from a2a_server import task_store as task_store_module
 from a2a_server.task_store import TaskStore
+
+
+class FakeClock:
+    def __init__(self):
+        self.now_epoch_seconds = 1_000.0
+
+    def time(self):
+        return self.now_epoch_seconds
+
+
+@pytest.fixture
+def clock(monkeypatch):
+    fake_clock = FakeClock()
+    monkeypatch.setattr(task_store_module, "time", fake_clock)
+    return fake_clock
 
 
 class TestTaskStore:
@@ -14,11 +30,11 @@ class TestTaskStore:
         assert task_one.input_text == "hello"
         assert task_two.input_text == "world"
 
-    def test_transition_task_state_updates_state_and_activity_timestamp(self):
+    def test_transition_task_state_updates_state_and_activity_timestamp(self, clock):
         store = TaskStore()
         task = store.create_task("input")
         original_activity_timestamp = task.last_activity_at_epoch_seconds
-        time.sleep(0.01)
+        clock.now_epoch_seconds += 0.01
         updated_task = store.transition_task_state(task.id, "working")
         assert updated_task.state == "working"
         assert updated_task.last_activity_at_epoch_seconds > original_activity_timestamp
@@ -54,11 +70,11 @@ class TestTaskStore:
         assert store.is_task_in_terminal_state(failed_task.id)
         assert not store.is_task_in_terminal_state(working_task.id)
 
-    def test_heartbeat_age_seconds_grows_over_time(self):
+    def test_heartbeat_age_seconds_grows_over_time(self, clock):
         store = TaskStore()
         task = store.create_task("input")
-        time.sleep(0.02)
-        assert task.heartbeat_age_seconds() >= 0.02
+        clock.now_epoch_seconds += 0.5
+        assert task.heartbeat_age_seconds() >= 0.5
 
     def test_to_json_serializable_dict_contains_expected_keys(self):
         store = TaskStore()

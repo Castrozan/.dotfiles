@@ -67,15 +67,14 @@ def read_until(terminal, expected):
 def poll_for_exit(process_identifier, terminal, seconds):
     deadline = time.monotonic() + seconds
     while time.monotonic() < deadline:
-        completed, status = os.waitpid(process_identifier, os.WNOHANG)
-        if completed:
+        remaining = max(0, deadline - time.monotonic())
+        if not select.select([terminal], [], [], remaining)[0]:
+            return None
+        try:
+            os.read(terminal, 4096)
+        except OSError:
+            _, status = os.waitpid(process_identifier, 0)
             return os.waitstatus_to_exitcode(status)
-        if terminal is not None and select.select([terminal], [], [], 0)[0]:
-            try:
-                os.read(terminal, 4096)
-            except OSError:
-                terminal = None
-        time.sleep(0.02)
     return None
 
 

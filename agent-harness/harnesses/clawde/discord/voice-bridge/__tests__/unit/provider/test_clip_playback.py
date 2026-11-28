@@ -15,14 +15,6 @@ def run(coroutine):
     return asyncio.run(coroutine)
 
 
-async def eventually(condition):
-    for _attempt in range(200):
-        if condition():
-            return
-        await asyncio.sleep(0.005)
-    raise AssertionError("condition never became true")
-
-
 def test_play_then_hush_stops_the_playback_at_once(tmp_path):
     async def scenario():
         _module, call, playback, connection = make_clip_call(tmp_path)
@@ -59,7 +51,7 @@ def test_hush_also_cancels_a_clip_still_waiting_for_the_speaker(tmp_path):
         first = asyncio.create_task(call.play_clip(CLIP, 24000))
         await asyncio.wait_for(playback.started.wait(), 1)
         second = asyncio.create_task(call.play_clip(CLIP, 24000))
-        await asyncio.sleep(0.01)
+        await asyncio.sleep(0)
         call.hush()
         assert await asyncio.wait_for(first, 1) == {"outcome": "interrupted"}
         assert await asyncio.wait_for(second, 1) == {"outcome": "interrupted"}
@@ -184,6 +176,14 @@ def test_the_socket_streams_capture_silence_when_not_in_a_call(tmp_path):
     async def scenario():
         module, call, _playback, _connection = make_clip_call(tmp_path)
         broadcast = CaptureBroadcast(ListenerAudioTap())
+        unsubscribed = asyncio.Event()
+        unsubscribe = broadcast.unsubscribe
+
+        def unsubscribe_and_announce(subscriber):
+            unsubscribe(subscriber)
+            unsubscribed.set()
+
+        broadcast.unsubscribe = unsubscribe_and_announce
         control = load_control_server(module).ControlServer(call, broadcast)
         server = await asyncio.start_server(control.serve_connection, "127.0.0.1", 0)
         reader, writer = await asyncio.open_connection(*server.sockets[0].getsockname())
@@ -192,7 +192,8 @@ def test_the_socket_streams_capture_silence_when_not_in_a_call(tmp_path):
         frames = [await asyncio.wait_for(reader.readexactly(640), 1) for _ in range(3)]
         assert frames == [SILENCE_FRAME] * 3
         writer.close()
-        await eventually(lambda: not broadcast._subscribers)
+        await asyncio.wait_for(unsubscribed.wait(), 1)
+        assert not broadcast._subscribers
         server.close()
         await control.close()
 

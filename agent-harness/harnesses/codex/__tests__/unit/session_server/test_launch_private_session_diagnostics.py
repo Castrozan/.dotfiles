@@ -1,7 +1,7 @@
 import json
 import os
+import select
 import sys
-import time
 from unittest.mock import Mock
 
 import pytest
@@ -23,6 +23,7 @@ def running_codex_stub(tmp_path, monkeypatch):
         "import time\n"
         "state = Path(os.environ['CODEX_TEST_STATE_DIRECTORY'])\n"
         "if 'app-server' in sys.argv:\n"
+        "    ready = os.open(os.environ['CODEX_TEST_READY_FIFO'], os.O_WRONLY)\n"
         "    os.write(2, b'backend error\\n')\n"
         "    if os.environ.get('CODEX_TEST_STARTUP_FAILURE'):\n"
         "        os.write(2, b'older output' * 8192)\n"
@@ -43,6 +44,8 @@ def running_codex_stub(tmp_path, monkeypatch):
         "        'stderr_inode': descriptor.st_ino,\n"
         "        'directory': os.environ['CODEX_SESSION_SOCKET_PATH'],\n"
         "    }))\n"
+        "    os.write(ready, b'ready')\n"
+        "    os.close(ready)\n"
         "    if os.environ.get('CODEX_TEST_RUNTIME_FAILURE'):\n"
         "        while not (state / 'client.ready').exists():\n"
         "            time.sleep(0.01)\n"
@@ -58,16 +61,19 @@ def running_codex_stub(tmp_path, monkeypatch):
     binary.chmod(0o755)
     monkeypatch.setenv("CODEX_LAUNCHER_BINARY", str(binary))
     monkeypatch.setenv("CODEX_TEST_STATE_DIRECTORY", str(tmp_path))
+    ready_fifo = tmp_path / "server-ready"
+    os.mkfifo(ready_fifo)
+    monkeypatch.setenv("CODEX_TEST_READY_FIFO", str(ready_fifo))
 
     def wait_for_stub(server, socket_path):
-        deadline = time.monotonic() + 3.0
-        while time.monotonic() < deadline:
-            if (tmp_path / "server.json").exists():
-                return
-            if server.poll() is not None:
+        ready = os.open(ready_fifo, os.O_RDONLY)
+        try:
+            if not select.select([ready], [], [], 3.0)[0]:
+                raise TimeoutError("stub server did not become ready")
+            if not os.read(ready, 5):
                 raise RuntimeError("stub server exited during startup")
-            time.sleep(0.01)
-        raise TimeoutError("stub server did not become ready")
+        finally:
+            os.close(ready)
 
     monkeypatch.setattr(launcher, "wait_for_session_server", wait_for_stub)
     monkeypatch.setattr(launcher, "approve_private_launch_hooks", Mock())

@@ -4,15 +4,15 @@ import subprocess
 import time
 from pathlib import Path
 
-COMMAND = Path(__file__).resolve().parents[2] / "agent-session"
+COMMAND = Path(__file__).resolve().parents[1] / "agent-session"
 PREFLIGHT_COMMAND = (
-    Path(__file__).resolve().parents[2] / "agent-session-restart-preflight.py"
+    Path(__file__).resolve().parents[1] / "agent-session-restart-preflight.py"
 )
 COMPACT_WHEN_IDLE_COMMAND = (
-    Path(__file__).resolve().parents[2] / "agent-session-compact-when-idle"
+    Path(__file__).resolve().parents[1] / "agent-session-compact-when-idle"
 )
 DETACHED_LAUNCHER_COMMAND = (
-    Path(__file__).resolve().parents[3]
+    Path(__file__).resolve().parents[2]
     / "harnesses"
     / "claude-code"
     / "scripts"

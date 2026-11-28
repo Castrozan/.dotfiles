@@ -1,5 +1,4 @@
 import os
-import time
 import unittest
 import uuid
 from dataclasses import replace
@@ -8,6 +7,17 @@ from unittest.mock import patch
 from video_fixture import FixtureRecipe
 from media_video.contract import VideoError
 from media_video.service import VideoService
+
+
+class SteppableMonotonicClock:
+    def __init__(self):
+        self.now = 1000.0
+
+    def monotonic(self):
+        return self.now
+
+    def advance(self, seconds):
+        self.now += seconds
 
 
 class VideoLifecycleTests(unittest.TestCase):
@@ -64,15 +74,19 @@ class VideoLifecycleTests(unittest.TestCase):
     def test_whole_job_timeout_retains_failed_receipt_without_retry(self):
         run = self.fixture.commands.run
         request = replace(self.fixture.request, deadline_seconds=0.5)
+        clock = SteppableMonotonicClock()
 
         def exceed_deadline(step, arguments, cwd, logs, deadline):
             result = run(step, arguments, cwd, logs, deadline)
             if step == "render":
-                time.sleep(0.6)
+                clock.advance(0.6)
             deadline.remaining()
             return result
 
-        with patch.object(self.fixture.commands, "run", side_effect=exceed_deadline):
+        with (
+            patch("media_video.deadline.time", clock),
+            patch.object(self.fixture.commands, "run", side_effect=exceed_deadline),
+        ):
             with self.assertRaisesRegex(VideoError, "deadline_exceeded"):
                 self.render(request)
         receipt = self.service.inspect(self.operation_id)
