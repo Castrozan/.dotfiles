@@ -66,7 +66,11 @@ def agent_hook_input():
     return {
         "tool_name": "Agent",
         "session_id": SESSION_UNDER_TEST,
-        "tool_input": {"description": "explore the module", "prompt": "do the work"},
+        "tool_input": {
+            "description": "explore the module",
+            "prompt": "do the work",
+            "model": "sonnet",
+        },
     }
 
 

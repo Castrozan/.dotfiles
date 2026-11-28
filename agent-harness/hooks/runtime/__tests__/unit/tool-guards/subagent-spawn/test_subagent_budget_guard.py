@@ -5,7 +5,7 @@ from threading import Barrier
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from hook_module_loader import import_hyphenated_hook_module
 
@@ -38,7 +38,11 @@ def spawn_hook_input(description="explore the module", session_id="session-under
     return {
         "tool_name": "Agent",
         "session_id": session_id,
-        "tool_input": {"description": description, "prompt": "do the work"},
+        "tool_input": {
+            "description": description,
+            "prompt": "do the work",
+            "model": "sonnet",
+        },
     }
 
 

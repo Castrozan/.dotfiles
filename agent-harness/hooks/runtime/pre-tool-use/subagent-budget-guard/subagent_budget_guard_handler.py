@@ -14,6 +14,7 @@ for _shared_module_candidate_directory in [_MODULE_DIRECTORY] + [
     ):
         sys.path.insert(0, _shared_module_candidate_path)
 
+import subagent_model_guard_handler  # noqa: E402
 import subagent_spawn_budget_state  # noqa: E402
 from hook_dispatch import HandlerResult  # noqa: E402
 from interactive_session_detection import (  # noqa: E402
@@ -34,6 +35,7 @@ def spawn_counts_against_the_ceiling(hook_input):
         hook_input.get("tool_name", "") == SUBAGENT_SPAWN_TOOL_NAME
         and is_keyboard_driven_interactive_session()
         and not spawns_a_read_only_scout(hook_input.get("tool_input", {}) or {})
+        and subagent_model_guard_handler.model_policy_denial_message(hook_input) is None
     )
 
 

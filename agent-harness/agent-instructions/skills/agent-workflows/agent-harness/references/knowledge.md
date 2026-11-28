@@ -27,6 +27,18 @@ defaulting to a cheap tier, so a fan-out on a top-tier session silently runs at 
 saying so. A user or project subagent with the same name overrides the built-in. Never assume a built-in subagent runs
 cheap, and re-read the vendor's current pricing page before quoting any figure, since all of these numbers are dated.
 
+### Claude subagent model guard
+
+The `subagent-budget-guard` hooks deny, in keyboard-driven sessions, any Agent spawn that would run above Haiku or
+Sonnet. A spawn passes `model` as `haiku` or `sonnet`, or names a pinned plugin type such as `dotfiles:explore`,
+`dotfiles:runner`, `dotfiles:software-engineer` or `dotfiles:quality-assurance`. A per-call model overrides the
+definition's pin, so the guard checks the call as well as the definition.
+
+Every rulesync subagent definition pins its own cheap Claude Code model, and a unit test holds the guard's pinned list
+equal to those definitions. Background agent sessions and workflow `agent()` calls fall outside the guard. A denied
+spawn consumes no spawn budget. The measurement behind the guard is in the
+[token analysis](#token-analysis-question-and-tool) chapter.
+
 ### Claude workflow agent calls take no turn ceiling
 
 A workflow `agent()` call accepts only label, phase, schema, model, effort, isolation and agent type. It silently

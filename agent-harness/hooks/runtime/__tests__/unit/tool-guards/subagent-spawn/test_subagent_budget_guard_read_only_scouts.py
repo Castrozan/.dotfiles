@@ -3,7 +3,7 @@ from pathlib import Path
 
 import pytest
 
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent.parent))
 
 from hook_module_loader import import_hyphenated_hook_module
 
@@ -35,6 +35,7 @@ def spawn_of(subagent_type):
             "description": "sweep the repository",
             "prompt": "find every pin",
             "subagent_type": subagent_type,
+            "model": "sonnet",
         },
     }
 
