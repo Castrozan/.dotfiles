@@ -31,6 +31,9 @@
       inputs.home-manager.follows = "home-manager";
     };
 
+    home-assistant.url = "git+ssh://git@github.com/Castrozan/home-assistant?rev=24e5cba148f0f5afcff2e02c7d2a2d4076a9f6bb";
+    home-assistant.inputs.nixpkgs.follows = "nixpkgs";
+
     clawde.url = "github:Castrozan/clawde/d707cf1441140c49a3cd2d62387d51297dcfd9e8";
     clawde.inputs.nixpkgs.follows = "nixpkgs";
 

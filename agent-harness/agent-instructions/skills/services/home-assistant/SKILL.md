@@ -9,8 +9,8 @@ Control lights with `ha-light` and the air conditioner with `ha-ac`. Run either 
 
 ### Architecture
 
-Home Assistant serves localhost:8123; `home-assistant-nixos.nix` declares its container runtime. Two integrations: Tuya
-(lights, cloud-based) and Midea AC LAN (air conditioner, local LAN). CLI scripts use the HA REST API with a long-lived
+Home Assistant serves localhost:8123. The `home-assistant` flake input declares its container runtime. Two integrations:
+Tuya (lights, cloud-based) and Midea AC LAN (air conditioner, local LAN). CLI scripts use the HA REST API with a long-lived
 token from agenix. Web UI credentials are in the password store under `home-assistant/admin`. Verify the systemd service
 name from the NixOS module before restarting; it is not the obvious name.
 
@@ -18,7 +18,7 @@ name from the NixOS module before restarting; it is not the obvious name.
 
 Lights are color_temp only, no RGB. Scenes are managed in the Tuya/Smart Life phone app, not in code; HA only activates
 them, so a new scene must be created in the app first. The AC communicates over local LAN, not cloud. The Midea entity
-ID embeds the device's numeric ID, so re-pairing changes the entity ID and the script constant must be updated to match.
+ID embeds the device's numeric ID, so after re-pairing update the `homeAssistant.airConditionerEntityId` setting on chise.
 
 ### Troubleshooting
 

@@ -12,6 +12,7 @@ in
   imports = [
     ./scripts
     ./secrets.nix
+    ./home-assistant.nix
     ./media/arr-stack.nix
     ../../../media/container-resources/media-container-resources-nixos.nix
     ./pkgs.nix
@@ -32,7 +33,6 @@ in
     ../../../security/privilege-escalation/sudo-nixos.nix
     ../../../security/certificate-trust/certificate-bundle-environment-nixos.nix
     ../../../desktop/input/mouse/mouse-polling-rate-nixos.nix
-    ../../../home-automation/home-assistant/home-assistant-nixos.nix
     ../../../terminal/workspace-manager/cockpit-session-bridge/cockpit-session-bridge-nixos.nix
     ../../../network/cloudflare-tunnel-connector/cloudflare-tunnel-connector-nixos.nix
   ]

@@ -12,6 +12,7 @@ in
     ./home/desktop-shell.nix
     ./home/session-vars.nix
     ./home/chrome-default-browser.nix
+    ./home/home-assistant.nix
     ../../../agent-harness/harnesses/clawde/agents/steward.nix
     ../../../agent-harness/read-it-later/watcher/home-manager.nix
 
@@ -24,7 +25,6 @@ in
     ../../../agent-harness/harnesses/clawde
     ../../../agent-harness/harnesses/codex
     ../../desktop/desktop-environments/gnome/gnome-home-manager.nix
-    ../../home-automation/home-assistant/home-assistant-home-manager.nix
     ../../desktop/desktop-environments/hyprland/hyprland-nixos.nix
     ../../../agent-harness/harnesses/opencode
     ../../../agent-harness/harnesses/pi
