@@ -1,5 +1,7 @@
 import os
 
+import pytest
+
 import ensure_ambient_canvas_screensaver as ensure
 from recording import recorded_loop_capture_target as capture_target
 from recording import recorded_segment_manifest as manifest
@@ -56,22 +58,15 @@ def test_the_capture_target_follows_the_main_display(monkeypatch):
     assert resolved.loop_directory == "/state/loops/1660x1080"
 
 
-def test_scene_videos_are_shared_by_every_capture_geometry(monkeypatch):
-    monkeypatch.setattr(
-        capture_target, "read_screen_dimensions", lambda: LAPTOP_SCREEN_DIMENSIONS
-    )
-    laptop = capture_target.resolve_recorded_loop_capture_target("/state")
-    monkeypatch.setattr(
-        capture_target, "read_screen_dimensions", lambda: EXTERNAL_SCREEN_DIMENSIONS
-    )
-    external = capture_target.resolve_recorded_loop_capture_target("/state")
-    assert laptop.scene_video_directory == "/state/videos"
-    assert external.scene_video_directory == "/state/videos"
-    assert laptop.loop_directory != external.loop_directory
-
-
-def test_the_live_playback_dwell_override_is_shared_by_every_capture_geometry(
-    monkeypatch,
+@pytest.mark.parametrize(
+    "shared_path_field, shared_path",
+    [
+        ("scene_video_directory", "/state/videos"),
+        ("playback_dwell_override_path", "/state/playback-dwell-seconds"),
+    ],
+)
+def test_paths_not_tied_to_the_display_are_shared_by_every_capture_geometry(
+    monkeypatch, shared_path_field, shared_path
 ):
     monkeypatch.setattr(
         capture_target, "read_screen_dimensions", lambda: LAPTOP_SCREEN_DIMENSIONS
@@ -81,8 +76,9 @@ def test_the_live_playback_dwell_override_is_shared_by_every_capture_geometry(
         capture_target, "read_screen_dimensions", lambda: EXTERNAL_SCREEN_DIMENSIONS
     )
     external = capture_target.resolve_recorded_loop_capture_target("/state")
-    assert laptop.playback_dwell_override_path == "/state/playback-dwell-seconds"
-    assert external.playback_dwell_override_path == "/state/playback-dwell-seconds"
+    assert getattr(laptop, shared_path_field) == shared_path
+    assert getattr(external, shared_path_field) == shared_path
+    assert laptop.loop_directory != external.loop_directory
 
 
 def test_the_player_is_told_where_the_dwell_override_lives_rather_than_guessing():

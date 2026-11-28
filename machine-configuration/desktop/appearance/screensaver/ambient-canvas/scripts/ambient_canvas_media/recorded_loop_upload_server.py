@@ -4,6 +4,7 @@ import json
 import os
 import posixpath
 import threading
+import time
 import urllib.parse
 
 from recording.byte_range_request_handler import ByteRangeRequestHandler
@@ -48,10 +49,13 @@ class RecordedLoopRequestHandler(ByteRangeRequestHandler):
             self.end_headers()
             return
         request_query = urllib.parse.parse_qs(parsed_request.query)
+        self.server.note_recording_progress()
         content_length = int(self.headers.get("Content-Length", "0"))
         uploaded_bytes = self.rfile.read(content_length)
-        if request_query.get("kind", [""])[0] == "manifest":
-            self.server.receive_segment_manifest(uploaded_bytes)
+        upload_kind = request_query.get("kind", [""])[0]
+        if upload_kind in ("manifest", "progress"):
+            if upload_kind == "manifest":
+                self.server.receive_segment_manifest(uploaded_bytes)
             self.send_response(204)
             self.end_headers()
             return
@@ -90,6 +94,7 @@ class RecordedLoopUploadServer(http.server.ThreadingHTTPServer):
         self.manifest_received_event = threading.Event()
         self.received_manifest_bytes = None
         self.rejected_segment_fingerprints = []
+        self.last_progress_monotonic = time.monotonic()
 
     @property
     def upload_port(self):
@@ -100,6 +105,9 @@ class RecordedLoopUploadServer(http.server.ThreadingHTTPServer):
 
     def resolve_fingerprint_inputs(self):
         return build_segment_fingerprint_inputs(self.served_web_directory)
+
+    def note_recording_progress(self):
+        self.last_progress_monotonic = time.monotonic()
 
     def receive_segment_manifest(self, manifest_bytes):
         self.received_manifest_bytes = manifest_bytes

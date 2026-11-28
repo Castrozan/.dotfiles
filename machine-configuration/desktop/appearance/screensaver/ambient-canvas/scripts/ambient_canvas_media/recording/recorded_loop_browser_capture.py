@@ -13,6 +13,7 @@ from recording.recorded_loop_capture_plan import (
     build_browser_environment_without_systemd_scope_escape,
     build_record_browser_arguments,
     build_record_index_url,
+    RECORDING_STALL_LIMIT_SECONDS,
     RecordingConfiguration,
 )
 from recording.recorded_loop_capture_target import RecordedLoopCaptureTarget
@@ -22,6 +23,11 @@ from recorded_loop_upload_server import start_recorded_loop_upload_server
 class RecordingBrowserExitedError(RuntimeError):
     def __init__(self, exit_status):
         super().__init__(f"recording browser exited with status {exit_status}")
+
+
+class RecordingStalledError(RuntimeError):
+    def __init__(self, silent_seconds):
+        super().__init__(f"recording made no progress for {silent_seconds:.0f}s")
 
 
 class BrowserCaptureRequest(NamedTuple):
@@ -54,6 +60,14 @@ def browser_exited_without_uploading(browser_process, upload_server):
     )
 
 
+def raise_when_recording_failed(browser_process, upload_server):
+    if browser_exited_without_uploading(browser_process, upload_server):
+        raise RecordingBrowserExitedError(browser_process.returncode)
+    silent_seconds = time.monotonic() - upload_server.last_progress_monotonic
+    if silent_seconds > RECORDING_STALL_LIMIT_SECONDS:
+        raise RecordingStalledError(silent_seconds)
+
+
 def wait_for_uploaded_manifest(
     browser_process, upload_server, deadline, cancellation_event
 ):
@@ -62,8 +76,7 @@ def wait_for_uploaded_manifest(
             min(1, deadline - time.monotonic())
         ):
             return
-        if browser_exited_without_uploading(browser_process, upload_server):
-            raise RecordingBrowserExitedError(browser_process.returncode)
+        raise_when_recording_failed(browser_process, upload_server)
 
 
 def drive_record_browser(request, worker, deadline, cancellation_event):

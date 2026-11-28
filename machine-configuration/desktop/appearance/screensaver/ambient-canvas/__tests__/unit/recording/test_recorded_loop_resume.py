@@ -2,6 +2,7 @@ import json
 import pathlib
 import subprocess
 import threading
+import urllib.request
 from types import SimpleNamespace
 
 import pytest
@@ -160,3 +161,23 @@ def test_changed_capture_inputs_never_reuse_old_segments(
     assert render_pass(target, "changed")
     assert len(encoded_compositions) == 8
     assert not old_files.intersection((tmp_path / "segments").glob("*.mp4"))
+
+
+def test_every_upload_request_counts_as_recording_progress(tmp_path):
+    server = start_recorded_loop_upload_server(
+        str(tmp_path), str(WEB_DIRECTORY), str(tmp_path / "videos")
+    )
+    try:
+        for query in ("kind=progress", "kind=manifest"):
+            server.last_progress_monotonic = 0
+            urllib.request.urlopen(
+                urllib.request.Request(
+                    f"http://127.0.0.1:{server.upload_port}/upload?{query}",
+                    data=b"{}",
+                    method="POST",
+                )
+            )
+            assert server.last_progress_monotonic > 0
+    finally:
+        server.shutdown()
+        server.server_close()

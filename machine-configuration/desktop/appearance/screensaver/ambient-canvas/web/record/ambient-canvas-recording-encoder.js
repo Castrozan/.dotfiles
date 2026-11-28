@@ -84,6 +84,15 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
       });
   }
 
+  function reportRecordingProgress(uploadUrl) {
+    if (!uploadUrl) {
+      return;
+    }
+    fetch(uploadUrl + "?kind=progress", { method: "POST" }).catch(
+      function ignoreProgressReportFailure() {},
+    );
+  }
+
   function uploadSegmentManifest(manifestSegments, uploadUrl) {
     if (!uploadUrl) {
       return Promise.resolve();
@@ -105,6 +114,7 @@ window.AmbientCanvasRecordingEncoder = (function buildEncoder() {
     createConfiguredMuxerAndEncoder,
     waitForEncoderQueueToDrain,
     uploadRecordedSegment,
+    reportRecordingProgress,
     uploadSegmentManifest,
   };
 })();

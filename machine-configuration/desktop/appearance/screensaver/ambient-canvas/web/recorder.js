@@ -72,6 +72,9 @@
         keyFrame: frameIndex % keyFrameIntervalFrames === 0,
       });
       videoFrame.close();
+      if (frameIndex % captureFramesPerSecond === 0) {
+        recorderEncoder.reportRecordingProgress(recordingParameters.uploadUrl);
+      }
       if (videoEncoder.encodeQueueSize > recorderEncoderQueueHighWatermark) {
         await recorderEncoder.waitForEncoderQueueToDrain(
           videoEncoder,

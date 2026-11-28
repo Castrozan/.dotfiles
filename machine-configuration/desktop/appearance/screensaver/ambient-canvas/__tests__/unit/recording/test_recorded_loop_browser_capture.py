@@ -20,6 +20,7 @@ def capture_dependencies(monkeypatch, tmp_path):
         upload_port=5000,
         manifest_received_event=threading.Event(),
         received_manifest_bytes=None,
+        last_progress_monotonic=time.monotonic(),
     )
     target = SimpleNamespace(
         loop_directory=str(tmp_path),
@@ -75,6 +76,13 @@ def end_wait_on_browser_death(server, launch):
     return 60, browser_capture.RecordingBrowserExitedError
 
 
+def end_wait_on_stalled_recording(server, launch):
+    server.last_progress_monotonic = (
+        time.monotonic() - capture_plan.RECORDING_STALL_LIMIT_SECONDS - 1
+    )
+    return 60, browser_capture.RecordingStalledError
+
+
 def end_wait_on_browser_exit_after_upload(server, launch):
     server.received_manifest_bytes = b"manifest"
 
@@ -91,6 +99,7 @@ def end_wait_on_browser_exit_after_upload(server, launch):
     [
         end_wait_on_deadline,
         end_wait_on_browser_death,
+        end_wait_on_stalled_recording,
         end_wait_on_browser_exit_after_upload,
     ],
 )
@@ -108,8 +117,11 @@ def test_every_wait_ending_cleans_up_without_deleting_progress(
     segment_path.write_bytes(b"completed segment")
     wait_seconds, expected_outcome = end_wait(server, launch)
     started = time.monotonic()
-    if expected_outcome is browser_capture.RecordingBrowserExitedError:
-        with pytest.raises(expected_outcome, match="-9"):
+    if expected_outcome in (
+        browser_capture.RecordingBrowserExitedError,
+        browser_capture.RecordingStalledError,
+    ):
+        with pytest.raises(expected_outcome, match="-9|no progress"):
             run_browser(target, threading.Event(), started + wait_seconds)
     else:
         assert run_browser(target, threading.Event(), started + wait_seconds) == (

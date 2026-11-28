@@ -58,6 +58,9 @@ def capture_recorded_playlist(
             ]
             manifests = collect_manifests_failing_fast(recordings)
         except Exception as recording_error:
+            logging.getLogger("ambient_canvas.launcher").error(
+                "recording_failed reason=%s", recording_error
+            )
             print(f"render-ambient-canvas-loop: {recording_error}", file=sys.stderr)
             return None
         finally:
