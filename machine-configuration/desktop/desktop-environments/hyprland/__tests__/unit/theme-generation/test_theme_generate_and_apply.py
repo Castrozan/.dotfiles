@@ -35,7 +35,7 @@ class TestMain:
         monkeypatch.setattr(theme_generate_and_apply, "HYPR_THEMES_PATH", themes_path)
         colors = 'primary = "#aabbcc"\n'
 
-        for suffix in (".png", ".gif", ".mp4", ".webm", ".mkv", ".mov"):
+        def check_wallpaper_format(suffix):
             wallpaper = tmp_path / f"sunset-{suffix[1:]}{suffix}"
             wallpaper.write_bytes(b"wallpaper")
             theme_name = f"auto-{wallpaper.stem}"
@@ -65,6 +65,9 @@ class TestMain:
             with patch("theme_generate_and_apply.sys.argv", ["cmd", str(wallpaper)]):
                 with patch("theme_generate_and_apply.subprocess.run", side_effect=run):
                     theme_generate_and_apply.main()
+
+        for suffix in (".png", ".gif", ".mp4", ".webm", ".mkv", ".mov"):
+            check_wallpaper_format(suffix)
 
     def test_skips_generation_when_cached_theme_still_resolves(
         self, tmp_path, monkeypatch
