@@ -112,9 +112,7 @@ def fetch(request, directory, operation_id):
     entry = submitted_host(directory, job)
     artifact = directory / FETCH_ARTIFACT
     with artifact.open("wb") as stream:
-        run_job(
-            entry, ["send", job, "--", request.input["relative_path"]], stdout=stream
-        )
+        run_job(entry, ["send", job, request.input["relative_path"]], stdout=stream)
     return {
         "job": job,
         "host": entry["name"],

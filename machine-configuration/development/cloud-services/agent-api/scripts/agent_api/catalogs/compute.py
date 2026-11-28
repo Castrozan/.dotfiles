@@ -1,6 +1,7 @@
 from agent_api.catalogs.local import capability, object_schema, text
 
 JOB = text(36)
+RELATIVE_PATH = {**text(), "pattern": "^[^-/]"}
 
 
 def submit_capability():
@@ -91,7 +92,7 @@ def compute_capabilities():
             "Retrieve a file or directory a submitted job left in its working directory as the tar artifact "
             "fetch.tar; relative_path is relative to that directory.",
             object_schema(
-                {"job": JOB, "relative_path": text()}, ["job", "relative_path"]
+                {"job": JOB, "relative_path": RELATIVE_PATH}, ["job", "relative_path"]
             ),
         ),
     ]
