@@ -57,16 +57,21 @@ def usage_by_skill(
     return usage
 
 
+def ranked_skill_names(
+    catalogue: dict[str, InstalledSkill], usage: dict[str, SkillUsage]
+) -> list[str]:
+    return sorted(
+        catalogue, key=lambda name: (-usage.get(name, SkillUsage()).total_loads, name)
+    )
+
+
 def report_rows(
     catalogue: dict[str, InstalledSkill],
     usage: dict[str, SkillUsage],
     coverage: EvaluationCoverage,
 ) -> list[tuple[str, ...]]:
-    ranked_skills = sorted(
-        catalogue, key=lambda name: (-usage.get(name, SkillUsage()).total_loads, name)
-    )
     rows = []
-    for name in ranked_skills:
+    for name in ranked_skill_names(catalogue, usage):
         skill_usage = usage.get(name, SkillUsage())
         rows.append(
             (
@@ -91,9 +96,19 @@ def aligned_table(rows: list[tuple[str, ...]]) -> str:
         for index in range(len(COLUMNS))
     ]
     return "\n".join(
-        "  ".join(cell.ljust(width) for cell, width in zip(row, widths)).rstrip()
+        "  ".join(
+            cell.ljust(width) for cell, width in zip(row, widths, strict=True)
+        ).rstrip()
         for row in [COLUMNS, *rows]
     )
+
+
+def is_agent_chosen_without_eval_case(
+    name: str, usage: dict[str, SkillUsage], coverage: EvaluationCoverage
+) -> bool:
+    agent_loads = usage.get(name, SkillUsage()).loads_by_channel["agent"]
+    eval_cases = coverage.routing_cases[name] + coverage.skill_cases[name]
+    return bool(agent_loads) and not eval_cases
 
 
 def usage_report(
@@ -105,13 +120,8 @@ def usage_report(
     unloaded = [name for name in sorted(catalogue) if name not in usage]
     uncovered = [
         name
-        for name in sorted(
-            catalogue, key=lambda name: -usage.get(name, SkillUsage()).total_loads
-        )
-        if name in usage
-        and usage[name].loads_by_channel["agent"]
-        and not coverage.routing_cases[name]
-        and not coverage.skill_cases[name]
+        for name in ranked_skill_names(catalogue, usage)
+        if is_agent_chosen_without_eval_case(name, usage, coverage)
     ]
     return "\n\n".join(
         [
