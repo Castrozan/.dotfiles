@@ -23,12 +23,12 @@ pub fn machine_label(machine_hostname: &str) -> String {
 }
 
 pub fn current_account_uuid(claude_account_config_path: &Path) -> Option<String> {
-    let document: Value =
-        serde_json::from_slice(&std::fs::read(claude_account_config_path).ok()?).ok()?;
-    document
-        .get("oauthAccount")?
-        .get("accountUuid")?
-        .as_str()
-        .filter(|account_uuid| !account_uuid.is_empty())
-        .map(str::to_string)
+    let document = read_json_document(claude_account_config_path)?;
+    let account_uuid = document.pointer("/oauthAccount/accountUuid")?.as_str()?;
+    (!account_uuid.is_empty()).then(|| account_uuid.to_string())
+}
+
+fn read_json_document(path: &Path) -> Option<Value> {
+    let bytes = std::fs::read(path).ok()?;
+    serde_json::from_slice(&bytes).ok()
 }

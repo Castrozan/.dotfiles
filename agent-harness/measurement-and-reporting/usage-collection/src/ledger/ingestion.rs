@@ -2,15 +2,13 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use anyhow::{Context, Result};
-use rusqlite::{Connection, OptionalExtension, TransactionBehavior, params};
+use rusqlite::{Connection, OptionalExtension, Row, Transaction, TransactionBehavior, params};
 
 use super::UsageLedger;
-use super::entry_store::record_entry;
+use super::entry_recorder::record_appended_entries;
+use super::row_columns::integer_columns;
 use crate::pricing::PricingTable;
-use crate::transcript::{
-    FileIdentity, TranscriptFileState, parse_usage_entry, read_complete_lines_from,
-    transcript_file_state,
-};
+use crate::transcript::{FileIdentity, TranscriptFileState, transcript_file_state};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct IngestionSummary {
@@ -46,19 +44,7 @@ impl UsageLedger {
     ) -> Result<IngestionSummary> {
         let cursors = self.file_cursors()?;
         let mut summary = IngestionSummary::default();
-        for path in transcript_paths {
-            let Some(path_text) = path.to_str() else {
-                continue;
-            };
-            let Ok(state) = transcript_file_state(path) else {
-                continue;
-            };
-            if cursors
-                .get(path_text)
-                .is_some_and(|cursor| cursor.has_consumed_all_of(&state))
-            {
-                continue;
-            }
+        for (path, path_text) in changed_transcripts(transcript_paths, &cursors) {
             summary.changed_transcripts += 1;
             summary.recorded_entries += self
                 .ingest_transcript(path, path_text, pricing)
@@ -71,18 +57,7 @@ impl UsageLedger {
         let mut statement = self
             .connection
             .prepare("SELECT path, device, inode, consumed_bytes FROM source_file")?;
-        let rows = statement.query_map([], |row| {
-            Ok((
-                row.get::<_, String>(0)?,
-                FileCursor {
-                    identity: FileIdentity {
-                        device: row.get::<_, i64>(1)? as u64,
-                        inode: row.get::<_, i64>(2)? as u64,
-                    },
-                    consumed_bytes: row.get::<_, i64>(3)? as u64,
-                },
-            ))
-        })?;
+        let rows = statement.query_map([], source_file_row)?;
         Ok(rows.collect::<rusqlite::Result<_>>()?)
     }
 
@@ -95,37 +70,69 @@ impl UsageLedger {
         let transaction = self
             .connection
             .transaction_with_behavior(TransactionBehavior::Immediate)?;
-        let state = transcript_file_state(path)?;
-        let resume_offset = read_file_cursor(&transaction, path_text)?
-            .map_or(0, |cursor| cursor.resume_offset_for(&state));
-        let mut recorded_entries = 0;
-        let mut recording_failure = None;
-        let consumed_bytes = read_complete_lines_from(path, resume_offset, |line| {
-            if recording_failure.is_some() {
-                return;
-            }
-            let Some(entry) = parse_usage_entry(line) else {
-                return;
-            };
-            let cost_usd = pricing.usage_cost_usd(
-                &entry.model,
-                entry.is_fast,
-                &entry.tokens,
-                entry.reported_cost_usd,
-            );
-            match record_entry(&transaction, &entry, cost_usd) {
-                Ok(true) => recorded_entries += 1,
-                Ok(false) => {}
-                Err(failure) => recording_failure = Some(failure),
-            }
-        })?;
-        if let Some(failure) = recording_failure {
-            return Err(failure.into());
-        }
-        write_file_cursor(&transaction, path_text, state.identity, consumed_bytes)?;
-        transaction.commit()?;
-        Ok(recorded_entries)
+        let (state, resume_offset) = resume_point(&transaction, path, path_text)?;
+        let appended = record_appended_entries(&transaction, path, resume_offset, pricing)?;
+        complete_ingestion(
+            transaction,
+            path_text,
+            state.identity,
+            appended.consumed_bytes,
+        )?;
+        Ok(appended.recorded_entries)
     }
+}
+
+fn changed_transcripts<'a>(
+    transcript_paths: &'a [PathBuf],
+    cursors: &'a HashMap<String, FileCursor>,
+) -> impl Iterator<Item = (&'a Path, &'a str)> {
+    transcript_paths
+        .iter()
+        .filter_map(|path| Some((path.as_path(), path.to_str()?)))
+        .filter(|(path, path_text)| has_unread_bytes(path, cursors.get(*path_text)))
+}
+
+fn has_unread_bytes(path: &Path, cursor: Option<&FileCursor>) -> bool {
+    match transcript_file_state(path) {
+        Ok(state) => !cursor.is_some_and(|cursor| cursor.has_consumed_all_of(&state)),
+        Err(_) => false,
+    }
+}
+
+fn source_file_row(row: &Row<'_>) -> rusqlite::Result<(String, FileCursor)> {
+    Ok((row.get(0)?, file_cursor_at(row, 1)?))
+}
+
+fn file_cursor_at(row: &Row<'_>, first_column: usize) -> rusqlite::Result<FileCursor> {
+    let [device, inode, consumed_bytes] = integer_columns::<3>(row, first_column)?;
+    Ok(FileCursor {
+        identity: FileIdentity { device, inode },
+        consumed_bytes,
+    })
+}
+
+fn resume_point(
+    connection: &Connection,
+    path: &Path,
+    path_text: &str,
+) -> Result<(TranscriptFileState, u64)> {
+    let state = transcript_file_state(path)?;
+    let cursor = read_file_cursor(connection, path_text)?;
+    Ok((
+        state,
+        cursor.map_or(0, |cursor| cursor.resume_offset_for(&state)),
+    ))
+}
+
+fn complete_ingestion(
+    transaction: Transaction<'_>,
+    path_text: &str,
+    identity: FileIdentity,
+    consumed_bytes: u64,
+) -> Result<()> {
+    write_file_cursor(&transaction, path_text, identity, consumed_bytes)?;
+    transaction.commit()?;
+    Ok(())
 }
 
 fn read_file_cursor(
@@ -136,15 +143,7 @@ fn read_file_cursor(
         .query_row(
             "SELECT device, inode, consumed_bytes FROM source_file WHERE path = ?1",
             [path_text],
-            |row| {
-                Ok(FileCursor {
-                    identity: FileIdentity {
-                        device: row.get::<_, i64>(0)? as u64,
-                        inode: row.get::<_, i64>(1)? as u64,
-                    },
-                    consumed_bytes: row.get::<_, i64>(2)? as u64,
-                })
-            },
+            |row| file_cursor_at(row, 0),
         )
         .optional()
 }

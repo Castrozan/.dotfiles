@@ -66,32 +66,39 @@ pub fn parse_usage_entry(line: &str) -> Option<UsageEntry> {
 }
 
 fn usage_entry_from_record(record: UsageRecord) -> Option<UsageEntry> {
-    let model = record
-        .message
-        .model
-        .filter(|model| !model.is_empty() && model != SYNTHETIC_MODEL)?;
+    let model = billable_model(record.message.model)?;
     let usage_date = utc_calendar_date(&record.timestamp)?;
-    let identity = record
-        .message
-        .id
-        .filter(|message_id| !message_id.is_empty())
-        .map(|message_id| MessageIdentity {
-            message_id,
-            request_id: record
-                .request_id
-                .filter(|request_id| !request_id.is_empty()),
-        });
     Some(UsageEntry {
-        identity,
+        identity: message_identity(record.message.id, record.request_id),
         is_sidechain: record.is_sidechain.unwrap_or(false),
         usage_date,
         model,
         is_fast: record.usage.speed.as_deref() == Some(FAST_SPEED),
         tokens: token_counts(&record.usage),
-        reported_cost_usd: record
-            .cost_usd
-            .filter(|cost| cost.is_finite() && *cost >= 0.0),
+        reported_cost_usd: valid_reported_cost(record.cost_usd),
     })
+}
+
+fn billable_model(model: Option<String>) -> Option<String> {
+    non_empty(model).filter(|model| model != SYNTHETIC_MODEL)
+}
+
+fn message_identity(
+    message_id: Option<String>,
+    request_id: Option<String>,
+) -> Option<MessageIdentity> {
+    Some(MessageIdentity {
+        message_id: non_empty(message_id)?,
+        request_id: non_empty(request_id),
+    })
+}
+
+fn non_empty(text: Option<String>) -> Option<String> {
+    text.filter(|text| !text.is_empty())
+}
+
+fn valid_reported_cost(cost_usd: Option<f64>) -> Option<f64> {
+    cost_usd.filter(|cost| cost.is_finite() && *cost >= 0.0)
 }
 
 fn token_counts(usage: &MessageUsage) -> TokenCounts {

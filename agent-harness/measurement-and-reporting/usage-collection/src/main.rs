@@ -1,5 +1,5 @@
 use std::io::Write;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use anyhow::{Context, Result, bail};
@@ -9,6 +9,7 @@ use serde_json::json;
 use claude_usage_collector::collector::{CollectorEnvironment, collect_usage_snapshot};
 use claude_usage_collector::ingestion::{IngestionClient, IngestionConnection};
 use claude_usage_collector::pricing::PricingTable;
+use claude_usage_collector::snapshot::UsageSnapshot;
 
 const USAGE: &str =
     "usage: claude-usage-collector <publish|snapshot> --pricing-file <litellm-prices.json>";
@@ -28,24 +29,40 @@ struct CommandLine {
     pricing_file: PathBuf,
 }
 
-impl CommandLine {
-    fn parse(mut arguments: impl Iterator<Item = String>) -> Result<Self> {
-        let command = match arguments.next().as_deref() {
-            Some("publish") => Command::Publish,
-            Some("snapshot") => Command::Snapshot,
-            _ => bail!(USAGE),
-        };
-        match (
-            arguments.next().as_deref(),
-            arguments.next(),
-            arguments.next(),
-        ) {
-            (Some("--pricing-file"), Some(pricing_file), None) => Ok(Self {
-                command,
-                pricing_file: PathBuf::from(pricing_file),
-            }),
+impl Command {
+    fn named(name: Option<String>) -> Result<Self> {
+        match name.as_deref() {
+            Some("publish") => Ok(Self::Publish),
+            Some("snapshot") => Ok(Self::Snapshot),
             _ => bail!(USAGE),
         }
+    }
+
+    fn execute(&self, environment: &CollectorEnvironment, pricing: &PricingTable) -> Result<()> {
+        match self {
+            Self::Snapshot => print_snapshot(environment, pricing),
+            Self::Publish => publish_snapshot(environment, pricing),
+        }
+    }
+}
+
+impl CommandLine {
+    fn parse(mut arguments: impl Iterator<Item = String>) -> Result<Self> {
+        Ok(Self {
+            command: Command::named(arguments.next())?,
+            pricing_file: pricing_file_argument(arguments)?,
+        })
+    }
+}
+
+fn pricing_file_argument(mut arguments: impl Iterator<Item = String>) -> Result<PathBuf> {
+    match (
+        arguments.next().as_deref(),
+        arguments.next(),
+        arguments.next(),
+    ) {
+        (Some("--pricing-file"), Some(pricing_file), None) => Ok(PathBuf::from(pricing_file)),
+        _ => bail!(USAGE),
     }
 }
 
@@ -61,14 +78,15 @@ fn main() -> ExitCode {
 
 fn run() -> Result<()> {
     let command_line = CommandLine::parse(std::env::args().skip(1))?;
-    let pricing_document = std::fs::read(&command_line.pricing_file)
-        .with_context(|| format!("could not read {}", command_line.pricing_file.display()))?;
-    let pricing = PricingTable::from_litellm_document(&pricing_document)?;
+    let pricing = load_pricing(&command_line.pricing_file)?;
     let environment = CollectorEnvironment::from_process()?;
-    match command_line.command {
-        Command::Snapshot => print_snapshot(&environment, &pricing),
-        Command::Publish => publish_snapshot(&environment, &pricing),
-    }
+    command_line.command.execute(&environment, &pricing)
+}
+
+fn load_pricing(pricing_file: &Path) -> Result<PricingTable> {
+    let pricing_document = std::fs::read(pricing_file)
+        .with_context(|| format!("could not read {}", pricing_file.display()))?;
+    PricingTable::from_litellm_document(&pricing_document)
 }
 
 fn print_snapshot(environment: &CollectorEnvironment, pricing: &PricingTable) -> Result<()> {
@@ -80,11 +98,17 @@ fn print_snapshot(environment: &CollectorEnvironment, pricing: &PricingTable) ->
 }
 
 fn publish_snapshot(environment: &CollectorEnvironment, pricing: &PricingTable) -> Result<()> {
-    let client = IngestionClient::new(connection_from_environment()?)?;
-    let Some(snapshot) = collect_usage_snapshot(environment, pricing)? else {
-        println!("{NO_USAGE_MESSAGE}");
-        return Ok(());
-    };
+    let client = ingestion_client()?;
+    match collect_usage_snapshot(environment, pricing)? {
+        Some(snapshot) => publish_usage(&client, &snapshot),
+        None => {
+            println!("{NO_USAGE_MESSAGE}");
+            Ok(())
+        }
+    }
+}
+
+fn publish_usage(client: &IngestionClient, snapshot: &UsageSnapshot) -> Result<()> {
     let produced_at = Utc::now().format("%Y-%m-%dT%H:%M:%S%.3fZ").to_string();
     let snapshot_acknowledgement = client.publish_event(
         CLAUDE_USAGE_TOPIC,
@@ -102,6 +126,10 @@ fn publish_snapshot(environment: &CollectorEnvironment, pricing: &PricingTable) 
         json!({"snapshot": snapshot_acknowledgement, "artifact": artifact_acknowledgement})
     );
     Ok(())
+}
+
+fn ingestion_client() -> Result<IngestionClient> {
+    IngestionClient::new(connection_from_environment()?)
 }
 
 fn connection_from_environment() -> Result<IngestionConnection> {

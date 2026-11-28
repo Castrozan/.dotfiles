@@ -33,20 +33,29 @@ pub fn read_complete_lines_from(
     start_offset: u64,
     mut each_line: impl FnMut(&str),
 ) -> io::Result<u64> {
-    let mut file = File::open(path)?;
-    file.seek(SeekFrom::Start(start_offset))?;
-    let mut reader = BufReader::with_capacity(READ_BUFFER_BYTES, file);
+    let mut reader = reader_at(path, start_offset)?;
     let mut consumed_offset = start_offset;
     let mut line_bytes = Vec::new();
-    loop {
-        line_bytes.clear();
-        let read_bytes = reader.read_until(b'\n', &mut line_bytes)?;
-        if read_bytes == 0 || line_bytes.last() != Some(&b'\n') {
-            return Ok(consumed_offset);
-        }
-        consumed_offset += read_bytes as u64;
-        if let Ok(line) = std::str::from_utf8(&line_bytes[..read_bytes - 1]) {
+    while let Some(line_length) = next_complete_line(&mut reader, &mut line_bytes)? {
+        consumed_offset += line_length as u64;
+        if let Ok(line) = std::str::from_utf8(&line_bytes[..line_length - 1]) {
             each_line(line);
         }
     }
+    Ok(consumed_offset)
+}
+
+fn reader_at(path: &Path, start_offset: u64) -> io::Result<BufReader<File>> {
+    let mut file = File::open(path)?;
+    file.seek(SeekFrom::Start(start_offset))?;
+    Ok(BufReader::with_capacity(READ_BUFFER_BYTES, file))
+}
+
+fn next_complete_line(
+    reader: &mut impl BufRead,
+    line_bytes: &mut Vec<u8>,
+) -> io::Result<Option<usize>> {
+    line_bytes.clear();
+    let read_bytes = reader.read_until(b'\n', line_bytes)?;
+    Ok((line_bytes.last() == Some(&b'\n')).then_some(read_bytes))
 }

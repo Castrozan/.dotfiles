@@ -62,30 +62,40 @@ pub struct UsageRecord {
     pub is_sidechain: Option<bool>,
 }
 
+impl AssistantMessage {
+    fn split_usage(mut self) -> Option<(Self, MessageUsage)> {
+        let usage = self.usage.take()?;
+        Some((self, usage))
+    }
+}
+
 impl TranscriptLine {
     pub fn into_usage_record(self) -> Option<UsageRecord> {
-        if let (Some(timestamp), Some(mut message)) = (self.timestamp, self.message)
-            && let Some(usage) = message.usage.take()
-        {
-            return Some(UsageRecord {
+        let direct_message = self.message.and_then(AssistantMessage::split_usage);
+        match (self.timestamp, direct_message) {
+            (Some(timestamp), Some((message, usage))) => Some(UsageRecord {
                 timestamp,
                 message,
                 usage,
                 cost_usd: self.cost_usd,
                 request_id: self.request_id,
                 is_sidechain: self.is_sidechain,
-            });
+            }),
+            _ => self.data?.message?.into_usage_record(),
         }
-        let progress = self.data?.message?;
-        let mut message = progress.message?;
-        let usage = message.usage.take()?;
+    }
+}
+
+impl AgentProgressMessage {
+    fn into_usage_record(self) -> Option<UsageRecord> {
+        let (message, usage) = self.message?.split_usage()?;
         Some(UsageRecord {
-            timestamp: progress.timestamp?,
+            timestamp: self.timestamp?,
             message,
             usage,
-            cost_usd: progress.cost_usd,
-            request_id: progress.request_id,
-            is_sidechain: progress.is_sidechain,
+            cost_usd: self.cost_usd,
+            request_id: self.request_id,
+            is_sidechain: self.is_sidechain,
         })
     }
 }

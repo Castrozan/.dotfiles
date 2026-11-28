@@ -14,12 +14,18 @@ pub struct ClaudeDataLocations<'a> {
 
 impl ClaudeDataLocations<'_> {
     pub fn data_directories(&self) -> Result<Vec<PathBuf>> {
-        let Some(configured_list) = self
-            .claude_config_dir
+        match self.configured_list() {
+            None => Ok(unique_directories_with_projects(self.default_directories())),
+            Some(configured_list) => self.configured_directories(configured_list),
+        }
+    }
+
+    fn configured_list(&self) -> Option<&str> {
+        self.claude_config_dir
             .filter(|list| !list.trim().is_empty())
-        else {
-            return Ok(unique_directories_with_projects(self.default_directories()));
-        };
+    }
+
+    fn configured_directories(&self, configured_list: &str) -> Result<Vec<PathBuf>> {
         let configured = unique_directories_with_projects(
             configured_list
                 .split(',')
@@ -78,14 +84,18 @@ pub fn transcript_files(data_directories: &[PathBuf]) -> Vec<PathBuf> {
         .iter()
         .flat_map(|directory| WalkDir::new(directory.join(PROJECTS_DIRECTORY)).follow_links(false))
         .filter_map(Result::ok)
-        .filter(|entry| entry.file_type().is_file())
+        .filter(is_transcript)
         .map(walkdir::DirEntry::into_path)
-        .filter(|path| {
-            path.extension()
-                .is_some_and(|extension| extension == TRANSCRIPT_EXTENSION)
-        })
         .collect();
     files.sort();
     files.dedup();
     files
+}
+
+fn is_transcript(entry: &walkdir::DirEntry) -> bool {
+    entry.file_type().is_file()
+        && entry
+            .path()
+            .extension()
+            .is_some_and(|extension| extension == TRANSCRIPT_EXTENSION)
 }

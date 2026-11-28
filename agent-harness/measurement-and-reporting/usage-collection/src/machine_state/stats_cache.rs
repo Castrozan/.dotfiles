@@ -64,27 +64,45 @@ fn complete_daily_activity(daily_entries: Option<&Value>) -> Option<Vec<DailyAct
 }
 
 fn measured_daily_activity(daily_entry: &Value) -> Option<DailyActivity> {
-    let date = daily_entry
-        .get("date")?
-        .as_str()
-        .filter(|date| is_canonical_calendar_date(date))?;
-    let counter = |field: &str| daily_entry.get(field).and_then(Value::as_u64);
+    let [message_count, session_count, tool_call_count] = daily_counters(
+        daily_entry,
+        ["messageCount", "sessionCount", "toolCallCount"],
+    )?;
     Some(DailyActivity {
-        date: date.to_string(),
-        message_count: counter("messageCount")?,
-        session_count: counter("sessionCount")?,
-        tool_call_count: counter("toolCallCount")?,
+        date: canonical_date_field(daily_entry)?,
+        message_count,
+        session_count,
+        tool_call_count,
     })
 }
 
+fn canonical_date_field(daily_entry: &Value) -> Option<String> {
+    let date = daily_entry.get("date")?.as_str()?;
+    is_canonical_calendar_date(date).then(|| date.to_string())
+}
+
+fn daily_counters<const COUNT: usize>(
+    daily_entry: &Value,
+    fields: [&str; COUNT],
+) -> Option<[u64; COUNT]> {
+    let mut counters = [0u64; COUNT];
+    for (counter, field) in counters.iter_mut().zip(fields) {
+        *counter = daily_entry.get(field)?.as_u64()?;
+    }
+    Some(counters)
+}
+
 pub fn is_canonical_calendar_date(value: &str) -> bool {
-    value.len() == CALENDAR_DATE_LENGTH
-        && value.bytes().enumerate().all(|(index, byte)| {
-            if index == 4 || index == 7 {
-                byte == b'-'
-            } else {
-                byte.is_ascii_digit()
-            }
-        })
-        && NaiveDate::parse_from_str(value, "%Y-%m-%d").is_ok()
+    has_calendar_date_shape(value) && NaiveDate::parse_from_str(value, "%Y-%m-%d").is_ok()
+}
+
+fn has_calendar_date_shape(value: &str) -> bool {
+    value.len() == CALENDAR_DATE_LENGTH && value.bytes().enumerate().all(calendar_date_byte_matches)
+}
+
+fn calendar_date_byte_matches((index, byte): (usize, u8)) -> bool {
+    match index {
+        4 | 7 => byte == b'-',
+        _ => byte.is_ascii_digit(),
+    }
 }

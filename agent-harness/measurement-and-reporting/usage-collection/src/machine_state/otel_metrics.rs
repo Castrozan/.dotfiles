@@ -59,16 +59,16 @@ struct OtelMetricsAccumulator {
 
 impl OtelMetricsAccumulator {
     fn add_document(&mut self, document: &Value) {
-        let metrics = array_at(Some(document), "resourceMetrics")
-            .iter()
-            .flat_map(|resource_metrics| array_at(Some(resource_metrics), "scopeMetrics"))
-            .flat_map(|scope_metrics| array_at(Some(scope_metrics), "metrics"));
-        for metric in metrics {
-            match metric.get("name").and_then(Value::as_str) {
-                Some(TOKEN_USAGE_METRIC_NAME) => self.token_usage.add_metric(metric),
-                Some(COST_USAGE_METRIC_NAME) => self.cost_usage.add_metric(metric),
-                _ => {}
-            }
+        for metric in document_metrics(document) {
+            self.add_metric(metric);
+        }
+    }
+
+    fn add_metric(&mut self, metric: &Value) {
+        match metric.get("name").and_then(Value::as_str) {
+            Some(TOKEN_USAGE_METRIC_NAME) => self.token_usage.add_metric(metric),
+            Some(COST_USAGE_METRIC_NAME) => self.cost_usage.add_metric(metric),
+            _ => {}
         }
     }
 
@@ -110,6 +110,13 @@ pub fn summarize_otel_metrics_documents(documents: &[Value]) -> OtelMetricsSumma
         .iter()
         .for_each(|document| accumulator.add_document(document));
     accumulator.summary()
+}
+
+fn document_metrics(document: &Value) -> impl Iterator<Item = &Value> {
+    array_at(Some(document), "resourceMetrics")
+        .iter()
+        .flat_map(|resource_metrics| array_at(Some(resource_metrics), "scopeMetrics"))
+        .flat_map(|scope_metrics| array_at(Some(scope_metrics), "metrics"))
 }
 
 fn array_at<'a>(container: Option<&'a Value>, field: &str) -> &'a [Value] {

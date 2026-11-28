@@ -34,11 +34,16 @@ fn has_no_credentials_or_suffix(endpoint: &Url) -> bool {
 fn has_permitted_transport(endpoint: &Url) -> bool {
     match endpoint.scheme() {
         "https" => true,
-        "http" => {
-            matches!(endpoint.host(), Some(Host::Domain(LOOPBACK_HOSTNAME)))
-                || endpoint.host() == Some(Host::Ipv4(Ipv4Addr::LOCALHOST))
-                || endpoint.host() == Some(Host::Ipv6(Ipv6Addr::LOCALHOST))
-        }
+        "http" => is_loopback_host(endpoint),
         _ => false,
+    }
+}
+
+fn is_loopback_host(endpoint: &Url) -> bool {
+    match endpoint.host() {
+        Some(Host::Domain(name)) => name == LOOPBACK_HOSTNAME,
+        Some(Host::Ipv4(address)) => address == Ipv4Addr::LOCALHOST,
+        Some(Host::Ipv6(address)) => address == Ipv6Addr::LOCALHOST,
+        None => false,
     }
 }

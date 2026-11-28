@@ -1,7 +1,10 @@
+mod entry_queries;
+mod entry_recorder;
 mod entry_store;
 mod ingestion;
 mod pricing_reconciliation;
 mod report;
+mod row_columns;
 mod schema;
 
 use std::path::Path;
@@ -20,10 +23,7 @@ pub struct UsageLedger {
 
 impl UsageLedger {
     pub fn open(ledger_path: &Path) -> Result<Self> {
-        if let Some(directory) = ledger_path.parent() {
-            std::fs::create_dir_all(directory)
-                .with_context(|| format!("could not create {}", directory.display()))?;
-        }
+        ensure_parent_directory(ledger_path)?;
         let connection = Connection::open(ledger_path).with_context(|| {
             format!("could not open the usage ledger {}", ledger_path.display())
         })?;
@@ -31,4 +31,12 @@ impl UsageLedger {
         schema::prepare_schema(&connection).context("could not prepare the usage ledger schema")?;
         Ok(Self { connection })
     }
+}
+
+fn ensure_parent_directory(path: &Path) -> Result<()> {
+    if let Some(directory) = path.parent() {
+        std::fs::create_dir_all(directory)
+            .with_context(|| format!("could not create {}", directory.display()))?;
+    }
+    Ok(())
 }

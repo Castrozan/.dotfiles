@@ -40,12 +40,20 @@ const RECREATE_LEDGER_TABLES: &str = "
 ";
 
 pub fn prepare_schema(connection: &Connection) -> Result<()> {
-    connection.pragma_update(None, "journal_mode", "WAL")?;
-    connection.pragma_update(None, "synchronous", "NORMAL")?;
+    use_write_ahead_journal(connection)?;
     connection.execute(CREATE_METADATA_TABLE, [])?;
     if read_metadata(connection, SCHEMA_VERSION_KEY)?.as_deref() == Some(LEDGER_SCHEMA_VERSION) {
         return Ok(());
     }
+    recreate_ledger_tables(connection)
+}
+
+fn use_write_ahead_journal(connection: &Connection) -> Result<()> {
+    connection.pragma_update(None, "journal_mode", "WAL")?;
+    connection.pragma_update(None, "synchronous", "NORMAL")
+}
+
+fn recreate_ledger_tables(connection: &Connection) -> Result<()> {
     connection.execute_batch(RECREATE_LEDGER_TABLES)?;
     write_metadata(connection, SCHEMA_VERSION_KEY, LEDGER_SCHEMA_VERSION)
 }
