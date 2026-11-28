@@ -5,7 +5,11 @@ import tempfile
 
 from agent_api.contract import CapabilityError
 from agent_api.inventory import self_name
-from agent_api.providers.host_transport import HOST_TIMEOUT_SECONDS, run_job
+from agent_api.providers.host_transport import (
+    HOST_TIMEOUT_SECONDS,
+    TRANSFER_TIMEOUT_SECONDS,
+    run_job,
+)
 
 
 def tree_key(directory):
@@ -55,7 +59,7 @@ def copy_tree(entry, directory):
         finally:
             archive.stdout.close()
             try:
-                archive.wait(timeout=HOST_TIMEOUT_SECONDS)
+                archive.wait(timeout=TRANSFER_TIMEOUT_SECONDS)
             except subprocess.TimeoutExpired:
                 archive.kill()
                 archive.wait()

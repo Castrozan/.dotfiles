@@ -7,6 +7,7 @@ import sys
 from agent_api.contract import CapabilityError
 
 HOST_TIMEOUT_SECONDS = 120
+TRANSFER_TIMEOUT_SECONDS = 600
 JOB_PROGRAM = "agent-api-job"
 FAILURE_CODE = re.compile(r"^[a-z_]{1,64}$")
 
@@ -41,6 +42,12 @@ def failure_code(stderr):
     return "host_command_failed"
 
 
+def host_timeout(stdin, stdout):
+    if stdin is subprocess.DEVNULL and stdout is subprocess.PIPE:
+        return HOST_TIMEOUT_SECONDS
+    return TRANSFER_TIMEOUT_SECONDS
+
+
 def run_on_host(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE):
     try:
         completed = subprocess.run(
@@ -51,7 +58,7 @@ def run_on_host(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE):
             text=True,
             errors="replace",
             check=False,
-            timeout=HOST_TIMEOUT_SECONDS,
+            timeout=host_timeout(stdin, stdout),
         )
     except OSError:
         raise CapabilityError("host_unavailable") from None
