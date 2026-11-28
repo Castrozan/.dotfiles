@@ -8,7 +8,6 @@ from ci_watcher.transient_failures import (
 )
 
 RUN_VERDICT_FIELDS = "databaseId,attempt,headSha,status,conclusion,url,jobs"
-WATCH_PROGRESS_SECONDS = 60
 
 
 def stop_process(process):
@@ -54,18 +53,20 @@ def _view_run(target, fields):
 
 
 def _completed_run_conclusion(target):
-    try:
-        run = _view_run(target, "status,conclusion")
-    except subprocess.CalledProcessError:
-        return None
+    run = _view_run(target, "status,conclusion")
     return run["conclusion"] if run["status"] == "completed" else None
 
 
-def _final_status_or_none(target, watcher_status):
+def _final_status_or_none(target, watcher_status, failures):
     if watcher_status == 0:
         return 0
-    conclusion = _completed_run_conclusion(target)
+    try:
+        conclusion = _completed_run_conclusion(target)
+    except subprocess.CalledProcessError as error:
+        failures.record(f"reading the run status failed: {error}")
+        return None
     if conclusion is None:
+        failures.reset()
         return None
     return 0 if conclusion == "success" else watcher_status
 
@@ -81,18 +82,15 @@ def wait_for_run(target, directory, timeout):
     failures = ConsecutiveTransientFailures()
     with (directory / "watch.log").open("w") as output:
         while True:
-            watch_started = time.monotonic()
             watcher_status = _watch_once(target, output, deadline)
-            final_status = _final_status_or_none(target, watcher_status)
+            final_status = _final_status_or_none(target, watcher_status, failures)
             if final_status is not None:
                 return final_status
-            if time.monotonic() - watch_started > WATCH_PROGRESS_SECONDS:
-                failures.reset()
-            description = (
-                f"the native watcher exited {watcher_status} before the run completed"
+            _pause_before_retry(
+                output,
+                f"the native watcher exited {watcher_status} before the run completed",
+                deadline,
             )
-            failures.record(description)
-            _pause_before_retry(output, description, deadline)
 
 
 def _view_verdict(target, directory):

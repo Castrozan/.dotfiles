@@ -85,15 +85,15 @@ def test_collects_one_terminal_verdict_and_all_job_logs(
 
 
 @pytest.mark.parametrize(
-    "watch_exits,run_statuses,outcome,status,watch_count,seconds_per_clock_read",
+    "watch_exits,run_statuses,outcome,status,watch_count",
     [
-        ([1, 0], ["in_progress"], "passed", 0, 2, 0),
-        ([1], ["completed"], "passed", 0, 1, 0),
-        ([1] * 5, ["in_progress"] * 5, "error", 2, 5, 0),
-        ([1] * 6 + [0], ["in_progress"] * 6, "passed", 0, 7, 31),
+        ([1, 0], ["in_progress"], "passed", 0, 2),
+        ([1], ["completed"], "passed", 0, 1),
+        ([1] * 8 + [0], ["in_progress"] * 8, "passed", 0, 9),
+        ([1] * 5, ["unreachable"] * 5, "error", 2, 5),
     ],
 )
-def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
+def test_a_dropped_watch_restarts_until_the_status_read_fails_five_in_a_row(
     github_run,
     monkeypatch,
     tmp_path,
@@ -102,13 +102,9 @@ def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
     outcome,
     status,
     watch_count,
-    seconds_per_clock_read,
 ):
     result, process, calls = github_run
     process.wait.side_effect = watch_exits
-    clock_reads = iter(range(0, 10**6, seconds_per_clock_read or 1))
-    if seconds_per_clock_read:
-        monkeypatch.setattr(github.time, "monotonic", lambda: next(clock_reads))
     statuses = iter(run_statuses)
     verdict_reads = iter([subprocess.CalledProcessError(1, "gh"), result])
     monkeypatch.setattr(github.time, "sleep", lambda seconds: None)
@@ -117,6 +113,8 @@ def test_a_dropped_connection_restarts_the_watch_until_five_in_a_row(
         calls.append(command)
         if command[-2:] == ["--json", "status,conclusion"]:
             run_status = next(statuses)
+            if run_status == "unreachable":
+                raise subprocess.CalledProcessError(1, command)
             conclusion = "success" if run_status == "completed" else ""
             return subprocess.CompletedProcess(
                 command, 0, json.dumps({"status": run_status, "conclusion": conclusion})
