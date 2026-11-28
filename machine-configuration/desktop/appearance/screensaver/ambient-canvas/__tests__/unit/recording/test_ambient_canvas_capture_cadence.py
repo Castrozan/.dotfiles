@@ -15,6 +15,7 @@ def test_launcher_defaults_to_sixty_frames_per_second():
 RECORDER_HARNESS_SOURCE = r"""
 global.window = global;
 const frames = [];
+const progressReports = [];
 const configuredEncoders = [];
 window.location = { search: '?record=1&seconds=3' };
 window.requestAnimationFrame = callback => callback();
@@ -28,6 +29,7 @@ window.AmbientCanvasRecordingCompositor = {
 };
 window.AmbientCanvasRecordingEncoder = {
   createVideoFrame: window.AmbientCanvasRecordingEncoder.createVideoFrame,
+  reportRecordingProgress(url) { progressReports.push(url); },
   createConfiguredMuxerAndEncoder(width, height, framesPerSecond, bitsPerPixelPerFrame) {
     configuredEncoders.push({width, height, framesPerSecond, bitsPerPixelPerFrame});
     return {
@@ -39,11 +41,10 @@ window.AmbientCanvasRecordingEncoder = {
       },
     };
   },
-  reportRecordingProgress() {},
   async applyEncoderBackpressure() {},
   async uploadRecordedSegment() {},
   async uploadSegmentManifest() {
-    process.stdout.write(JSON.stringify({frames, configuredEncoders}));
+    process.stdout.write(JSON.stringify({frames, configuredEncoders, progressReports}));
   },
 };
 window.AmbientCanvasRecordingFingerprint = {
@@ -95,8 +96,10 @@ def record_three_seconds_with_stubbed_encoder():
 
 
 def test_recorder_produces_contiguous_sixty_frame_timestamps():
-    frames = record_three_seconds_with_stubbed_encoder()["frames"]
+    result = record_three_seconds_with_stubbed_encoder()
+    frames = result["frames"]
     assert len(frames) == 180
+    assert len(result["progressReports"]) == 3
     assert frames[0]["timestamp"] == 0
     assert frames[-1]["timestamp"] + frames[-1]["duration"] == 3_000_000
     assert all(
