@@ -100,13 +100,24 @@ the operation is claimed. An explicit input value always wins. The first directi
 
 ```sh
 agent-api directives
+agent-api directives --guidance
 agent-api direct compute.placement <host>
+agent-api direct compute.placement <host> --no-propagate
 ```
 
-`directives` lists every directive with its targets and current target, and creates no state. `direct` accepts only a
-target from the inventory; any other target fails with `unsupported_target` and leaves the previous target in place.
-Choices are stored in `directives.json` in the state directory. That file is per machine; nothing synchronises it
-between machines.
+`directives` lists every directive with its targets, current target and guidance sentence, and creates no state.
+`direct` accepts only a target from the inventory; any other target fails with `unsupported_target` and leaves the
+previous target in place. Choices are stored in `directives.json` in the state directory, one file per machine.
+
+`direct` writes locally, then runs `agent-api direct <id> <target> --no-propagate` over ssh on every inventory host
+that is reached over ssh and has `owned` trust, one after another. The result carries `"propagated": {"<host>":
+true|false}`. An unreachable or failing host is reported as `false` and never fails the local change, and it keeps its
+old target until the next `direct`. A target names the same machine everywhere, so `kira` is local on kira and ssh on
+the others.
+
+`directives --guidance` prints one line per directive whose current target resolves to a host reached over ssh, and
+nothing at all otherwise. A session-start hook passes that output to every agent session as context. It stays silent
+for `local` and for the machine's own name.
 
 The resolved target is part of the request identity, so replaying one UUID after its directive moved conflicts. A
 stored target that has left the inventory fails with `unsupported_target` instead of falling back to the default.
@@ -115,40 +126,57 @@ Discovery shows which directive governs each capability. The HTTP transport does
 ## Remote compute
 
 `compute.hosts` lists the compute hosts with their system, size and trust tier, and contacts none of them.
-`compute.submit` starts a command as a resource-limited job on a host and returns at once. `compute.status`,
-`compute.logs` and `compute.cancel` take the `job` returned by submit, which is the submit operation's UUID.
+`compute.submit` starts a command as a resource-limited job on a host and returns at once, with the `job` (the submit
+operation's UUID), the `host`, the `runner` and `limits_enforced`. `compute.status`, `compute.logs`, `compute.cancel`
+and `compute.fetch` take that `job`.
 
 ```sh
-agent-api run compute.submit --input '{"command":["nix","run","nixpkgs#hello"]}'
+agent-api run compute.submit --input '{"command":["nix","run","nixpkgs#hello"],"directory":"/path/to/repository"}'
 agent-api run compute.status --input '{"job":"<submit operation UUID>"}'
 agent-api run compute.logs --input '{"job":"<submit operation UUID>"}'
+agent-api run compute.fetch --input '{"job":"<submit operation UUID>","relative_path":"result.txt"}'
 agent-api run compute.cancel --input '{"job":"<submit operation UUID>"}'
 ```
 
-Each job runs as the transient user unit `agent-api-<uuid>.service` on its host, with `MemoryMax`, `CPUQuota` and
-`RuntimeMaxSec` set from the request. Defaults are 2048 MiB, 100 percent of one core and 3600 seconds; the accepted
-ranges are 64 to 65536 MiB, 10 to 6400 percent and 1 to 86400 seconds. Tools that size their parallelism from the
-cgroup quota see one core at the default, so a build needs `cpu_percent` raised to use more. The job's runtime limit is
-separate from the 1 to 600 second deadline of the submit operation itself, which bounds that operation alone.
+The gateway drives `agent-api-job`, a standard-library program installed on every machine: directly for `local`, and as
+`ssh -o BatchMode=yes -o ConnectTimeout=10 <ssh_alias> -- <quoted agent-api-job command>` for another machine.
+`agent-api-job` owns the job on its host and picks the runner: a transient `systemd` user unit where a user manager
+answers, otherwise a detached `supervisor` process, which is the only runner on Darwin. Systemd enforces memory, CPU and
+runtime limits; the supervisor enforces only the runtime limit, and `limits_enforced` names what the host enforced.
 
-Arguments reach the job verbatim. The `local` host runs no shell, remote arguments are shell-quoted before ssh sends
-them, and the unit is created with environment expansion disabled. The job inherits the user manager's environment, not
-the caller's, so it brings its own tools through `nix shell` or `nix run`. The `local` host needs `systemd-run`; where
-it is absent, including Darwin, submit to `local` fails with `unsupported_host`.
+Defaults are 2048 MiB, 100 percent of one core and 3600 seconds; the accepted ranges are 64 to 65536 MiB, 10 to 6400
+percent and 1 to 86400 seconds. Under systemd, tools that size their parallelism from the cgroup quota see one core at
+the default, so a build needs `cpu_percent` raised to use more. The job's runtime limit is separate from the 1 to 600
+second deadline of the submit operation itself.
 
-Remote hosts come from the JSON file named by `AGENT_API_COMPUTE_INVENTORY`: an array of at most 32 objects with
-`name`, `ssh_alias`, `system` and `trust` (`owned` or `rented`), plus optional `cores` and `memory_gigabytes`. Other
-keys are rejected. Names are lowercase, unique and never `local`. A host is reached as
-`ssh -o BatchMode=yes -o ConnectTimeout=10 <ssh_alias> -- <quoted command>`. Nothing is copied to a host yet, so
-`directory` must already exist there.
+Arguments reach the job verbatim: `local` runs no shell, remote arguments are shell-quoted before ssh sends them, and
+the runner expands nothing. A job inherits its host's user manager or supervisor environment, not the caller's, so it
+brings its own tools through `nix shell` or `nix run`. Without `directory` the job runs in the home directory.
 
-Job state lives in the host's systemd user manager. A finished job stays inspectable until `compute.cancel` releases
-its unit, after which status reports `unknown`. Status reports `running`, `succeeded`, `failed` or `unknown`, with the
-exit code once the job has finished. Logs return the last `lines` journal lines (default 200, at most 2000), keeping at
-most 262,144 characters from the end, so the escaped result stays under the 4 MiB result limit.
+`directory` is an absolute local path. For `local` it becomes the working directory as it is. For another machine the
+gateway copies the working tree first: it lists `git ls-files -co --exclude-standard`, drops entries that are
+directories or no longer exist, and streams a tar of exactly those files to the host, so files git ignores never leave
+the machine. A directory outside a git repository fails with `directory_not_a_repository`. The host keeps one tree per
+source machine and directory, so a later submit reuses it; each copy removes only the files its predecessor delivered
+and this one dropped, which leaves build outputs in place. A copy stops at 512 MiB.
 
-Status, logs and cancel find the host from the retained submit request, not from the current directive. The gateway
-never retries a submit.
+`compute.fetch` brings a file or directory the job left in its working directory back as the artifact `fetch.tar` of
+the fetch operation. `relative_path` is relative to that directory and may not leave it.
+
+The inventory is the JSON file named by `AGENT_API_COMPUTE_INVENTORY`, generated by Nix from the machine registry: an
+object with `self`, this machine's name, and `hosts`, at most 32 objects with `name` and `trust` (`owned` or `rented`),
+plus optional `ssh_alias` (default: the name), `system`, `cores` and `memory_gigabytes`. `compute.hosts` lists `local`
+first, then every inventory host: the one named `self` is reached as `local` and every other one over ssh. Without the
+variable only `local` exists.
+
+Status reports `running`, `succeeded`, `failed` or `unknown`, with the exit code and result once the job has finished.
+A finished job stays inspectable until `compute.cancel` releases it, after which status reports `unknown`. Logs return
+the last `lines` lines (default 200, at most 2000), keeping at most 262,144 characters from the end, so the escaped
+result stays under the 4 MiB result limit. A far-side failure surfaces as the error code the host program printed, or
+as `host_command_failed` when it printed none.
+
+Status, logs, cancel and fetch find the host from the retained submit request, not from the current directive. The
+gateway never retries a submit.
 
 ## Private HTTP transport
 
