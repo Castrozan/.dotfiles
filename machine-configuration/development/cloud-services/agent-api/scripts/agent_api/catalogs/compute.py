@@ -7,8 +7,9 @@ def submit_capability():
     return capability(
         "compute.submit",
         "systemd",
-        "Start a command as a resource-limited systemd user unit on a compute host and return at once; "
-        "the host defaults to the compute.placement directive and the returned job feeds status, logs and cancel.",
+        "Start a command as a resource-limited job on a compute host and return at once; the host defaults to "
+        "the compute.placement directive, directory is a local path that is copied to the host when it is "
+        "another machine, and the returned job feeds status, logs, cancel and fetch.",
         object_schema(
             {
                 "command": {
@@ -64,7 +65,7 @@ def compute_capabilities():
         capability(
             "compute.logs",
             "systemd",
-            "Return the most recent output lines of a submitted job from its host's journal.",
+            "Return the most recent output lines of a submitted job from its host.",
             object_schema(
                 {
                     "job": JOB,
@@ -81,7 +82,16 @@ def compute_capabilities():
         capability(
             "compute.cancel",
             "systemd",
-            "Stop a submitted job and release its unit; a finished job stays inspectable until cancelled.",
+            "Stop a submitted job and release it; a finished job stays inspectable until cancelled.",
             object_schema({"job": JOB}, ["job"]),
+        ),
+        capability(
+            "compute.fetch",
+            "systemd",
+            "Retrieve a file or directory a submitted job left in its working directory as the tar artifact "
+            "fetch.tar; relative_path is relative to that directory.",
+            object_schema(
+                {"job": JOB, "relative_path": text()}, ["job", "relative_path"]
+            ),
         ),
     ]

@@ -9,29 +9,34 @@ from agent_api.contract import CapabilityError
 LOCAL_HOST = "local"
 INVENTORY_VARIABLE = "AGENT_API_COMPUTE_INVENTORY"
 NIX_ARCHITECTURES = {"arm64": "aarch64"}
+HOST_NAME = {"type": "string", "pattern": "^[a-z][a-z0-9-]{0,62}$"}
 INVENTORY_SCHEMA = {
-    "type": "array",
-    "maxItems": 32,
-    "items": {
-        "type": "object",
-        "properties": {
-            "name": {
-                "type": "string",
-                "pattern": "^[a-z][a-z0-9-]{0,62}$",
-                "not": {"const": LOCAL_HOST},
+    "type": "object",
+    "properties": {
+        "self": HOST_NAME,
+        "hosts": {
+            "type": "array",
+            "maxItems": 32,
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {**HOST_NAME, "not": {"const": LOCAL_HOST}},
+                    "ssh_alias": {
+                        "type": "string",
+                        "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$",
+                    },
+                    "system": {"type": "string", "pattern": "^[a-z0-9_]+-[a-z]+$"},
+                    "cores": {"type": "integer", "minimum": 1},
+                    "memory_gigabytes": {"type": "integer", "minimum": 1},
+                    "trust": {"enum": ["owned", "rented"]},
+                },
+                "required": ["name", "trust"],
+                "additionalProperties": False,
             },
-            "ssh_alias": {
-                "type": "string",
-                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]{0,252}$",
-            },
-            "system": {"type": "string", "pattern": "^[a-z0-9_]+-[a-z]+$"},
-            "cores": {"type": "integer", "minimum": 1},
-            "memory_gigabytes": {"type": "integer", "minimum": 1},
-            "trust": {"enum": ["owned", "rented"]},
         },
-        "required": ["name", "ssh_alias", "system", "trust"],
-        "additionalProperties": False,
     },
+    "required": ["self", "hosts"],
+    "additionalProperties": False,
 }
 
 
@@ -46,24 +51,40 @@ def local_host():
     }
 
 
-def remote_hosts():
+def load_inventory():
     inventory_path = os.environ.get(INVENTORY_VARIABLE)
     if not inventory_path:
-        return []
+        return {"self": LOCAL_HOST, "hosts": []}
     with open(inventory_path, "rb") as stream:
         try:
-            entries = json.load(stream)
+            inventory = json.load(stream)
         except (ValueError, UnicodeError):
             raise CapabilityError("invalid_inventory") from None
-    if next(Draft202012Validator(INVENTORY_SCHEMA).iter_errors(entries), None):
+    if next(Draft202012Validator(INVENTORY_SCHEMA).iter_errors(inventory), None):
         raise CapabilityError("invalid_inventory")
-    if len({entry["name"] for entry in entries}) != len(entries):
+    names = [entry["name"] for entry in inventory["hosts"]]
+    if len(set(names)) != len(names):
         raise CapabilityError("invalid_inventory")
-    return [{**entry, "transport": "ssh"} for entry in entries]
+    return inventory
+
+
+def self_name():
+    return load_inventory()["self"]
 
 
 def hosts():
-    return [local_host(), *remote_hosts()]
+    inventory = load_inventory()
+    return [
+        local_host(),
+        *(
+            {
+                "ssh_alias": entry["name"],
+                **entry,
+                "transport": "local" if entry["name"] == inventory["self"] else "ssh",
+            }
+            for entry in inventory["hosts"]
+        ),
+    ]
 
 
 def host(name):

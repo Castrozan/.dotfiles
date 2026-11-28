@@ -1,3 +1,5 @@
+import json
+import re
 import shlex
 import subprocess
 import sys
@@ -5,6 +7,8 @@ import sys
 from agent_api.contract import CapabilityError
 
 HOST_TIMEOUT_SECONDS = 120
+JOB_PROGRAM = "agent-api-job"
+FAILURE_CODE = re.compile(r"^[a-z_]{1,64}$")
 
 
 def host_command(entry, arguments):
@@ -22,12 +26,28 @@ def host_command(entry, arguments):
     ]
 
 
-def run_on_host(entry, arguments):
+def job_command(entry, arguments):
+    return host_command(entry, [JOB_PROGRAM, *arguments])
+
+
+def failure_code(stderr):
+    lines = stderr.strip().splitlines()
+    try:
+        code = json.loads(lines[-1])["error"]
+    except (IndexError, ValueError, KeyError, TypeError):
+        return "host_command_failed"
+    if isinstance(code, str) and FAILURE_CODE.match(code):
+        return code
+    return "host_command_failed"
+
+
+def run_on_host(command, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE):
     try:
         completed = subprocess.run(
-            host_command(entry, arguments),
-            stdin=subprocess.DEVNULL,
-            capture_output=True,
+            command,
+            stdin=stdin,
+            stdout=stdout,
+            stderr=subprocess.PIPE,
             text=True,
             errors="replace",
             check=False,
@@ -38,4 +58,16 @@ def run_on_host(entry, arguments):
     except subprocess.TimeoutExpired:
         raise CapabilityError("host_unresponsive") from None
     sys.stderr.write(completed.stderr)
-    return completed
+    if completed.returncode != 0:
+        raise CapabilityError(failure_code(completed.stderr))
+    return completed.stdout
+
+
+def run_job(entry, arguments, stdin=subprocess.DEVNULL, stdout=subprocess.PIPE):
+    output = run_on_host(job_command(entry, arguments), stdin, stdout)
+    if stdout is not subprocess.PIPE:
+        return None
+    try:
+        return json.loads(output)
+    except ValueError:
+        raise CapabilityError("invalid_host_response") from None

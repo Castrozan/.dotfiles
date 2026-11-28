@@ -3,7 +3,8 @@ from pathlib import Path
 
 from agent_api.contract import CapabilityError
 from agent_api.files import private_directory, write_json
-from agent_api.inventory import LOCAL_HOST, hosts
+from agent_api.inventory import LOCAL_HOST, host, hosts
+from agent_api.providers.host_transport import host_command, run_on_host
 
 
 def directive_catalog():
@@ -13,6 +14,8 @@ def directive_catalog():
             "description": "Host that runs compute.submit jobs when the request names none.",
             "targets": [entry["name"] for entry in hosts()],
             "default": LOCAL_HOST,
+            "guidance": "Compute placement is {target}: submit long or heavy commands as agent-api compute jobs "
+            "so they run on {target}.",
         }
     ]
 
@@ -24,6 +27,23 @@ def describe_directive(directive_id):
     if directive is None:
         raise CapabilityError("unsupported_directive")
     return directive
+
+
+def propagate_choice(directive_id, target):
+    propagated = {}
+    for entry in hosts():
+        if entry["transport"] != "ssh" or entry["trust"] != "owned":
+            continue
+        command = host_command(
+            entry, ["agent-api", "direct", directive_id, target, "--no-propagate"]
+        )
+        try:
+            run_on_host(command)
+        except CapabilityError:
+            propagated[entry["name"]] = False
+        else:
+            propagated[entry["name"]] = True
+    return propagated
 
 
 class DirectiveStore:
@@ -43,13 +63,23 @@ class DirectiveStore:
             raise CapabilityError("unsupported_target")
         return target
 
-    def direct(self, directive_id, target):
+    def direct(self, directive_id, target, propagate=True):
         directive = describe_directive(directive_id)
         if target not in directive["targets"]:
             raise CapabilityError("unsupported_target")
         private_directory(self.path.parent)
         write_json(self.path, {**self.chosen_targets(), directive_id: target})
-        return {**directive, "target": target}
+        directed = {**directive, "target": target}
+        if not propagate:
+            return directed
+        return {**directed, "propagated": propagate_choice(directive_id, target)}
+
+    def guidance_lines(self):
+        return [
+            directive["guidance"].format(target=self.target(directive["id"]))
+            for directive in directive_catalog()
+            if host(self.target(directive["id"]))["transport"] == "ssh"
+        ]
 
     def listing(self):
         chosen_targets = self.chosen_targets()

@@ -37,15 +37,25 @@ def build_parser():
         "inspect", help="Show one capability's input schema and payment requirements."
     )
     inspect.add_argument("capability")
-    commands.add_parser(
+    directives = commands.add_parser(
         "directives",
         help="Show every directive with its targets and current target; creates no state.",
+    )
+    directives.add_argument(
+        "--guidance",
+        action="store_true",
+        help="Print the guidance lines of directives that point at another machine, one per line.",
     )
     direct = commands.add_parser(
         "direct", help="Point one directive at one of its targets."
     )
     direct.add_argument("directive")
     direct.add_argument("target")
+    direct.add_argument(
+        "--no-propagate",
+        action="store_true",
+        help="Change only this machine instead of also pushing the choice to other owned machines.",
+    )
     run = commands.add_parser(
         "run",
         help="Execute one capability; inspect failed jobs before selecting another UUID.",
@@ -123,7 +133,13 @@ def execute_directive(args):
     store = DirectiveStore(args.state_directory)
     if args.command == "directives":
         return {"directives": store.listing()}
-    return store.direct(args.directive, args.target)
+    return store.direct(args.directive, args.target, propagate=not args.no_propagate)
+
+
+def print_guidance(args):
+    for line in DirectiveStore(args.state_directory).guidance_lines():
+        print(line)
+    return 0
 
 
 def execute(args):
@@ -149,6 +165,8 @@ def execute_mode(args):
         return execute_worker(args.directory)
     if args.command == "serve":
         return serve_api(args)
+    if args.command == "directives" and args.guidance:
+        return print_guidance(args)
     print(json.dumps(execute(args), ensure_ascii=False, allow_nan=False, indent=2))
     return 0
 

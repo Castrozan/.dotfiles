@@ -5,14 +5,10 @@ from pathlib import PurePosixPath
 from agent_api.catalog import describe
 from agent_api.contract import CapabilityError, validate_operation_id
 from agent_api.inventory import host, hosts
-from agent_api.providers.host_transport import run_on_host
+from agent_api.providers.host_transport import JOB_PROGRAM, run_job
+from agent_api.providers.tree_copy import copy_tree
 
-MAXIMUM_LOG_CHARACTERS = 256 * 1024
-STATUS_PROPERTIES = ("ActiveState", "SubState", "Result", "ExecMainStatus")
-
-
-def unit_name(job):
-    return f"agent-api-{job}.service"
+FETCH_ARTIFACT = "fetch.tar"
 
 
 def submit_limit(inputs, name):
@@ -20,21 +16,28 @@ def submit_limit(inputs, name):
     return inputs.get(name, schema["default"])
 
 
-def submit_arguments(job, inputs):
-    arguments = [
-        "systemd-run",
-        "--user",
-        "--quiet",
-        f"--unit={unit_name(job)}",
-        "--expand-environment=no",
-        "--property=RemainAfterExit=yes",
-        f"--property=MemoryMax={submit_limit(inputs, 'memory_megabytes')}M",
-        f"--property=CPUQuota={submit_limit(inputs, 'cpu_percent')}%",
-        f"--property=RuntimeMaxSec={submit_limit(inputs, 'runtime_seconds')}",
+def job_location(entry, inputs):
+    if "directory" not in inputs:
+        return []
+    if entry["transport"] == "local":
+        return ["--directory", inputs["directory"]]
+    return ["--tree", copy_tree(entry, inputs["directory"])]
+
+
+def start_arguments(job, entry, inputs):
+    return [
+        "start",
+        job,
+        *job_location(entry, inputs),
+        "--memory-megabytes",
+        str(submit_limit(inputs, "memory_megabytes")),
+        "--cpu-percent",
+        str(submit_limit(inputs, "cpu_percent")),
+        "--runtime-seconds",
+        str(submit_limit(inputs, "runtime_seconds")),
+        "--",
+        *inputs["command"],
     ]
-    if "directory" in inputs:
-        arguments.append(f"--working-directory={inputs['directory']}")
-    return [*arguments, "--", *inputs["command"]]
 
 
 def validate_submission(inputs):
@@ -58,58 +61,31 @@ def submitted_host(directory, job):
     return host(envelope["request"]["input"]["host"])
 
 
-def job_state(properties):
-    if properties["ActiveState"] == "failed":
-        return "failed"
-    if properties["ActiveState"] == "active" and properties["SubState"] == "exited":
-        return "succeeded"
-    if properties["ActiveState"] in ("active", "activating", "deactivating"):
-        return "running"
-    return "unknown"
-
-
 def list_hosts(request, directory, operation_id):
     return {"hosts": hosts()}
 
 
 def submit(request, directory, operation_id):
     entry = host(request.input["host"])
-    completed = run_on_host(entry, submit_arguments(operation_id, request.input))
-    if completed.returncode != 0:
-        raise CapabilityError("submission_failed")
+    started = run_job(entry, start_arguments(operation_id, entry, request.input))
     return {
         "job": operation_id,
         "host": entry["name"],
-        "unit": unit_name(operation_id),
+        "runner": started["runner"],
+        "limits_enforced": started["limits_enforced"],
     }
 
 
 def status(request, directory, operation_id):
     job = request.input["job"]
     entry = submitted_host(directory, job)
-    completed = run_on_host(
-        entry,
-        [
-            "systemctl",
-            "--user",
-            "show",
-            unit_name(job),
-            *(f"--property={name}" for name in STATUS_PROPERTIES),
-        ],
-    )
-    properties = dict(
-        line.split("=", 1) for line in completed.stdout.splitlines() if "=" in line
-    )
-    if completed.returncode != 0 or set(STATUS_PROPERTIES) - set(properties):
-        raise CapabilityError("status_unavailable")
-    state = job_state(properties)
-    finished = state in ("succeeded", "failed")
+    answer = run_job(entry, ["status", job])
     return {
         "job": job,
         "host": entry["name"],
-        "state": state,
-        "exit_code": int(properties["ExecMainStatus"]) if finished else None,
-        "result": properties["Result"] if finished else None,
+        "state": answer["state"],
+        "exit_code": answer["exit_code"],
+        "result": answer["result"],
     }
 
 
@@ -120,34 +96,31 @@ def logs(request, directory, operation_id):
         "lines",
         describe("compute.logs")["input_schema"]["properties"]["lines"]["default"],
     )
-    completed = run_on_host(
-        entry,
-        [
-            "journalctl",
-            "--user",
-            f"--unit={unit_name(job)}",
-            "--no-pager",
-            "--output=cat",
-            f"--lines={lines}",
-        ],
-    )
-    if completed.returncode != 0:
-        raise CapabilityError("logs_unavailable")
-    return {
-        "job": job,
-        "host": entry["name"],
-        "log": completed.stdout[-MAXIMUM_LOG_CHARACTERS:],
-    }
+    answer = run_job(entry, ["logs", job, "--lines", str(lines)])
+    return {"job": job, "host": entry["name"], "log": answer["log"]}
 
 
 def cancel(request, directory, operation_id):
     job = request.input["job"]
     entry = submitted_host(directory, job)
-    stopped = run_on_host(entry, ["systemctl", "--user", "stop", unit_name(job)])
-    run_on_host(entry, ["systemctl", "--user", "reset-failed", unit_name(job)])
-    if stopped.returncode != 0:
-        raise CapabilityError("job_not_loaded")
+    run_job(entry, ["cancel", job])
     return {"job": job, "host": entry["name"], "cancelled": True}
+
+
+def fetch(request, directory, operation_id):
+    job = request.input["job"]
+    entry = submitted_host(directory, job)
+    artifact = directory / FETCH_ARTIFACT
+    with artifact.open("wb") as stream:
+        run_job(
+            entry, ["send", job, "--", request.input["relative_path"]], stdout=stream
+        )
+    return {
+        "job": job,
+        "host": entry["name"],
+        "artifact": FETCH_ARTIFACT,
+        "size_bytes": artifact.stat().st_size,
+    }
 
 
 OPERATIONS = {
@@ -156,6 +129,7 @@ OPERATIONS = {
     "compute.status": status,
     "compute.logs": logs,
     "compute.cancel": cancel,
+    "compute.fetch": fetch,
 }
 
 
@@ -165,7 +139,7 @@ class ComputeProvider:
             return
         validate_submission(request.input)
         entry = host(request.input["host"])
-        if entry["transport"] == "local" and shutil.which("systemd-run") is None:
+        if entry["transport"] == "local" and shutil.which(JOB_PROGRAM) is None:
             raise CapabilityError("unsupported_host")
 
     def execute(self, request, directory, operation_id):
