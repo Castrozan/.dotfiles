@@ -54,6 +54,6 @@ headroom as `agent-harness/harnesses/claude-code/docs/context-management.md` rec
 
 ### Reduction levers
 
-By measured weight: bound session length through the compaction trigger and task-boundary checkpoints; route mechanical
-work from Fable and Opus to cheaper models; downscale screenshots before Read; trim the preamble last, since cutting 6k
-of 29k tokens saves about 4% in total.
+Levers by measured weight run in this order. Bound session length through the compaction trigger and task-boundary
+checkpoints. Route mechanical work from Fable and Opus to cheaper models. Downscale screenshots before Read. Trim the
+preamble last, since cutting 6k of 29k tokens saves about 4% in total.
