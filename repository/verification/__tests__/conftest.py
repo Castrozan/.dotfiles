@@ -8,7 +8,9 @@ SUITE_MAP_SCRIPT = VERIFICATION_ROOT / "map-test-suite.py"
 
 
 @pytest.fixture
-def load_suite_map():
+def load_suite_map(monkeypatch):
+    monkeypatch.syspath_prepend(str(VERIFICATION_ROOT))
+
     def load():
         specification = importlib.util.spec_from_file_location(
             "suite_map", SUITE_MAP_SCRIPT
