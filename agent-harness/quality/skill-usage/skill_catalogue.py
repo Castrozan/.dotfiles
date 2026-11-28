@@ -58,18 +58,29 @@ def evaluation_suites(repository: Path) -> list[dict]:
     ]
 
 
-def evaluation_coverage(repository: Path) -> EvaluationCoverage:
-    routing_cases: Counter = Counter()
-    skill_cases: Counter = Counter()
-    for suite in evaluation_suites(repository):
+def measured_cases(suite: dict) -> list[dict]:
+    return [case for case in suite.get("casos", []) if not case.get("pendente")]
+
+
+def routing_case_counts(suites: list[dict]) -> Counter:
+    return Counter(
+        expected_skill
+        for suite in suites
+        if suite.get("categoria") == ROUTING_CATEGORY
+        for case in measured_cases(suite)
+        for expected_skill in (case.get("assercoes") or {}).get("igual", [])
+    )
+
+
+def skill_case_counts(suites: list[dict]) -> Counter:
+    counts: Counter = Counter()
+    for suite in suites:
         category = str(suite.get("categoria", ""))
-        measured_cases = [
-            case for case in suite.get("casos", []) if not case.get("pendente")
-        ]
-        if category == ROUTING_CATEGORY:
-            for case in measured_cases:
-                for expected_skill in (case.get("assercoes") or {}).get("igual", []):
-                    routing_cases[expected_skill] += 1
-        elif category.startswith(SKILL_SUITE_CATEGORY_PREFIX):
-            skill_cases[category.split("/")[1]] += len(measured_cases)
-    return EvaluationCoverage(routing_cases, skill_cases)
+        if category.startswith(SKILL_SUITE_CATEGORY_PREFIX):
+            counts[category.split("/")[1]] += len(measured_cases(suite))
+    return counts
+
+
+def evaluation_coverage(repository: Path) -> EvaluationCoverage:
+    suites = evaluation_suites(repository)
+    return EvaluationCoverage(routing_case_counts(suites), skill_case_counts(suites))
