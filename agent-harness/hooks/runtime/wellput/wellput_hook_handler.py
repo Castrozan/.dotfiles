@@ -7,7 +7,7 @@ from hook_dispatch import HandlerResult
 from interactive_session_detection import is_keyboard_driven_interactive_session
 
 
-PUBLIC_HOOK_TIMEOUT_SECONDS_BY_EVENT = {"SessionStart": 5, "Stop": 10}
+PUBLIC_HOOK_TIMEOUT_SECONDS_BY_EVENT = {"SessionStart": 5, "Stop": 8}
 
 
 def run_public_hook(hook_input):

@@ -32,7 +32,7 @@ def test_stop_delegates_the_original_payload_to_the_public_hook(public_hook):
     command, arguments = calls[0]
     assert command[1:] == ["-S", "/wellput/hooks/reply_hook.py"]
     assert json.loads(arguments["input"]) == payload
-    assert arguments["timeout"] == 10
+    assert arguments["timeout"] == 8
     assert result.decision == "block"
     assert result.reason == "repair from Wellput"
 
