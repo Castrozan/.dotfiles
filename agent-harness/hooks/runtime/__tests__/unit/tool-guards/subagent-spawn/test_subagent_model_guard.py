@@ -105,6 +105,16 @@ def test_an_unpinned_agent_type_must_name_a_cheap_model(
     assert denial.decision == "deny"
 
 
+@pytest.mark.parametrize("model", [None, "haiku", "sonnet"])
+def test_a_fork_is_denied_because_no_model_setting_applies_to_it(
+    interactive_session, model
+):
+    denial = subagent_model_guard_handler.handle(spawn_of("fork", model))
+
+    assert denial.decision == "deny"
+    assert "fork" in denial.system_message
+
+
 def test_a_denial_names_both_cheap_tiers_and_the_pinned_types(interactive_session):
     denial = subagent_model_guard_handler.handle(spawn_of("general-purpose"))
 

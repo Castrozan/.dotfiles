@@ -32,7 +32,8 @@ cheap, and re-read the vendor's current pricing page before quoting any figure, 
 The `subagent-budget-guard` hooks deny, in keyboard-driven sessions, any Agent spawn that would run above Haiku or
 Sonnet. A spawn passes `model` as `haiku` or `sonnet`, or names a pinned plugin type such as `dotfiles:explore`,
 `dotfiles:runner`, `dotfiles:software-engineer` or `dotfiles:quality-assurance`. A per-call model overrides the
-definition's pin, so the guard checks the call as well as the definition.
+definition's pin, so the guard checks the call as well as the definition. A fork is always denied, since it inherits the
+session model and ignores any model setting.
 
 Every rulesync subagent definition pins its own cheap Claude Code model, and a unit test holds the guard's pinned list
 equal to those definitions. Background agent sessions and workflow `agent()` calls fall outside the guard. A denied

@@ -21,6 +21,7 @@ from interactive_session_detection import (  # noqa: E402
 )
 
 SUBAGENT_SPAWN_TOOL_NAME = "Agent"
+FORK_AGENT_TYPE = "fork"
 CHEAP_MODEL_TIERS = frozenset({"haiku", "sonnet"})
 CHEAP_PINNED_AGENT_TYPES = frozenset(
     {
@@ -52,6 +53,14 @@ def build_top_tier_model_message(requested_model):
     )
 
 
+def build_fork_message():
+    return (
+        "BLOCKED: a fork inherits this session's full context and always runs on this session's model, "
+        "so no model setting can make it cheap. Spawn a pinned type or pass haiku or sonnet with a "
+        "self-contained prompt instead, or do the work in this session."
+    )
+
+
 def build_unpinned_agent_type_message(subagent_type):
     shown_type = subagent_type or "general-purpose"
     return (
@@ -68,12 +77,14 @@ def model_policy_denial_message(hook_input):
     if not is_keyboard_driven_interactive_session():
         return None
     tool_input = hook_input.get("tool_input", {}) or {}
+    subagent_type = (tool_input.get("subagent_type", "") or "").strip()
+    if subagent_type == FORK_AGENT_TYPE:
+        return build_fork_message()
     requested_model = (tool_input.get("model", "") or "").strip()
     if requested_model:
         if names_a_cheap_model(requested_model):
             return None
         return build_top_tier_model_message(requested_model)
-    subagent_type = (tool_input.get("subagent_type", "") or "").strip()
     if is_a_cheap_pinned_agent_type(subagent_type):
         return None
     return build_unpinned_agent_type_message(subagent_type)
