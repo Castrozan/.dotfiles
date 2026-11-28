@@ -54,8 +54,8 @@ never mutating a machine by hand.
 
 ### Nvim keymaps
 
-Read the Neovim keymap policy in `$XDG_DATA_HOME/nvim/KEYMAPS_POLICY.md` before suggesting, adding, or restoring a keybind.
-The [source repository](https://github.com/Castrozan/neovim/blob/main/KEYMAPS_POLICY.md) owns the policy and its upkeep.
+Read `$XDG_DATA_HOME/nvim/KEYMAPS_POLICY.md` before suggesting, adding, or restoring a Neovim keybind.
+The [Neovim repository](https://github.com/Castrozan/neovim/blob/main/KEYMAPS_POLICY.md) owns the policy.
 
 ### Codex managed settings ownership
 
