@@ -17,6 +17,7 @@ OPERAND_COUNT_BY_COMMAND_WRAPPER = {
     "timeout": 1,
 }
 TIMEOUT_WRAPPER_NAME = "timeout"
+LOOKUP_ONLY_OPTION_LETTERS_BY_WRAPPER = {"command": frozenset("vV")}
 
 WrappedCommand = namedtuple("WrappedCommand", "command_words timeout_duration_word")
 
@@ -43,6 +44,13 @@ def _timeout_duration_word(wrapper_name, operands_and_command):
     return "".join(operands_and_command[:1]) or None
 
 
+def _only_looks_up_the_command(wrapper_name, option_words):
+    lookup_letters = LOOKUP_ONLY_OPTION_LETTERS_BY_WRAPPER.get(
+        wrapper_name, frozenset()
+    )
+    return any(lookup_letters.intersection(option) for option in option_words)
+
+
 def _words_after_one_wrapper(words):
     if _precedes_the_command(words[0]):
         return words[1:], None
@@ -51,6 +59,9 @@ def _words_after_one_wrapper(words):
     if operand_count is None:
         return None
     operands_and_command = _words_after_wrapper_options(words[1:])
+    option_words = words[1 : len(words) - len(operands_and_command)]
+    if _only_looks_up_the_command(wrapper_name, option_words):
+        return None
     return (
         operands_and_command[operand_count:],
         _timeout_duration_word(wrapper_name, operands_and_command),

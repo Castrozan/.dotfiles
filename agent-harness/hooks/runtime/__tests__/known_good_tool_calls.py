@@ -59,6 +59,7 @@ KNOWN_GOOD_BASH_COMMANDS = (
     "hypruse wait_for window_open --match Steam",
     "herdr agent wait w4E:p6 --until working --timeout 30000",
     "ci-watcher --help",
+    'readlink -f "$(command -v ci-watcher)"',
     "herdr agent wait --help",
     "find agent-workflows/background-waits development/ci-watcher -type f",
     "grep -rn 'wait-for-event process' agent-harness",

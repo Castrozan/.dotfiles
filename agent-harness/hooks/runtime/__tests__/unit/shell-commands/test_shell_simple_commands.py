@@ -75,6 +75,9 @@ def test_splits_command_text_into_simple_commands(
         (["timeout", "120", "glab", "mr"], ["glab", "mr"]),
         (["if", "!", "glab", "mr"], ["glab", "mr"]),
         (["echo", "rtk", "glab"], ["echo", "rtk", "glab"]),
+        (["command", "-v", "glab"], ["command", "-v", "glab"]),
+        (["command", "-pV", "glab"], ["command", "-pV", "glab"]),
+        (["command", "-p", "glab", "mr"], ["glab", "mr"]),
         (["A=1"], []),
     ],
 )
