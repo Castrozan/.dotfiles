@@ -30,7 +30,7 @@ _run_nix_flake_checks() {
 	fi
 
 	local -a sourceOverrides
-	read -r -a sourceOverrides <<<"${ARR_STACK_STUB_OVERRIDE:-} ${NEOVIM_STUB_OVERRIDE:-} ${HAMMERSPOON_STUB_OVERRIDE:-} ${PRIVATE_CONFIG_STUB_OVERRIDE:-}"
+	read -r -a sourceOverrides <<<"${ARR_STACK_STUB_OVERRIDE:-} ${NEOVIM_STUB_OVERRIDE:-} ${HAMMERSPOON_STUB_OVERRIDE:-} ${HOME_ASSISTANT_STUB_OVERRIDE:-} ${PRIVATE_CONFIG_STUB_OVERRIDE:-}"
 
 	local currentSystem
 	currentSystem="$(_detect_nix_system_double_from_kernel_and_machine)"
